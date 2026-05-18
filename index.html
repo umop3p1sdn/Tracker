@@ -30,13 +30,12 @@
             max-width: 900px;
             margin: 0 auto;
             width: 100%;
-            min-height: 100vh;
         }
 
         .header {
             text-align: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
             border-bottom: 2px solid #FF1744;
         }
 
@@ -115,17 +114,9 @@
         .button-secondary {
             background: #424242;
             color: #fff;
-            padding: 8px 14px;
-            font-size: 0.85em;
-            margin: 4px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .button-secondary:hover {
-            background: #555;
+            padding: 12px 24px;
+            font-size: 0.95em;
+            margin: 8px;
         }
 
         .button-small {
@@ -171,101 +162,71 @@
             width: 100%;
             display: flex;
             flex-direction: column;
-            gap: 12px;
-            flex: 1;
-            min-height: 100vh;
-        }
-
-        .distance-top {
-            background: rgba(15, 23, 42, 0.95);
-            padding: 15px;
-            border-radius: 8px;
-            border: 2px solid #00BCD4;
-            text-align: center;
-        }
-
-        .distance-label {
-            font-size: 0.75em;
-            opacity: 0.6;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 8px;
-        }
-
-        .distance-value {
-            font-size: 2.5em;
-            font-weight: bold;
-            color: #00BCD4;
+            gap: 15px;
         }
 
         .map {
             flex: 1;
             border-radius: 8px;
             border: 2px solid #FF1744;
-            min-height: 300px;
-            height: 100%;
-            width: 100%;
+            min-height: 400px;
         }
 
-        .info-bottom {
+        .info-panel {
             background: rgba(15, 23, 42, 0.95);
-            padding: 12px;
+            padding: 20px;
             border-radius: 8px;
             border: 2px solid #00BCD4;
         }
 
-        .info-label {
-            font-size: 0.7em;
-            opacity: 0.6;
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 15px;
+        }
+
+        .info-col {
+            flex: 1;
+            text-align: center;
+        }
+
+        .info-title {
+            margin: 0 0 5px 0;
+            font-size: 0.85em;
+            opacity: 0.7;
             text-transform: uppercase;
             letter-spacing: 1px;
-            margin-bottom: 6px;
         }
 
         .code-box {
-            font-size: 1.4em;
+            font-size: 1.8em;
             font-weight: bold;
             background: #FF1744;
-            padding: 10px;
-            border-radius: 6px;
-            letter-spacing: 2px;
+            padding: 12px 20px;
+            border-radius: 8px;
+            letter-spacing: 3px;
             font-family: 'Courier New', monospace;
-            margin-bottom: 6px;
         }
 
-        .copy-button {
-            background: #00BCD4;
-            color: #fff;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.75em;
+        .distance-box {
+            font-size: 1.4em;
             font-weight: bold;
-            margin-top: 6px;
-            transition: all 0.3s;
+            color: #00BCD4;
         }
 
-        .copy-button:hover {
-            background: #00ACC1;
+        .compass {
+            font-size: 2em;
+            margin: 10px 0;
         }
 
-        .copy-button.copied {
-            background: #4CAF50;
-        }
-
-        .info-text {
-            opacity: 0.7;
-            font-size: 0.75em;
-            margin: 0;
-        }
-
-        .buttons-controls {
+        .buttons-group {
             display: flex;
-            gap: 6px;
+            gap: 10px;
             flex-wrap: wrap;
             justify-content: center;
-            margin-top: 10px;
+            margin-top: 15px;
         }
 
         .error {
@@ -288,10 +249,8 @@
 
         .controls .button {
             flex: 1;
-            min-width: 120px;
+            min-width: 150px;
             margin-bottom: 0;
-            padding: 12px 16px;
-            font-size: 0.95em;
         }
 
         @media (max-width: 600px) {
@@ -302,11 +261,11 @@
                 flex-direction: column;
             }
             .button {
-                padding: 12px 20px;
-                font-size: 0.95em;
+                padding: 14px 24px;
+                font-size: 1em;
             }
-            .distance-value {
-                font-size: 2em;
+            .info-row {
+                flex-direction: column;
             }
             .controls {
                 flex-direction: column;
@@ -327,18 +286,18 @@
         <div class="content">
             <!-- MODE SELECT -->
             <div id="modeSelect" class="mode-select">
-                <p class="subtitle">Start tracking</p>
+                <p class="subtitle">Start your adventure</p>
                 
                 <button class="button button-master" onclick="startMaster()">
-                    START TRACKING
+                    📡 START TRACKING
                     <span class="button-small">Share your location</span>
                 </button>
 
                 <div class="divider">OR</div>
 
                 <div class="follow-section">
-                    <input type="text" maxlength="4" placeholder="0000" id="inputCode" class="input" onkeyup="this.value = this.value.replace(/[^0-9]/g, '')">
-                    <button class="button button-follow" onclick="startFollowing()">FOLLOW</button>
+                    <input type="text" maxlength="4" placeholder="XXXX" id="inputCode" class="input" onkeyup="this.value = this.value.toUpperCase()">
+                    <button class="button button-follow" onclick="startFollowing()">👁️ FOLLOW</button>
                 </div>
 
                 <div id="error" class="error hidden"></div>
@@ -346,51 +305,52 @@
 
             <!-- ACTIVE TRACKING -->
             <div id="activeTracking" class="active-tracking hidden">
-                <!-- MASTER MODE -->
-                <div id="masterMode">
-                    <div id="map" class="map"></div>
-                    
-                    <div class="info-bottom">
-                        <div class="info-label">Your Tracking Code</div>
-                        <div class="code-box" id="codeBox">----</div>
-                        <button class="copy-button" onclick="copyCode()">COPY CODE</button>
-                        <p class="info-text">Share this code with followers</p>
+                <div id="map" class="map"></div>
+                
+                <div class="info-panel">
+                    <div id="masterInfo">
+                        <div class="info-row">
+                            <div class="info-col">
+                                <h2 class="info-title">Your Tracking Code</h2>
+                                <div class="code-box" id="codeBox">----</div>
+                            </div>
+                        </div>
+                        <p style="opacity: 0.8; margin: 0; font-size: 0.9em;">📋 Share this code with followers</p>
                     </div>
 
-                    <div class="controls">
-                        <button class="button button-secondary" onclick="downloadGPX()">DOWNLOAD GPX</button>
-                        <button class="button button-stop" onclick="stopTracking()">STOP</button>
+                    <div id="followerInfo" class="hidden">
+                        <div class="info-row">
+                            <div class="info-col">
+                                <h2 class="info-title">Following</h2>
+                                <div class="code-box" id="followerCodeBox">----</div>
+                            </div>
+                            <div class="info-col">
+                                <h2 class="info-title">Distance</h2>
+                                <div class="distance-box" id="distanceBox">-</div>
+                            </div>
+                        </div>
+                        <div class="compass" id="compassArrow" style="opacity: 0.7;">↑</div>
+                        <p style="opacity: 0.8; margin: 0; font-size: 0.9em;">🧭 Direction to Master</p>
+                        <div class="buttons-group">
+                            <button class="button button-secondary" onclick="viewTrack()">📍 View Track</button>
+                        </div>
                     </div>
                 </div>
 
-                <!-- FOLLOWER MODE -->
-                <div id="followerMode" class="hidden">
-                    <div class="distance-top">
-                        <div class="distance-label">Distance</div>
-                        <div class="distance-value" id="distanceBox">-</div>
+                <div class="controls">
+                    <div id="masterControls">
+                        <button class="button button-secondary" onclick="downloadGPX()">📥 Download GPX</button>
+                        <button class="button button-stop" onclick="stopTracking()">⛔ STOP</button>
                     </div>
-
-                    <div id="map" class="map"></div>
-                    
-                    <div class="info-bottom">
-                        <div class="info-label">Following Code</div>
-                        <div class="code-box" id="followerCodeBox" style="font-size: 1.3em;">----</div>
-                        <p class="info-text">Live tracking active</p>
-                        <div class="buttons-controls">
-                            <button class="button-secondary" onclick="toggleZoom()" id="zoomBtn">ZOOM: MASTER</button>
-                            <button class="button-secondary" onclick="toggleCompass()" id="compassBtn">COMPASS</button>
-                            <button class="button-secondary" onclick="viewTrack()" id="trackBtn">VIEW TRACK</button>
-                        </div>
+                    <div id="followerControls" class="hidden">
+                        <button class="button button-stop" onclick="stopTracking()">⛔ STOP</button>
                     </div>
-
-                    <button class="button button-stop" onclick="stopTracking()">STOP</button>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // Firebase config - add your own database URL here
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -400,43 +360,23 @@
         let mapInstance = null;
         let masterMarker = null;
         let followerMarker = null;
-        let masterDirection = null;
-        let followerDirection = null;
         let polyline = null;
+        let locations = [];
         let masterLocations = [];
         let watchId = null;
         let followInterval = null;
         let trackVisible = false;
-        let zoomMode = 'master';
-        let compassMode = 'device';
-        let deviceHeading = 0;
-        let followerPos = null;
-        let masterPos = null;
 
         function generateCode() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
             let code = '';
             for (let i = 0; i < 4; i++) {
-                code += Math.floor(Math.random() * 10);
+                code += chars.charAt(Math.floor(Math.random() * chars.length));
             }
             return code;
         }
 
-        function copyCode() {
-            const code = currentCode;
-            navigator.clipboard.writeText(code).then(() => {
-                const btn = event.target;
-                btn.textContent = 'COPIED!';
-                btn.classList.add('copied');
-                setTimeout(() => {
-                    btn.textContent = 'COPY CODE';
-                    btn.classList.remove('copied');
-                }, 2000);
-            }).catch(() => {
-                showError('Could not copy');
-            });
-        }
-
-        async function sendToFirebase(code, lat, lng, heading) {
+        async function sendToFirebase(code, lat, lng) {
             try {
                 const url = `${firebaseConfig.databaseURL}/tracking/${code}.json`;
                 await fetch(url, {
@@ -445,9 +385,7 @@
                     body: JSON.stringify({
                         latitude: lat,
                         longitude: lng,
-                        heading: heading,
-                        timestamp: Date.now(),
-                        route: masterLocations
+                        timestamp: Date.now()
                     })
                 });
             } catch (err) {
@@ -461,12 +399,7 @@
                 const response = await fetch(url);
                 const data = await response.json();
                 if (data) {
-                    return { 
-                        lat: data.latitude, 
-                        lng: data.longitude,
-                        heading: data.heading || 0,
-                        route: data.route || []
-                    };
+                    return { lat: data.latitude, lng: data.longitude };
                 }
             } catch (err) {
                 console.error('Fetch error:', err);
@@ -485,93 +418,28 @@
             return (R * c).toFixed(2);
         }
 
-        function createDirectionMarker(lat, lng, heading, isFollower) {
-            if (isFollower) {
-                if (followerDirection) {
-                    mapInstance.removeLayer(followerDirection);
-                }
-                followerDirection = L.polyline(
-                    [[lat, lng], L.latLng(lat + 0.0005 * Math.sin(heading * Math.PI / 180), lng + 0.0005 * Math.cos(heading * Math.PI / 180))],
-                    {
-                        color: '#2196F3',
-                        weight: 3,
-                        opacity: 0.8
-                    }
-                ).addTo(mapInstance);
-            } else {
-                if (masterDirection) {
-                    mapInstance.removeLayer(masterDirection);
-                }
-                masterDirection = L.polyline(
-                    [[lat, lng], L.latLng(lat + 0.0005 * Math.sin(heading * Math.PI / 180), lng + 0.0005 * Math.cos(heading * Math.PI / 180))],
-                    {
-                        color: '#FF1744',
-                        weight: 3,
-                        opacity: 0.8
-                    }
-                ).addTo(mapInstance);
-            }
+        function calculateBearing(lat1, lng1, lat2, lng2) {
+            const dLng = (lng2 - lng1) * Math.PI / 180;
+            const y = Math.sin(dLng) * Math.cos(lat2 * Math.PI / 180);
+            const x = Math.cos(lat1 * Math.PI / 180) * Math.sin(lat2 * Math.PI / 180) -
+                      Math.sin(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.cos(dLng);
+            const bearing = Math.atan2(y, x) * 180 / Math.PI;
+            return (bearing + 360) % 360;
         }
 
-        function initDeviceCompass() {
-            if (window.DeviceOrientationEvent) {
-                window.addEventListener('deviceorientation', (event) => {
-                    deviceHeading = event.alpha || 0;
-                    updateMapRotation();
-                });
-            }
-        }
-
-        function updateMapRotation() {
-            if (!mapInstance) return;
-            
-            if (compassMode === 'device') {
-                mapInstance.setBearing && mapInstance.setBearing(-deviceHeading);
-            } else {
-                mapInstance.setBearing && mapInstance.setBearing(0);
-            }
-        }
-
-        function toggleZoom() {
-            zoomMode = zoomMode === 'master' ? 'both' : 'master';
-            document.getElementById('zoomBtn').textContent = zoomMode === 'master' ? 'ZOOM: MASTER' : 'ZOOM: BOTH';
-            updateMapView();
-        }
-
-        function toggleCompass() {
-            compassMode = compassMode === 'device' ? 'north' : 'device';
-            document.getElementById('compassBtn').textContent = compassMode === 'device' ? 'COMPASS' : 'NORTH';
-            updateMapRotation();
-        }
-
-        function updateMapView() {
-            if (!mapInstance || !followerPos) return;
-
-            if (zoomMode === 'master' && masterPos) {
-                mapInstance.setView([masterPos.lat, masterPos.lng], 15);
-            } else if (zoomMode === 'both' && masterPos && masterMarker && followerMarker) {
-                const group = L.featureGroup([masterMarker, followerMarker]);
-                mapInstance.fitBounds(group.getBounds(), { padding: [50, 50] });
-            }
+        function getCompassArrow(bearing) {
+            const arrows = ['↑', '↗', '→', '↘', '↓', '↙', '←', '↖'];
+            const index = Math.round(bearing / 45) % 8;
+            return arrows[index];
         }
 
         function initializeMap(isMaster, code) {
             setTimeout(() => {
                 const mapDiv = document.getElementById('map');
                 
-                // Properly destroy old map
                 if (mapInstance) {
-                    mapInstance.off();
                     mapInstance.remove();
-                    mapInstance = null;
                 }
-                
-                // Clear all markers
-                masterMarker = null;
-                followerMarker = null;
-                masterDirection = null;
-                followerDirection = null;
-                polyline = null;
 
                 mapInstance = L.map(mapDiv).setView([52.04, 5.67], 13);
 
@@ -581,12 +449,9 @@
                 }).addTo(mapInstance);
 
                 if (isMaster) {
-                    initDeviceCompass();
-
                     watchId = navigator.geolocation.watchPosition(
                         (position) => {
                             const { latitude, longitude } = position.coords;
-                            masterPos = { lat: latitude, lng: longitude };
                             
                             mapInstance.setView([latitude, longitude], 16);
 
@@ -600,10 +465,9 @@
                                     weight: 2,
                                     opacity: 1,
                                     fillOpacity: 0.9
-                                }).addTo(mapInstance).bindPopup('YOU');
+                                }).addTo(mapInstance).bindPopup('📍 You (Master)');
                             }
 
-                            createDirectionMarker(latitude, longitude, deviceHeading, false);
                             masterLocations.push([latitude, longitude]);
 
                             if (masterLocations.length > 1) {
@@ -618,18 +482,15 @@
                                 }).addTo(mapInstance);
                             }
 
-                            sendToFirebase(code, latitude, longitude, deviceHeading);
+                            sendToFirebase(code, latitude, longitude);
                         },
-                        (err) => showError(`GPS: ${err.message}`),
+                        (err) => showError(`GPS error: ${err.message}`),
                         { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
                     );
                 } else {
-                    initDeviceCompass();
-
                     watchId = navigator.geolocation.watchPosition(
                         (position) => {
                             const { latitude, longitude } = position.coords;
-                            followerPos = { lat: latitude, lng: longitude };
                             
                             if (followerMarker) {
                                 followerMarker.setLatLng([latitude, longitude]);
@@ -641,11 +502,8 @@
                                     weight: 2,
                                     opacity: 1,
                                     fillOpacity: 0.9
-                                }).addTo(mapInstance).bindPopup('YOU');
+                                }).addTo(mapInstance).bindPopup('📍 You');
                             }
-
-                            createDirectionMarker(latitude, longitude, deviceHeading, true);
-                            updateMapView();
                         },
                         (err) => console.error('Follower GPS:', err),
                         { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
@@ -654,8 +512,6 @@
                     const updateMasterMarker = async () => {
                         const location = await fetchMasterLocation(code);
                         if (location) {
-                            masterPos = { lat: location.lat, lng: location.lng };
-
                             if (masterMarker) {
                                 masterMarker.setLatLng([location.lat, location.lng]);
                             } else {
@@ -666,15 +522,10 @@
                                     weight: 2,
                                     opacity: 1,
                                     fillOpacity: 0.9
-                                }).addTo(mapInstance).bindPopup('TARGET');
+                                }).addTo(mapInstance).bindPopup('🏍️ Master');
                             }
 
-                            createDirectionMarker(location.lat, location.lng, location.heading, false);
-                            
-                            // Use Master's route from Firebase
-                            if (location.route && location.route.length > 0) {
-                                masterLocations = location.route;
-                            }
+                            masterLocations.push([location.lat, location.lng]);
 
                             if (masterLocations.length > 1 && trackVisible) {
                                 if (polyline) {
@@ -687,12 +538,16 @@
                                 }).addTo(mapInstance);
                             }
 
-                            if (followerPos) {
-                                const distance = calculateDistance(followerPos.lat, followerPos.lng, location.lat, location.lng);
+                            if (followerMarker) {
+                                const followerLatLng = followerMarker.getLatLng();
+                                const distance = calculateDistance(followerLatLng.lat, followerLatLng.lng, location.lat, location.lng);
+                                const bearing = calculateBearing(followerLatLng.lat, followerLatLng.lng, location.lat, location.lng);
+                                
                                 document.getElementById('distanceBox').textContent = distance + ' km';
+                                document.getElementById('compassArrow').textContent = getCompassArrow(bearing);
                             }
 
-                            updateMapView();
+                            mapInstance.setView([location.lat, location.lng], 15);
                         }
                     };
 
@@ -715,18 +570,18 @@
                         opacity: 0.7
                     }).addTo(mapInstance);
                 }
-                document.getElementById('trackBtn').textContent = 'HIDE TRACK';
+                event.target.textContent = '🗺️ Hide Track';
             } else {
                 if (polyline) {
                     mapInstance.removeLayer(polyline);
                 }
-                document.getElementById('trackBtn').textContent = 'VIEW TRACK';
+                event.target.textContent = '📍 View Track';
             }
         }
 
         function downloadGPX() {
             if (masterLocations.length < 2) {
-                showError('Need 2+ points');
+                showError('Need at least 2 points to export');
                 return;
             }
 
@@ -762,14 +617,17 @@
             currentCode = code;
             currentMode = 'master';
             masterLocations = [];
+            trackVisible = false;
 
             document.getElementById('modeSelect').classList.add('hidden');
             document.getElementById('activeTracking').classList.remove('hidden');
-            document.getElementById('modeIndicator').textContent = 'MASTER MODE';
+            document.getElementById('modeIndicator').textContent = '📡 MASTER MODE';
             document.getElementById('modeIndicator').classList.remove('hidden');
             document.getElementById('codeBox').textContent = code;
-            document.getElementById('masterMode').classList.remove('hidden');
-            document.getElementById('followerMode').classList.add('hidden');
+            document.getElementById('masterInfo').classList.remove('hidden');
+            document.getElementById('followerInfo').classList.add('hidden');
+            document.getElementById('masterControls').classList.remove('hidden');
+            document.getElementById('followerControls').classList.add('hidden');
 
             initializeMap(true, code);
         }
@@ -778,7 +636,7 @@
             const code = document.getElementById('inputCode').value.toUpperCase();
             
             if (code.length !== 4) {
-                showError('Code: 4 chars');
+                showError('Code must be 4 characters');
                 return;
             }
 
@@ -786,19 +644,16 @@
             currentMode = 'follower';
             masterLocations = [];
             trackVisible = false;
-            zoomMode = 'master';
-            compassMode = 'device';
 
             document.getElementById('modeSelect').classList.add('hidden');
             document.getElementById('activeTracking').classList.remove('hidden');
-            document.getElementById('modeIndicator').textContent = 'FOLLOWING';
+            document.getElementById('modeIndicator').textContent = '👁️ FOLLOWING';
             document.getElementById('modeIndicator').classList.remove('hidden');
             document.getElementById('followerCodeBox').textContent = code;
-            document.getElementById('masterMode').classList.add('hidden');
-            document.getElementById('followerMode').classList.remove('hidden');
-            document.getElementById('zoomBtn').textContent = 'ZOOM: MASTER';
-            document.getElementById('compassBtn').textContent = 'COMPASS';
-            document.getElementById('trackBtn').textContent = 'VIEW TRACK';
+            document.getElementById('masterInfo').classList.add('hidden');
+            document.getElementById('followerInfo').classList.remove('hidden');
+            document.getElementById('masterControls').classList.add('hidden');
+            document.getElementById('followerControls').classList.remove('hidden');
 
             initializeMap(false, code);
         }
@@ -806,16 +661,12 @@
         function stopTracking() {
             if (watchId) {
                 navigator.geolocation.clearWatch(watchId);
-                watchId = null;
             }
             if (followInterval) {
                 clearInterval(followInterval);
-                followInterval = null;
             }
             if (mapInstance) {
-                mapInstance.off();
                 mapInstance.remove();
-                mapInstance = null;
             }
 
             currentMode = null;
@@ -823,11 +674,7 @@
             masterLocations = [];
             masterMarker = null;
             followerMarker = null;
-            masterDirection = null;
-            followerDirection = null;
             polyline = null;
-            followerPos = null;
-            masterPos = null;
             trackVisible = false;
 
             document.getElementById('activeTracking').classList.add('hidden');
