@@ -323,7 +323,7 @@
             <div id="activeTracking" class="active-tracking hidden">
                 <!-- MASTER MODE -->
                 <div id="masterMode">
-                    <div id="map" class="map"></div>
+                    <div id="mapMaster" class="map"></div>
                     
                     <div class="info-bottom">
                         <div class="info-label">Your Tracking Code</div>
@@ -345,7 +345,7 @@
                         <div class="distance-value" id="distanceBox">-</div>
                     </div>
 
-                    <div id="map" class="map"></div>
+                    <div id="mapFollower" class="map"></div>
                     
                     <div class="info-bottom">
                         <div class="info-label">Following Code</div>
@@ -530,7 +530,8 @@
 
         function initializeMap(isMaster, code) {
             setTimeout(() => {
-                const mapDiv = document.getElementById('map');
+                const mapDivId = isMaster ? 'mapMaster' : 'mapFollower';
+                const mapDiv = document.getElementById(mapDivId);
                 
                 if (mapInstance) {
                     mapInstance.off();
