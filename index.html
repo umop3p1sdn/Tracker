@@ -378,6 +378,9 @@
 
         async function sendToFirebase(code, lat, lng) {
             try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 5000);
+                
                 const url = `${firebaseConfig.databaseURL}/tracking/${code}.json`;
                 await fetch(url, {
                     method: 'PUT',
@@ -386,8 +389,10 @@
                         latitude: lat,
                         longitude: lng,
                         timestamp: Date.now()
-                    })
+                    }),
+                    signal: controller.signal
                 });
+                clearTimeout(timeoutId);
             } catch (err) {
                 console.error('Firebase error:', err);
             }
@@ -395,8 +400,13 @@
 
         async function fetchMasterLocation(code) {
             try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 5000);
+                
                 const url = `${firebaseConfig.databaseURL}/tracking/${code}.json`;
-                const response = await fetch(url);
+                const response = await fetch(url, { signal: controller.signal });
+                clearTimeout(timeoutId);
+                
                 const data = await response.json();
                 if (data) {
                     return { lat: data.latitude, lng: data.longitude };
