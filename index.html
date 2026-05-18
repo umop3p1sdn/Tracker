@@ -622,6 +622,7 @@
                         { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
                     );
 
+                    // Non-blocking Firebase fetch
                     const updateMasterMarker = async () => {
                         const location = await fetchMasterLocation(code);
                         if (location) {
@@ -666,6 +667,7 @@
                         }
                     };
 
+                    // Don't await, let it run in background
                     updateMasterMarker();
                     followInterval = setInterval(updateMasterMarker, 3000);
                 }
