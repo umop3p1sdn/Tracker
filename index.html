@@ -559,9 +559,19 @@
             setTimeout(() => {
                 const mapDiv = document.getElementById('map');
                 
+                // Properly destroy old map
                 if (mapInstance) {
+                    mapInstance.off();
                     mapInstance.remove();
+                    mapInstance = null;
                 }
+                
+                // Clear all markers
+                masterMarker = null;
+                followerMarker = null;
+                masterDirection = null;
+                followerDirection = null;
+                polyline = null;
 
                 mapInstance = L.map(mapDiv).setView([52.04, 5.67], 13);
 
@@ -796,12 +806,16 @@
         function stopTracking() {
             if (watchId) {
                 navigator.geolocation.clearWatch(watchId);
+                watchId = null;
             }
             if (followInterval) {
                 clearInterval(followInterval);
+                followInterval = null;
             }
             if (mapInstance) {
+                mapInstance.off();
                 mapInstance.remove();
+                mapInstance = null;
             }
 
             currentMode = null;
