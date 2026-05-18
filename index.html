@@ -387,6 +387,7 @@
         let deviceHeading = 0;
         let followerPos = null;
         let masterPos = null;
+        let wakeLock = null;
 
         function generateCode() {
             let code = '';
@@ -394,6 +395,25 @@
                 code += Math.floor(Math.random() * 10);
             }
             return code;
+        }
+
+        async function requestWakeLock() {
+            try {
+                if ('wakeLock' in navigator) {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                    console.log('Wake Lock activated');
+                }
+            } catch (err) {
+                console.error('Wake Lock error:', err);
+            }
+        }
+
+        function releaseWakeLock() {
+            if (wakeLock) {
+                wakeLock.release();
+                wakeLock = null;
+                console.log('Wake Lock released');
+            }
         }
 
         function copyCode() {
@@ -723,9 +743,33 @@
 
             const blob = new Blob([gpx], { type: 'application/gpx+xml' });
             const url = URL.createObjectURL(blob);
+            const filename = `track-${currentCode}.gpx`;
+
+            // Try Web Share API first (shows app dialog)
+            if (navigator.share) {
+                fetch(url)
+                    .then(r => r.blob())
+                    .then(blob => {
+                        navigator.share({
+                            files: [new File([blob], filename, { type: 'application/gpx+xml' })],
+                            title: 'Track',
+                            text: `Track ${currentCode}`
+                        }).catch(err => {
+                            if (err.name !== 'AbortError') {
+                                fallbackDownload(url, filename);
+                            }
+                        });
+                    })
+                    .catch(() => fallbackDownload(url, filename));
+            } else {
+                fallbackDownload(url, filename);
+            }
+        }
+
+        function fallbackDownload(url, filename) {
             const a = document.createElement('a');
             a.href = url;
-            a.download = `track-${currentCode}.gpx`;
+            a.download = filename;
             a.click();
             URL.revokeObjectURL(url);
         }
@@ -744,6 +788,7 @@
             document.getElementById('masterMode').classList.remove('hidden');
             document.getElementById('followerMode').classList.add('hidden');
 
+            requestWakeLock();
             initializeMap(true, code);
         }
 
@@ -773,10 +818,13 @@
             document.getElementById('compassBtn').textContent = 'COMPASS';
             document.getElementById('trackBtn').textContent = 'VIEW TRACK';
 
+            requestWakeLock();
             initializeMap(false, code);
         }
 
         function stopTracking() {
+            releaseWakeLock();
+            
             if (watchId) {
                 navigator.geolocation.clearWatch(watchId);
                 watchId = null;
