@@ -48,12 +48,7 @@
         }
 
         .mode-indicator {
-            display: inline-block;
-            background: #FF1744;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 0.9em;
-            font-weight: bold;
+            display: none !important;
         }
 
         .content {
@@ -176,23 +171,19 @@
         }
 
         .distance-top {
-            background: rgba(15, 23, 42, 0.95);
-            padding: 15px;
-            border-radius: 8px;
-            border: 2px solid #00BCD4;
-            text-align: center;
+            display: none;
         }
 
         .distance-label {
-            font-size: 0.75em;
+            font-size: 0.6em;
             opacity: 0.6;
             text-transform: uppercase;
             letter-spacing: 1px;
-            margin-bottom: 8px;
+            margin-bottom: 4px;
         }
 
         .distance-value {
-            font-size: 2.5em;
+            font-size: 1.5em;
             font-weight: bold;
             color: #00BCD4;
         }
@@ -201,7 +192,7 @@
             flex: 1;
             border-radius: 8px;
             border: 2px solid #FF1744;
-            min-height: 300px;
+            min-height: 600px;
             width: 100%;
         }
 
@@ -333,6 +324,8 @@
                     </div>
 
                     <div class="controls">
+                        <button class="button button-secondary" onclick="document.getElementById('gpxInputMaster').click()">LOAD GPX</button>
+                        <input type="file" id="gpxInputMaster" accept=".gpx" style="display:none;" onchange="loadGPXFile(event)">
                         <button class="button button-secondary" onclick="downloadGPX()">DOWNLOAD GPX</button>
                         <button class="button button-stop" onclick="stopTracking()">STOP</button>
                     </div>
@@ -340,11 +333,6 @@
 
                 <!-- FOLLOWER MODE -->
                 <div id="followerMode" class="hidden">
-                    <div class="distance-top">
-                        <div class="distance-label">Distance</div>
-                        <div class="distance-value" id="distanceBox">-</div>
-                    </div>
-
                     <div id="mapFollower" class="map"></div>
                     
                     <div class="info-bottom">
@@ -355,6 +343,8 @@
                             <button class="button-secondary" onclick="toggleZoom()" id="zoomBtn">ZOOM: MASTER</button>
                             <button class="button-secondary" onclick="toggleCompass()" id="compassBtn">COMPASS</button>
                             <button class="button-secondary" onclick="viewTrack()" id="trackBtn">VIEW TRACK</button>
+                            <button class="button-secondary" onclick="document.getElementById('gpxInputFollower').click()">LOAD GPX</button>
+                            <input type="file" id="gpxInputFollower" accept=".gpx" style="display:none;" onchange="loadGPXFile(event)">
                             <button class="button-secondary" onclick="downloadGPX()">DOWNLOAD GPX</button>
                         </div>
                     </div>
@@ -389,6 +379,41 @@
         let masterPos = null;
         let wakeLock = null;
 
+        async function loadGPXFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const text = await file.text();
+            const parser = new DOMParser();
+            const gpx = parser.parseFromString(text, 'application/xml');
+            
+            const trkpts = gpx.querySelectorAll('trkpt');
+            const gpsRoute = [];
+            
+            trkpts.forEach(trkpt => {
+                const lat = parseFloat(trkpt.getAttribute('lat'));
+                const lng = parseFloat(trkpt.getAttribute('lon'));
+                if (!isNaN(lat) && !isNaN(lng)) {
+                    gpsRoute.push([lat, lng]);
+                }
+            });
+
+            if (gpsRoute.length > 0) {
+                if (polyline) {
+                    mapInstance.removeLayer(polyline);
+                }
+                polyline = L.polyline(gpsRoute, {
+                    color: '#00BCD4',
+                    weight: 2,
+                    opacity: 0.6,
+                    dashArray: '2, 5'
+                }).addTo(mapInstance);
+                
+                const group = L.featureGroup(gpsRoute.map(([lat, lng]) => L.circleMarker([lat, lng], {radius: 1})));
+                mapInstance.fitBounds(group.getBounds(), {padding: [50, 50]});
+            }
+        }
+
         function generateCode() {
             let code = '';
             for (let i = 0; i < 4; i++) {
@@ -401,7 +426,6 @@
             try {
                 if ('wakeLock' in navigator) {
                     wakeLock = await navigator.wakeLock.request('screen');
-                    console.log('Wake Lock activated');
                 }
             } catch (err) {
                 console.error('Wake Lock error:', err);
@@ -412,7 +436,6 @@
             if (wakeLock) {
                 wakeLock.release();
                 wakeLock = null;
-                console.log('Wake Lock released');
             }
         }
 
@@ -643,7 +666,6 @@
                         { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
                     );
 
-                    // Non-blocking Firebase fetch
                     const updateMasterMarker = async () => {
                         const location = await fetchMasterLocation(code);
                         if (location) {
@@ -688,7 +710,6 @@
                         }
                     };
 
-                    // Don't await, let it run in background
                     updateMasterMarker();
                     followInterval = setInterval(updateMasterMarker, 3000);
                 }
@@ -745,7 +766,6 @@
             const url = URL.createObjectURL(blob);
             const filename = `track-${currentCode}.gpx`;
 
-            // Try Web Share API first (shows app dialog)
             if (navigator.share) {
                 fetch(url)
                     .then(r => r.blob())
@@ -782,8 +802,7 @@
 
             document.getElementById('modeSelect').classList.add('hidden');
             document.getElementById('activeTracking').classList.remove('hidden');
-            document.getElementById('modeIndicator').textContent = 'MASTER MODE';
-            document.getElementById('modeIndicator').classList.remove('hidden');
+            document.querySelector('.header').classList.add('hidden');
             document.getElementById('codeBox').textContent = code;
             document.getElementById('masterMode').classList.remove('hidden');
             document.getElementById('followerMode').classList.add('hidden');
@@ -809,8 +828,7 @@
 
             document.getElementById('modeSelect').classList.add('hidden');
             document.getElementById('activeTracking').classList.remove('hidden');
-            document.getElementById('modeIndicator').textContent = 'FOLLOWING';
-            document.getElementById('modeIndicator').classList.remove('hidden');
+            document.querySelector('.header').classList.add('hidden');
             document.getElementById('followerCodeBox').textContent = code;
             document.getElementById('masterMode').classList.add('hidden');
             document.getElementById('followerMode').classList.remove('hidden');
@@ -853,7 +871,7 @@
 
             document.getElementById('activeTracking').classList.add('hidden');
             document.getElementById('modeSelect').classList.remove('hidden');
-            document.getElementById('modeIndicator').classList.add('hidden');
+            document.querySelector('.header').classList.remove('hidden');
             document.getElementById('inputCode').value = '';
             document.getElementById('error').classList.add('hidden');
         }
