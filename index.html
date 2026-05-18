@@ -333,7 +333,7 @@
                 <div class="divider">OR</div>
 
                 <div class="follow-section">
-                    <input type="text" maxlength="4" placeholder="CODE" id="inputCode" class="input" onkeyup="this.value = this.value.toUpperCase()">
+                    <input type="text" maxlength="4" placeholder="0000" id="inputCode" class="input" onkeyup="this.value = this.value.replace(/[^0-9]/g, '')">
                     <button class="button button-follow" onclick="startFollowing()">FOLLOW</button>
                 </div>
 
@@ -388,7 +388,7 @@
     <script>
         // Firebase config - add your own database URL here
         const firebaseConfig = {
-            databaseURL: "" // Your Firebase database URL
+            databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
 
         let currentMode = null;
@@ -410,10 +410,9 @@
         let masterPos = null;
 
         function generateCode() {
-            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
             let code = '';
             for (let i = 0; i < 4; i++) {
-                code += chars.charAt(Math.floor(Math.random() * chars.length));
+                code += Math.floor(Math.random() * 10);
             }
             return code;
         }
@@ -443,7 +442,8 @@
                         latitude: lat,
                         longitude: lng,
                         heading: heading,
-                        timestamp: Date.now()
+                        timestamp: Date.now(),
+                        route: masterLocations
                     })
                 });
             } catch (err) {
@@ -460,7 +460,8 @@
                     return { 
                         lat: data.latitude, 
                         lng: data.longitude,
-                        heading: data.heading || 0
+                        heading: data.heading || 0,
+                        route: data.route || []
                     };
                 }
             } catch (err) {
@@ -655,7 +656,11 @@
                             }
 
                             createDirectionMarker(location.lat, location.lng, location.heading, false);
-                            masterLocations.push([location.lat, location.lng]);
+                            
+                            // Use Master's route from Firebase
+                            if (location.route && location.route.length > 0) {
+                                masterLocations = location.route;
+                            }
 
                             if (masterLocations.length > 1 && trackVisible) {
                                 if (polyline) {
