@@ -145,6 +145,7 @@
             display: flex;
             gap: 10px;
             margin-top: 20px;
+            flex-direction: column;
         }
 
         .input {
@@ -312,8 +313,7 @@
                 <div class="divider">OR</div>
 
                 <div class="follow-section">
-                    <input type="text" maxlength="4" placeholder="0000" id="inputCode" class="input" onkeyup="this.value = this.value.replace(/[^0-9]/g, '')">
-                    <button class="button button-follow" onclick="startFollowing()">FOLLOW</button>
+                    <input type="text" maxlength="4" placeholder="Enter code" id="inputCode" class="input" onkeyup="this.value = this.value.replace(/[^0-9]/g, ''); if(this.value.length === 4) { startFollowing(); }" style="text-align: center;">
                 </div>
 
                 <div id="error" class="error hidden"></div>
