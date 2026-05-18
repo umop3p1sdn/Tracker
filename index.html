@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Tracker</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        .container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            max-width: 900px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #FF1744;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .mode-indicator {
+            display: inline-block;
+            background: #FF1744;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+
+        .content {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .mode-select {
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+        }
+
+        .subtitle {
+            font-size: 1.3em;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+
+        .button {
+            padding: 16px 32px;
+            font-size: 1.1em;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+            width: 100%;
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+
+        .button-master {
+            background: #FF1744;
+            color: #fff;
+        }
+
+        .button-follow {
+            background: #00BCD4;
+            color: #fff;
+            margin-top: 10px;
+        }
+
+        .button-stop {
+            background: #FF5252;
+            color: #fff;
+            margin-top: 20px;
+        }
+
+        .button-secondary {
+            background: #424242;
+            color: #fff;
+            padding: 8px 14px;
+            font-size: 0.85em;
+            margin: 4px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .button-secondary:hover {
+            background: #555;
+        }
+
+        .button-small {
+            font-size: 0.7em;
+            opacity: 0.9;
+            display: block;
+            margin-top: 5px;
+            font-weight: normal;
+        }
+
+        .divider {
+            margin: 25px 0;
+            opacity: 0.5;
+            font-size: 0.9em;
+        }
+
+        .follow-section {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .input {
+            flex: 1;
+            padding: 12px;
+            font-size: 1.3em;
+            font-weight: bold;
+            text-align: center;
+            background: #1a1f3a;
+            border: 2px solid #FF1744;
+            color: #fff;
+            border-radius: 8px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .input:focus {
+            outline: none;
+            box-shadow: 0 0 10px rgba(255, 23, 68, 0.5);
+        }
+
+        .active-tracking {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            flex: 1;
+        }
+
+        .distance-top {
+            background: rgba(15, 23, 42, 0.95);
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid #00BCD4;
+            text-align: center;
+        }
+
+        .distance-label {
+            font-size: 0.75em;
+            opacity: 0.6;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .distance-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #00BCD4;
+        }
+
+        .map {
+            flex: 1;
+            border-radius: 8px;
+            border: 2px solid #FF1744;
+            min-height: 300px;
+        }
+
+        .info-bottom {
+            background: rgba(15, 23, 42, 0.95);
+            padding: 12px;
+            border-radius: 8px;
+            border: 2px solid #00BCD4;
+        }
+
+        .info-label {
+            font-size: 0.7em;
+            opacity: 0.6;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+        }
+
+        .code-box {
+            font-size: 1.4em;
+            font-weight: bold;
+            background: #FF1744;
+            padding: 10px;
+            border-radius: 6px;
+            letter-spacing: 2px;
+            font-family: 'Courier New', monospace;
+            margin-bottom: 6px;
+        }
+
+        .copy-button {
+            background: #00BCD4;
+            color: #fff;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.75em;
+            font-weight: bold;
+            margin-top: 6px;
+            transition: all 0.3s;
+        }
+
+        .copy-button:hover {
+            background: #00ACC1;
+        }
+
+        .copy-button.copied {
+            background: #4CAF50;
+        }
+
+        .info-text {
+            opacity: 0.7;
+            font-size: 0.75em;
+            margin: 0;
+        }
+
+        .buttons-controls {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 10px;
+        }
+
+        .error {
+            background: #FF5252;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-size: 0.9em;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .controls .button {
+            flex: 1;
+            min-width: 120px;
+            margin-bottom: 0;
+            padding: 12px 16px;
+            font-size: 0.95em;
+        }
+
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+            .follow-section {
+                flex-direction: column;
+            }
+            .button {
+                padding: 12px 20px;
+                font-size: 0.95em;
+            }
+            .distance-value {
+                font-size: 2em;
+            }
+            .controls {
+                flex-direction: column;
+            }
+            .controls .button {
+                min-width: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>LIVE TRACKER</h1>
+            <div id="modeIndicator" class="mode-indicator hidden"></div>
+        </div>
+
+        <div class="content">
+            <!-- MODE SELECT -->
+            <div id="modeSelect" class="mode-select">
+                <p class="subtitle">Start tracking</p>
+                
+                <button class="button button-master" onclick="startMaster()">
+                    START TRACKING
+                    <span class="button-small">Share your location</span>
+                </button>
+
+                <div class="divider">OR</div>
+
+                <div class="follow-section">
+                    <input type="text" maxlength="4" placeholder="CODE" id="inputCode" class="input" onkeyup="this.value = this.value.toUpperCase()">
+                    <button class="button button-follow" onclick="startFollowing()">FOLLOW</button>
+                </div>
+
+                <div id="error" class="error hidden"></div>
+            </div>
+
+            <!-- ACTIVE TRACKING -->
+            <div id="activeTracking" class="active-tracking hidden">
+                <!-- MASTER MODE -->
+                <div id="masterMode">
+                    <div id="map" class="map"></div>
+                    
+                    <div class="info-bottom">
+                        <div class="info-label">Your Tracking Code</div>
+                        <div class="code-box" id="codeBox">----</div>
+                        <button class="copy-button" onclick="copyCode()">COPY CODE</button>
+                        <p class="info-text">Share this code with followers</p>
+                    </div>
+
+                    <div class="controls">
+                        <button class="button button-secondary" onclick="downloadGPX()">DOWNLOAD GPX</button>
+                        <button class="button button-stop" onclick="stopTracking()">STOP</button>
+                    </div>
+                </div>
+
+                <!-- FOLLOWER MODE -->
+                <div id="followerMode" class="hidden">
+                    <div class="distance-top">
+                        <div class="distance-label">Distance</div>
+                        <div class="distance-value" id="distanceBox">-</div>
+                    </div>
+
+                    <div id="map" class="map"></div>
+                    
+                    <div class="info-bottom">
+                        <div class="info-label">Following Code</div>
+                        <div class="code-box" id="followerCodeBox" style="font-size: 1.3em;">----</div>
+                        <p class="info-text">Live tracking active</p>
+                        <div class="buttons-controls">
+                            <button class="button-secondary" onclick="toggleZoom()" id="zoomBtn">ZOOM: MASTER</button>
+                            <button class="button-secondary" onclick="toggleCompass()" id="compassBtn">COMPASS</button>
+                            <button class="button-secondary" onclick="viewTrack()" id="trackBtn">VIEW TRACK</button>
+                        </div>
+                    </div>
+
+                    <button class="button button-stop" onclick="stopTracking()">STOP</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Firebase config - add your own database URL here
+        const firebaseConfig = {
+            databaseURL: "" // Your Firebase database URL
+        };
+
+        let currentMode = null;
+        let currentCode = '';
+        let mapInstance = null;
+        let masterMarker = null;
+        let followerMarker = null;
+        let masterDirection = null;
+        let followerDirection = null;
+        let polyline = null;
+        let masterLocations = [];
+        let watchId = null;
+        let followInterval = null;
+        let trackVisible = false;
+        let zoomMode = 'master';
+        let compassMode = 'device';
+        let deviceHeading = 0;
+        let followerPos = null;
+        let masterPos = null;
+
+        function generateCode() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let code = '';
+            for (let i = 0; i < 4; i++) {
+                code += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return code;
+        }
+
+        function copyCode() {
+            const code = currentCode;
+            navigator.clipboard.writeText(code).then(() => {
+                const btn = event.target;
+                btn.textContent = 'COPIED!';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.textContent = 'COPY CODE';
+                    btn.classList.remove('copied');
+                }, 2000);
+            }).catch(() => {
+                showError('Could not copy');
+            });
+        }
+
+        async function sendToFirebase(code, lat, lng, heading) {
+            try {
+                const url = `${firebaseConfig.databaseURL}/tracking/${code}.json`;
+                await fetch(url, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        latitude: lat,
+                        longitude: lng,
+                        heading: heading,
+                        timestamp: Date.now()
+                    })
+                });
+            } catch (err) {
+                console.error('Firebase error:', err);
+            }
+        }
+
+        async function fetchMasterLocation(code) {
+            try {
+                const url = `${firebaseConfig.databaseURL}/tracking/${code}.json`;
+                const response = await fetch(url);
+                const data = await response.json();
+                if (data) {
+                    return { 
+                        lat: data.latitude, 
+                        lng: data.longitude,
+                        heading: data.heading || 0
+                    };
+                }
+            } catch (err) {
+                console.error('Fetch error:', err);
+            }
+            return null;
+        }
+
+        function calculateDistance(lat1, lng1, lat2, lng2) {
+            const R = 6371;
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLng = (lng2 - lng1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                      Math.sin(dLng/2) * Math.sin(dLng/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return (R * c).toFixed(2);
+        }
+
+        function createDirectionMarker(lat, lng, heading, isFollower) {
+            if (isFollower) {
+                if (followerDirection) {
+                    mapInstance.removeLayer(followerDirection);
+                }
+                followerDirection = L.polyline(
+                    [[lat, lng], L.latLng(lat + 0.0005 * Math.sin(heading * Math.PI / 180), lng + 0.0005 * Math.cos(heading * Math.PI / 180))],
+                    {
+                        color: '#2196F3',
+                        weight: 3,
+                        opacity: 0.8
+                    }
+                ).addTo(mapInstance);
+            } else {
+                if (masterDirection) {
+                    mapInstance.removeLayer(masterDirection);
+                }
+                masterDirection = L.polyline(
+                    [[lat, lng], L.latLng(lat + 0.0005 * Math.sin(heading * Math.PI / 180), lng + 0.0005 * Math.cos(heading * Math.PI / 180))],
+                    {
+                        color: '#FF1744',
+                        weight: 3,
+                        opacity: 0.8
+                    }
+                ).addTo(mapInstance);
+            }
+        }
+
+        function initDeviceCompass() {
+            if (window.DeviceOrientationEvent) {
+                window.addEventListener('deviceorientation', (event) => {
+                    deviceHeading = event.alpha || 0;
+                    updateMapRotation();
+                });
+            }
+        }
+
+        function updateMapRotation() {
+            if (!mapInstance) return;
+            
+            if (compassMode === 'device') {
+                mapInstance.setBearing && mapInstance.setBearing(-deviceHeading);
+            } else {
+                mapInstance.setBearing && mapInstance.setBearing(0);
+            }
+        }
+
+        function toggleZoom() {
+            zoomMode = zoomMode === 'master' ? 'both' : 'master';
+            document.getElementById('zoomBtn').textContent = zoomMode === 'master' ? 'ZOOM: MASTER' : 'ZOOM: BOTH';
+            updateMapView();
+        }
+
+        function toggleCompass() {
+            compassMode = compassMode === 'device' ? 'north' : 'device';
+            document.getElementById('compassBtn').textContent = compassMode === 'device' ? 'COMPASS' : 'NORTH';
+            updateMapRotation();
+        }
+
+        function updateMapView() {
+            if (!mapInstance || !followerPos) return;
+
+            if (zoomMode === 'master' && masterPos) {
+                mapInstance.setView([masterPos.lat, masterPos.lng], 15);
+            } else if (zoomMode === 'both' && masterPos && masterMarker && followerMarker) {
+                const group = L.featureGroup([masterMarker, followerMarker]);
+                mapInstance.fitBounds(group.getBounds(), { padding: [50, 50] });
+            }
+        }
+
+        function initializeMap(isMaster, code) {
+            setTimeout(() => {
+                const mapDiv = document.getElementById('map');
+                
+                if (mapInstance) {
+                    mapInstance.remove();
+                }
+
+                mapInstance = L.map(mapDiv).setView([52.04, 5.67], 13);
+
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap',
+                    maxZoom: 19
+                }).addTo(mapInstance);
+
+                if (isMaster) {
+                    initDeviceCompass();
+
+                    watchId = navigator.geolocation.watchPosition(
+                        (position) => {
+                            const { latitude, longitude } = position.coords;
+                            masterPos = { lat: latitude, lng: longitude };
+                            
+                            mapInstance.setView([latitude, longitude], 16);
+
+                            if (masterMarker) {
+                                masterMarker.setLatLng([latitude, longitude]);
+                            } else {
+                                masterMarker = L.circleMarker([latitude, longitude], {
+                                    radius: 10,
+                                    fillColor: '#FF1744',
+                                    color: '#fff',
+                                    weight: 2,
+                                    opacity: 1,
+                                    fillOpacity: 0.9
+                                }).addTo(mapInstance).bindPopup('YOU');
+                            }
+
+                            createDirectionMarker(latitude, longitude, deviceHeading, false);
+                            masterLocations.push([latitude, longitude]);
+
+                            if (masterLocations.length > 1) {
+                                if (polyline) {
+                                    mapInstance.removeLayer(polyline);
+                                }
+                                polyline = L.polyline(masterLocations, {
+                                    color: '#FF1744',
+                                    weight: 3,
+                                    opacity: 0.7,
+                                    dashArray: '5, 5'
+                                }).addTo(mapInstance);
+                            }
+
+                            sendToFirebase(code, latitude, longitude, deviceHeading);
+                        },
+                        (err) => showError(`GPS: ${err.message}`),
+                        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                    );
+                } else {
+                    initDeviceCompass();
+
+                    watchId = navigator.geolocation.watchPosition(
+                        (position) => {
+                            const { latitude, longitude } = position.coords;
+                            followerPos = { lat: latitude, lng: longitude };
+                            
+                            if (followerMarker) {
+                                followerMarker.setLatLng([latitude, longitude]);
+                            } else {
+                                followerMarker = L.circleMarker([latitude, longitude], {
+                                    radius: 8,
+                                    fillColor: '#2196F3',
+                                    color: '#fff',
+                                    weight: 2,
+                                    opacity: 1,
+                                    fillOpacity: 0.9
+                                }).addTo(mapInstance).bindPopup('YOU');
+                            }
+
+                            createDirectionMarker(latitude, longitude, deviceHeading, true);
+                            updateMapView();
+                        },
+                        (err) => console.error('Follower GPS:', err),
+                        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                    );
+
+                    const updateMasterMarker = async () => {
+                        const location = await fetchMasterLocation(code);
+                        if (location) {
+                            masterPos = { lat: location.lat, lng: location.lng };
+
+                            if (masterMarker) {
+                                masterMarker.setLatLng([location.lat, location.lng]);
+                            } else {
+                                masterMarker = L.circleMarker([location.lat, location.lng], {
+                                    radius: 10,
+                                    fillColor: '#FF1744',
+                                    color: '#fff',
+                                    weight: 2,
+                                    opacity: 1,
+                                    fillOpacity: 0.9
+                                }).addTo(mapInstance).bindPopup('TARGET');
+                            }
+
+                            createDirectionMarker(location.lat, location.lng, location.heading, false);
+                            masterLocations.push([location.lat, location.lng]);
+
+                            if (masterLocations.length > 1 && trackVisible) {
+                                if (polyline) {
+                                    mapInstance.removeLayer(polyline);
+                                }
+                                polyline = L.polyline(masterLocations, {
+                                    color: '#FF1744',
+                                    weight: 3,
+                                    opacity: 0.7
+                                }).addTo(mapInstance);
+                            }
+
+                            if (followerPos) {
+                                const distance = calculateDistance(followerPos.lat, followerPos.lng, location.lat, location.lng);
+                                document.getElementById('distanceBox').textContent = distance + ' km';
+                            }
+
+                            updateMapView();
+                        }
+                    };
+
+                    updateMasterMarker();
+                    followInterval = setInterval(updateMasterMarker, 3000);
+                }
+            }, 100);
+        }
+
+        function viewTrack() {
+            trackVisible = !trackVisible;
+            if (trackVisible) {
+                if (masterLocations.length > 1) {
+                    if (polyline) {
+                        mapInstance.removeLayer(polyline);
+                    }
+                    polyline = L.polyline(masterLocations, {
+                        color: '#FF1744',
+                        weight: 3,
+                        opacity: 0.7
+                    }).addTo(mapInstance);
+                }
+                document.getElementById('trackBtn').textContent = 'HIDE TRACK';
+            } else {
+                if (polyline) {
+                    mapInstance.removeLayer(polyline);
+                }
+                document.getElementById('trackBtn').textContent = 'VIEW TRACK';
+            }
+        }
+
+        function downloadGPX() {
+            if (masterLocations.length < 2) {
+                showError('Need 2+ points');
+                return;
+            }
+
+            let gpx = `<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="LiveTracker">
+  <trk>
+    <name>Track ${currentCode}</name>
+    <trkseg>`;
+
+            masterLocations.forEach(([lat, lng]) => {
+                gpx += `
+      <trkpt lat="${lat}" lon="${lng}">
+        <time>${new Date().toISOString()}</time>
+      </trkpt>`;
+            });
+
+            gpx += `
+    </trkseg>
+  </trk>
+</gpx>`;
+
+            const blob = new Blob([gpx], { type: 'application/gpx+xml' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `track-${currentCode}.gpx`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function startMaster() {
+            const code = generateCode();
+            currentCode = code;
+            currentMode = 'master';
+            masterLocations = [];
+
+            document.getElementById('modeSelect').classList.add('hidden');
+            document.getElementById('activeTracking').classList.remove('hidden');
+            document.getElementById('modeIndicator').textContent = 'MASTER MODE';
+            document.getElementById('modeIndicator').classList.remove('hidden');
+            document.getElementById('codeBox').textContent = code;
+            document.getElementById('masterMode').classList.remove('hidden');
+            document.getElementById('followerMode').classList.add('hidden');
+
+            initializeMap(true, code);
+        }
+
+        function startFollowing() {
+            const code = document.getElementById('inputCode').value.toUpperCase();
+            
+            if (code.length !== 4) {
+                showError('Code: 4 chars');
+                return;
+            }
+
+            currentCode = code;
+            currentMode = 'follower';
+            masterLocations = [];
+            trackVisible = false;
+            zoomMode = 'master';
+            compassMode = 'device';
+
+            document.getElementById('modeSelect').classList.add('hidden');
+            document.getElementById('activeTracking').classList.remove('hidden');
+            document.getElementById('modeIndicator').textContent = 'FOLLOWING';
+            document.getElementById('modeIndicator').classList.remove('hidden');
+            document.getElementById('followerCodeBox').textContent = code;
+            document.getElementById('masterMode').classList.add('hidden');
+            document.getElementById('followerMode').classList.remove('hidden');
+            document.getElementById('zoomBtn').textContent = 'ZOOM: MASTER';
+            document.getElementById('compassBtn').textContent = 'COMPASS';
+            document.getElementById('trackBtn').textContent = 'VIEW TRACK';
+
+            initializeMap(false, code);
+        }
+
+        function stopTracking() {
+            if (watchId) {
+                navigator.geolocation.clearWatch(watchId);
+            }
+            if (followInterval) {
+                clearInterval(followInterval);
+            }
+            if (mapInstance) {
+                mapInstance.remove();
+            }
+
+            currentMode = null;
+            currentCode = '';
+            masterLocations = [];
+            masterMarker = null;
+            followerMarker = null;
+            masterDirection = null;
+            followerDirection = null;
+            polyline = null;
+            followerPos = null;
+            masterPos = null;
+            trackVisible = false;
+
+            document.getElementById('activeTracking').classList.add('hidden');
+            document.getElementById('modeSelect').classList.remove('hidden');
+            document.getElementById('modeIndicator').classList.add('hidden');
+            document.getElementById('inputCode').value = '';
+            document.getElementById('error').classList.add('hidden');
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('error');
+            errorDiv.textContent = message;
+            errorDiv.classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
