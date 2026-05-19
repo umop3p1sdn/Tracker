@@ -562,9 +562,23 @@
         }
 
         function toggleZoom() {
-            zoomMode = zoomMode === 'master' ? 'both' : 'master';
-            document.getElementById('zoomBtn').textContent = zoomMode === 'master' ? 'ZOOM: MASTER' : 'ZOOM: BOTH';
-            updateMapView();
+            if (currentMode === 'master') {
+                // Master always follows
+                return;
+            } else if (currentMode === 'follower') {
+                // Cycle through: master → both → self → master
+                if (zoomMode === 'master') {
+                    zoomMode = 'both';
+                    document.getElementById('zoomBtn').textContent = 'ZOOM: BOTH';
+                } else if (zoomMode === 'both') {
+                    zoomMode = 'self';
+                    document.getElementById('zoomBtn').textContent = 'ZOOM: SELF';
+                } else {
+                    zoomMode = 'master';
+                    document.getElementById('zoomBtn').textContent = 'ZOOM: MASTER';
+                }
+                updateMapView();
+            }
         }
 
         function toggleCompass() {
@@ -579,15 +593,15 @@
             if (!mapInstance) return;
 
             if (currentMode === 'master' && masterPos) {
-                if (zoomMode === 'master') {
-                    mapInstance.setView([masterPos.lat, masterPos.lng], zoomLevelValue);
-                }
+                mapInstance.setView([masterPos.lat, masterPos.lng], zoomLevelValue);
             } else if (currentMode === 'follower' && followerPos) {
                 if (zoomMode === 'master' && masterPos) {
                     mapInstance.setView([masterPos.lat, masterPos.lng], zoomLevelValue);
                 } else if (zoomMode === 'both' && masterPos && masterMarker && followerMarker) {
                     const group = L.featureGroup([masterMarker, followerMarker]);
                     mapInstance.fitBounds(group.getBounds(), { padding: [50, 50] });
+                } else if (zoomMode === 'self') {
+                    mapInstance.setView([followerPos.lat, followerPos.lng], zoomLevelValue);
                 }
             }
         }
@@ -609,7 +623,7 @@
                 followerDirection = null;
                 polyline = null;
 
-                mapInstance = L.map(mapDiv).setView([52.04, 5.67], 13);
+                mapInstance = L.map(mapDiv);
 
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     attribution: '© OpenStreetMap',
@@ -653,6 +667,7 @@
                             }
 
                             sendToFirebase(code, latitude, longitude, deviceHeading);
+                            updateMapView();
                         },
                         (err) => showError(`GPS: ${err.message}`),
                         { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
@@ -724,9 +739,7 @@
                                 document.getElementById('distanceBox').textContent = distance + ' km';
                             }
 
-                            if (zoomMode !== 'off') {
-                                updateMapView();
-                            }
+                            updateMapView();
                         }
                     };
 
@@ -819,6 +832,7 @@
             currentCode = code;
             currentMode = 'master';
             masterLocations = [];
+            zoomMode = 'master';
 
             document.getElementById('modeSelect').classList.add('hidden');
             document.getElementById('activeTracking').classList.remove('hidden');
@@ -843,7 +857,7 @@
             currentMode = 'follower';
             masterLocations = [];
             trackVisible = false;
-            zoomMode = 'master';
+            zoomMode = 'both';
             compassMode = 'device';
 
             document.getElementById('modeSelect').classList.add('hidden');
@@ -852,7 +866,7 @@
             document.getElementById('followerCodeBox').textContent = code;
             document.getElementById('masterMode').classList.add('hidden');
             document.getElementById('followerMode').classList.remove('hidden');
-            document.getElementById('zoomBtn').textContent = 'ZOOM: MASTER';
+            document.getElementById('zoomBtn').textContent = 'ZOOM: BOTH';
             document.getElementById('trackBtn').textContent = 'VIEW TRACK';
 
             requestWakeLock();
