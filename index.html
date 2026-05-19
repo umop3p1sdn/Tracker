@@ -837,6 +837,7 @@
             currentCode = code;
             currentMode = 'master';
             masterLocations = [];
+            isAutoFollowActive = true;
 
             document.getElementById('modeSelect').classList.add('hidden');
             document.getElementById('activeTracking').classList.remove('hidden');
@@ -863,6 +864,7 @@
             trackVisible = false;
             zoomMode = 'master';
             compassMode = 'device';
+            isAutoFollowActive = true;
 
             document.getElementById('modeSelect').classList.add('hidden');
             document.getElementById('activeTracking').classList.remove('hidden');
