@@ -295,7 +295,7 @@
             <!-- MODE SELECT -->
             <div id="modeSelect" class="mode-select">
                 <p class="subtitle">Start tracking</p>
-                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">V0.043 © Umop3p1sdn</div>
+                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">V0.044 © Umop3p1sdn</div>
                 
                 <button class="button button-master" onclick="startMaster()">
                     START TRACKING
@@ -325,7 +325,7 @@
                     </div>
 
                     <div class="controls">
-                        <button class="button button-secondary" onclick="toggleFollow()" id="followBtnMaster">FOLLOW: ON</button>
+                        <button class="button button-secondary" onclick="toggleFollow()" id="followBtnMaster">CENTER: ON</button>
                         <div style="display: flex; gap: 8px; align-items: center; margin: 4px;">
                             <label style="font-size: 0.75em; opacity: 0.7;">Zoom:</label>
                             <input type="range" id="zoomSliderMaster" min="12" max="18" value="15" style="flex: 1; cursor: pointer;" onchange="updateZoomLevel(this.value)">
@@ -343,7 +343,7 @@
                     <div id="mapFollower" class="map"></div>
                     
                     <div class="buttons-controls">
-                        <button class="button-secondary" onclick="toggleFollow()" id="followBtnFollower">FOLLOW: ON</button>
+                        <button class="button-secondary" onclick="toggleFollow()" id="followBtnFollower">CENTER: ON</button>
                         <button class="button-secondary" onclick="toggleZoom()" id="zoomBtn">ZOOM: MASTER</button>
                         <div style="display: flex; gap: 8px; align-items: center; margin: 4px; flex-basis: 100%;">
                             <label style="font-size: 0.75em; opacity: 0.7;">Zoom:</label>
@@ -369,7 +369,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "V0.043";
+        const APP_VERSION = "V0.044";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -590,7 +590,7 @@
             isAutoFollowActive = !isAutoFollowActive;
             const followBtnMaster = document.getElementById('followBtnMaster');
             const followBtnFollower = document.getElementById('followBtnFollower');
-            const text = isAutoFollowActive ? 'FOLLOW: ON' : 'FOLLOW: OFF';
+            const text = isAutoFollowActive ? 'CENTER: ON' : 'CENTER: OFF';
             
             if (followBtnMaster) followBtnMaster.textContent = text;
             if (followBtnFollower) followBtnFollower.textContent = text;
