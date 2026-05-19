@@ -675,6 +675,10 @@
                             }
 
                             sendToFirebase(code, latitude, longitude, deviceHeading);
+                            
+                            if (isAutoFollowActive) {
+                                updateMapView();
+                            }
                         },
                         (err) => showError(`GPS: ${err.message}`),
                         { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
@@ -744,6 +748,10 @@
                             if (followerPos) {
                                 const distance = calculateDistance(followerPos.lat, followerPos.lng, location.lat, location.lng);
                                 document.getElementById('distanceBox').textContent = distance + ' km';
+                            }
+
+                            if (isAutoFollowActive) {
+                                updateMapView();
                             }
                         }
                     };
