@@ -324,6 +324,7 @@
                     </div>
 
                     <div class="controls">
+                        <button class="button button-secondary" onclick="toggleFollow()" id="followBtnMaster">FOLLOW: ON</button>
                         <button class="button button-secondary" onclick="toggleZoom()" id="zoomBtnMaster">ZOOM: MASTER</button>
                         <div style="display: flex; gap: 8px; align-items: center; margin: 4px;">
                             <label style="font-size: 0.75em; opacity: 0.7;">Zoom:</label>
@@ -342,6 +343,7 @@
                     <div id="mapFollower" class="map"></div>
                     
                     <div class="buttons-controls">
+                        <button class="button-secondary" onclick="toggleFollow()" id="followBtnFollower">FOLLOW: ON</button>
                         <button class="button-secondary" onclick="toggleZoom()" id="zoomBtn">ZOOM: MASTER</button>
                         <div style="display: flex; gap: 8px; align-items: center; margin: 4px; flex-basis: 100%;">
                             <label style="font-size: 0.75em; opacity: 0.7;">Zoom:</label>
@@ -581,6 +583,20 @@
             }
         }
 
+        function toggleFollow() {
+            isAutoFollowActive = !isAutoFollowActive;
+            const followBtnMaster = document.getElementById('followBtnMaster');
+            const followBtnFollower = document.getElementById('followBtnFollower');
+            const text = isAutoFollowActive ? 'FOLLOW: ON' : 'FOLLOW: OFF';
+            
+            if (followBtnMaster) followBtnMaster.textContent = text;
+            if (followBtnFollower) followBtnFollower.textContent = text;
+            
+            if (isAutoFollowActive) {
+                updateMapView();
+            }
+        }
+
         function toggleCompass() {
             compassMode = compassMode === 'device' ? 'north' : 'device';
             const btn = document.getElementById('compassBtn');
@@ -629,14 +645,6 @@
                     attribution: '© OpenStreetMap',
                     maxZoom: 19
                 }).addTo(mapInstance);
-
-                // Detect manual zoom/pan to disable auto-follow
-                mapInstance.on('dragend', () => {
-                    isAutoFollowActive = false;
-                });
-                mapInstance.on('zoomend', () => {
-                    isAutoFollowActive = false;
-                });
 
                 if (isMaster) {
                     initDeviceCompass();
