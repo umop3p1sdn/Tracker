@@ -282,6 +282,64 @@
             padding: 12px 16px;
             font-size: 0.95em;
         }
+
+        .go-button {
+            position: absolute;
+            top: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 65px;
+            height: 65px;
+            border-radius: 50%;
+            background: #FF1744;
+            color: #fff;
+            border: none;
+            font-weight: bold;
+            font-size: 1.1em;
+            cursor: pointer;
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(255, 23, 68, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .go-button:hover {
+            transform: translateX(-50%) scale(1.1);
+            box-shadow: 0 6px 16px rgba(255, 23, 68, 0.6);
+        }
+
+        .go-button.show {
+            display: flex;
+        }
+
+        .map-container {
+            position: relative;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .map-only .info-bottom,
+        .map-only .controls,
+        .map-only .buttons-controls,
+        .map-only .header,
+        .map-only .go-button,
+        .map-only .button-stop {
+            display: none !important;
+        }
+
+        .map-only .active-tracking {
+            padding: 0 !important;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .map-only .map {
+            height: auto;
+            flex: 1;
+        }
     </style>
 </head>
 <body>
@@ -295,7 +353,7 @@
             <!-- MODE SELECT -->
             <div id="modeSelect" class="mode-select">
                 <p class="subtitle">Start tracking</p>
-                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">V0.044 © Umop3p1sdn</div>
+                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">1.48 © Umop3p1sdn</div>
                 
                 <button class="button button-master" onclick="startMaster()">
                     START TRACKING
@@ -315,7 +373,10 @@
             <div id="activeTracking" class="active-tracking hidden">
                 <!-- MASTER MODE -->
                 <div id="masterMode">
-                    <div id="mapMaster" class="map"></div>
+                    <div style="position: relative;">
+                        <div id="mapMaster" class="map"></div>
+                        <button class="go-button show" id="goButtonMaster" onclick="toggleMapOnly('master')">GO</button>
+                    </div>
                     
                     <div class="info-bottom">
                         <div class="info-label">Your Tracking Code</div>
@@ -340,7 +401,10 @@
 
                 <!-- FOLLOWER MODE -->
                 <div id="followerMode" class="hidden">
-                    <div id="mapFollower" class="map"></div>
+                    <div style="position: relative;">
+                        <div id="mapFollower" class="map"></div>
+                        <button class="go-button show" id="goButtonFollower" onclick="toggleMapOnly('follower')">GO</button>
+                    </div>
                     
                     <div class="buttons-controls">
                         <button class="button-secondary" onclick="toggleFollow()" id="followBtnFollower">CENTER: ON</button>
@@ -369,7 +433,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "V0.044";
+        const APP_VERSION = "1.48";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -600,6 +664,21 @@
             }
         }
 
+        function toggleMapOnly(mode) {
+            const container = document.querySelector('.container');
+            const body = document.body;
+            
+            container.classList.toggle('map-only');
+            body.classList.toggle('map-only');
+            
+            // Force map to recalculate size
+            if (mapInstance) {
+                setTimeout(() => {
+                    mapInstance.invalidateSize();
+                }, 100);
+            }
+        }
+
         function toggleCompass() {
             compassMode = compassMode === 'device' ? 'north' : 'device';
             const btn = document.getElementById('compassBtn');
@@ -648,6 +727,13 @@
                     attribution: '© OpenStreetMap',
                     maxZoom: 19
                 }).addTo(mapInstance);
+
+                // Add click listener to exit map-only mode
+                mapInstance.on('click', () => {
+                    if (document.querySelector('.container').classList.contains('map-only')) {
+                        toggleMapOnly(isMaster ? 'master' : 'follower');
+                    }
+                });
 
                 if (isMaster) {
                     initDeviceCompass();
