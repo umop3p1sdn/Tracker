@@ -519,7 +519,7 @@
                     mapInstance.removeLayer(followerDirection);
                 }
                 followerDirection = L.polyline(
-                    [[lat, lng], L.latLng(lat + 0.0005 * Math.sin(heading * Math.PI / 180), lng + 0.0005 * Math.cos(heading * Math.PI / 180))],
+                    [[lat, lng], L.latLng(lat + 0.0005 * Math.cos(heading * Math.PI / 180), lng + 0.0005 * Math.sin(heading * Math.PI / 180))],
                     {
                         color: '#2196F3',
                         weight: 3,
@@ -531,7 +531,7 @@
                     mapInstance.removeLayer(masterDirection);
                 }
                 masterDirection = L.polyline(
-                    [[lat, lng], L.latLng(lat + 0.0005 * Math.sin(heading * Math.PI / 180), lng + 0.0005 * Math.cos(heading * Math.PI / 180))],
+                    [[lat, lng], L.latLng(lat + 0.0005 * Math.cos(heading * Math.PI / 180), lng + 0.0005 * Math.sin(heading * Math.PI / 180))],
                     {
                         color: '#FF1744',
                         weight: 3,
