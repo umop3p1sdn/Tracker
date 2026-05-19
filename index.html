@@ -438,17 +438,6 @@
             }
         }
 
-        // Handle tab visibility changes
-        document.addEventListener('visibilitychange', () => {
-            if (document.hidden) {
-                // Tab hidden - release wake lock
-                releaseWakeLock();
-            } else if (currentMode) {
-                // Tab visible again - request wake lock if tracking
-                requestWakeLock();
-            }
-        });
-
         function copyCode() {
             const code = currentCode;
             navigator.clipboard.writeText(code).then(() => {
@@ -628,7 +617,7 @@
                                 }).addTo(mapInstance).bindPopup('YOU');
                             }
 
-                            // createDirectionMarker(latitude, longitude, deviceHeading, false);
+                            createDirectionMarker(latitude, longitude, deviceHeading, false);
                             masterLocations.push([latitude, longitude]);
 
                             if (masterLocations.length > 1) {
@@ -669,7 +658,7 @@
                                 }).addTo(mapInstance).bindPopup('YOU');
                             }
 
-                            // createDirectionMarker(latitude, longitude, deviceHeading, true);
+                            createDirectionMarker(latitude, longitude, deviceHeading, true);
                             updateMapView();
                         },
                         (err) => console.error('Follower GPS:', err),
@@ -694,7 +683,7 @@
                                 }).addTo(mapInstance).bindPopup('TARGET');
                             }
 
-                            // createDirectionMarker(location.lat, location.lng, location.heading, false);
+                            createDirectionMarker(location.lat, location.lng, location.heading, false);
                             
                             if (location.route && location.route.length > 0) {
                                 masterLocations = location.route;
@@ -843,7 +832,6 @@
             document.getElementById('masterMode').classList.add('hidden');
             document.getElementById('followerMode').classList.remove('hidden');
             document.getElementById('zoomBtn').textContent = 'ZOOM: MASTER';
-            document.getElementById('compassBtn').textContent = 'COMPASS';
             document.getElementById('trackBtn').textContent = 'VIEW TRACK';
 
             requestWakeLock();
