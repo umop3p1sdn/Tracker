@@ -913,10 +913,19 @@
 
         function updateZoomLevel(value) {
             zoomLevelValue = parseInt(value);
+            
+            // Update both slider inputs
+            const masterSlider = document.getElementById('zoomSliderMaster');
+            const followerSlider = document.getElementById('zoomSliderFollower');
+            if (masterSlider) masterSlider.value = zoomLevelValue;
+            if (followerSlider) followerSlider.value = zoomLevelValue;
+            
+            // Update both display spans
             const masterSpan = document.getElementById('zoomLevelMaster');
             const followerSpan = document.getElementById('zoomLevelFollower');
             if (masterSpan) masterSpan.textContent = zoomLevelValue;
             if (followerSpan) followerSpan.textContent = zoomLevelValue;
+            
             updateMapView();
         }
 
