@@ -843,8 +843,7 @@
                             }
 
                             if (followerPos) {
-                                const distance = calculateDistance(followerPos.lat, followerPos.lng, location.lat, location.lng);
-                                document.getElementById('distanceBox').textContent = distance + ' km';
+                                calculateDistance(followerPos.lat, followerPos.lng, location.lat, location.lng);
                             }
 
                             if (isAutoFollowActive) {
