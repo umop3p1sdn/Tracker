@@ -324,7 +324,6 @@
                     </div>
 
                     <div class="controls">
-                        <button class="button button-secondary" onclick="toggleCompass()" id="compassBtnMaster">COMPASS</button>
                         <button class="button button-secondary" onclick="document.getElementById('gpxInputMaster').click()">LOAD GPX</button>
                         <input type="file" id="gpxInputMaster" accept=".gpx" style="display:none;" onchange="loadGPXFile(event)">
                         <button class="button button-secondary" onclick="downloadGPX()">DOWNLOAD GPX</button>
@@ -515,15 +514,12 @@
         }
 
         function createDirectionMarker(lat, lng, heading, isFollower) {
-            // In COMPASS mode, arrow points up (0). In NORTH mode, arrow rotates with heading
-            const displayHeading = compassMode === 'device' ? 0 : heading;
-            
             if (isFollower) {
                 if (followerDirection) {
                     mapInstance.removeLayer(followerDirection);
                 }
                 followerDirection = L.polyline(
-                    [[lat, lng], L.latLng(lat + 0.0005 * Math.cos(displayHeading * Math.PI / 180), lng + 0.0005 * Math.sin(displayHeading * Math.PI / 180))],
+                    [[lat, lng], L.latLng(lat + 0.0005 * Math.sin(heading * Math.PI / 180), lng + 0.0005 * Math.cos(heading * Math.PI / 180))],
                     {
                         color: '#2196F3',
                         weight: 3,
@@ -535,7 +531,7 @@
                     mapInstance.removeLayer(masterDirection);
                 }
                 masterDirection = L.polyline(
-                    [[lat, lng], L.latLng(lat + 0.0005 * Math.cos(displayHeading * Math.PI / 180), lng + 0.0005 * Math.sin(displayHeading * Math.PI / 180))],
+                    [[lat, lng], L.latLng(lat + 0.0005 * Math.sin(heading * Math.PI / 180), lng + 0.0005 * Math.cos(heading * Math.PI / 180))],
                     {
                         color: '#FF1744',
                         weight: 3,
@@ -549,19 +545,6 @@
             if (window.DeviceOrientationEvent) {
                 window.addEventListener('deviceorientation', (event) => {
                     deviceHeading = event.alpha || 0;
-                    
-                    // TODO: Kaart rotatie werkt niet goed met Leaflet CSS transform
-                    // Moet Leaflet plugin of andere aanpak gebruiken
-                    // For now: disabled
-                    /*
-                    if (compassMode === 'device' && mapInstance) {
-                        const mapElement = mapInstance.getContainer();
-                        mapElement.style.transform = `rotate(${deviceHeading}deg)`;
-                    } else if (mapInstance) {
-                        const mapElement = mapInstance.getContainer();
-                        mapElement.style.transform = 'rotate(0deg)';
-                    }
-                    */
                 });
             }
         }
@@ -574,13 +557,7 @@
 
         function toggleCompass() {
             compassMode = compassMode === 'device' ? 'north' : 'device';
-            const text = compassMode === 'device' ? 'COMPASS' : 'NORTH';
-            
-            const compassBtn = document.getElementById('compassBtn');
-            const compassBtnMaster = document.getElementById('compassBtnMaster');
-            
-            if (compassBtn) compassBtn.textContent = text;
-            if (compassBtnMaster) compassBtnMaster.textContent = text;
+            document.getElementById('compassBtn').textContent = compassMode === 'device' ? 'COMPASS' : 'NORTH';
         }
 
         function updateMapView() {
@@ -641,7 +618,7 @@
                                 }).addTo(mapInstance).bindPopup('YOU');
                             }
 
-                            createDirectionMarker(latitude, longitude, deviceHeading, false);
+                            // createDirectionMarker(latitude, longitude, deviceHeading, false);
                             masterLocations.push([latitude, longitude]);
 
                             if (masterLocations.length > 1) {
@@ -682,7 +659,7 @@
                                 }).addTo(mapInstance).bindPopup('YOU');
                             }
 
-                            createDirectionMarker(latitude, longitude, deviceHeading, true);
+                            // createDirectionMarker(latitude, longitude, deviceHeading, true);
                             updateMapView();
                         },
                         (err) => console.error('Follower GPS:', err),
@@ -707,7 +684,7 @@
                                 }).addTo(mapInstance).bindPopup('TARGET');
                             }
 
-                            createDirectionMarker(location.lat, location.lng, location.heading, false);
+                            // createDirectionMarker(location.lat, location.lng, location.heading, false);
                             
                             if (location.route && location.route.length > 0) {
                                 masterLocations = location.route;
