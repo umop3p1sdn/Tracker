@@ -565,14 +565,16 @@
 
         function toggleZoom() {
             if (currentMode === 'master') {
-                // Master: enable auto-follow
-                isAutoFollowActive = true;
-                updateMapView();
+                // Master: no zoom button anymore
+                return;
             } else if (currentMode === 'follower') {
-                // Toggle: master → both → master
+                // Cycle: master → both → self → master
                 if (zoomMode === 'master') {
                     zoomMode = 'both';
                     document.getElementById('zoomBtn').textContent = 'ZOOM: BOTH';
+                } else if (zoomMode === 'both') {
+                    zoomMode = 'self';
+                    document.getElementById('zoomBtn').textContent = 'ZOOM: SELF';
                 } else {
                     zoomMode = 'master';
                     document.getElementById('zoomBtn').textContent = 'ZOOM: MASTER';
