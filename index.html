@@ -324,6 +324,7 @@
                     </div>
 
                     <div class="controls">
+                        <button class="button button-secondary" onclick="toggleZoom()" id="zoomBtnMaster">ZOOM: MASTER</button>
                         <button class="button button-secondary" onclick="document.getElementById('gpxInputMaster').click()">LOAD GPX</button>
                         <input type="file" id="gpxInputMaster" accept=".gpx" style="display:none;" onchange="loadGPXFile(event)">
                         <button class="button button-secondary" onclick="downloadGPX()">DOWNLOAD GPX</button>
@@ -564,13 +565,19 @@
         }
 
         function updateMapView() {
-            if (!mapInstance || !followerPos) return;
+            if (!mapInstance) return;
 
-            if (zoomMode === 'master' && masterPos) {
-                mapInstance.setView([masterPos.lat, masterPos.lng], 15);
-            } else if (zoomMode === 'both' && masterPos && masterMarker && followerMarker) {
-                const group = L.featureGroup([masterMarker, followerMarker]);
-                mapInstance.fitBounds(group.getBounds(), { padding: [50, 50] });
+            if (currentMode === 'master' && masterPos) {
+                if (zoomMode === 'master') {
+                    mapInstance.setView([masterPos.lat, masterPos.lng], 15);
+                }
+            } else if (currentMode === 'follower' && followerPos) {
+                if (zoomMode === 'master' && masterPos) {
+                    mapInstance.setView([masterPos.lat, masterPos.lng], 15);
+                } else if (zoomMode === 'both' && masterPos && masterMarker && followerMarker) {
+                    const group = L.featureGroup([masterMarker, followerMarker]);
+                    mapInstance.fitBounds(group.getBounds(), { padding: [50, 50] });
+                }
             }
         }
 
@@ -605,8 +612,6 @@
                         (position) => {
                             const { latitude, longitude } = position.coords;
                             masterPos = { lat: latitude, lng: longitude };
-                            
-                            mapInstance.setView([latitude, longitude], 16);
 
                             if (masterMarker) {
                                 masterMarker.setLatLng([latitude, longitude]);
