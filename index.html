@@ -663,7 +663,6 @@
                             }
 
                             // createDirectionMarker(latitude, longitude, deviceHeading, true);
-                            updateMapView();
                         },
                         (err) => console.error('Follower GPS:', err),
                         { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
@@ -708,8 +707,6 @@
                                 const distance = calculateDistance(followerPos.lat, followerPos.lng, location.lat, location.lng);
                                 document.getElementById('distanceBox').textContent = distance + ' km';
                             }
-
-                            updateMapView();
                         }
                     };
 
