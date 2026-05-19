@@ -563,10 +563,10 @@
 
         function toggleZoom() {
             if (currentMode === 'master') {
-                // Master always follows
-                return;
+                // Master: zoom to master with slider level
+                updateMapView();
             } else if (currentMode === 'follower') {
-                // Cycle through: master → both → self → master
+                // Follower: cycle through: master → both → self → master
                 if (zoomMode === 'master') {
                     zoomMode = 'both';
                     document.getElementById('zoomBtn').textContent = 'ZOOM: BOTH';
