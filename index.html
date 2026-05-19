@@ -556,7 +556,10 @@
 
         function toggleCompass() {
             compassMode = compassMode === 'device' ? 'north' : 'device';
-            document.getElementById('compassBtn').textContent = compassMode === 'device' ? 'COMPASS' : 'NORTH';
+            const btn = document.getElementById('compassBtn');
+            if (btn) {
+                btn.textContent = compassMode === 'device' ? 'COMPASS' : 'NORTH';
+            }
         }
 
         function updateMapView() {
