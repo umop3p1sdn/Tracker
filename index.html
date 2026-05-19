@@ -631,10 +631,10 @@
                 }).addTo(mapInstance);
 
                 // Detect manual zoom/pan to disable auto-follow
-                mapInstance.on('zoom', () => {
+                mapInstance.on('dragend', () => {
                     isAutoFollowActive = false;
                 });
-                mapInstance.on('move', () => {
+                mapInstance.on('zoomend', () => {
                     isAutoFollowActive = false;
                 });
 
