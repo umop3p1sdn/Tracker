@@ -563,16 +563,13 @@
 
         function toggleZoom() {
             if (currentMode === 'master') {
-                // Master: zoom to master with slider level
-                updateMapView();
+                // Master always follows
+                return;
             } else if (currentMode === 'follower') {
-                // Follower: cycle through: master → both → self → master
+                // Toggle: master → both → master
                 if (zoomMode === 'master') {
                     zoomMode = 'both';
                     document.getElementById('zoomBtn').textContent = 'ZOOM: BOTH';
-                } else if (zoomMode === 'both') {
-                    zoomMode = 'self';
-                    document.getElementById('zoomBtn').textContent = 'ZOOM: SELF';
                 } else {
                     zoomMode = 'master';
                     document.getElementById('zoomBtn').textContent = 'ZOOM: MASTER';
@@ -623,7 +620,7 @@
                 followerDirection = null;
                 polyline = null;
 
-                mapInstance = L.map(mapDiv);
+                mapInstance = L.map(mapDiv).setView([52.04, 5.67], 13);
 
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     attribution: '© OpenStreetMap',
@@ -832,7 +829,6 @@
             currentCode = code;
             currentMode = 'master';
             masterLocations = [];
-            zoomMode = 'master';
 
             document.getElementById('modeSelect').classList.add('hidden');
             document.getElementById('activeTracking').classList.remove('hidden');
@@ -857,7 +853,7 @@
             currentMode = 'follower';
             masterLocations = [];
             trackVisible = false;
-            zoomMode = 'both';
+            zoomMode = 'master';
             compassMode = 'device';
 
             document.getElementById('modeSelect').classList.add('hidden');
@@ -866,7 +862,7 @@
             document.getElementById('followerCodeBox').textContent = code;
             document.getElementById('masterMode').classList.add('hidden');
             document.getElementById('followerMode').classList.remove('hidden');
-            document.getElementById('zoomBtn').textContent = 'ZOOM: BOTH';
+            document.getElementById('zoomBtn').textContent = 'ZOOM: MASTER';
             document.getElementById('trackBtn').textContent = 'VIEW TRACK';
 
             requestWakeLock();
