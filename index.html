@@ -390,6 +390,7 @@
         let masterPos = null;
         let wakeLock = null;
         let zoomLevelValue = 15;
+        let isAutoFollowActive = false;
 
         async function loadGPXFile(event) {
             const file = event.target.files[0];
@@ -563,8 +564,9 @@
 
         function toggleZoom() {
             if (currentMode === 'master') {
-                // Master always follows
-                return;
+                // Master: enable auto-follow
+                isAutoFollowActive = true;
+                updateMapView();
             } else if (currentMode === 'follower') {
                 // Toggle: master → both → master
                 if (zoomMode === 'master') {
@@ -574,6 +576,7 @@
                     zoomMode = 'master';
                     document.getElementById('zoomBtn').textContent = 'ZOOM: MASTER';
                 }
+                isAutoFollowActive = true;
                 updateMapView();
             }
         }
@@ -587,7 +590,7 @@
         }
 
         function updateMapView() {
-            if (!mapInstance) return;
+            if (!mapInstance || !isAutoFollowActive) return;
 
             if (currentMode === 'master' && masterPos) {
                 mapInstance.setView([masterPos.lat, masterPos.lng], zoomLevelValue);
@@ -626,6 +629,14 @@
                     attribution: '© OpenStreetMap',
                     maxZoom: 19
                 }).addTo(mapInstance);
+
+                // Detect manual zoom/pan to disable auto-follow
+                mapInstance.on('zoom', () => {
+                    isAutoFollowActive = false;
+                });
+                mapInstance.on('move', () => {
+                    isAutoFollowActive = false;
+                });
 
                 if (isMaster) {
                     initDeviceCompass();
@@ -897,6 +908,7 @@
             followerPos = null;
             masterPos = null;
             trackVisible = false;
+            isAutoFollowActive = false;
 
             document.getElementById('activeTracking').classList.add('hidden');
             document.getElementById('modeSelect').classList.remove('hidden');
@@ -926,6 +938,8 @@
             if (masterSpan) masterSpan.textContent = zoomLevelValue;
             if (followerSpan) followerSpan.textContent = zoomLevelValue;
             
+            // Enable auto-follow when slider moves
+            isAutoFollowActive = true;
             updateMapView();
         }
 
