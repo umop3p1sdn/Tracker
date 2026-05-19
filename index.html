@@ -550,15 +550,18 @@
                 window.addEventListener('deviceorientation', (event) => {
                     deviceHeading = event.alpha || 0;
                     
-                    // Rotate map in COMPASS mode (device mode)
+                    // TODO: Kaart rotatie werkt niet goed met Leaflet CSS transform
+                    // Moet Leaflet plugin of andere aanpak gebruiken
+                    // For now: disabled
+                    /*
                     if (compassMode === 'device' && mapInstance) {
                         const mapElement = mapInstance.getContainer();
                         mapElement.style.transform = `rotate(${deviceHeading}deg)`;
                     } else if (mapInstance) {
-                        // Reset rotation in NORTH mode
                         const mapElement = mapInstance.getContainer();
                         mapElement.style.transform = 'rotate(0deg)';
                     }
+                    */
                 });
             }
         }
