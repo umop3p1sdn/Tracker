@@ -620,7 +620,7 @@
                                 }).addTo(mapInstance).bindPopup('YOU');
                             }
 
-                            createDirectionMarker(latitude, longitude, deviceHeading, false);
+                            // createDirectionMarker(latitude, longitude, deviceHeading, false);
                             masterLocations.push([latitude, longitude]);
 
                             if (masterLocations.length > 1) {
@@ -661,7 +661,7 @@
                                 }).addTo(mapInstance).bindPopup('YOU');
                             }
 
-                            createDirectionMarker(latitude, longitude, deviceHeading, true);
+                            // createDirectionMarker(latitude, longitude, deviceHeading, true);
                             updateMapView();
                         },
                         (err) => console.error('Follower GPS:', err),
@@ -686,7 +686,7 @@
                                 }).addTo(mapInstance).bindPopup('TARGET');
                             }
 
-                            createDirectionMarker(location.lat, location.lng, location.heading, false);
+                            // createDirectionMarker(location.lat, location.lng, location.heading, false);
                             
                             if (location.route && location.route.length > 0) {
                                 masterLocations = location.route;
