@@ -353,7 +353,7 @@
             <!-- MODE SELECT -->
             <div id="modeSelect" class="mode-select">
                 <p class="subtitle">Start tracking</p>
-                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">1.52 © Umop3p1sdn</div>
+                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">1.53 © Umop3p1sdn</div>
                 
                 <button class="button button-master" onclick="startMaster()">
                     START TRACKING
@@ -433,7 +433,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "1.52";
+        const APP_VERSION = "1.53";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -580,6 +580,27 @@
                 console.error('Fetch error:', err);
             }
             return null;
+        }
+
+        function createTriangleIcon(heading = 0, color = '#FF1744') {
+            const svg = `
+                <svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+                    <polygon points="20,6 35,34 5,34" fill="${color}" stroke="white" stroke-width="2"/>
+                </svg>
+            `;
+            return L.divIcon({
+                html: svg,
+                iconSize: [40, 40],
+                iconAnchor: [20, 16],
+                className: 'triangle-icon',
+                style: `
+                    transform: rotate(${heading}deg);
+                    transition: transform 0.3s ease;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                `
+            });
         }
 
         function calculateDistance(lat1, lng1, lat2, lng2) {
@@ -745,14 +766,10 @@
 
                             if (masterMarker) {
                                 masterMarker.setLatLng([latitude, longitude]);
+                                masterMarker.setIcon(createTriangleIcon(deviceHeading, '#FF1744'));
                             } else {
-                                masterMarker = L.circleMarker([latitude, longitude], {
-                                    radius: 10,
-                                    fillColor: '#FF1744',
-                                    color: '#fff',
-                                    weight: 2,
-                                    opacity: 1,
-                                    fillOpacity: 0.9
+                                masterMarker = L.marker([latitude, longitude], {
+                                    icon: createTriangleIcon(deviceHeading, '#FF1744')
                                 }).addTo(mapInstance).bindPopup('YOU');
                             }
 
@@ -814,14 +831,13 @@
 
                             if (masterMarker) {
                                 masterMarker.setLatLng([location.lat, location.lng]);
+                                if (location.heading) {
+                                    masterMarker.setIcon(createTriangleIcon(location.heading, '#FF1744'));
+                                }
                             } else {
-                                masterMarker = L.circleMarker([location.lat, location.lng], {
-                                    radius: 10,
-                                    fillColor: '#FF1744',
-                                    color: '#fff',
-                                    weight: 2,
-                                    opacity: 1,
-                                    fillOpacity: 0.9
+                                const heading = location.heading || 0;
+                                masterMarker = L.marker([location.lat, location.lng], {
+                                    icon: createTriangleIcon(heading, '#FF1744')
                                 }).addTo(mapInstance).bindPopup('TARGET');
                             }
 
