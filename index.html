@@ -6,6 +6,7 @@
     <title>Live Tracker</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet-rotatedmarker@0.2.3/leaflet.rotatedMarker.js"></script>
     <style>
         * {
             margin: 0;
@@ -353,7 +354,7 @@
             <!-- MODE SELECT -->
             <div id="modeSelect" class="mode-select">
                 <p class="subtitle">Start tracking</p>
-                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">1.55 © Umop3p1sdn</div>
+                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">1.56 © Umop3p1sdn</div>
                 
                 <button class="button button-master" onclick="startMaster()">
                     START TRACKING
@@ -433,7 +434,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "1.55";
+        const APP_VERSION = "1.56";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -580,23 +581,6 @@
                 console.error('Fetch error:', err);
             }
             return null;
-        }
-
-        function createTriangleIcon(heading = 0, color = '#FF1744') {
-            // Add 180 degrees to flip direction
-            const rotatedHeading = (heading + 180) % 360;
-            // Create rotated SVG triangle (arrow pointing up)
-            const svg = `
-                <svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg" style="transform: rotate(${rotatedHeading}deg);">
-                    <polygon points="20,4 32,36 8,36" fill="${color}" stroke="white" stroke-width="2" stroke-linejoin="round"/>
-                </svg>
-            `;
-            return L.divIcon({
-                html: svg,
-                iconSize: [40, 40],
-                iconAnchor: [20, 20],
-                className: 'triangle-icon'
-            });
         }
 
         function calculateDistance(lat1, lng1, lat2, lng2) {
@@ -776,10 +760,16 @@
 
                             if (masterMarker) {
                                 masterMarker.setLatLng([latitude, longitude]);
-                                masterMarker.setIcon(createTriangleIcon(deviceHeading, '#FF1744'));
+                                masterMarker.setRotationAngle(deviceHeading);
                             } else {
+                                const arrowIcon = L.icon({
+                                    iconUrl: 'data:image/svg+xml;utf8,<svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><polygon points="20,4 32,36 8,36" fill="%23FF1744" stroke="white" stroke-width="2"/></svg>',
+                                    iconSize: [40, 40],
+                                    iconAnchor: [20, 36]
+                                });
                                 masterMarker = L.marker([latitude, longitude], {
-                                    icon: createTriangleIcon(deviceHeading, '#FF1744')
+                                    icon: arrowIcon,
+                                    rotationAngle: deviceHeading
                                 }).addTo(mapInstance).bindPopup('YOU');
                             }
 
@@ -842,12 +832,18 @@
                             if (masterMarker) {
                                 masterMarker.setLatLng([location.lat, location.lng]);
                                 if (location.heading) {
-                                    masterMarker.setIcon(createTriangleIcon(location.heading, '#FF1744'));
+                                    masterMarker.setRotationAngle(location.heading);
                                 }
                             } else {
                                 const heading = location.heading || 0;
+                                const arrowIcon = L.icon({
+                                    iconUrl: 'data:image/svg+xml;utf8,<svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><polygon points="20,4 32,36 8,36" fill="%23FF1744" stroke="white" stroke-width="2"/></svg>',
+                                    iconSize: [40, 40],
+                                    iconAnchor: [20, 36]
+                                });
                                 masterMarker = L.marker([location.lat, location.lng], {
-                                    icon: createTriangleIcon(heading, '#FF1744')
+                                    icon: arrowIcon,
+                                    rotationAngle: heading
                                 }).addTo(mapInstance).bindPopup('TARGET');
                             }
 
