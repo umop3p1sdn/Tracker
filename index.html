@@ -353,7 +353,7 @@
             <!-- MODE SELECT -->
             <div id="modeSelect" class="mode-select">
                 <p class="subtitle">Start tracking</p>
-                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">1.53 © Umop3p1sdn</div>
+                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">1.54 © Umop3p1sdn</div>
                 
                 <button class="button button-master" onclick="startMaster()">
                     START TRACKING
@@ -433,7 +433,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "1.53";
+        const APP_VERSION = "1.54";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -583,23 +583,17 @@
         }
 
         function createTriangleIcon(heading = 0, color = '#FF1744') {
+            // Create rotated SVG triangle (arrow pointing up)
             const svg = `
-                <svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
-                    <polygon points="20,6 35,34 5,34" fill="${color}" stroke="white" stroke-width="2"/>
+                <svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg" style="transform: rotate(${heading}deg);">
+                    <polygon points="20,4 32,36 8,36" fill="${color}" stroke="white" stroke-width="2" stroke-linejoin="round"/>
                 </svg>
             `;
             return L.divIcon({
                 html: svg,
                 iconSize: [40, 40],
-                iconAnchor: [20, 16],
-                className: 'triangle-icon',
-                style: `
-                    transform: rotate(${heading}deg);
-                    transition: transform 0.3s ease;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                `
+                iconAnchor: [20, 20],
+                className: 'triangle-icon'
             });
         }
 
@@ -644,9 +638,23 @@
 
         function initDeviceCompass() {
             if (window.DeviceOrientationEvent) {
-                window.addEventListener('deviceorientation', (event) => {
-                    deviceHeading = event.alpha || 0;
-                });
+                // Request permission on iOS 13+
+                if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+                    DeviceOrientationEvent.requestPermission()
+                        .then(permissionState => {
+                            if (permissionState === 'granted') {
+                                window.addEventListener('deviceorientation', (event) => {
+                                    deviceHeading = event.alpha || 0;
+                                });
+                            }
+                        })
+                        .catch(console.error);
+                } else {
+                    // Non-iOS or older iOS
+                    window.addEventListener('deviceorientation', (event) => {
+                        deviceHeading = event.alpha || 0;
+                    });
+                }
             }
         }
 
