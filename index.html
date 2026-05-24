@@ -354,7 +354,7 @@
             <!-- MODE SELECT -->
             <div id="modeSelect" class="mode-select">
                 <p class="subtitle">Start tracking</p>
-                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">1.56 © Umop3p1sdn</div>
+                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">1.60 © Umop3p1sdn</div>
                 
                 <button class="button button-master" onclick="startMaster()">
                     START TRACKING
@@ -434,7 +434,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "1.56";
+        const APP_VERSION = "1.60";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -762,10 +762,12 @@
                                 masterMarker.setLatLng([latitude, longitude]);
                                 masterMarker.setRotationAngle(deviceHeading);
                             } else {
+                                // Simple arrow icon
+                                const arrowSvg = encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><polygon points="16,2 30,30 16,24 2,30" fill="#FF1744" stroke="white" stroke-width="1"/></svg>');
                                 const arrowIcon = L.icon({
-                                    iconUrl: 'data:image/svg+xml;utf8,<svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><polygon points="20,4 32,36 8,36" fill="%23FF1744" stroke="white" stroke-width="2"/></svg>',
-                                    iconSize: [40, 40],
-                                    iconAnchor: [20, 36]
+                                    iconUrl: 'data:image/svg+xml;charset=utf8,' + arrowSvg,
+                                    iconSize: [32, 32],
+                                    iconAnchor: [16, 24]
                                 });
                                 masterMarker = L.marker([latitude, longitude], {
                                     icon: arrowIcon,
@@ -836,10 +838,11 @@
                                 }
                             } else {
                                 const heading = location.heading || 0;
+                                const arrowSvg = encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><polygon points="16,2 30,30 16,24 2,30" fill="#FF1744" stroke="white" stroke-width="1"/></svg>');
                                 const arrowIcon = L.icon({
-                                    iconUrl: 'data:image/svg+xml;utf8,<svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><polygon points="20,4 32,36 8,36" fill="%23FF1744" stroke="white" stroke-width="2"/></svg>',
-                                    iconSize: [40, 40],
-                                    iconAnchor: [20, 36]
+                                    iconUrl: 'data:image/svg+xml;charset=utf8,' + arrowSvg,
+                                    iconSize: [32, 32],
+                                    iconAnchor: [16, 24]
                                 });
                                 masterMarker = L.marker([location.lat, location.lng], {
                                     icon: arrowIcon,
