@@ -354,7 +354,7 @@
             <!-- MODE SELECT -->
             <div id="modeSelect" class="mode-select">
                 <p class="subtitle">Start tracking</p>
-                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">1.77 © Umop3p1sdn</div>
+                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">1.78 © Umop3p1sdn</div>
                 
                 <button class="button button-master" onclick="startMaster()">
                     START TRACKING
@@ -511,7 +511,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "1.77";
+        const APP_VERSION = "1.78";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -1099,14 +1099,19 @@
                     }).addTo(mapInstance);
                 }
                 
-                // Fetch and show GPX
+                // Show loaded GPX (from local gpxRoute OR Firebase)
+                // First try to get from Firebase (for Followers)
                 const fetchedGpxRoute = await fetchGPXRoute(currentCode);
                 if (fetchedGpxRoute && fetchedGpxRoute.length > 0) {
                     gpxRoute = fetchedGpxRoute;
+                }
+                
+                // Now show gpxRoute (either from loadGPXFile or Firebase)
+                if (gpxRoute && gpxRoute.length > 0) {
                     if (gpxPolyline) {
                         try { mapInstance.removeLayer(gpxPolyline); } catch (e) {}
                     }
-                    gpxPolyline = L.polyline(fetchedGpxRoute, {
+                    gpxPolyline = L.polyline(gpxRoute, {
                         color: '#00BCD4',
                         weight: 5,
                         opacity: 0.8,
