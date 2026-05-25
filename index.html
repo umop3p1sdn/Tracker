@@ -791,12 +791,33 @@
         }
 
         // PWA Install - Install First Design
-        document.addEventListener('DOMContentLoaded', () => {
-            let deferredPrompt = null;
-            const installScreen = document.getElementById('installScreen');
-            const appContent = document.getElementById('appContent');
-            const installBtn = document.getElementById('installPromptBtn');
+        let deferredPrompt = null;
+        const installScreen = document.getElementById('installScreen');
+        const appContent = document.getElementById('appContent');
 
+        function showInstallScreen() {
+            const screen = document.getElementById('installScreen');
+            const content = document.getElementById('appContent');
+            if (screen) screen.style.display = 'flex';
+            if (content) content.style.display = 'none';
+        }
+
+        function hideInstallScreen() {
+            const screen = document.getElementById('installScreen');
+            const content = document.getElementById('appContent');
+            if (screen) screen.style.display = 'none';
+            if (content) content.style.display = 'block';
+        }
+
+        function skipInstall() {
+            console.log('⏭️ Skip clicked');
+            hideInstallScreen();
+            deferredPrompt = null;
+        }
+
+        // DOM Ready - Setup listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            const installBtn = document.getElementById('installPromptBtn');
             console.log('✅ DOM ready - installBtn:', installBtn ? 'FOUND' : 'NOT FOUND');
 
             // Check if app is already installed
@@ -809,33 +830,9 @@
             window.addEventListener('beforeinstallprompt', (e) => {
                 e.preventDefault();
                 deferredPrompt = e;
-                console.log('📱 Install prompt ready - deferredPrompt:', deferredPrompt ? 'READY' : 'NULL');
+                console.log('📱 Install prompt ready - deferredPrompt ready');
                 showInstallScreen();
             });
-
-            function showInstallScreen() {
-                if (installScreen) {
-                    installScreen.style.display = 'flex';
-                    console.log('📱 Install screen SHOWN');
-                }
-                if (appContent) {
-                    appContent.style.display = 'none';
-                }
-            }
-
-            function hideInstallScreen() {
-                if (installScreen) {
-                    installScreen.style.display = 'none';
-                }
-                if (appContent) {
-                    appContent.style.display = 'block';
-                }
-            }
-
-            function skipInstall() {
-                hideInstallScreen();
-                deferredPrompt = null;
-            }
 
             if (installBtn) {
                 installBtn.addEventListener('click', async () => {
@@ -847,7 +844,7 @@
                         deferredPrompt = null;
                         hideInstallScreen();
                     } else {
-                        console.log('❌ deferredPrompt is null!');
+                        console.log('❌ deferredPrompt is null - beforeinstallprompt not fired');
                     }
                 });
             } else {
