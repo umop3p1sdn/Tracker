@@ -354,7 +354,7 @@
             <!-- MODE SELECT -->
             <div id="modeSelect" class="mode-select">
                 <p class="subtitle">Start tracking</p>
-                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCounter">0</span> | 1.95 © Umop3p1sdn</div>
+                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | 1.94 © Umop3p1sdn</div>
                 
                 <!-- Hidden file input for GPX loading -->
                 <input type="file" id="gpxInputLoad" accept=".gpx" style="display:none;" onchange="loadGPXFile(event)">
@@ -516,7 +516,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "1.95";
+        const APP_VERSION = "1.94";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -542,7 +542,6 @@
         let trackVisible = false;
         let allTrackVisible = false;
         let trackState = 'none'; // 'none', 'view', 'all'
-        let activeUsers = 0;  // Counter for active devices
         let zoomMode = 'master';
         let compassMode = 'device';
         let deviceHeading = 0;
@@ -700,10 +699,69 @@
             }
         }
 
-        function updateUserCounter() {
-            const userCounterEl = document.getElementById('userCounter');
-            if (userCounterEl) {
-                userCounterEl.textContent = activeUsers;
+        // Global active devices counter
+        let deviceId = localStorage.getItem('deviceId') || Math.random().toString(36).substr(2, 9);
+        if (!localStorage.getItem('deviceId')) {
+            localStorage.setItem('deviceId', deviceId);
+        }
+        
+        let activeDeviceInterval = null;
+
+        function registerActiveDevice() {
+            // Register this device in Firebase with current timestamp
+            const timestamp = Date.now();
+            const activeDeviceUrl = `${firebaseConfig.databaseURL}/activeDevices/${deviceId}.json`;
+            
+            fetch(activeDeviceUrl, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ timestamp: timestamp })
+            }).catch(e => console.error('Register error:', e));
+        }
+
+        function startActiveDeviceCounter() {
+            // Register immediately
+            registerActiveDevice();
+            
+            // Register every 2 seconds to keep device "alive"
+            activeDeviceInterval = setInterval(() => {
+                registerActiveDevice();
+            }, 2000);
+            
+            // Count active devices every second (6sec timeout)
+            setInterval(() => {
+                countActiveDevices();
+            }, 1000);
+        }
+
+        function countActiveDevices() {
+            const activeDevicesUrl = `${firebaseConfig.databaseURL}/activeDevices.json`;
+            
+            fetch(activeDevicesUrl)
+                .then(resp => resp.json())
+                .then(data => {
+                    if (data) {
+                        const now = Date.now();
+                        let count = 0;
+                        
+                        Object.values(data).forEach(device => {
+                            if (device.timestamp && (now - device.timestamp) < 6000) {
+                                count++;
+                            }
+                        });
+                        
+                        updateUserCountDisplay(count);
+                    } else {
+                        updateUserCountDisplay(0);
+                    }
+                })
+                .catch(e => console.error('Count error:', e));
+        }
+
+        function updateUserCountDisplay(count) {
+            const el = document.getElementById('userCount');
+            if (el) {
+                el.textContent = count;
             }
         }
 
@@ -975,6 +1033,11 @@
         }
 
         function initializeMap(isMaster, code) {
+            // Register this device as active globally
+            if (currentMode !== isMaster ? 'master' : 'follower') {
+                startActiveDeviceCounter();
+            }
+            
             setTimeout(() => {
                 const mapDivId = isMaster ? 'mapMaster' : 'mapFollower';
                 const mapDiv = document.getElementById(mapDivId);
@@ -1012,8 +1075,6 @@
 
                 if (isMaster) {
                     initDeviceCompass();
-                    activeUsers++;
-                    updateUserCounter();
 
                     watchId = navigator.geolocation.watchPosition(
                         (position) => {
@@ -1062,8 +1123,6 @@
                     );
                 } else {
                     initDeviceCompass();
-                    activeUsers++;
-                    updateUserCounter();
 
                     watchId = navigator.geolocation.watchPosition(
                         (position) => {
@@ -1483,12 +1542,6 @@
 
         function stopTracking() {
             releaseWakeLock();
-            
-            // Decrement user counter
-            if (activeUsers > 0) {
-                activeUsers--;
-            }
-            updateUserCounter();
             
             if (watchId) {
                 navigator.geolocation.clearWatch(watchId);
