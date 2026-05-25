@@ -855,15 +855,17 @@
         }
 
         function showIosInstructions() {
-            const mainContent = document.querySelector('[style*="text-align: center"]');
+            const installScreen = document.getElementById('installScreen');
             const iosInstructions = document.getElementById('iosInstructions');
             
-            if (mainContent) {
-                mainContent.style.display = 'none';
+            if (installScreen) {
+                installScreen.style.display = 'none';
             }
             if (iosInstructions) {
                 iosInstructions.style.display = 'block';
             }
+            
+            console.log('📱 iOS instructions shown');
         }
 
         // DOM Ready - Setup listeners
