@@ -354,7 +354,7 @@
             <!-- MODE SELECT -->
             <div id="modeSelect" class="mode-select">
                 <p class="subtitle">Start tracking</p>
-                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">1.76 © Umop3p1sdn</div>
+                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">1.76a © Umop3p1sdn</div>
                 
                 <button class="button button-master" onclick="startMaster()">
                     START TRACKING
@@ -511,7 +511,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "1.76";
+        const APP_VERSION = "1.76a";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -566,6 +566,7 @@
             if (gpsRoute.length > 0) {
                 // Store route for later saving
                 gpxRoute = gpsRoute;
+                console.log('✅ GPX Loaded: gpxRoute set to', gpsRoute.length, 'points');
                 
                 if (gpxPolyline) {
                     mapInstance.removeLayer(gpxPolyline);
@@ -1199,6 +1200,7 @@
         }
 
         function downloadMasterLoadedTrack() {
+            console.log('📥 downloadMasterLoadedTrack called, gpxRoute:', gpxRoute, 'length:', gpxRoute.length);
             if (gpxRoute.length < 2) {
                 showError('Need 2+ points');
                 return;
