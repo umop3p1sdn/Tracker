@@ -354,7 +354,7 @@
             <!-- MODE SELECT -->
             <div id="modeSelect" class="mode-select">
                 <p class="subtitle">Start tracking</p>
-                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">1.75 © Umop3p1sdn</div>
+                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">1.76 © Umop3p1sdn</div>
                 
                 <button class="button button-master" onclick="startMaster()">
                     START TRACKING
@@ -511,7 +511,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "1.75";
+        const APP_VERSION = "1.76";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -1199,16 +1199,15 @@
         }
 
         function downloadMasterLoadedTrack() {
-            // GPX that Master loaded
-            if (!gpxRoute || gpxRoute.length < 2) {
-                showError('No loaded track');
+            if (gpxRoute.length < 2) {
+                showError('Need 2+ points');
                 return;
             }
 
             let gpx = `<?xml version="1.0" encoding="UTF-8"?>
 <gpx version="1.1" creator="LiveTracker">
   <trk>
-    <name>Master Loaded Track</name>
+    <name>Master Loaded Track ${currentCode}</name>
     <trkseg>`;
 
             gpxRoute.forEach(([lat, lng]) => {
