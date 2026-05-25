@@ -354,7 +354,7 @@
             <!-- MODE SELECT -->
             <div id="modeSelect" class="mode-select">
                 <p class="subtitle">Start tracking</p>
-                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">1.78 © Umop3p1sdn</div>
+                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">1.83 © Umop3p1sdn</div>
                 
                 <button class="button button-master" onclick="startMaster()">
                     START TRACKING
@@ -397,10 +397,7 @@
                             <input type="range" id="zoomSliderMaster" min="12" max="18" value="15" style="flex: 1; cursor: pointer;" onchange="updateZoomLevel(this.value)">
                             <span id="zoomLevelMaster" style="font-size: 0.75em; min-width: 25px; text-align: right;">15</span>
                         </div>
-                        <button class="button button-secondary" onclick="document.getElementById('gpxInputMaster').click()">LOAD GPX</button>
-                        <input type="file" id="gpxInputMaster" accept=".gpx" style="display:none;" onchange="loadGPXFile(event)">
-                        <button class="button button-secondary" onclick="downloadGPX()">SAVE GPX</button>
-                        <button class="button button-stop" onclick="stopTracking()">STOP</button>
+                        <button class="button-secondary" onclick="toggleGPXMenu()">GPX</button>
                     </div>
                 </div>
 
@@ -420,9 +417,7 @@
                             <span id="zoomLevelFollower" style="font-size: 0.75em; min-width: 25px; text-align: right;">15</span>
                         </div>
                         <button class="button-secondary" onclick="cycleTrackView()" id="trackBtn">HIDE TRACK</button>
-                        <button class="button-secondary" onclick="document.getElementById('gpxInputFollower').click()">LOAD GPX</button>
-                        <input type="file" id="gpxInputFollower" accept=".gpx" style="display:none;" onchange="loadGPXFile(event)">
-                        <button class="button-secondary" onclick="downloadGPX()">SAVE GPX</button>
+                        <button class="button-secondary" onclick="toggleGPXMenu()">GPX</button>
                     </div>
 
                     <button class="button button-stop" onclick="stopTracking()">STOP</button>
@@ -511,7 +506,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "1.78";
+        const APP_VERSION = "1.83";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -584,6 +579,58 @@
                 if (currentMode === 'master' && currentCode) {
                     sendGPXToFirebase(currentCode, gpsRoute);
                 }
+            }
+        }
+
+        function toggleGPXMenu() {
+            // Show modal with GPX options (LOAD + SAVE)
+            const modal = document.createElement('div');
+            modal.id = 'gpxModal';
+            modal.style.cssText = `
+                position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+                background: rgba(0,0,0,0.8); display: flex; align-items: center;
+                justify-content: center; z-index: 1000; cursor: pointer;
+            `;
+            
+            const content = document.createElement('div');
+            content.style.cssText = `
+                background: #1a1f3a; color: #fff; padding: 30px; border-radius: 10px;
+                text-align: center; width: 90%; max-width: 400px;
+                font-family: sans-serif; cursor: default;
+            `;
+            
+            let html = `<h3 style="color: #00BCD4; margin-top: 0;">GPX Menu</h3>`;
+            
+            html += `
+                <button onclick="document.getElementById('gpxInputLoad').click(); closeGPXModal();" 
+                    style="width: 100%; padding: 12px; margin: 10px 0; background: #2196F3; 
+                    color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 1em;">
+                    Load GPX
+                </button>
+                <button onclick="downloadGPX(); closeGPXModal();" 
+                    style="width: 100%; padding: 12px; margin: 10px 0; background: #FF9800; 
+                    color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 1em;">
+                    Save GPX
+                </button>
+            `;
+            
+            content.innerHTML = html;
+            modal.appendChild(content);
+            
+            // Close modal on outside click
+            modal.onclick = function(e) {
+                if (e.target === modal) {
+                    closeGPXModal();
+                }
+            };
+            
+            document.body.appendChild(modal);
+        }
+        
+        function closeGPXModal() {
+            const modal = document.getElementById('gpxModal');
+            if (modal) {
+                modal.remove();
             }
         }
 
