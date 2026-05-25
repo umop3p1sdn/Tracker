@@ -354,7 +354,7 @@
             <!-- MODE SELECT -->
             <div id="modeSelect" class="mode-select">
                 <p class="subtitle">Start tracking</p>
-                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">1.68 © Umop3p1sdn</div>
+                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">1.72 © Umop3p1sdn</div>
                 
                 <button class="button button-master" onclick="startMaster()">
                     START TRACKING
@@ -469,9 +469,15 @@
             
             <h3 style="color: #00BCD4; margin-top: 25px;">📊 GPX bestanden (routes)</h3>
             <p><strong>LOAD GPX</strong> - Laad een route bestand</p>
-            <p><strong>SAVE GPX</strong> - Sla je huidige tracking op als GPX</p>
+            <p><strong>SAVE GPX</strong> - Menu met 3 opties:</p>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+                <li>Save master track (rood - Master's live tracking)</li>
+                <li>Save master loaded track (cyaan - Master's ingeladen route)</li>
+                <li>Save follower track (blauw - Jouw route, alleen in Follower mode)</li>
+            </ul>
             
             <h3 style="color: #00BCD4; margin-top: 25px;">👥 Follower-modus specials</h3>
+            <p><strong>Blauwe tracking lijn</strong> - Je ziet een blauwe lijn waar jij bent gereden</p>
             <p><strong>ZOOM-modus (3 opties):</strong></p>
             <ul style="margin: 10px 0; padding-left: 20px;">
                 <li>ZOOM: MASTER - Volg Master</li>
@@ -500,7 +506,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "1.68";
+        const APP_VERSION = "1.72";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -516,6 +522,8 @@
         let gpxPolyline = null;
         let trackingPolyline = null;
         let masterLocations = [];
+        let followerLocations = [];
+        let followerTrackingPolyline = null;
         let watchId = null;
         let followInterval = null;
         let trackVisible = false;
@@ -936,6 +944,22 @@
                                     fillOpacity: 0.9
                                 }).addTo(mapInstance).bindPopup('YOU');
                             }
+                            
+                            // Add to follower's track
+                            followerLocations.push([latitude, longitude]);
+                            
+                            // Update follower's blue tracking polyline
+                            if (followerLocations.length > 1) {
+                                if (followerTrackingPolyline) {
+                                    mapInstance.removeLayer(followerTrackingPolyline);
+                                }
+                                followerTrackingPolyline = L.polyline(followerLocations, {
+                                    color: '#2196F3',
+                                    weight: 5,
+                                    opacity: 0.8,
+                                    dashArray: '5, 5'
+                                }).addTo(mapInstance);
+                            }
 
                             // createDirectionMarker(latitude, longitude, deviceHeading, true);
                         },
@@ -1081,7 +1105,63 @@
             }
         }
 
-        function downloadGPX() {
+        function showDownloadMenu() {
+            // Show modal with save options (conditional based on mode)
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+                background: rgba(0,0,0,0.8); display: flex; align-items: center;
+                justify-content: center; z-index: 1000;
+            `;
+            
+            const content = document.createElement('div');
+            content.style.cssText = `
+                background: #1a1f3a; color: #fff; padding: 30px; border-radius: 10px;
+                text-align: center; width: 90%; max-width: 400px;
+                font-family: sans-serif;
+            `;
+            
+            let html = `<h3 style="color: #00BCD4; margin-top: 0;">Save Track</h3>`;
+            
+            html += `
+                <button onclick="downloadMasterTrack(); document.getElementById('downloadModal').remove();" 
+                    style="width: 100%; padding: 12px; margin: 10px 0; background: #FF1744; 
+                    color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 1em;">
+                    Save master track
+                </button>
+                <button onclick="downloadMasterLoadedTrack(); document.getElementById('downloadModal').remove();" 
+                    style="width: 100%; padding: 12px; margin: 10px 0; background: #00BCD4; 
+                    color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 1em;">
+                    Save master loaded track
+                </button>
+            `;
+            
+            // Only show follower track option in follower mode
+            if (currentMode === 'follower') {
+                html += `
+                    <button onclick="downloadFollowerTrack(); document.getElementById('downloadModal').remove();" 
+                        style="width: 100%; padding: 12px; margin: 10px 0; background: #2196F3; 
+                        color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 1em;">
+                        Save follower track
+                    </button>
+                `;
+            }
+            
+            html += `
+                <button onclick="document.getElementById('downloadModal').remove();" 
+                    style="width: 100%; padding: 12px; margin: 10px 0; background: #333; 
+                    color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 1em;">
+                    Cancel
+                </button>
+            `;
+            
+            content.innerHTML = html;
+            modal.appendChild(content);
+            modal.id = 'downloadModal';
+            document.body.appendChild(modal);
+        }
+
+        function downloadMasterTrack() {
             if (masterLocations.length < 2) {
                 showError('Need 2+ points');
                 return;
@@ -1090,7 +1170,7 @@
             let gpx = `<?xml version="1.0" encoding="UTF-8"?>
 <gpx version="1.1" creator="LiveTracker">
   <trk>
-    <name>Track ${currentCode}</name>
+    <name>Master Track ${currentCode}</name>
     <trkseg>`;
 
             masterLocations.forEach(([lat, lng]) => {
@@ -1105,9 +1185,67 @@
   </trk>
 </gpx>`;
 
+            saveGPXFile(gpx, `master-track-${currentCode}.gpx`);
+        }
+
+        function downloadMasterLoadedTrack() {
+            // GPX that Master loaded
+            if (!gpxPolyline || gpxPolyline._latlngs.length < 2) {
+                showError('No loaded track');
+                return;
+            }
+
+            let gpx = `<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="LiveTracker">
+  <trk>
+    <name>Master Loaded Track</name>
+    <trkseg>`;
+
+            gpxPolyline._latlngs.forEach(([lat, lng]) => {
+                gpx += `
+      <trkpt lat="${lat}" lon="${lng}">
+        <time>${new Date().toISOString()}</time>
+      </trkpt>`;
+            });
+
+            gpx += `
+    </trkseg>
+  </trk>
+</gpx>`;
+
+            saveGPXFile(gpx, `loaded-track-${currentCode}.gpx`);
+        }
+
+        function downloadFollowerTrack() {
+            if (followerLocations.length < 2) {
+                showError('Need 2+ points');
+                return;
+            }
+
+            let gpx = `<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="LiveTracker">
+  <trk>
+    <name>Own Track ${currentCode}</name>
+    <trkseg>`;
+
+            followerLocations.forEach(([lat, lng]) => {
+                gpx += `
+      <trkpt lat="${lat}" lon="${lng}">
+        <time>${new Date().toISOString()}</time>
+      </trkpt>`;
+            });
+
+            gpx += `
+    </trkseg>
+  </trk>
+</gpx>`;
+
+            saveGPXFile(gpx, `own-track-${currentCode}.gpx`);
+        }
+
+        function saveGPXFile(gpx, filename) {
             const blob = new Blob([gpx], { type: 'application/gpx+xml' });
             const url = URL.createObjectURL(blob);
-            const filename = `track-${currentCode}.gpx`;
 
             if (navigator.share) {
                 fetch(url)
@@ -1116,7 +1254,7 @@
                         navigator.share({
                             files: [new File([blob], filename, { type: 'application/gpx+xml' })],
                             title: 'Track',
-                            text: `Track ${currentCode}`
+                            text: filename
                         }).catch(err => {
                             if (err.name !== 'AbortError') {
                                 fallbackDownload(url, filename);
@@ -1127,6 +1265,10 @@
             } else {
                 fallbackDownload(url, filename);
             }
+        }
+
+        function downloadGPX() {
+            showDownloadMenu();
         }
 
         function fallbackDownload(url, filename) {
@@ -1204,6 +1346,7 @@
             currentMode = null;
             currentCode = '';
             masterLocations = [];
+            followerLocations = [];
             masterMarker = null;
             followerMarker = null;
             masterDirection = null;
@@ -1211,6 +1354,7 @@
             polyline = null;
             gpxPolyline = null;
             trackingPolyline = null;
+            followerTrackingPolyline = null;
             followerPos = null;
             masterPos = null;
             trackVisible = false;
