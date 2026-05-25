@@ -358,13 +358,51 @@
                 <p style="font-size: 1.1em; margin-bottom: 30px; color: #aaa;">In just one touch</p>
                 <p style="font-size: 0.85em; margin-bottom: 30px; color: #666;">(Android only - iPhone: use Share → Add to Home Screen)</p>
                 
-                <button id="installPromptBtn" class="button button-master" style="margin-bottom: 15px; width: 100%;">
-                    INSTALL NOW
+                <button id="installPromptBtn" class="button button-master" style="margin-bottom: 10px;">
+                    Android
                 </button>
                 
-                <button onclick="skipInstall()" class="button" style="background: #333; color: #fff; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; width: 100%;">
-                    Skip for now
+                <button onclick="showIosInstructions()" class="button button-master" style="margin-bottom: 10px;">
+                    iPhone
                 </button>
+                
+                <button onclick="skipInstall()" class="button button-master">
+                    Already installed
+                </button>
+                
+                <!-- iOS INSTRUCTIONS (hidden by default) -->
+                <div id="iosInstructions" style="display: none; margin-top: 40px; text-align: left; max-width: 100%;">
+                    <h2 style="color: #00BCD4; margin-bottom: 20px; text-align: center;">📱 iPhone: 4 Easy Steps</h2>
+                    
+                    <!-- Step 1 -->
+                    <div style="margin-bottom: 30px;">
+                        <p style="font-size: 1.2em; color: #fff; margin-bottom: 15px;"><strong>1️⃣ Press Share Button</strong></p>
+                        <img src="iphone-step1-share.jpeg" style="width: 100%; max-width: 300px; border-radius: 8px; margin: 10px auto; display: block;">
+                    </div>
+                    
+                    <!-- Step 2 -->
+                    <div style="margin-bottom: 30px;">
+                        <p style="font-size: 1.2em; color: #fff; margin-bottom: 15px;"><strong>2️⃣ Scroll Down for More Options</strong></p>
+                        <img src="iphone-step2-scroll.jpeg" style="width: 100%; max-width: 300px; border-radius: 8px; margin: 10px auto; display: block;">
+                    </div>
+                    
+                    <!-- Step 3 -->
+                    <div style="margin-bottom: 30px;">
+                        <p style="font-size: 1.2em; color: #fff; margin-bottom: 15px;"><strong>3️⃣ Find "Zet op beginscherm"</strong></p>
+                        <img src="iphone-step3-menu.jpeg" style="width: 100%; max-width: 300px; border-radius: 8px; margin: 10px auto; display: block;">
+                    </div>
+                    
+                    <!-- Step 4 -->
+                    <div style="margin-bottom: 30px;">
+                        <p style="font-size: 1.2em; color: #fff; margin-bottom: 15px;"><strong>4️⃣ Tap "Voeg toe" to Add</strong></p>
+                        <img src="iphone-step4-confirm.jpeg" style="width: 100%; max-width: 300px; border-radius: 8px; margin: 10px auto; display: block;">
+                    </div>
+                    
+                    <p style="text-align: center; color: #aaa; margin-top: 20px;">✅ App installed on home screen!</p>
+                    <button onclick="skipInstall()" class="button" style="background: #00BCD4; color: #000; width: 100%; margin-top: 20px;">
+                        Got it!
+                    </button>
+                </div>
             </div>
         </div>
         
@@ -814,6 +852,18 @@
             console.log('⏭️ Skip clicked');
             hideInstallScreen();
             deferredPrompt = null;
+        }
+
+        function showIosInstructions() {
+            const mainContent = document.querySelector('[style*="text-align: center"]');
+            const iosInstructions = document.getElementById('iosInstructions');
+            
+            if (mainContent) {
+                mainContent.style.display = 'none';
+            }
+            if (iosInstructions) {
+                iosInstructions.style.display = 'block';
+            }
         }
 
         // DOM Ready - Setup listeners
