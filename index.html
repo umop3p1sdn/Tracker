@@ -1033,11 +1033,6 @@
         }
 
         function initializeMap(isMaster, code) {
-            // Register this device as active globally
-            if (currentMode !== isMaster ? 'master' : 'follower') {
-                startActiveDeviceCounter();
-            }
-            
             setTimeout(() => {
                 const mapDivId = isMaster ? 'mapMaster' : 'mapFollower';
                 const mapDiv = document.getElementById(mapDivId);
@@ -1659,6 +1654,9 @@
             }
             originalStopTracking();
         }
+
+        // Start counting all active devices on URL (immediately)
+        startActiveDeviceCounter();
     </script>
 </body>
 </html>
