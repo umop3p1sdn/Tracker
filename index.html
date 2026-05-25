@@ -354,7 +354,7 @@
             <!-- MODE SELECT -->
             <div id="modeSelect" class="mode-select">
                 <p class="subtitle">Start tracking</p>
-                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">1.65 © Umop3p1sdn</div>
+                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">1.66 © Umop3p1sdn</div>
                 
                 <button class="button button-master" onclick="startMaster()">
                     START TRACKING
@@ -434,7 +434,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "1.65";
+        const APP_VERSION = "1.66";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -948,11 +948,11 @@
             }, 100);
         }
 
-        function cycleTrackView() {
+        async function cycleTrackView() {
             // Cycle: none → view → all → none
             if (trackState === 'none') {
                 trackState = 'view';
-                document.getElementById('trackBtn').textContent = 'VIEW TRACK (master)';
+                document.getElementById('trackBtn').textContent = 'VIEW TRACK';
                 
                 // Show tracking polyline
                 if (masterLocations.length > 1) {
@@ -988,20 +988,18 @@
                 }
                 
                 // Fetch and show GPX
-                (async () => {
-                    const gpxRoute = await fetchGPXRoute(currentCode);
-                    if (gpxRoute && gpxRoute.length > 0) {
-                        if (gpxPolyline) {
-                            mapInstance.removeLayer(gpxPolyline);
-                        }
-                        gpxPolyline = L.polyline(gpxRoute, {
-                            color: '#00BCD4',
-                            weight: 5,
-                            opacity: 0.8,
-                            dashArray: '2, 5'
-                        }).addTo(mapInstance);
+                const gpxRoute = await fetchGPXRoute(currentCode);
+                if (gpxRoute && gpxRoute.length > 0) {
+                    if (gpxPolyline) {
+                        mapInstance.removeLayer(gpxPolyline);
                     }
-                })();
+                    gpxPolyline = L.polyline(gpxRoute, {
+                        color: '#00BCD4',
+                        weight: 5,
+                        opacity: 0.8,
+                        dashArray: '2, 5'
+                    }).addTo(mapInstance);
+                }
                 
             } else if (trackState === 'all') {
                 trackState = 'none';
