@@ -858,14 +858,18 @@
             const installScreen = document.getElementById('installScreen');
             const iosInstructions = document.getElementById('iosInstructions');
             
+            console.log('iPhone clicked - installScreen:', installScreen, 'iosInstructions:', iosInstructions);
+            
             if (installScreen) {
-                installScreen.style.display = 'none';
+                installScreen.style.display = 'none !important';
+                installScreen.style.visibility = 'hidden';
+                installScreen.style.opacity = '0';
             }
             if (iosInstructions) {
-                iosInstructions.style.display = 'block';
+                iosInstructions.style.display = 'block !important';
             }
             
-            console.log('📱 iOS instructions shown');
+            console.log('✅ iOS instructions should be visible');
         }
 
         // DOM Ready - Setup listeners
