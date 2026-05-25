@@ -760,17 +760,11 @@
 
                             if (masterMarker) {
                                 masterMarker.setLatLng([latitude, longitude]);
-                                masterMarker.setRotationAngle(deviceHeading);
+                                if (masterMarker.setRotationAngle) {
+                                    masterMarker.setRotationAngle(deviceHeading);
+                                }
                             } else {
-                                // Simple arrow icon
-                                const arrowSvg = encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><polygon points="16,2 30,30 16,24 2,30" fill="#FF1744" stroke="white" stroke-width="1"/></svg>');
-                                const arrowIcon = L.icon({
-                                    iconUrl: 'data:image/svg+xml;charset=utf8,' + arrowSvg,
-                                    iconSize: [32, 32],
-                                    iconAnchor: [16, 24]
-                                });
                                 masterMarker = L.marker([latitude, longitude], {
-                                    icon: arrowIcon,
                                     rotationAngle: deviceHeading
                                 }).addTo(mapInstance).bindPopup('YOU');
                             }
@@ -833,19 +827,12 @@
 
                             if (masterMarker) {
                                 masterMarker.setLatLng([location.lat, location.lng]);
-                                if (location.heading) {
+                                if (location.heading && masterMarker.setRotationAngle) {
                                     masterMarker.setRotationAngle(location.heading);
                                 }
                             } else {
                                 const heading = location.heading || 0;
-                                const arrowSvg = encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><polygon points="16,2 30,30 16,24 2,30" fill="#FF1744" stroke="white" stroke-width="1"/></svg>');
-                                const arrowIcon = L.icon({
-                                    iconUrl: 'data:image/svg+xml;charset=utf8,' + arrowSvg,
-                                    iconSize: [32, 32],
-                                    iconAnchor: [16, 24]
-                                });
                                 masterMarker = L.marker([location.lat, location.lng], {
-                                    icon: arrowIcon,
                                     rotationAngle: heading
                                 }).addTo(mapInstance).bindPopup('TARGET');
                             }
