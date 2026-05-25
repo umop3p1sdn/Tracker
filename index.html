@@ -354,7 +354,7 @@
             <!-- MODE SELECT -->
             <div id="modeSelect" class="mode-select">
                 <p class="subtitle">Start tracking</p>
-                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">1.74 © Umop3p1sdn</div>
+                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">1.75 © Umop3p1sdn</div>
                 
                 <button class="button button-master" onclick="startMaster()">
                     START TRACKING
@@ -511,7 +511,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "1.74";
+        const APP_VERSION = "1.75";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -525,6 +525,7 @@
         let followerDirection = null;
         let polyline = null;
         let gpxPolyline = null;
+        let gpxRoute = [];
         let trackingPolyline = null;
         let masterLocations = [];
         let followerLocations = [];
@@ -563,6 +564,9 @@
             });
 
             if (gpsRoute.length > 0) {
+                // Store route for later saving
+                gpxRoute = gpsRoute;
+                
                 if (gpxPolyline) {
                     mapInstance.removeLayer(gpxPolyline);
                 }
@@ -865,6 +869,7 @@
                 followerDirection = null;
                 polyline = null;
                 gpxPolyline = null;
+                gpxRoute = [];
                 trackingPolyline = null;
 
                 mapInstance = L.map(mapDiv).setView([52.04, 5.67], 13);
@@ -1195,7 +1200,7 @@
 
         function downloadMasterLoadedTrack() {
             // GPX that Master loaded
-            if (!gpxPolyline || gpxPolyline._latlngs.length < 2) {
+            if (!gpxRoute || gpxRoute.length < 2) {
                 showError('No loaded track');
                 return;
             }
@@ -1206,7 +1211,7 @@
     <name>Master Loaded Track</name>
     <trkseg>`;
 
-            gpxPolyline._latlngs.forEach(([lat, lng]) => {
+            gpxRoute.forEach(([lat, lng]) => {
                 gpx += `
       <trkpt lat="${lat}" lon="${lng}">
         <time>${new Date().toISOString()}</time>
@@ -1358,6 +1363,7 @@
             followerDirection = null;
             polyline = null;
             gpxPolyline = null;
+            gpxRoute = [];
             trackingPolyline = null;
             followerTrackingPolyline = null;
             followerPos = null;
