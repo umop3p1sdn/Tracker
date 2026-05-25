@@ -354,7 +354,7 @@
             <!-- MODE SELECT -->
             <div id="modeSelect" class="mode-select">
                 <p class="subtitle">Start tracking</p>
-                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">1.63 © Umop3p1sdn</div>
+                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">1.64 © Umop3p1sdn</div>
                 
                 <button class="button button-master" onclick="startMaster()">
                     START TRACKING
@@ -435,7 +435,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "1.63";
+        const APP_VERSION = "1.64";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -496,6 +496,11 @@
                 
                 const group = L.featureGroup(gpsRoute.map(([lat, lng]) => L.circleMarker([lat, lng], {radius: 1})));
                 mapInstance.fitBounds(group.getBounds(), {padding: [50, 50]});
+                
+                // Send GPX route to Firebase if Master
+                if (currentMode === 'master' && currentCode) {
+                    sendGPXToFirebase(currentCode, gpsRoute);
+                }
             }
         }
 
@@ -537,6 +542,28 @@
             }).catch(() => {
                 showError('Could not copy');
             });
+        }
+
+        async function sendGPXToFirebase(code, gpsRoute) {
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 5000);
+                
+                const url = `${firebaseConfig.databaseURL}/gpx/${code}.json`;
+                await fetch(url, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        route: gpsRoute,
+                        timestamp: Date.now()
+                    }),
+                    signal: controller.signal
+                });
+                
+                clearTimeout(timeoutId);
+            } catch (error) {
+                console.error('GPX Firebase error:', error);
+            }
         }
 
         async function sendToFirebase(code, lat, lng, heading) {
@@ -583,6 +610,25 @@
                 }
             } catch (err) {
                 console.error('Fetch error:', err);
+            }
+            return null;
+        }
+
+        async function fetchGPXRoute(code) {
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 5000);
+                
+                const url = `${firebaseConfig.databaseURL}/gpx/${code}.json`;
+                const response = await fetch(url, { signal: controller.signal });
+                clearTimeout(timeoutId);
+                
+                const data = await response.json();
+                if (data && data.route && Array.isArray(data.route)) {
+                    return data.route;
+                }
+            } catch (err) {
+                console.error('Fetch GPX error:', err);
             }
             return null;
         }
@@ -868,6 +914,22 @@
                                     weight: 5,
                                     opacity: 0.8
                                 }).addTo(mapInstance);
+                            }
+
+                            // Fetch and display Master's GPX route if ALL TRACK is enabled
+                            if (allTrackVisible) {
+                                const gpxRoute = await fetchGPXRoute(code);
+                                if (gpxRoute && gpxRoute.length > 0) {
+                                    if (gpxPolyline) {
+                                        mapInstance.removeLayer(gpxPolyline);
+                                    }
+                                    gpxPolyline = L.polyline(gpxRoute, {
+                                        color: '#00BCD4',
+                                        weight: 5,
+                                        opacity: 0.8,
+                                        dashArray: '2, 5'
+                                    }).addTo(mapInstance);
+                                }
                             }
 
                             if (followerPos) {
