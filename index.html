@@ -354,7 +354,7 @@
             <!-- MODE SELECT -->
             <div id="modeSelect" class="mode-select">
                 <p class="subtitle">Start tracking</p>
-                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">1.72 © Umop3p1sdn</div>
+                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">1.73 © Umop3p1sdn</div>
                 
                 <button class="button button-master" onclick="startMaster()">
                     START TRACKING
@@ -492,6 +492,11 @@
                 <li>ALL TRACK - Zie tracking + Master's ingeladen route (cyaan lijn)</li>
             </ul>
             
+            <h3 style="color: #00BCD4; margin-top: 25px;">👥 Multi-user (meerdere volgers)</h3>
+            <p>Meerdere mensen kunnen dezelfde 4-cijfer code gebruiken en dezelfde Master volgen tegelijk.</p>
+            <p><strong>Geen limiet in volgers</strong>, maar Firebase database kan overbelast raken bij honderden volgers.</p>
+            <p>Voor normale groepen (5-10 volgers) werkt het prima.</p>
+            
             <h3 style="color: #00BCD4; margin-top: 25px;">⚙️ Tips</h3>
             <ul style="margin: 10px 0; padding-left: 20px;">
                 <li>Houd je scherm OPEN - de app werkt niet op achtergrond</li>
@@ -506,7 +511,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "1.72";
+        const APP_VERSION = "1.73";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
