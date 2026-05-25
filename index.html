@@ -791,66 +791,69 @@
         }
 
         // PWA Install - Install First Design
-        let deferredPrompt = null;
-        const installScreen = document.getElementById('installScreen');
-        const appContent = document.getElementById('appContent');
-        const installBtn = document.getElementById('installPromptBtn');
+        document.addEventListener('DOMContentLoaded', () => {
+            let deferredPrompt = null;
+            const installScreen = document.getElementById('installScreen');
+            const appContent = document.getElementById('appContent');
+            const installBtn = document.getElementById('installPromptBtn');
 
-        // Check if app is already installed
-        window.addEventListener('appinstalled', () => {
-            console.log('✅ App installed!');
-            hideInstallScreen();
-        });
+            console.log('✅ DOM ready - installBtn:', installBtn ? 'FOUND' : 'NOT FOUND');
 
-        // Listen for install prompt
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            console.log('📱 Install prompt ready');
-            showInstallScreen();
-        });
-
-        // On page load - if no prompt available, check after delay
-        // But only if beforeinstallprompt hasn't fired yet
-        let promptFired = false;
-        window.addEventListener('beforeinstallprompt', () => {
-            promptFired = true;
-        });
-
-        function showInstallScreen() {
-            if (installScreen) {
-                installScreen.style.display = 'flex';
-            }
-            if (appContent) {
-                appContent.style.display = 'none';
-            }
-        }
-
-        function hideInstallScreen() {
-            if (installScreen) {
-                installScreen.style.display = 'none';
-            }
-            if (appContent) {
-                appContent.style.display = 'block';
-            }
-        }
-
-        function skipInstall() {
-            hideInstallScreen();
-            deferredPrompt = null;
-        }
-
-        if (installBtn) {
-            installBtn.addEventListener('click', async () => {
-                if (deferredPrompt) {
-                    deferredPrompt.prompt();
-                    const { outcome } = await deferredPrompt.userChoice;
-                    console.log(`User response: ${outcome}`);
-                    deferredPrompt = null;
-                    hideInstallScreen();
-                }
+            // Check if app is already installed
+            window.addEventListener('appinstalled', () => {
+                console.log('✅ App installed!');
+                hideInstallScreen();
             });
-        }
+
+            // Listen for install prompt
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredPrompt = e;
+                console.log('📱 Install prompt ready - deferredPrompt:', deferredPrompt ? 'READY' : 'NULL');
+                showInstallScreen();
+            });
+
+            function showInstallScreen() {
+                if (installScreen) {
+                    installScreen.style.display = 'flex';
+                    console.log('📱 Install screen SHOWN');
+                }
+                if (appContent) {
+                    appContent.style.display = 'none';
+                }
+            }
+
+            function hideInstallScreen() {
+                if (installScreen) {
+                    installScreen.style.display = 'none';
+                }
+                if (appContent) {
+                    appContent.style.display = 'block';
+                }
+            }
+
+            function skipInstall() {
+                hideInstallScreen();
+                deferredPrompt = null;
+            }
+
+            if (installBtn) {
+                installBtn.addEventListener('click', async () => {
+                    console.log('🖱️ INSTALL NOW clicked - deferredPrompt:', deferredPrompt ? 'READY' : 'NULL');
+                    if (deferredPrompt) {
+                        deferredPrompt.prompt();
+                        const { outcome } = await deferredPrompt.userChoice;
+                        console.log(`✅ User response: ${outcome}`);
+                        deferredPrompt = null;
+                        hideInstallScreen();
+                    } else {
+                        console.log('❌ deferredPrompt is null!');
+                    }
+                });
+            } else {
+                console.log('❌ installBtn NOT FOUND!');
+            }
+        });
 
         function generateCode() {
             let code = '';
