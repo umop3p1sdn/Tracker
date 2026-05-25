@@ -354,7 +354,7 @@
             <!-- MODE SELECT -->
             <div id="modeSelect" class="mode-select">
                 <p class="subtitle">Start tracking</p>
-                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">1.94 © Umop3p1sdn</div>
+                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCounter">0</span> | 1.95 © Umop3p1sdn</div>
                 
                 <!-- Hidden file input for GPX loading -->
                 <input type="file" id="gpxInputLoad" accept=".gpx" style="display:none;" onchange="loadGPXFile(event)">
@@ -516,7 +516,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "1.94";
+        const APP_VERSION = "1.95";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -542,6 +542,7 @@
         let trackVisible = false;
         let allTrackVisible = false;
         let trackState = 'none'; // 'none', 'view', 'all'
+        let activeUsers = 0;  // Counter for active devices
         let zoomMode = 'master';
         let compassMode = 'device';
         let deviceHeading = 0;
@@ -696,6 +697,13 @@
             const modal = document.getElementById('gpxModal');
             if (modal) {
                 modal.remove();
+            }
+        }
+
+        function updateUserCounter() {
+            const userCounterEl = document.getElementById('userCounter');
+            if (userCounterEl) {
+                userCounterEl.textContent = activeUsers;
             }
         }
 
@@ -1004,6 +1012,8 @@
 
                 if (isMaster) {
                     initDeviceCompass();
+                    activeUsers++;
+                    updateUserCounter();
 
                     watchId = navigator.geolocation.watchPosition(
                         (position) => {
@@ -1052,6 +1062,8 @@
                     );
                 } else {
                     initDeviceCompass();
+                    activeUsers++;
+                    updateUserCounter();
 
                     watchId = navigator.geolocation.watchPosition(
                         (position) => {
@@ -1471,6 +1483,12 @@
 
         function stopTracking() {
             releaseWakeLock();
+            
+            // Decrement user counter
+            if (activeUsers > 0) {
+                activeUsers--;
+            }
+            updateUserCounter();
             
             if (watchId) {
                 navigator.geolocation.clearWatch(watchId);
