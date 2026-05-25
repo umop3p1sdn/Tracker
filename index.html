@@ -354,7 +354,7 @@
             <!-- MODE SELECT -->
             <div id="modeSelect" class="mode-select">
                 <p class="subtitle">Start tracking</p>
-                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">1.60 © Umop3p1sdn</div>
+                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">1.61 © Umop3p1sdn</div>
                 
                 <button class="button button-master" onclick="startMaster()">
                     START TRACKING
@@ -434,7 +434,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "1.60";
+        const APP_VERSION = "1.61";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -764,8 +764,13 @@
                                     masterMarker.setRotationAngle(deviceHeading);
                                 }
                             } else {
-                                masterMarker = L.marker([latitude, longitude], {
-                                    rotationAngle: deviceHeading
+                                masterMarker = L.circleMarker([latitude, longitude], {
+                                    radius: 12,
+                                    fillColor: '#FF1744',
+                                    color: 'white',
+                                    weight: 2,
+                                    opacity: 0.8,
+                                    fillOpacity: 0.8
                                 }).addTo(mapInstance).bindPopup('YOU');
                             }
 
@@ -832,8 +837,13 @@
                                 }
                             } else {
                                 const heading = location.heading || 0;
-                                masterMarker = L.marker([location.lat, location.lng], {
-                                    rotationAngle: heading
+                                masterMarker = L.circleMarker([location.lat, location.lng], {
+                                    radius: 12,
+                                    fillColor: '#FF1744',
+                                    color: 'white',
+                                    weight: 2,
+                                    opacity: 0.8,
+                                    fillOpacity: 0.8
                                 }).addTo(mapInstance).bindPopup('TARGET');
                             }
 
