@@ -419,7 +419,7 @@
                             <input type="range" id="zoomSliderFollower" min="12" max="18" value="15" style="flex: 1; cursor: pointer;" onchange="updateZoomLevel(this.value)">
                             <span id="zoomLevelFollower" style="font-size: 0.75em; min-width: 25px; text-align: right;">15</span>
                         </div>
-                        <button class="button-secondary" onclick="showTrackMenu()" id="trackBtn">TRACK MENU</button>
+                        <button class="button-secondary" onclick="cycleTrackView()" id="trackBtn">HIDE TRACK</button>
                         <button class="button-secondary" onclick="document.getElementById('gpxInputFollower').click()">LOAD GPX</button>
                         <input type="file" id="gpxInputFollower" accept=".gpx" style="display:none;" onchange="loadGPXFile(event)">
                         <button class="button-secondary" onclick="downloadGPX()">SAVE GPX</button>
@@ -526,12 +526,10 @@
         let polyline = null;
         let gpxPolyline = null;
         let gpxRoute = [];
-        let followerGpxRoute = [];  // Follower's own loaded GPX
         let trackingPolyline = null;
         let masterLocations = [];
         let followerLocations = [];
         let followerTrackingPolyline = null;
-        let followerGpxPolyline = null;  // Follower's loaded GPX polyline
         let watchId = null;
         let followInterval = null;
         let trackVisible = false;
@@ -545,12 +543,6 @@
         let wakeLock = null;
         let zoomLevelValue = 15;
         let isAutoFollowActive = false;
-        
-        // Track visibility toggles
-        let showMasterTrack = true;      // Master's live tracking (red)
-        let showSelfTrack = true;        // Follower's own tracking (blue)
-        let showLoadedMaster = true;     // Master's loaded GPX (cyan)
-        let showLoadedSelf = false;      // Follower's loaded GPX (green)
 
         async function loadGPXFile(event) {
             const file = event.target.files[0];
@@ -1057,154 +1049,69 @@
             }, 100);
         }
 
-        function showTrackMenu() {
-            const modal = document.createElement('div');
-            modal.style.cssText = `
-                position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-                background: rgba(0,0,0,0.8); display: flex; align-items: center;
-                justify-content: center; z-index: 1000;
-            `;
+        async function cycleTrackView() {
+            // Cycle: none → view → all → none
+            const labels = ['HIDE TRACK', 'VIEW TRACK', 'ALL TRACK'];
+            const states = ['none', 'view', 'all'];
+            const currentIndex = states.indexOf(trackState);
+            const nextIndex = (currentIndex + 1) % states.length;
             
-            const content = document.createElement('div');
-            content.style.cssText = `
-                background: #1a1f3a; color: #fff; padding: 30px; border-radius: 10px;
-                text-align: left; width: 90%; max-width: 350px;
-                font-family: sans-serif;
-            `;
+            trackState = states[nextIndex];
+            document.getElementById('trackBtn').textContent = labels[nextIndex];
             
-            let html = `<h3 style="color: #00BCD4; margin-top: 0; text-align: center;">Track View</h3>`;
-            
-            const options = [
-                { id: 'showMasterTrack', label: 'Master - Live tracking (red)', color: '#FF1744' },
-                { id: 'showSelfTrack', label: 'Zelf - Own tracking (blue)', color: '#2196F3' },
-                { id: 'showLoadedMaster', label: 'Loaded Master - GPX route (cyan)', color: '#00BCD4' },
-                { id: 'showLoadedSelf', label: 'Loaded Self - Own GPX (green)', color: '#4CAF50' }
-            ];
-            
-            options.forEach(opt => {
-                const isChecked = window[opt.id];
-                html += `
-                    <label style="display: flex; align-items: center; padding: 12px 0; cursor: pointer; margin: 0;">
-                        <input type="checkbox" id="${opt.id}" 
-                            ${isChecked ? 'checked' : ''} 
-                            onchange="window['${opt.id}'] = this.checked; updateTrackDisplay();"
-                            style="margin-right: 12px; cursor: pointer; width: 18px; height: 18px;">
-                        <span style="font-size: 0.9em; display: flex; align-items: center;">
-                            <span style="width: 12px; height: 12px; background: ${opt.color}; border-radius: 2px; margin-right: 8px;"></span>
-                            ${opt.label}
-                        </span>
-                    </label>
-                `;
-            });
-            
-            html += `
-                <hr style="border: none; border-top: 1px solid #444; margin: 20px 0;">
-                <button onclick="deleteLoadedTracks(); document.querySelector('[data-modal-close]').click();" 
-                    style="width: 100%; padding: 12px; margin-bottom: 10px; background: #d32f2f; 
-                    color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 0.95em;">
-                    🗑️ Delete Loaded Tracks
-                </button>
-                <button data-modal-close onclick="this.closest('div').remove();" 
-                    style="width: 100%; padding: 12px; background: #444; 
-                    color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 1em;">
-                    Close
-                </button>
-            `;
-            
-            content.innerHTML = html;
-            modal.appendChild(content);
-            document.body.appendChild(modal);
-        }
-
-        function updateTrackDisplay() {
-            // Update all visible tracks based on checkboxes
-            updateMapTracks();
-        }
-
-        function deleteLoadedTracks() {
-            gpxRoute = [];
-            followerGpxRoute = [];
-            showLoadedMaster = false;
-            showLoadedSelf = false;
-            
-            if (gpxPolyline) {
-                mapInstance.removeLayer(gpxPolyline);
-                gpxPolyline = null;
-            }
-            if (followerGpxPolyline) {
-                mapInstance.removeLayer(followerGpxPolyline);
-                followerGpxPolyline = null;
-            }
-            
-            showError('Loaded tracks deleted');
-            updateTrackDisplay();
-        }
-
-        function updateMapTracks() {
-            // Master's live tracking (red)
-            if (showMasterTrack && masterLocations.length > 1) {
-                if (!trackingPolyline) {
+            // Update display based on state
+            if (trackState === 'none') {
+                // Hide all tracks
+                if (trackingPolyline) {
+                    try { mapInstance.removeLayer(trackingPolyline); } catch (e) {}
+                    trackingPolyline = null;
+                }
+                if (gpxPolyline) {
+                    try { mapInstance.removeLayer(gpxPolyline); } catch (e) {}
+                    gpxPolyline = null;
+                }
+            } else if (trackState === 'view') {
+                // Show only Master's tracking (red)
+                if (masterLocations.length > 1) {
+                    if (trackingPolyline) {
+                        try { mapInstance.removeLayer(trackingPolyline); } catch (e) {}
+                    }
                     trackingPolyline = L.polyline(masterLocations, {
                         color: '#FF1744',
                         weight: 5,
                         opacity: 0.8
                     }).addTo(mapInstance);
                 }
-            } else {
-                if (trackingPolyline) {
-                    mapInstance.removeLayer(trackingPolyline);
-                    trackingPolyline = null;
+                if (gpxPolyline) {
+                    try { mapInstance.removeLayer(gpxPolyline); } catch (e) {}
+                    gpxPolyline = null;
                 }
-            }
-            
-            // Follower's own tracking (blue)
-            if (showSelfTrack && followerLocations.length > 1) {
-                if (!followerTrackingPolyline) {
-                    followerTrackingPolyline = L.polyline(followerLocations, {
-                        color: '#2196F3',
+            } else if (trackState === 'all') {
+                // Show both Master tracking + GPX
+                if (masterLocations.length > 1) {
+                    if (trackingPolyline) {
+                        try { mapInstance.removeLayer(trackingPolyline); } catch (e) {}
+                    }
+                    trackingPolyline = L.polyline(masterLocations, {
+                        color: '#FF1744',
                         weight: 5,
-                        opacity: 0.8,
-                        dashArray: '5, 5'
+                        opacity: 0.8
                     }).addTo(mapInstance);
                 }
-            } else {
-                if (followerTrackingPolyline) {
-                    mapInstance.removeLayer(followerTrackingPolyline);
-                    followerTrackingPolyline = null;
-                }
-            }
-            
-            // Master's loaded GPX (cyan)
-            if (showLoadedMaster && gpxRoute.length > 0) {
-                if (!gpxPolyline) {
-                    gpxPolyline = L.polyline(gpxRoute, {
+                
+                // Fetch and show GPX
+                const fetchedGpxRoute = await fetchGPXRoute(currentCode);
+                if (fetchedGpxRoute && fetchedGpxRoute.length > 0) {
+                    gpxRoute = fetchedGpxRoute;
+                    if (gpxPolyline) {
+                        try { mapInstance.removeLayer(gpxPolyline); } catch (e) {}
+                    }
+                    gpxPolyline = L.polyline(fetchedGpxRoute, {
                         color: '#00BCD4',
                         weight: 5,
                         opacity: 0.8,
                         dashArray: '2, 5'
                     }).addTo(mapInstance);
-                }
-            } else {
-                if (gpxPolyline) {
-                    mapInstance.removeLayer(gpxPolyline);
-                    gpxPolyline = null;
-                }
-            }
-            
-            // Follower's loaded GPX (green)
-            if (showLoadedSelf && followerGpxRoute.length > 0) {
-                if (!followerGpxPolyline) {
-                    followerGpxPolyline = L.polyline(followerGpxRoute, {
-                        color: '#4CAF50',
-                        weight: 5,
-                        opacity: 0.8,
-                        dashArray: '2, 5'
-                    }).addTo(mapInstance);
-                }
-            } else {
-                if (followerGpxPolyline) {
-                    mapInstance.removeLayer(followerGpxPolyline);
-                    followerGpxPolyline = null;
                 }
             }
         }
