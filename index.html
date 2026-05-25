@@ -354,7 +354,7 @@
             <!-- MODE SELECT -->
             <div id="modeSelect" class="mode-select">
                 <p class="subtitle">Start tracking</p>
-                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">1.61 © Umop3p1sdn</div>
+                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">1.62 © Umop3p1sdn</div>
                 
                 <button class="button button-master" onclick="startMaster()">
                     START TRACKING
@@ -434,7 +434,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "1.61";
+        const APP_VERSION = "1.62";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -447,6 +447,8 @@
         let masterDirection = null;
         let followerDirection = null;
         let polyline = null;
+        let gpxPolyline = null;
+        let trackingPolyline = null;
         let masterLocations = [];
         let watchId = null;
         let followInterval = null;
@@ -480,10 +482,10 @@
             });
 
             if (gpsRoute.length > 0) {
-                if (polyline) {
-                    mapInstance.removeLayer(polyline);
+                if (gpxPolyline) {
+                    mapInstance.removeLayer(gpxPolyline);
                 }
-                polyline = L.polyline(gpsRoute, {
+                gpxPolyline = L.polyline(gpsRoute, {
                     color: '#00BCD4',
                     weight: 5,
                     opacity: 0.8,
@@ -735,6 +737,8 @@
                 masterDirection = null;
                 followerDirection = null;
                 polyline = null;
+                gpxPolyline = null;
+                trackingPolyline = null;
 
                 mapInstance = L.map(mapDiv).setView([52.04, 5.67], 13);
 
@@ -778,10 +782,10 @@
                             masterLocations.push([latitude, longitude]);
 
                             if (masterLocations.length > 1) {
-                                if (polyline) {
-                                    mapInstance.removeLayer(polyline);
+                                if (trackingPolyline) {
+                                    mapInstance.removeLayer(trackingPolyline);
                                 }
-                                polyline = L.polyline(masterLocations, {
+                                trackingPolyline = L.polyline(masterLocations, {
                                     color: '#FF1744',
                                     weight: 5,
                                     opacity: 0.8,
@@ -854,10 +858,10 @@
                             }
 
                             if (masterLocations.length > 1 && trackVisible) {
-                                if (polyline) {
-                                    mapInstance.removeLayer(polyline);
+                                if (trackingPolyline) {
+                                    mapInstance.removeLayer(trackingPolyline);
                                 }
-                                polyline = L.polyline(masterLocations, {
+                                trackingPolyline = L.polyline(masterLocations, {
                                     color: '#FF1744',
                                     weight: 5,
                                     opacity: 0.8
@@ -884,10 +888,10 @@
             trackVisible = !trackVisible;
             if (trackVisible) {
                 if (masterLocations.length > 1) {
-                    if (polyline) {
-                        mapInstance.removeLayer(polyline);
+                    if (trackingPolyline) {
+                        mapInstance.removeLayer(trackingPolyline);
                     }
-                    polyline = L.polyline(masterLocations, {
+                    trackingPolyline = L.polyline(masterLocations, {
                         color: '#FF1744',
                         weight: 5,
                         opacity: 0.8
@@ -895,8 +899,8 @@
                 }
                 document.getElementById('trackBtn').textContent = 'HIDE TRACK';
             } else {
-                if (polyline) {
-                    mapInstance.removeLayer(polyline);
+                if (trackingPolyline) {
+                    mapInstance.removeLayer(trackingPolyline);
                 }
                 document.getElementById('trackBtn').textContent = 'VIEW TRACK';
             }
@@ -1030,6 +1034,8 @@
             masterDirection = null;
             followerDirection = null;
             polyline = null;
+            gpxPolyline = null;
+            trackingPolyline = null;
             followerPos = null;
             masterPos = null;
             trackVisible = false;
