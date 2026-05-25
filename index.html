@@ -372,6 +372,7 @@
                 
                 <!-- iOS INSTRUCTIONS (separate fixed overlay) -->
                 <div id="iosInstructions" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%); z-index: 10000; overflow-y: auto; padding: 40px 20px; text-align: left;">
+                    
                     <h2 style="color: #00BCD4; margin-bottom: 20px; text-align: center;">📱 iPhone: 4 Easy Steps</h2>
                     
                     <!-- Step 1 -->
@@ -398,10 +399,12 @@
                         <img src="iphone-step4-confirm.jpeg" style="width: 150px; margin: 10px auto; display: block;">
                     </div>
                     
-                    <p style="text-align: center; color: #aaa; margin-top: 20px;">✅ App installed on home screen!</p>
-                    <button onclick="skipInstall()" class="button" style="background: #00BCD4; color: #000; width: 100%; margin-top: 20px;">
-                        Got it!
-                    </button>
+                    <div style="margin-top: 40px; padding: 20px; background: rgba(0, 188, 212, 0.1); border-left: 3px solid #00BCD4; border-radius: 4px;">
+                        <p style="color: #fff; font-size: 0.95em; line-height: 1.6; margin: 0;">
+                            <strong>Daarna sluit dit scherm.</strong><br>
+                            Start de app vanaf je mobiel.
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -858,18 +861,19 @@
             const installScreen = document.getElementById('installScreen');
             const iosInstructions = document.getElementById('iosInstructions');
             
-            console.log('iPhone clicked - installScreen:', installScreen, 'iosInstructions:', iosInstructions);
+            console.log('🍎 iPhone clicked');
             
             if (installScreen) {
-                installScreen.style.display = 'none !important';
-                installScreen.style.visibility = 'hidden';
-                installScreen.style.opacity = '0';
-            }
-            if (iosInstructions) {
-                iosInstructions.style.display = 'block !important';
+                installScreen.style.zIndex = '0';
+                installScreen.style.pointerEvents = 'none';
             }
             
-            console.log('✅ iOS instructions should be visible');
+            if (iosInstructions) {
+                iosInstructions.style.display = 'block';
+                iosInstructions.style.zIndex = '10000';
+                iosInstructions.style.pointerEvents = 'auto';
+                console.log('✅ iOS instructions visible');
+            }
         }
 
         // DOM Ready - Setup listeners
