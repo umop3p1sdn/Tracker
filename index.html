@@ -353,7 +353,7 @@
         <!-- INSTALL PROMPT SCREEN -->
         <div id="installScreen" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; text-align: center;">
             <!-- VERSION NUMBER -->
-            <div style="position: absolute; top: 15px; right: 15px; font-size: 0.7em; color: #aaa; opacity: 0.6;">v2.10</div>
+            <div style="position: absolute; top: 15px; right: 15px; font-size: 0.7em; color: #aaa; opacity: 0.6;">v2.11</div>
             
             <div style="max-width: 300px;">
                 <div style="font-size: 80px; margin-bottom: 20px;">📱</div>
@@ -515,7 +515,7 @@
                         <button class="button button-secondary" onclick="toggleFollow()" id="followBtnMaster">CENTER: ON</button>
                         <div style="display: flex; gap: 6px; align-items: center; justify-content: center; margin: 4px; padding: 6px; background: rgba(0,0,0,0.2); border-radius: 4px;">
                             <button class="button-secondary" style="padding: 4px 8px; font-size: 1.1em; min-width: 32px;" onclick="decreaseTrackWidth()">−</button>
-                            <span id="trackWidthDisplay" style="font-size: 0.85em; min-width: 25px; text-align: center; font-weight: bold;">5</span>
+                            <span id="trackWidthDisplay" style="font-size: 0.85em; min-width: 25px; text-align: center; font-weight: bold;">3</span>
                             <button class="button-secondary" style="padding: 4px 8px; font-size: 1.1em; min-width: 32px;" onclick="increaseTrackWidth()">+</button>
                         </div>
                         <button class="button-secondary" onclick="toggleGPXMenu()">GPX</button>
@@ -636,13 +636,13 @@
             </ul>
             
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                Live Tracker App v2.10 © Umop3p1sdn
+                Live Tracker App v2.11 © Umop3p1sdn
             </p>
         </div>
     </div>
 
     <script>
-        const APP_VERSION = "2.10";
+        const APP_VERSION = "2.11";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -675,7 +675,7 @@
         let masterPos = null;
         let wakeLock = null;
         let zoomLevelValue = 15;
-        let trackLineWidth = 5;
+        let trackLineWidth = 3;
         let isAutoFollowActive = false;
 
         async function loadGPXFile(event) {
@@ -1853,16 +1853,18 @@
         }
         
         function increaseTrackWidth() {
-            if (trackLineWidth < 8) {
-                trackLineWidth++;
+            if (trackLineWidth < 15) {
+                trackLineWidth += 3;
+                if (trackLineWidth > 15) trackLineWidth = 15;
                 updateTrackDisplay();
                 redrawAllTracks();
             }
         }
         
         function decreaseTrackWidth() {
-            if (trackLineWidth > 5) {
-                trackLineWidth--;
+            if (trackLineWidth > 3) {
+                trackLineWidth -= 3;
+                if (trackLineWidth < 3) trackLineWidth = 3;
                 updateTrackDisplay();
                 redrawAllTracks();
             }
