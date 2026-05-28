@@ -649,7 +649,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "2.33";
+        const APP_VERSION = "2.34";
         
         // Update ALL version displays from single source
         document.addEventListener('DOMContentLoaded', () => {
@@ -1341,7 +1341,7 @@
                             masterPos = { lat: latitude, lng: longitude };
                             
                             // Force map to have your location
-                            if (mapInstance && isCenterOn) {
+                            if (mapInstance && isAutoFollowActive) {
                                 mapInstance.setView([latitude, longitude], 15);
                             }
 
