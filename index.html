@@ -1,0 +1,2165 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Tracker</title>
+    <link rel="manifest" href="/tracker/manifest.json">
+    <meta name="theme-color" content="#00BCD4">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Tracker">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet-rotatedmarker@0.2.3/leaflet.rotatedMarker.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        .container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            max-width: 900px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #FF1744;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .mode-indicator {
+            display: none !important;
+        }
+
+        .content {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .mode-select {
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+        }
+
+        .subtitle {
+            font-size: 1.3em;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+
+        .button {
+            padding: 16px 32px;
+            font-size: 1.1em;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+            width: 100%;
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+
+        .button-master {
+            background: #FF1744;
+            color: #fff;
+        }
+
+        .button-follow {
+            background: #00BCD4;
+            color: #fff;
+            margin-top: 10px;
+        }
+
+        .button-stop {
+            background: #FF5252;
+            color: #fff;
+            margin-top: 20px;
+        }
+
+        .button-secondary {
+            background: #424242;
+            color: #fff;
+            padding: 14px 20px;
+            font-size: 1.15em;
+            font-weight: bold;
+            margin: 6px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .button-secondary:hover {
+            background: #555;
+        }
+
+        .button-small {
+            font-size: 0.7em;
+            opacity: 0.9;
+            display: block;
+            margin-top: 5px;
+            font-weight: normal;
+        }
+
+        .divider {
+            margin: 25px 0;
+            opacity: 0.5;
+            font-size: 0.9em;
+        }
+
+        .follow-section {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-direction: column;
+        }
+
+        .input {
+            flex: 1;
+            padding: 12px;
+            font-size: 1.3em;
+            font-weight: bold;
+            text-align: center;
+            background: #1a1f3a;
+            border: 2px solid #FF1744;
+            color: #fff;
+            border-radius: 8px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .input:focus {
+            outline: none;
+            box-shadow: 0 0 10px rgba(255, 23, 68, 0.5);
+        }
+
+        .active-tracking {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            flex: 1;
+        }
+
+        .distance-top {
+            display: none;
+        }
+
+        .distance-label {
+            font-size: 0.6em;
+            opacity: 0.6;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+
+        .distance-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #00BCD4;
+        }
+
+        .map {
+            flex: 1;
+            border-radius: 8px;
+            border: 2px solid #FF1744;
+            min-height: 600px;
+            width: 100%;
+        }
+
+        .info-bottom {
+            background: rgba(15, 23, 42, 0.95);
+            padding: 12px;
+            border-radius: 8px;
+            border: 2px solid #00BCD4;
+        }
+
+        .info-label {
+            font-size: 0.7em;
+            opacity: 0.6;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+        }
+
+        .code-box {
+            font-size: 1.6em;
+            font-weight: bold;
+            background: #FF1744;
+            padding: 10px;
+            border-radius: 6px;
+            letter-spacing: 2px;
+            font-family: 'Courier New', monospace;
+            margin-bottom: 6px;
+        }
+
+        .copy-button {
+            background: #00BCD4;
+            color: #fff;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.75em;
+            font-weight: bold;
+            margin-top: 6px;
+            transition: all 0.3s;
+        }
+
+        .copy-button:hover {
+            background: #00ACC1;
+        }
+
+        .copy-button.copied {
+            background: #4CAF50;
+        }
+
+        .info-text {
+            opacity: 0.7;
+            font-size: 0.75em;
+            margin: 0;
+        }
+
+        .buttons-controls {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 10px;
+        }
+
+        .error {
+            background: #FF5252;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-size: 0.9em;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .controls .button {
+            flex: 1;
+            min-width: 120px;
+            margin-bottom: 0;
+            padding: 12px 16px;
+            font-size: 0.95em;
+        }
+
+        .go-button {
+            position: absolute;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 65px;
+            height: 65px;
+            border-radius: 50%;
+            background: #FF1744;
+            color: #fff;
+            border: none;
+            font-weight: bold;
+            font-size: 1.1em;
+            cursor: pointer;
+            z-index: 1002;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(255, 23, 68, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .go-button:hover {
+            transform: translateX(-50%) scale(1.1);
+            box-shadow: 0 6px 16px rgba(255, 23, 68, 0.6);
+        }
+
+        .go-button.show {
+            display: flex;
+        }
+
+        .map-container {
+            position: relative;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .map-only .info-bottom,
+        .map-only .controls,
+        .map-only .buttons-controls,
+        .map-only .header,
+        .map-only .go-button,
+        .map-only .button-stop {
+            display: none !important;
+        }
+
+        .map-only .active-tracking {
+            padding: 0 !important;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .map-only .map {
+            height: auto;
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- INSTALL PROMPT SCREEN -->
+        <div id="installScreen" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; text-align: center;">
+            
+            <div style="max-width: 300px;">
+                <div style="font-size: 80px; margin-bottom: 20px;">📱</div>
+                <h1 style="font-size: 2em; margin-bottom: 10px; color: #00BCD4;">GPX routes made easy</h1>
+                <p style="font-size: 1.1em; margin-bottom: 30px; color: #aaa;">In just one touch</p>
+
+                <button onclick="showAndroidInstructions()" class="button button-master" style="margin-bottom: 10px;">
+                    Android
+                </button>
+                
+                <button onclick="showIosInstructions()" class="button button-master" style="margin-bottom: 10px;">
+                    iPhone
+                </button>
+                
+                <button onclick="skipInstall()" class="button button-master">
+                    Already installed
+                </button>
+                
+                <!-- iOS INSTRUCTIONS (separate fixed overlay) -->
+                <div id="iosInstructions" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%); z-index: 10000; overflow-y: auto; padding: 40px 20px; text-align: left;">
+                    
+                    <h2 style="color: #00BCD4; margin-bottom: 15px; text-align: center; font-size: 1.1em;">📱 iPhone: 4 Easy Steps</h2>
+                    
+                    <!-- STEPS - SINGLE ROW -->
+                    <div style="display: flex; justify-content: center; align-items: flex-start; margin-bottom: 30px; gap: 3px; flex-wrap: nowrap; padding: 0 5px;">
+                        <!-- Step 1 -->
+                        <div style="text-align: center; flex: 1; min-width: 0;">
+                            <p style="font-size: 1.2em; margin: 0 0 5px 0;">1️⃣</p>
+                            <img src="iphone-step1-share.jpeg" style="width: 100%; height: auto;">
+                        </div>
+                        
+                        <!-- Step 2 -->
+                        <div style="text-align: center; flex: 1; min-width: 0;">
+                            <p style="font-size: 1.2em; margin: 0 0 5px 0;">2️⃣</p>
+                            <img src="iphone-step2-scroll.jpeg" style="width: 100%; height: auto;">
+                        </div>
+                        
+                        <!-- Step 3 -->
+                        <div style="text-align: center; flex: 1; min-width: 0;">
+                            <p style="font-size: 1.2em; margin: 0 0 5px 0;">3️⃣</p>
+                            <img src="iphone-step3-menu.jpeg" style="width: 100%; height: auto;">
+                        </div>
+                        
+                        <!-- Step 4 -->
+                        <div style="text-align: center; flex: 1; min-width: 0;">
+                            <p style="font-size: 1.2em; margin: 0 0 5px 0;">4️⃣</p>
+                            <img src="iphone-step4-confirm.jpeg" style="width: 100%; height: auto;">
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 40px; padding: 20px; background: rgba(0, 188, 212, 0.1); border-left: 3px solid #00BCD4; border-radius: 4px;">
+                        <p style="color: #fff; font-size: 0.95em; line-height: 1.6; margin: 0;">
+                            <strong>Daarna sluit dit scherm.</strong><br>
+                            Start de app vanaf je mobiel.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- ANDROID INSTRUCTIONS -->
+            <div id="androidInstructions" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%); z-index: 10000; overflow-y: auto; padding: 40px 20px; text-align: left;">
+                
+                <h2 style="color: #00BCD4; margin-bottom: 15px; text-align: center; font-size: 1.1em;">🤖 Android: 4 Easy Steps</h2>
+                
+                <!-- STEPS - SINGLE ROW -->
+                <div style="display: flex; justify-content: center; align-items: flex-start; margin-bottom: 30px; gap: 3px; flex-wrap: nowrap; padding: 0 5px;">
+                    <!-- Step 1 - Android Menu -->
+                    <div style="text-align: center; flex: 1; min-width: 0;">
+                        <p style="font-size: 1.2em; margin: 0 0 5px 0;">1️⃣</p>
+                        <img src="android-step1-menu.jpeg" style="width: 100%; height: auto;">
+                    </div>
+                    
+                    <!-- Step 2 - Install Icon -->
+                    <div style="text-align: center; flex: 1; min-width: 0;">
+                        <p style="font-size: 1.2em; margin: 0 0 5px 0;">2️⃣</p>
+                        <img src="android-step2-install.jpeg" style="width: 100%; height: auto;">
+                    </div>
+                    
+                    <!-- Step 3 - Home Screen -->
+                    <div style="text-align: center; flex: 1; min-width: 0;">
+                        <p style="font-size: 1.2em; margin: 0 0 5px 0;">3️⃣</p>
+                        <img src="android-step3-homescreen.jpeg" style="width: 100%; height: auto;">
+                    </div>
+                    
+                    <!-- Step 4 - Add Button -->
+                    <div style="text-align: center; flex: 1; min-width: 0;">
+                        <p style="font-size: 1.2em; margin: 0 0 5px 0;">4️⃣</p>
+                        <img src="android-step4-add.jpeg" style="width: 100%; height: auto;">
+                    </div>
+                </div>
+                
+                <div style="margin-top: 40px; padding: 20px; background: rgba(0, 188, 212, 0.1); border-left: 3px solid #00BCD4; border-radius: 4px;">
+                    <p style="color: #fff; font-size: 0.95em; line-height: 1.6; margin: 0;">
+                        <strong>Daarna sluit dit scherm.</strong><br>
+                        Start de app vanaf je mobiel.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- MAIN APP (hidden until install skipped/done) -->
+        <div id="appContent" style="display: none;">
+        <div class="header">
+            <h1>LIVE TRACKER</h1>
+            <div id="modeIndicator" class="mode-indicator hidden"></div>
+        </div>
+
+        <div class="content">
+            <!-- MODE SELECT -->
+            <div id="modeSelect" class="mode-select">
+                <p class="subtitle">Start tracking</p>
+                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v4.1 © Umop3p1sdn</div>
+                
+                <!-- Hidden file input for GPX loading -->
+                <input type="file" id="gpxInputLoad" accept=".gpx" style="display:none;" onchange="loadGPXFile(event)">
+                
+                <button class="button button-master" onclick="startMaster()">
+                    START TRACKING
+                    <span class="button-small">Share your location</span>
+                </button>
+
+                <div class="divider">OR</div>
+
+                <div class="follow-section">
+                    <input type="text" maxlength="4" placeholder="Enter code" id="inputCode" class="input" onkeyup="this.value = this.value.replace(/[^0-9]/g, ''); if(this.value.length === 4) { startFollowing(); }" style="text-align: center;">
+                </div>
+
+                <div id="error" class="error hidden"></div>
+                
+                <div style="margin-top: 30px; text-align: center;">
+                    <a onclick="toggleHandleiding()" style="color: #00BCD4; cursor: pointer; font-size: 0.9em; text-decoration: underline;">Handleiding</a>
+                </div>
+            </div>
+
+            <!-- ACTIVE TRACKING -->
+            <div id="activeTracking" class="active-tracking hidden">
+                <!-- MASTER MODE -->
+                <div id="masterMode">
+                    <div style="position: relative;">
+                        <!-- ZOOM CONTROLS BAR -->
+                        <div style="position: absolute; top: 10px; left: 10px; right: 10px; z-index: 1001; display: flex; gap: 8px; justify-content: center; background: rgba(0,0,0,0.15); padding: 8px 16px; border-radius: 8px; width: fit-content; margin: 0 auto; left: 50%; transform: translateX(-50%);">
+                            <button style="padding: 12px 16px; font-size: 2em; min-width: 80px; height: 80px; border-radius: 6px; background: transparent; color: #000; border: 3px solid #000; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center;" onclick="zoomOut()">−</button>
+                            <span style="font-size: 1.1em; min-width: 35px; text-align: center; color: #000; font-weight: bold; display: flex; align-items: center; justify-content: center;" id="zoomLevelMaster">15</span>
+                            <button style="padding: 12px 16px; font-size: 2em; min-width: 80px; height: 80px; border-radius: 6px; background: transparent; color: #000; border: 3px solid #000; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center;" onclick="zoomIn()">+</button>
+                        </div>
+                        
+                        <div id="mapMaster" class="map"></div>
+                        
+                        <!-- TRACK WIDTH CONTROLS BAR (BELOW MAP) -->
+                        <div style="position: absolute; bottom: 10px; left: 10px; right: 10px; z-index: 1001; display: flex; gap: 8px; justify-content: center; background: rgba(0,0,0,0.15); padding: 8px 16px; border-radius: 8px; width: fit-content; margin: 0 auto; left: 50%; transform: translateX(-50%);">
+                            <button style="padding: 12px 16px; font-size: 2em; min-width: 80px; height: 80px; border-radius: 6px; background: transparent; color: #000; border: 3px solid #000; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center;" onclick="decreaseTrackWidth()">−</button>
+                            <span style="font-size: 1.1em; min-width: 35px; text-align: center; color: #000; font-weight: bold; display: flex; align-items: center; justify-content: center;" id="trackWidthDisplay">3</span>
+                            <button style="padding: 12px 16px; font-size: 2em; min-width: 80px; height: 80px; border-radius: 6px; background: transparent; color: #000; border: 3px solid #000; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center;" onclick="increaseTrackWidth()">+</button>
+                        </div>
+                        
+                        <button class="go-button show" id="goButtonMaster" onclick="toggleMapOnly('master')">GO</button>
+                    </div>
+                    
+                    <div class="info-bottom">
+                        <div class="info-label">Your Tracking Code</div>
+                        <div class="code-box" id="codeBox">----</div>
+                        <button class="copy-button" onclick="copyCode()">COPY CODE</button>
+                        <p class="info-text">Share this code with followers</p>
+                    </div>
+
+                    <div class="controls">
+                        <button class="button-secondary" onclick="toggleFollow()" id="followBtnMaster">CENTER: ON</button>
+                        <button class="button-secondary button-gpx" onclick="toggleGPXMenu()">GPX</button>
+                    </div>
+
+                    <button class="button button-stop" onclick="stopTracking()">STOP</button>
+                </div>
+
+                <!-- FOLLOWER MODE -->
+                <div id="followerMode" class="hidden">
+                    <div style="position: relative;">
+                        <!-- ZOOM CONTROLS BAR -->
+                        <div style="position: absolute; top: 10px; left: 10px; right: 10px; z-index: 1001; display: flex; gap: 8px; justify-content: center; background: rgba(0,0,0,0.15); padding: 8px 16px; border-radius: 8px; width: fit-content; margin: 0 auto; left: 50%; transform: translateX(-50%);">
+                            <button style="padding: 12px 16px; font-size: 2em; min-width: 80px; height: 80px; border-radius: 6px; background: transparent; color: #000; border: 3px solid #000; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center;" onclick="zoomOut()">−</button>
+                            <span style="font-size: 1.1em; min-width: 35px; text-align: center; color: #000; font-weight: bold; display: flex; align-items: center; justify-content: center;" id="zoomLevelFollower">15</span>
+                            <button style="padding: 12px 16px; font-size: 2em; min-width: 80px; height: 80px; border-radius: 6px; background: transparent; color: #000; border: 3px solid #000; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center;" onclick="zoomIn()">+</button>
+                        </div>
+                        
+                        <div id="mapFollower" class="map"></div>
+                        
+                        <!-- TRACK WIDTH CONTROLS BAR (BELOW MAP) -->
+                        <div style="position: absolute; bottom: 10px; left: 10px; right: 10px; z-index: 1001; display: flex; gap: 8px; justify-content: center; background: rgba(0,0,0,0.15); padding: 8px 16px; border-radius: 8px; width: fit-content; margin: 0 auto; left: 50%; transform: translateX(-50%);">
+                            <button style="padding: 12px 16px; font-size: 2em; min-width: 80px; height: 80px; border-radius: 6px; background: transparent; color: #000; border: 3px solid #000; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center;" onclick="decreaseTrackWidth()">−</button>
+                            <span style="font-size: 1.1em; min-width: 35px; text-align: center; color: #000; font-weight: bold; display: flex; align-items: center; justify-content: center;" id="trackWidthDisplay">3</span>
+                            <button style="padding: 12px 16px; font-size: 2em; min-width: 80px; height: 80px; border-radius: 6px; background: transparent; color: #000; border: 3px solid #000; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center;" onclick="increaseTrackWidth()">+</button>
+                        </div>
+                        
+                        <button class="go-button show" id="goButtonFollower" onclick="toggleMapOnly('follower')">GO</button>
+                    </div>
+                    
+                    <div class="buttons-controls">
+                        <button class="button-secondary" onclick="toggleFollow()" id="followBtnFollower">CENTER: ON</button>
+                        <button class="button-secondary" onclick="toggleZoom()" id="zoomBtn">ZOOM: MASTER</button>
+                        <button class="button-secondary" onclick="cycleTrackView()" id="trackBtn">HIDE TRACK</button>
+                        <button class="button-secondary button-gpx" onclick="toggleGPXMenu()">GPX</button>
+                    </div>
+
+                    <button class="button button-stop" onclick="stopTracking()">STOP</button>
+
+                    <div class="info-bottom">
+                        <div class="info-label">Following Code</div>
+                        <div class="code-box" id="followerCodeBox" style="font-size: 1.3em;">----</div>
+                        <p class="info-text">Live tracking active</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div>
+    </div>
+
+    <!-- HANDLEIDING -->
+    <div id="handleidingModal" class="hidden" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); display: none; z-index: 1002; overflow-y: auto; padding: 20px;">
+        <div style="background: #0a0e27; color: #fff; border-radius: 10px; max-width: 600px; margin: 0 auto; padding: 30px; font-family: sans-serif; line-height: 1.6;">
+            <div style="text-align: right; margin-bottom: 20px;">
+                <button onclick="toggleHandleiding()" style="background: #FF1744; color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; font-size: 1em;">✕ Sluiten</button>
+            </div>
+            
+            <h2 style="color: #00BCD4; margin-top: 0;">📍 Live Tracker App - Handleiding</h2>
+            
+            <h3 style="color: #00BCD4; margin-top: 25px;">🚀 Hoe te starten?</h3>
+            <p>— <strong>Optie 1: Master (Jij deelt je locatie)</strong></p>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+                <li>Klik "START TRACKING"</li>
+                <li>Je krijgt een 4-cijfer code</li>
+                <li>Klik "COPY CODE" en stuur via WhatsApp/SMS naar je vrienden</li>
+                <li>Je locatie wordt gedeeld in real-time</li>
+            </ul>
+            
+            <p>— <strong>Optie 2: Follower (Volgen)</strong></p>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+                <li>Ontvang de 4-cijfer code</li>
+                <li>Typ de code in het invoerveld</li>
+                <li>Je ziet de Master direct op de kaart!</li>
+            </ul>
+            
+            <h3 style="color: #00BCD4; margin-top: 25px;">🗺️ Kaart-opties</h3>
+            <p>— <strong>CENTER: ON/OFF</strong> - Kaart volgt je locatie automatisch</p>
+            
+            <p>— <strong>Zoom (+ / −)</strong> - Boven op kaart. Range: 10-20</p>
+            
+            <p>— <strong>Track width (− / +)</strong> - Onder op kaart. Range: 3-15px</p>
+            
+            <p>— <strong>GO knop (onderaan)</strong> - Verbergt alle controls, alleen kaart zichtbaar</p>
+            
+            <h3 style="color: #00BCD4; margin-top: 25px;">📊 GPX (Routes)</h3>
+            <p>— <strong>Load:</strong> Laad een route</p>
+            <p>— <strong>Save:</strong> Sla je tracking op</p>
+            <p>— <strong>Delete:</strong> Verwijder ingeladen route</p>
+            
+            <h3 style="color: #00BCD4; margin-top: 25px;">👥 Follower-modus</h3>
+            <p>— <strong>ZOOM:</strong></p>
+            <ul style="margin: 5px 0 15px 0; padding-left: 30px;">
+                <li>MASTER (volg Master)</li>
+                <li>BOTH (beide zichtbaar)</li>
+                <li>SELF (jouw locatie)</li>
+            </ul>
+            <p>— <strong>TRACK:</strong></p>
+            <ul style="margin: 5px 0; padding-left: 30px;">
+                <li>HIDE</li>
+                <li>VIEW MASTER</li>
+                <li>ALL TRACKS (incl. Master's route)</li>
+            </ul>
+            
+            <h3 style="color: #00BCD4; margin-top: 25px;">⚙️ Tips</h3>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+                <li>Houd je scherm OPEN - de app werkt niet op achtergrond</li>
+                <li>GPS werkt best buiten / in open ruimte</li>
+                <li>Langzaam internet? Tracking update elke 3 seconden</li>
+            </ul>
+
+            <h3 style="color: #00BCD4; margin-top: 25px;">📡 Offline Kaarten (V3.2)</h3>
+            <p>— <strong>Hoe werkt het?</strong></p>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+                <li>Kaarten worden automatisch opgeslagen terwijl je rijdt</li>
+                <li>Elke 30 minuten: 50km diameter rond je locatie</li>
+                <li>Zoom niveaus 15-17 (detail) worden gecacht</li>
+                <li>Lokaal opgeslagen in je telefoon (IndexedDB)</li>
+            </ul>
+
+            <p>— <strong>Offline gebruik:</strong></p>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+                <li>Zet vliegtuigmodus AAN</li>
+                <li>Kaart blijft zichtbaar</li>
+                <li>GPS werkt nog (geen internet nodig!)</li>
+            </ul>
+
+            <p>— <strong>Praktisch:</strong></p>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+                <li>Rijdt 50-80 km/h? Kaart blijft beschikbaar!</li>
+                <li>Pech of geen ontvangst? Je hebt altijd een kaart</li>
+                <li>Geen extra instellingen nodig - volledig automatisch</li>
+            </ul>
+            
+            <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
+                Live Tracker App v4.1 © Umop3p1sdn
+            </p>
+        </div>
+    </div>
+
+    <script>
+        const APP_VERSION = "4.1";
+        const firebaseConfig = {
+            databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
+        };
+
+        let currentMode = null;
+        let currentCode = '';
+        let mapInstance = null;
+        let masterMarker = null;
+        let followerMarker = null;
+        let masterDirection = null;
+        let followerDirection = null;
+        let polyline = null;
+        let gpxPolyline = null;
+        let gpxRoute = [];
+        let followerLoadedGpxRoute = [];     // Follower's OWN loaded GPX
+        let followerLoadedGpxPolyline = null; // Follower's OWN loaded visual
+        let trackingPolyline = null;
+        let masterLocations = [];
+        let followerLocations = [];
+        let followerTrackingPolyline = null;
+        let watchId = null;
+        let followInterval = null;
+        let trackVisible = false;
+        let allTrackVisible = false;
+        let trackState = 'none'; // 'none', 'view', 'all'
+        let zoomMode = 'master';
+        let compassMode = 'device';
+        let deviceHeading = 0;
+        let followerPos = null;
+        let masterPos = null;
+        let wakeLock = null;
+        let zoomLevelValue = 15;
+        let trackLineWidth = 3;
+        let isAutoFollowActive = false;
+
+        async function loadGPXFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const text = await file.text();
+            const parser = new DOMParser();
+            const gpx = parser.parseFromString(text, 'application/xml');
+            
+            const trkpts = gpx.querySelectorAll('trkpt');
+            const gpsRoute = [];
+            
+            trkpts.forEach(trkpt => {
+                const lat = parseFloat(trkpt.getAttribute('lat'));
+                const lng = parseFloat(trkpt.getAttribute('lon'));
+                if (!isNaN(lat) && !isNaN(lng)) {
+                    gpsRoute.push([lat, lng]);
+                }
+            });
+
+            if (gpsRoute.length > 0) {
+                // Store route for later saving - DIFFERENT for Master vs Follower
+                if (currentMode === 'master') {
+                    // Master: store in gpxRoute + gpxPolyline
+                    gpxRoute = gpsRoute;
+                    
+                    if (gpxPolyline) {
+                        mapInstance.removeLayer(gpxPolyline);
+                    }
+                    gpxPolyline = L.polyline(gpsRoute, {
+                        color: '#00BCD4',
+                        weight: trackLineWidth,
+                        opacity: 0.8,
+                        dashArray: '2, 5'
+                    }).addTo(mapInstance);
+                    
+                    // Send to Firebase
+                    sendGPXToFirebase(currentCode, gpsRoute);
+                } else if (currentMode === 'follower') {
+                    // Follower: store in followerLoadedGpxRoute + followerLoadedGpxPolyline
+                    followerLoadedGpxRoute = gpsRoute;
+                    
+                    if (followerLoadedGpxPolyline) {
+                        mapInstance.removeLayer(followerLoadedGpxPolyline);
+                    }
+                    followerLoadedGpxPolyline = L.polyline(gpsRoute, {
+                        color: '#00BCD4',
+                        weight: trackLineWidth,
+                        opacity: 0.8,
+                        dashArray: '2, 5'
+                    }).addTo(mapInstance);
+                }
+                
+                const group = L.featureGroup(gpsRoute.map(([lat, lng]) => L.circleMarker([lat, lng], {radius: 1})));
+                mapInstance.fitBounds(group.getBounds(), {padding: [50, 50]});
+            }
+        }
+
+        function toggleGPXMenu() {
+            // Show modal with GPX options (LOAD + SAVE)
+            const modal = document.createElement('div');
+            modal.id = 'gpxModal';
+            modal.style.cssText = `
+                position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+                background: rgba(0,0,0,0.8); display: flex; align-items: center;
+                justify-content: center; z-index: 1002; cursor: pointer;
+            `;
+            
+            const content = document.createElement('div');
+            content.style.cssText = `
+                background: #1a1f3a; color: #fff; padding: 30px; border-radius: 10px;
+                text-align: center; width: 90%; max-width: 400px;
+                font-family: sans-serif; cursor: default;
+            `;
+            
+            let html = `<h3 style="color: #00BCD4; margin-top: 0;">GPX Menu</h3>`;
+            
+            html += `
+                <button onclick="document.getElementById('gpxInputLoad').click(); closeGPXModal();" 
+                    style="width: 100%; padding: 12px; margin: 10px 0; background: #2196F3; 
+                    color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 1em;">
+                    Load GPX
+                </button>
+                <button onclick="downloadGPX(); closeGPXModal();" 
+                    style="width: 100%; padding: 12px; margin: 10px 0; background: #FF9800; 
+                    color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 1em;">
+                    Save GPX
+                </button>
+                <button onclick="deleteGPXRoute();" 
+                    style="width: 100%; padding: 12px; margin: 10px 0; background: #F44336; 
+                    color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 1em;">
+                    Delete Loaded Track
+                </button>
+            `;
+            
+            content.innerHTML = html;
+            modal.appendChild(content);
+            
+            // Close modal on outside click
+            modal.onclick = function(e) {
+                if (e.target === modal) {
+                    closeGPXModal();
+                }
+            };
+            
+            document.body.appendChild(modal);
+        }
+        
+        function deleteGPXRoute() {
+            if (currentMode === 'master') {
+                // Master: delete from gpxRoute + Firebase
+                gpxRoute = [];
+                
+                if (gpxPolyline) {
+                    try {
+                        mapInstance.removeLayer(gpxPolyline);
+                    } catch (e) {}
+                }
+                gpxPolyline = null;
+                
+                // Delete from Firebase
+                if (currentCode) {
+                    const deleteUrl = `${firebaseConfig.databaseURL}/gpx/${currentCode}.json`;
+                    fetch(deleteUrl, { method: 'DELETE' })
+                        .catch(err => console.error('Firebase delete error:', err));
+                }
+            } else if (currentMode === 'follower') {
+                // Follower: delete ONLY their own loaded GPX (NO Firebase!)
+                followerLoadedGpxRoute = [];
+                
+                if (followerLoadedGpxPolyline) {
+                    try {
+                        mapInstance.removeLayer(followerLoadedGpxPolyline);
+                    } catch (e) {}
+                }
+                followerLoadedGpxPolyline = null;
+            }
+            
+            // Close modal
+            closeGPXModal();
+        }
+
+        function closeGPXModal() {
+            const modal = document.getElementById('gpxModal');
+            if (modal) {
+                modal.remove();
+            }
+        }
+
+        // Global active devices counter
+        let deviceId = localStorage.getItem('deviceId') || Math.random().toString(36).substr(2, 9);
+        if (!localStorage.getItem('deviceId')) {
+            localStorage.setItem('deviceId', deviceId);
+        }
+        
+        let activeDeviceInterval = null;
+
+        function registerActiveDevice() {
+            // Register this device in Firebase with current timestamp
+            const timestamp = Date.now();
+            const activeDeviceUrl = `${firebaseConfig.databaseURL}/activeDevices/${deviceId}.json`;
+            
+            fetch(activeDeviceUrl, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ timestamp: timestamp })
+            }).catch(e => console.error('Register error:', e));
+        }
+
+        function startActiveDeviceCounter() {
+            // Register immediately
+            registerActiveDevice();
+            
+            // Register every 2 seconds to keep device "alive"
+            activeDeviceInterval = setInterval(() => {
+                registerActiveDevice();
+            }, 2000);
+            
+            // Count active devices every second (6sec timeout)
+            setInterval(() => {
+                countActiveDevices();
+            }, 1000);
+        }
+
+        function countActiveDevices() {
+            const activeDevicesUrl = `${firebaseConfig.databaseURL}/activeDevices.json`;
+            
+            fetch(activeDevicesUrl)
+                .then(resp => resp.json())
+                .then(data => {
+                    if (data) {
+                        const now = Date.now();
+                        let count = 0;
+                        
+                        Object.values(data).forEach(device => {
+                            if (device.timestamp && (now - device.timestamp) < 6000) {
+                                count++;
+                            }
+                        });
+                        
+                        updateUserCountDisplay(count);
+                    } else {
+                        updateUserCountDisplay(0);
+                    }
+                })
+                .catch(e => console.error('Count error:', e));
+        }
+
+        function updateUserCountDisplay(count) {
+            const el = document.getElementById('userCount');
+            if (el) {
+                el.textContent = count;
+            }
+        }
+
+        // PWA Install - Install First Design
+        let deferredPrompt = null;
+        const installScreen = document.getElementById('installScreen');
+        const appContent = document.getElementById('appContent');
+
+        function showInstallScreen() {
+            const screen = document.getElementById('installScreen');
+            const content = document.getElementById('appContent');
+            if (screen) screen.style.display = 'flex';
+            if (content) content.style.display = 'none';
+        }
+
+        function hideInstallScreen() {
+            const screen = document.getElementById('installScreen');
+            const content = document.getElementById('appContent');
+            if (screen) screen.style.display = 'none';
+            if (content) content.style.display = 'block';
+        }
+
+        function skipInstall() {
+            console.log('⏭️ Skip clicked');
+            hideInstallScreen();
+            deferredPrompt = null;
+        }
+
+        function showIosInstructions() {
+            const installScreen = document.getElementById('installScreen');
+            const iosInstructions = document.getElementById('iosInstructions');
+            
+            console.log('🍎 iPhone clicked');
+            
+            if (installScreen) {
+                installScreen.style.zIndex = '0';
+                installScreen.style.pointerEvents = 'none';
+            }
+            
+            if (iosInstructions) {
+                iosInstructions.style.display = 'block';
+                iosInstructions.style.zIndex = '10000';
+                iosInstructions.style.pointerEvents = 'auto';
+                console.log('✅ iOS instructions visible');
+            }
+        }
+        
+        function showAndroidInstructions() {
+            const installScreen = document.getElementById('installScreen');
+            const androidInstructions = document.getElementById('androidInstructions');
+            
+            console.log('🤖 Android clicked');
+            
+            if (installScreen) {
+                installScreen.style.zIndex = '0';
+                installScreen.style.pointerEvents = 'none';
+            }
+            
+            if (androidInstructions) {
+                androidInstructions.style.display = 'block';
+                androidInstructions.style.zIndex = '10000';
+                androidInstructions.style.pointerEvents = 'auto';
+                console.log('✅ Android instructions visible');
+            }
+        }
+
+        // DOM Ready - Setup listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            // GLOBAL: Disable double-click zoom everywhere
+            document.addEventListener('dblclick', (e) => {
+                e.preventDefault();
+                return false;
+            }, true);
+            
+            const installBtn = document.getElementById('installPromptBtn');
+            console.log('✅ DOM ready - installBtn:', installBtn ? 'FOUND' : 'NOT FOUND');
+
+            // Check if app is already installed
+            window.addEventListener('appinstalled', () => {
+                console.log('✅ App installed!');
+                hideInstallScreen();
+            });
+
+            // Listen for install prompt
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredPrompt = e;
+                console.log('📱 Install prompt ready - deferredPrompt ready');
+                showInstallScreen();
+            });
+
+            if (installBtn) {
+                installBtn.addEventListener('click', async () => {
+                    console.log('🖱️ INSTALL NOW clicked - deferredPrompt:', deferredPrompt ? 'READY' : 'NULL');
+                    if (deferredPrompt) {
+                        deferredPrompt.prompt();
+                        const { outcome } = await deferredPrompt.userChoice;
+                        console.log(`✅ User response: ${outcome}`);
+                        deferredPrompt = null;
+                        hideInstallScreen();
+                    } else {
+                        console.log('❌ deferredPrompt is null - beforeinstallprompt not fired');
+                    }
+                });
+            } else {
+                console.log('❌ installBtn NOT FOUND!');
+            }
+        });
+
+        function generateCode() {
+            let code = '';
+            for (let i = 0; i < 4; i++) {
+                code += Math.floor(Math.random() * 10);
+            }
+            return code;
+        }
+
+        async function requestWakeLock() {
+            try {
+                if ('wakeLock' in navigator) {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                }
+            } catch (err) {
+                console.error('Wake Lock error:', err);
+            }
+        }
+
+        function releaseWakeLock() {
+            if (wakeLock) {
+                wakeLock.release();
+                wakeLock = null;
+            }
+        }
+
+        function copyCode() {
+            const code = currentCode;
+            navigator.clipboard.writeText(code).then(() => {
+                const btn = event.target;
+                btn.textContent = 'COPIED!';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.textContent = 'COPY CODE';
+                    btn.classList.remove('copied');
+                }, 2000);
+            }).catch(() => {
+                showError('Could not copy');
+            });
+        }
+
+        async function sendGPXToFirebase(code, gpsRoute) {
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 5000);
+                
+                const url = `${firebaseConfig.databaseURL}/gpx/${code}.json`;
+                await fetch(url, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        route: gpsRoute,
+                        timestamp: Date.now()
+                    }),
+                    signal: controller.signal
+                });
+                
+                clearTimeout(timeoutId);
+            } catch (error) {
+                console.error('GPX Firebase error:', error);
+            }
+        }
+
+        async function sendToFirebase(code, lat, lng, heading) {
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 5000);
+                
+                const url = `${firebaseConfig.databaseURL}/tracking/${code}.json`;
+                await fetch(url, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        latitude: lat,
+                        longitude: lng,
+                        heading: heading,
+                        timestamp: Date.now(),
+                        route: masterLocations
+                    }),
+                    signal: controller.signal
+                });
+                clearTimeout(timeoutId);
+            } catch (err) {
+                console.error('Firebase error:', err);
+            }
+        }
+
+        async function fetchMasterLocation(code) {
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 5000);
+                
+                const url = `${firebaseConfig.databaseURL}/tracking/${code}.json`;
+                const response = await fetch(url, { signal: controller.signal });
+                clearTimeout(timeoutId);
+                
+                const data = await response.json();
+                if (data) {
+                    return { 
+                        lat: data.latitude, 
+                        lng: data.longitude,
+                        heading: data.heading || 0,
+                        route: data.route || []
+                    };
+                }
+            } catch (err) {
+                console.error('Fetch error:', err);
+            }
+            return null;
+        }
+
+        async function fetchGPXRoute(code) {
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 5000);
+                
+                const url = `${firebaseConfig.databaseURL}/gpx/${code}.json`;
+                const response = await fetch(url, { signal: controller.signal });
+                clearTimeout(timeoutId);
+                
+                const data = await response.json();
+                if (data && data.route && Array.isArray(data.route)) {
+                    return data.route;
+                }
+            } catch (err) {
+                console.error('Fetch GPX error:', err);
+            }
+            return null;
+        }
+
+        function calculateDistance(lat1, lng1, lat2, lng2) {
+            const R = 6371;
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLng = (lng2 - lng1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                      Math.sin(dLng/2) * Math.sin(dLng/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return (R * c).toFixed(2);
+        }
+
+        function createDirectionMarker(lat, lng, heading, isFollower) {
+            if (isFollower) {
+                if (followerDirection) {
+                    mapInstance.removeLayer(followerDirection);
+                }
+                followerDirection = L.polyline(
+                    [[lat, lng], L.latLng(lat + 0.0005 * Math.sin(heading * Math.PI / 180), lng + 0.0005 * Math.cos(heading * Math.PI / 180))],
+                    {
+                        color: '#2196F3',
+                        weight: 3,
+                        opacity: 0.8
+                    }
+                ).addTo(mapInstance);
+            } else {
+                if (masterDirection) {
+                    mapInstance.removeLayer(masterDirection);
+                }
+                masterDirection = L.polyline(
+                    [[lat, lng], L.latLng(lat + 0.0005 * Math.sin(heading * Math.PI / 180), lng + 0.0005 * Math.cos(heading * Math.PI / 180))],
+                    {
+                        color: '#FF1744',
+                        weight: 3,
+                        opacity: 0.8
+                    }
+                ).addTo(mapInstance);
+            }
+        }
+
+        function initDeviceCompass() {
+            if (window.DeviceOrientationEvent) {
+                // Request permission on iOS 13+
+                if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+                    DeviceOrientationEvent.requestPermission()
+                        .then(permissionState => {
+                            if (permissionState === 'granted') {
+                                window.addEventListener('deviceorientation', (event) => {
+                                    deviceHeading = event.alpha || 0;
+                                });
+                            }
+                        })
+                        .catch(console.error);
+                } else {
+                    // Non-iOS or older iOS
+                    window.addEventListener('deviceorientation', (event) => {
+                        deviceHeading = event.alpha || 0;
+                    });
+                }
+            }
+        }
+
+        function toggleZoom() {
+            if (currentMode === 'master') {
+                // Master: no zoom button anymore
+                return;
+            } else if (currentMode === 'follower') {
+                // Cycle: master → both → self → master
+                if (zoomMode === 'master') {
+                    zoomMode = 'both';
+                    document.getElementById('zoomBtn').textContent = 'ZOOM: BOTH';
+                } else if (zoomMode === 'both') {
+                    zoomMode = 'self';
+                    document.getElementById('zoomBtn').textContent = 'ZOOM: SELF';
+                } else {
+                    zoomMode = 'master';
+                    document.getElementById('zoomBtn').textContent = 'ZOOM: MASTER';
+                }
+                // NOTE: Do NOT turn on CENTER here - just cycle zoom mode
+                if (isAutoFollowActive) {
+                    updateMapView();
+                }
+            }
+        }
+
+        function toggleFollow() {
+            isAutoFollowActive = !isAutoFollowActive;
+            const followBtnMaster = document.getElementById('followBtnMaster');
+            const followBtnFollower = document.getElementById('followBtnFollower');
+            const text = isAutoFollowActive ? 'CENTER: ON' : 'CENTER: OFF';
+            
+            if (followBtnMaster) followBtnMaster.textContent = text;
+            if (followBtnFollower) followBtnFollower.textContent = text;
+            
+            if (isAutoFollowActive) {
+                updateMapView();
+            }
+        }
+
+        function toggleMapOnly(mode) {
+            const container = document.querySelector('.container');
+            const body = document.body;
+            
+            container.classList.toggle('map-only');
+            body.classList.toggle('map-only');
+            
+            // Force map to recalculate size
+            if (mapInstance) {
+                setTimeout(() => {
+                    mapInstance.invalidateSize();
+                }, 100);
+            }
+        }
+
+        function toggleCompass() {
+            compassMode = compassMode === 'device' ? 'north' : 'device';
+            const btn = document.getElementById('compassBtn');
+            if (btn) {
+                btn.textContent = compassMode === 'device' ? 'COMPASS' : 'NORTH';
+            }
+        }
+
+        function updateMapView() {
+            if (!mapInstance || !isAutoFollowActive) return;
+
+            if (currentMode === 'master' && masterPos) {
+                mapInstance.setView([masterPos.lat, masterPos.lng], zoomLevelValue);
+            } else if (currentMode === 'follower' && followerPos) {
+                if (zoomMode === 'master' && masterPos) {
+                    mapInstance.setView([masterPos.lat, masterPos.lng], zoomLevelValue);
+                } else if (zoomMode === 'both' && masterPos && masterMarker && followerMarker) {
+                    const group = L.featureGroup([masterMarker, followerMarker]);
+                    mapInstance.fitBounds(group.getBounds(), { padding: [50, 50] });
+                } else if (zoomMode === 'self') {
+                    mapInstance.setView([followerPos.lat, followerPos.lng], zoomLevelValue);
+                }
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // OFFLINE MAPS: 30-minute interval caching (50km diameter)
+        // ═══════════════════════════════════════════════════════════════
+        let precacheTileTimer = null;
+        let precacheCountdownTimer = null;
+        let precacheCountdown = 1800; // 30 minutes
+        let precacheContainerElement = null;
+        let precacheCurrentTimerElement = null;
+        
+        function createCacheTimerContainer() {
+            // Create container for all timers/status
+            precacheContainerElement = document.createElement('div');
+            precacheContainerElement.id = 'offline-cache-container';
+            precacheContainerElement.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                z-index: 9999;
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+                align-items: flex-end;
+            `;
+            document.body.appendChild(precacheContainerElement);
+            
+            // Start first timer
+            addNewTimer();
+        }
+        
+        function addNewTimer() {
+            // Create timer display
+            precacheCurrentTimerElement = document.createElement('div');
+            precacheCurrentTimerElement.style.cssText = `
+                background: #2196F3;
+                color: white;
+                padding: 15px 20px;
+                border-radius: 8px;
+                font-size: 16px;
+                font-weight: bold;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+                min-width: 80px;
+                text-align: center;
+            `;
+            precacheCurrentTimerElement.textContent = '1800s';
+            
+            // Add to container (at top so new ones appear below old ones)
+            precacheContainerElement.insertBefore(precacheCurrentTimerElement, precacheContainerElement.firstChild);
+            
+            // Start countdown
+            startCountdown();
+        }
+        
+        function startCountdown() {
+            precacheCountdown = 1800; // 30 minutes
+            
+            if (precacheCountdownTimer) clearInterval(precacheCountdownTimer);
+            
+            precacheCountdownTimer = setInterval(() => {
+                precacheCountdown--;
+                
+                // No visual display - silent
+                
+                if (precacheCountdown <= 0) {
+                    clearInterval(precacheCountdownTimer);
+                }
+            }, 1000);
+        }
+        
+        function showCacheSuccess() {
+            // Silent - no visual display
+            console.log('✅ Caching completed');
+        }
+        
+        function startSmartPreCache() {
+            if (!navigator.geolocation || !navigator.serviceWorker) return;
+            
+            // Silent background - no UI
+            
+            cacheCurrentLocation();
+            
+            // Then cache every 30 minutes
+            precacheTileTimer = setInterval(cacheCurrentLocation, 30 * 60 * 1000);
+        }
+        
+        function showOfflineNotification() {
+            // Create notification
+            const notification = document.createElement('div');
+            notification.textContent = 'Offline map updated.';
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: #4CAF50;
+                color: white;
+                padding: 12px 20px;
+                border-radius: 4px;
+                font-size: 14px;
+                z-index: 10000;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            `;
+            document.body.appendChild(notification);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+        
+        function cacheCurrentLocation() {
+            navigator.geolocation.getCurrentPosition((position) => {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+                const tilesToCache = [];
+                
+                // Generate tiles for zoom 15, 16, 17, 18 (detail levels)
+                [15, 16, 17, 18].forEach(zoom => {
+                    const n = Math.pow(2, zoom);
+                    const centerX = Math.floor((lng + 180) / 360 * n);
+                    const centerY = Math.floor((1 - Math.log(Math.tan(lat * Math.PI / 180) + 1 / Math.cos(lat * Math.PI / 180)) / Math.PI) / 2 * n);
+                    
+                    // Tile offset - zoom 18 needs 2x more tiles (smaller tile size)
+                    let radius = 75;
+                    if (zoom === 18) radius = 150; // 2x offset for zoom 18
+                    
+                    const latDelta = radius / 111;
+                    const offset = Math.ceil(latDelta * 111 / (40075 * Math.cos(lat * Math.PI / 180) / n));
+                    
+                    for (let x = Math.max(0, centerX - offset); x <= Math.min(n - 1, centerX + offset); x++) {
+                        for (let y = Math.max(0, centerY - offset); y <= Math.min(n - 1, centerY + offset); y++) {
+                            tilesToCache.push(`https://tile.openstreetmap.org/${zoom}/${x}/${y}.png`);
+                        }
+                    }
+                });
+                
+                // Send to Service Worker
+                if (navigator.serviceWorker.controller) {
+                    navigator.serviceWorker.controller.postMessage({
+                        type: 'PRECACHE_TILES',
+                        tiles: tilesToCache
+                    });
+                    console.log(`📦 Cached tiles zoom 15-18 (75km radius - fast riding)`);
+                    showOfflineNotification();
+                    showCacheSuccess();
+                }
+            }, () => {
+                console.log('Geolocation unavailable for offline caching');
+            });
+        }
+
+        function initializeMap(isMaster, code) {
+            setTimeout(() => {
+                const mapDivId = isMaster ? 'mapMaster' : 'mapFollower';
+                const mapDiv = document.getElementById(mapDivId);
+                
+                if (mapInstance) {
+                    mapInstance.off();
+                    mapInstance.remove();
+                    mapInstance = null;
+                }
+                
+                masterMarker = null;
+                followerMarker = null;
+                masterDirection = null;
+                followerDirection = null;
+                polyline = null;
+                gpxPolyline = null;
+                gpxRoute = [];
+                followerLoadedGpxRoute = [];
+                followerLoadedGpxPolyline = null;
+                trackingPolyline = null;
+
+                mapInstance = L.map(mapDiv).setView([52.04, 5.67], 13);
+                mapInstance.doubleClickZoom.disable();
+                
+                // Prevent double-click zoom on map
+                mapDiv.addEventListener('dblclick', (e) => {
+                    e.preventDefault();
+                    return false;
+                }, true);
+
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap',
+                    maxZoom: 19
+                }).addTo(mapInstance);
+
+                // Add click listener to exit map-only mode
+                mapInstance.on('click', () => {
+                    if (document.querySelector('.container').classList.contains('map-only')) {
+                        toggleMapOnly(isMaster ? 'master' : 'follower');
+                    }
+                });
+
+                // Start background pre-caching of offline tiles
+                startSmartPreCache();
+
+                if (isMaster) {
+                    initDeviceCompass();
+
+                    watchId = navigator.geolocation.watchPosition(
+                        (position) => {
+                            const { latitude, longitude } = position.coords;
+                            masterPos = { lat: latitude, lng: longitude };
+
+                            if (masterMarker) {
+                                masterMarker.setLatLng([latitude, longitude]);
+                                if (masterMarker.setRotationAngle) {
+                                    masterMarker.setRotationAngle(deviceHeading);
+                                }
+                            } else {
+                                masterMarker = L.circleMarker([latitude, longitude], {
+                                    radius: 12,
+                                    fillColor: '#FF1744',
+                                    color: 'white',
+                                    weight: 2,
+                                    opacity: 0.8,
+                                    fillOpacity: 0.8
+                                }).addTo(mapInstance).bindPopup('YOU');
+                            }
+
+                            // createDirectionMarker(latitude, longitude, deviceHeading, false);
+                            masterLocations.push([latitude, longitude]);
+
+                            if (masterLocations.length > 1) {
+                                if (trackingPolyline) {
+                                    mapInstance.removeLayer(trackingPolyline);
+                                }
+                                trackingPolyline = L.polyline(masterLocations, {
+                                    color: '#FF1744',
+                                    weight: trackLineWidth,
+                                    opacity: 0.8,
+                                    dashArray: '5, 5'
+                                }).addTo(mapInstance);
+                            }
+
+                            sendToFirebase(code, latitude, longitude, deviceHeading);
+                            
+                            if (isAutoFollowActive) {
+                                updateMapView();
+                            }
+                        },
+                        (err) => showError(`GPS: ${err.message}`),
+                        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                    );
+                } else {
+                    initDeviceCompass();
+
+                    watchId = navigator.geolocation.watchPosition(
+                        (position) => {
+                            const { latitude, longitude } = position.coords;
+                            followerPos = { lat: latitude, lng: longitude };
+                            
+                            if (followerMarker) {
+                                followerMarker.setLatLng([latitude, longitude]);
+                            } else {
+                                followerMarker = L.circleMarker([latitude, longitude], {
+                                    radius: 8,
+                                    fillColor: '#2196F3',
+                                    color: '#fff',
+                                    weight: 2,
+                                    opacity: 1,
+                                    fillOpacity: 0.9
+                                }).addTo(mapInstance).bindPopup('YOU');
+                            }
+                            
+                            // Add to follower's track
+                            followerLocations.push([latitude, longitude]);
+                            
+                            // Update follower's blue tracking polyline
+                            if (followerLocations.length > 1) {
+                                if (followerTrackingPolyline) {
+                                    mapInstance.removeLayer(followerTrackingPolyline);
+                                }
+                                followerTrackingPolyline = L.polyline(followerLocations, {
+                                    color: '#2196F3',
+                                    weight: trackLineWidth,
+                                    opacity: 0.8,
+                                    dashArray: '5, 5'
+                                }).addTo(mapInstance);
+                            }
+
+                            // createDirectionMarker(latitude, longitude, deviceHeading, true);
+                        },
+                        (err) => console.error('Follower GPS:', err),
+                        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                    );
+
+                    const updateMasterMarker = async () => {
+                        const location = await fetchMasterLocation(code);
+                        if (location) {
+                            masterPos = { lat: location.lat, lng: location.lng };
+
+                            if (masterMarker) {
+                                masterMarker.setLatLng([location.lat, location.lng]);
+                                if (location.heading && masterMarker.setRotationAngle) {
+                                    masterMarker.setRotationAngle(location.heading);
+                                }
+                            } else {
+                                const heading = location.heading || 0;
+                                masterMarker = L.circleMarker([location.lat, location.lng], {
+                                    radius: 12,
+                                    fillColor: '#FF1744',
+                                    color: 'white',
+                                    weight: 2,
+                                    opacity: 0.8,
+                                    fillOpacity: 0.8
+                                }).addTo(mapInstance).bindPopup('TARGET');
+                            }
+
+                            // createDirectionMarker(location.lat, location.lng, location.heading, false);
+                            
+                            if (location.route && location.route.length > 0) {
+                                masterLocations = location.route;
+                            }
+
+                            if (masterLocations.length > 1 && trackVisible) {
+                                if (trackingPolyline) {
+                                    mapInstance.removeLayer(trackingPolyline);
+                                }
+                                trackingPolyline = L.polyline(masterLocations, {
+                                    color: '#FF1744',
+                                    weight: trackLineWidth,
+                                    opacity: 0.8
+                                }).addTo(mapInstance);
+                            }
+
+                            // Fetch and display Master's GPX route if ALL TRACK is enabled
+                            if (trackState === 'all') {
+                                // Only fetch Master's GPX if Follower hasn't loaded their own
+                                if (!followerLoadedGpxRoute || followerLoadedGpxRoute.length === 0) {
+                                    const fetchedGpxRoute = await fetchGPXRoute(code);
+                                    if (fetchedGpxRoute && fetchedGpxRoute.length > 0) {
+                                        gpxRoute = fetchedGpxRoute;  // Update to latest
+                                    } else {
+                                        gpxRoute = [];  // Master deleted it
+                                    }
+                                }
+                                
+                                // Display current gpxRoute (either own or Master's)
+                                if (gpxRoute && gpxRoute.length > 0) {
+                                    if (gpxPolyline) {
+                                        mapInstance.removeLayer(gpxPolyline);
+                                    }
+                                    gpxPolyline = L.polyline(gpxRoute, {
+                                        color: '#00BCD4',
+                                        weight: trackLineWidth,
+                                        opacity: 0.8,
+                                        dashArray: '2, 5'
+                                    }).addTo(mapInstance);
+                                }
+                            }
+
+                            if (followerPos) {
+                                calculateDistance(followerPos.lat, followerPos.lng, location.lat, location.lng);
+                            }
+
+                            if (isAutoFollowActive) {
+                                updateMapView();
+                            }
+                        }
+                    };
+
+                    updateMasterMarker();
+                    followInterval = setInterval(updateMasterMarker, 3000);
+                }
+            }, 100);
+        }
+
+        async function cycleTrackView() {
+            // Cycle: none → view → all → none
+            const labels = ['HIDE TRACK', 'VIEW TRACK', 'ALL TRACK'];
+            const states = ['none', 'view', 'all'];
+            const currentIndex = states.indexOf(trackState);
+            const nextIndex = (currentIndex + 1) % states.length;
+            
+            trackState = states[nextIndex];
+            document.getElementById('trackBtn').textContent = labels[nextIndex];
+            
+            // Update display based on state
+            if (trackState === 'none') {
+                // Hide all tracks
+                if (trackingPolyline) {
+                    try { mapInstance.removeLayer(trackingPolyline); } catch (e) {}
+                    trackingPolyline = null;
+                }
+                if (gpxPolyline) {
+                    try { mapInstance.removeLayer(gpxPolyline); } catch (e) {}
+                    gpxPolyline = null;
+                }
+            } else if (trackState === 'view') {
+                // Show only Master's tracking (red)
+                if (masterLocations.length > 1) {
+                    if (trackingPolyline) {
+                        try { mapInstance.removeLayer(trackingPolyline); } catch (e) {}
+                    }
+                    trackingPolyline = L.polyline(masterLocations, {
+                        color: '#FF1744',
+                        weight: trackLineWidth,
+                        opacity: 0.8
+                    }).addTo(mapInstance);
+                }
+                if (gpxPolyline) {
+                    try { mapInstance.removeLayer(gpxPolyline); } catch (e) {}
+                    gpxPolyline = null;
+                }
+            } else if (trackState === 'all') {
+                // Show both Master tracking + GPX
+                if (masterLocations.length > 1) {
+                    if (trackingPolyline) {
+                        try { mapInstance.removeLayer(trackingPolyline); } catch (e) {}
+                    }
+                    trackingPolyline = L.polyline(masterLocations, {
+                        color: '#FF1744',
+                        weight: trackLineWidth,
+                        opacity: 0.8
+                    }).addTo(mapInstance);
+                }
+                
+                // ONLY show Master's GPX if Follower hasn't loaded their own
+                if (!followerLoadedGpxRoute || followerLoadedGpxRoute.length === 0) {
+                    const fetchedGpxRoute = await fetchGPXRoute(currentCode);
+                    if (fetchedGpxRoute && fetchedGpxRoute.length > 0) {
+                        gpxRoute = fetchedGpxRoute;  // Update to latest Master's GPX
+                    } else {
+                        gpxRoute = [];  // Master deleted it
+                    }
+                }
+                
+                // Show gpxRoute if available
+                if (gpxRoute && gpxRoute.length > 0) {
+                    if (gpxPolyline) {
+                        try { mapInstance.removeLayer(gpxPolyline); } catch (e) {}
+                    }
+                    gpxPolyline = L.polyline(gpxRoute, {
+                        color: '#00BCD4',
+                        weight: trackLineWidth,
+                        opacity: 0.8,
+                        dashArray: '2, 5'
+                    }).addTo(mapInstance);
+                }
+            }
+        }
+
+        function showDownloadMenu() {
+            // Show modal with save options (conditional based on mode)
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+                background: rgba(0,0,0,0.8); display: flex; align-items: center;
+                justify-content: center; z-index: 1002;
+            `;
+            
+            const content = document.createElement('div');
+            content.style.cssText = `
+                background: #1a1f3a; color: #fff; padding: 30px; border-radius: 10px;
+                text-align: center; width: 90%; max-width: 400px;
+                font-family: sans-serif;
+            `;
+            
+            let html = `<h3 style="color: #00BCD4; margin-top: 0;">Save Track</h3>`;
+            
+            html += `
+                <button onclick="downloadMasterTrack(); document.getElementById('downloadModal').remove();" 
+                    style="width: 100%; padding: 12px; margin: 10px 0; background: #FF1744; 
+                    color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 1em;">
+                    Save master track
+                </button>
+                <button onclick="downloadMasterLoadedTrack(); document.getElementById('downloadModal').remove();" 
+                    style="width: 100%; padding: 12px; margin: 10px 0; background: #00BCD4; 
+                    color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 1em;">
+                    Save master loaded track
+                </button>
+            `;
+            
+            // Only show follower track option in follower mode
+            if (currentMode === 'follower') {
+                html += `
+                    <button onclick="downloadFollowerTrack(); document.getElementById('downloadModal').remove();" 
+                        style="width: 100%; padding: 12px; margin: 10px 0; background: #2196F3; 
+                        color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 1em;">
+                        Save follower track
+                    </button>
+                `;
+            }
+            
+            html += `
+                <button onclick="document.getElementById('downloadModal').remove();" 
+                    style="width: 100%; padding: 12px; margin: 10px 0; background: #333; 
+                    color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 1em;">
+                    Cancel
+                </button>
+            `;
+            
+            content.innerHTML = html;
+            modal.appendChild(content);
+            modal.id = 'downloadModal';
+            document.body.appendChild(modal);
+        }
+
+        function downloadMasterTrack() {
+            if (masterLocations.length < 2) {
+                showError('Need 2+ points');
+                return;
+            }
+
+            let gpx = `<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="LiveTracker">
+  <trk>
+    <name>Master Track ${currentCode}</name>
+    <trkseg>`;
+
+            masterLocations.forEach(([lat, lng]) => {
+                gpx += `
+      <trkpt lat="${lat}" lon="${lng}">
+        <time>${new Date().toISOString()}</time>
+      </trkpt>`;
+            });
+
+            gpx += `
+    </trkseg>
+  </trk>
+</gpx>`;
+
+            saveGPXFile(gpx, `master-track-${currentCode}.gpx`);
+        }
+
+        function downloadMasterLoadedTrack() {
+            if (gpxRoute.length < 2) {
+                showError('Need 2+ points');
+                return;
+            }
+
+            let gpx = `<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="LiveTracker">
+  <trk>
+    <name>Master Loaded Track ${currentCode}</name>
+    <trkseg>`;
+
+            gpxRoute.forEach(([lat, lng]) => {
+                gpx += `
+      <trkpt lat="${lat}" lon="${lng}">
+        <time>${new Date().toISOString()}</time>
+      </trkpt>`;
+            });
+
+            gpx += `
+    </trkseg>
+  </trk>
+</gpx>`;
+
+            saveGPXFile(gpx, `loaded-track-${currentCode}.gpx`);
+        }
+
+        function downloadFollowerTrack() {
+            if (followerLocations.length < 2) {
+                showError('Need 2+ points');
+                return;
+            }
+
+            let gpx = `<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="LiveTracker">
+  <trk>
+    <name>Own Track ${currentCode}</name>
+    <trkseg>`;
+
+            followerLocations.forEach(([lat, lng]) => {
+                gpx += `
+      <trkpt lat="${lat}" lon="${lng}">
+        <time>${new Date().toISOString()}</time>
+      </trkpt>`;
+            });
+
+            gpx += `
+    </trkseg>
+  </trk>
+</gpx>`;
+
+            saveGPXFile(gpx, `own-track-${currentCode}.gpx`);
+        }
+
+        function saveGPXFile(gpx, filename) {
+            const blob = new Blob([gpx], { type: 'application/gpx+xml' });
+            const url = URL.createObjectURL(blob);
+
+            if (navigator.share) {
+                fetch(url)
+                    .then(r => r.blob())
+                    .then(blob => {
+                        navigator.share({
+                            files: [new File([blob], filename, { type: 'application/gpx+xml' })],
+                            title: 'Track',
+                            text: filename
+                        }).catch(err => {
+                            if (err.name !== 'AbortError') {
+                                fallbackDownload(url, filename);
+                            }
+                        });
+                    })
+                    .catch(() => fallbackDownload(url, filename));
+            } else {
+                fallbackDownload(url, filename);
+            }
+        }
+
+        function downloadGPX() {
+            showDownloadMenu();
+        }
+
+        function fallbackDownload(url, filename) {
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function startMaster() {
+            const code = generateCode();
+            currentCode = code;
+            currentMode = 'master';
+            masterLocations = [];
+            isAutoFollowActive = true;
+
+            document.getElementById('modeSelect').classList.add('hidden');
+            document.getElementById('activeTracking').classList.remove('hidden');
+            document.querySelector('.header').classList.add('hidden');
+            document.getElementById('codeBox').textContent = code;
+            document.getElementById('masterMode').classList.remove('hidden');
+            document.getElementById('followerMode').classList.add('hidden');
+
+            requestWakeLock();
+            initializeMap(true, code);
+        }
+
+        function startFollowing() {
+            const code = document.getElementById('inputCode').value.toUpperCase();
+            
+            if (code.length !== 4) {
+                showError('Code: 4 chars');
+                return;
+            }
+
+            currentCode = code;
+            currentMode = 'follower';
+            masterLocations = [];
+            trackVisible = false;
+            zoomMode = 'master';
+            compassMode = 'device';
+            isAutoFollowActive = true;
+
+            document.getElementById('modeSelect').classList.add('hidden');
+            document.getElementById('activeTracking').classList.remove('hidden');
+            document.querySelector('.header').classList.add('hidden');
+            document.getElementById('followerCodeBox').textContent = code;
+            document.getElementById('masterMode').classList.add('hidden');
+            document.getElementById('followerMode').classList.remove('hidden');
+            document.getElementById('zoomBtn').textContent = 'ZOOM: MASTER';
+            document.getElementById('trackBtn').textContent = 'VIEW TRACK';
+
+            requestWakeLock();
+            initializeMap(false, code);
+        }
+
+        function stopTracking() {
+            releaseWakeLock();
+            
+            if (watchId) {
+                navigator.geolocation.clearWatch(watchId);
+                watchId = null;
+            }
+            if (followInterval) {
+                clearInterval(followInterval);
+                followInterval = null;
+            }
+            if (mapInstance) {
+                mapInstance.off();
+                mapInstance.remove();
+                mapInstance = null;
+            }
+
+            currentMode = null;
+            currentCode = '';
+            masterLocations = [];
+            followerLocations = [];
+            masterMarker = null;
+            followerMarker = null;
+            masterDirection = null;
+            followerDirection = null;
+            polyline = null;
+            gpxPolyline = null;
+            gpxRoute = [];
+            trackingPolyline = null;
+            followerTrackingPolyline = null;
+            followerPos = null;
+            masterPos = null;
+            trackVisible = false;
+            allTrackVisible = false;
+            trackState = 'none';
+            isAutoFollowActive = false;
+
+            document.getElementById('activeTracking').classList.add('hidden');
+            document.getElementById('modeSelect').classList.remove('hidden');
+            document.querySelector('.header').classList.remove('hidden');
+            document.getElementById('inputCode').value = '';
+            document.getElementById('error').classList.add('hidden');
+        }
+
+        function toggleHandleiding() {
+            const modal = document.getElementById('handleidingModal');
+            if (modal.classList.contains('hidden')) {
+                modal.classList.remove('hidden');
+                modal.style.display = 'block';
+            } else {
+                modal.classList.add('hidden');
+                modal.style.display = 'none';
+            }
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('error');
+            errorDiv.textContent = message;
+            errorDiv.classList.remove('hidden');
+        }
+
+        function zoomIn() {
+            if (zoomLevelValue < 20) {
+                zoomLevelValue++;
+                updateZoomDisplay();
+            }
+        }
+        
+        function zoomOut() {
+            if (zoomLevelValue > 10) {
+                zoomLevelValue--;
+                updateZoomDisplay();
+            }
+        }
+        
+        function updateZoomDisplay() {
+            // Update both display spans
+            const masterSpan = document.getElementById('zoomLevelMaster');
+            const followerSpan = document.getElementById('zoomLevelFollower');
+            if (masterSpan) masterSpan.textContent = zoomLevelValue;
+            if (followerSpan) followerSpan.textContent = zoomLevelValue;
+            
+            updateMapView();
+        }
+
+        function updateZoomLevel(value) {
+            zoomLevelValue = parseInt(value);
+            updateZoomDisplay();
+        }
+        
+        function increaseTrackWidth() {
+            if (trackLineWidth < 15) {
+                trackLineWidth += 1;
+                if (trackLineWidth > 15) trackLineWidth = 15;
+                updateTrackDisplay();
+                redrawAllTracks();
+            }
+        }
+        
+        function decreaseTrackWidth() {
+            if (trackLineWidth > 3) {
+                trackLineWidth -= 1;
+                if (trackLineWidth < 3) trackLineWidth = 3;
+                updateTrackDisplay();
+                redrawAllTracks();
+            }
+        }
+        
+        function updateTrackDisplay() {
+            const trackWidthSpan = document.getElementById('trackWidthDisplay');
+            if (trackWidthSpan) {
+                trackWidthSpan.textContent = trackLineWidth;
+            }
+        }
+        
+        function redrawAllTracks() {
+            // Redraw Master tracking polyline
+            if (mapInstance && trackingPolyline) {
+                const latlngs = trackingPolyline.getLatLngs();
+                mapInstance.removeLayer(trackingPolyline);
+                trackingPolyline = L.polyline(latlngs, {
+                    color: '#FF1744',
+                    weight: trackLineWidth,
+                    opacity: 0.8,
+                    dashArray: '5, 5'
+                }).addTo(mapInstance);
+            }
+            
+            // Redraw Master GPX polyline
+            if (mapInstance && gpxPolyline) {
+                const gpxLatlngs = gpxPolyline.getLatLngs();
+                mapInstance.removeLayer(gpxPolyline);
+                gpxPolyline = L.polyline(gpxLatlngs, {
+                    color: '#00BCD4',
+                    weight: trackLineWidth,
+                    opacity: 0.8,
+                    dashArray: '2, 5'
+                }).addTo(mapInstance);
+            }
+            
+            // Redraw Follower loaded GPX polyline
+            if (mapInstance && followerLoadedGpxPolyline) {
+                const followerGpxLatlngs = followerLoadedGpxPolyline.getLatLngs();
+                mapInstance.removeLayer(followerLoadedGpxPolyline);
+                followerLoadedGpxPolyline = L.polyline(followerGpxLatlngs, {
+                    color: '#00BCD4',
+                    weight: trackLineWidth,
+                    opacity: 0.8,
+                    dashArray: '2, 5'
+                }).addTo(mapInstance);
+            }
+            
+            // Re-disable double-click zoom after redraw
+            if (mapInstance) {
+                mapInstance.doubleClickZoom.disable();
+            }
+        }
+
+        // Wake Lock refresh on visibility change
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden && currentMode) {
+                requestWakeLock();
+            }
+        });
+
+        // Periodic Wake Lock refresh every 30 seconds
+        let wakeLockRefreshInterval = null;
+
+        const originalStartMaster = startMaster;
+        startMaster = function() {
+            originalStartMaster();
+            if (wakeLockRefreshInterval) clearInterval(wakeLockRefreshInterval);
+            wakeLockRefreshInterval = setInterval(() => {
+                if (currentMode === 'master') {
+                    requestWakeLock();
+                }
+            }, 30000);
+        };
+
+        const originalStartFollowing = startFollowing;
+        startFollowing = function() {
+            originalStartFollowing();
+            if (wakeLockRefreshInterval) clearInterval(wakeLockRefreshInterval);
+            wakeLockRefreshInterval = setInterval(() => {
+                if (currentMode === 'follower') {
+                    requestWakeLock();
+                }
+            }, 30000);
+        };
+
+        const originalStopTracking = stopTracking;
+        stopTracking = function() {
+            if (wakeLockRefreshInterval) {
+                clearInterval(wakeLockRefreshInterval);
+                wakeLockRefreshInterval = null;
+            }
+            originalStopTracking();
+        }
+
+        // Start counting all active devices on URL (immediately)
+        startActiveDeviceCounter();
+
+        // Register service worker for PWA
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/tracker/sw.js')
+                .then(registration => {
+                    console.log('Service Worker registered:', registration);
+                })
+                .catch(error => {
+                    console.log('Service Worker registration failed:', error);
+                });
+        }
+    </script>
+</body>
+</html>
