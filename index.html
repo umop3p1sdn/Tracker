@@ -468,7 +468,7 @@
             <!-- MODE SELECT -->
             <div id="modeSelect" class="mode-select">
                 <p class="subtitle">Start tracking</p>
-                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v4.4 © Umop3p1sdn</div>
+                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v4.6 © Umop3p1sdn</div>
                 
                 <!-- Hidden file input for GPX loading -->
                 <input type="file" id="gpxInputLoad" accept=".gpx" style="display:none;" onchange="loadGPXFile(event)">
@@ -635,42 +635,22 @@
             </ul>
 
             <h3 style="color: #00BCD4; margin-top: 25px;">📡 Offline Map Buffer (OMB)</h3>
-            <p>De <strong>OMB-knop</strong> zet het automatisch bufferen van offline kaarten aan/uit. Zo kun je doorrijden zonder kaart te verliezen tot je weer verbinding hebt.</p>
-
-            <p>— <strong>Hoe werkt het?</strong></p>
             <ul style="margin: 10px 0; padding-left: 20px;">
-                <li>Elke 10 minuten worden de kaart-tegels rond je positie opgeslagen</li>
-                <li>Hoofdview (zoom 15) dekt <strong>~20 km</strong> rond je heen</li>
-                <li>Plus uitgezoomde lagen tot ~70 km voor overzicht</li>
-                <li>Lokaal opgeslagen op je telefoon, niet op een server</li>
-                <li>Tegels die al opgeslagen zijn worden overgeslagen (bespaart data)</li>
+                <li><strong>OMB-knop:</strong> bufferen aan/uit</li>
+                <li>Slaat elke 10 min de kaart rond je op (zoom 15 ≈ 20 km)</li>
+                <li>Geen verbinding? Kaart binnen je buffer blijft zichtbaar</li>
+                <li>Data: ~13 MB de eerste keer, daarna alleen nieuwe stukken</li>
+                <li>OMB uit = zuiniger (alleen scherm-tegels laden nog, ~4 KB)</li>
             </ul>
-
-            <p>— <strong>Offline gebruik:</strong></p>
-            <ul style="margin: 10px 0; padding-left: 20px;">
-                <li>Geen verbinding? De kaart binnen je buffer blijft zichtbaar</li>
-                <li>GPS werkt zonder internet, dus je ziet jezelf bewegen</li>
-                <li>Buiten de buffer (of niet gecached) → grijs vlak</li>
-            </ul>
-
-            <p>— <strong>Dataverbruik:</strong></p>
-            <ul style="margin: 10px 0; padding-left: 20px;">
-                <li>Volledige buffer ≈ <strong>13 MB</strong> (alleen de eerste keer in een gebied)</li>
-                <li>Stilstaan = ~0 data (alles staat al in cache)</li>
-                <li>Rijdend betaal je alleen voor nieuwe randen waar je in rijdt</li>
-                <li>Totale opslag blijft klein (~15 MB), ruim onder de limiet</li>
-            </ul>
-
-            <p>— <strong>OMB uitzetten?</strong> Druk op de OMB-knop tot "OMB: OFF". Dan wordt er niets meer geladen en gebruik je geen data voor kaarten.</p>
             
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                Live Tracker App v4.4 © Umop3p1sdn
+                Live Tracker App v4.6 © Umop3p1sdn
             </p>
         </div>
     </div>
 
     <script>
-        const APP_VERSION = "4.4";
+        const APP_VERSION = "4.6";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
