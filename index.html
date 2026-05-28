@@ -1408,8 +1408,10 @@
                     const centerX = Math.floor((lng + 180) / 360 * n);
                     const centerY = Math.floor((1 - Math.log(Math.tan(lat * Math.PI / 180) + 1 / Math.cos(lat * Math.PI / 180)) / Math.PI) / 2 * n);
                     
-                    // Radius in tiles - 75km for fast riding coverage
-                    const radius = 75; // km
+                    // Tile offset - zoom 18 needs 2x more tiles (smaller tile size)
+                    let radius = 75;
+                    if (zoom === 18) radius = 150; // 2x offset for zoom 18
+                    
                     const latDelta = radius / 111;
                     const offset = Math.ceil(latDelta * 111 / (40075 * Math.cos(lat * Math.PI / 180) / n));
                     
