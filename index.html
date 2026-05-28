@@ -358,7 +358,7 @@
         <!-- INSTALL PROMPT SCREEN -->
         <div id="installScreen" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; text-align: center;">
             <!-- VERSION NUMBER -->
-            <div style="position: absolute; top: 15px; right: 15px; font-size: 0.7em; color: #aaa; opacity: 0.6;">v2.31</div>
+            <div id="versionDisplay" style="position: absolute; top: 15px; right: 15px; font-size: 0.9em; color: #00BCD4; opacity: 1; font-weight: bold;">v3.1</div>
             
             <div style="max-width: 300px;">
                 <div style="font-size: 80px; margin-bottom: 20px;">📱</div>
@@ -641,7 +641,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "3.1";
+        const APP_VERSION = "3.2";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -1404,46 +1404,87 @@
         }
         
         function cacheCurrentLocation() {
-            console.log('🔄 cacheCurrentLocation triggered');  // DEBUG
-            navigator.geolocation.getCurrentPosition((position) => {
-                console.log('📍 Got position:', position.coords);  // DEBUG
-                const lat = position.coords.latitude;
-                const lng = position.coords.longitude;
-                
-                // 50km diameter = 25km radius
-                const radius = 25; // km
-                const tilesToCache = [];
-                
-                // Generate tiles for zoom 15, 16, 17 (25km radius)
-                [15, 16, 17].forEach(zoom => {
-                    const n = Math.pow(2, zoom);
-                    const centerX = Math.floor((lng + 180) / 360 * n);
-                    const centerY = Math.floor((1 - Math.log(Math.tan(lat * Math.PI / 180) + 1 / Math.cos(lat * Math.PI / 180)) / Math.PI) / 2 * n);
+            console.log('🔄 cacheCurrentLocation triggered');
+            
+            // Get geolocation
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition((position) => {
+                    console.log('📍 Got position - showing Oke');
                     
-                    // Radius in tiles
-                    const latDelta = radius / 111;
-                    const offset = Math.ceil(latDelta * 111 / (40075 * Math.cos(lat * Math.PI / 180) / n));
-                    
-                    for (let x = Math.max(0, centerX - offset); x <= Math.min(n - 1, centerX + offset); x++) {
-                        for (let y = Math.max(0, centerY - offset); y <= Math.min(n - 1, centerY + offset); y++) {
-                            tilesToCache.push(`https://tile.openstreetmap.org/${zoom}/${x}/${y}.png`);
-                        }
+                    // Show "Oke" ONLY when geolocation succeeds
+                    if (precacheCurrentTimerElement) {
+                        precacheCurrentTimerElement.textContent = '✓ Oke';
+                        precacheCurrentTimerElement.style.background = '#4CAF50';
                     }
-                });
-                
-                // Send to Service Worker
-                if (navigator.serviceWorker.controller) {
-                    navigator.serviceWorker.controller.postMessage({
-                        type: 'PRECACHE_TILES',
-                        tiles: tilesToCache
+                    
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    
+                    // 50km diameter = 25km radius
+                    const radius = 25;
+                    const tilesToCache = [];
+                    
+                    // Generate tiles for zoom 15, 16, 17
+                    [15, 16, 17].forEach(zoom => {
+                        const n = Math.pow(2, zoom);
+                        const centerX = Math.floor((lng + 180) / 360 * n);
+                        const centerY = Math.floor((1 - Math.log(Math.tan(lat * Math.PI / 180) + 1 / Math.cos(lat * Math.PI / 180)) / Math.PI) / 2 * n);
+                        
+                        const latDelta = radius / 111;
+                        const offset = Math.ceil(latDelta * 111 / (40075 * Math.cos(lat * Math.PI / 180) / n));
+                        
+                        for (let x = Math.max(0, centerX - offset); x <= Math.min(n - 1, centerX + offset); x++) {
+                            for (let y = Math.max(0, centerY - offset); y <= Math.min(n - 1, centerY + offset); y++) {
+                                tilesToCache.push(`https://tile.openstreetmap.org/${zoom}/${x}/${y}.png`);
+                            }
+                        }
                     });
-                    console.log(`📦 Cached ${tilesToCache.length} tiles (50km diameter)`);
+                    
+                    // Download and cache tiles
+                    let completed = 0;
+                    const total = tilesToCache.length;
+                    
+                    tilesToCache.forEach(tileUrl => {
+                        fetch(tileUrl)
+                            .then(r => {
+                                if (r && r.status === 200) {
+                                    return r.blob().then(blob => {
+                                        // Send to Service Worker to cache
+                                        if (navigator.serviceWorker.controller) {
+                                            navigator.serviceWorker.controller.postMessage({
+                                                type: 'PRECACHE_TILES',
+                                                tiles: [tileUrl]
+                                            });
+                                        }
+                                        return blob;
+                                    });
+                                }
+                            })
+                            .catch(e => console.log('Tile fetch error:', e))
+                            .finally(() => {
+                                completed++;
+                                
+                                // Show "Finish" ONLY when all tiles are downloaded
+                                if (completed === total) {
+                                    console.log(`✅ All ${total} tiles downloaded - showing Finish`);
+                                    if (precacheCurrentTimerElement) {
+                                        precacheCurrentTimerElement.textContent = '✓ Finish';
+                                    }
+                                    
+                                    // Start new timer
+                                    setTimeout(() => {
+                                        addNewTimer();
+                                    }, 1500);
+                                }
+                            });
+                    });
+                    
                     showOfflineNotification();
-                    showCacheSuccess();  // Show Oke immediately when caching triggered
-                }
-            }, () => {
-                console.log('Geolocation unavailable for offline caching');
-            });
+                    
+                }, () => {
+                    console.log('⚠️ Geolocation denied - no Oke shown');
+                });
+            }
         }
 
         function initializeMap(isMaster, code) {
