@@ -631,8 +631,6 @@
             <p>— <strong>Kaarten worden automatisch opgeslagen terwijl je rijdt</strong></p>
             <ul style="margin: 10px 0; padding-left: 20px;">
                 <li>50km radius wordt gecacht voor offline gebruik</li>
-                <li>Werkt VOLLEDIG offline</li>
-                <li>Terwijl je rijdt = meer kaart gedownload</li>
             </ul>
             
             <h3 style="color: #00BCD4; margin-top: 25px;">⚙️ Tips</h3>
@@ -651,7 +649,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "2.32";
+        const APP_VERSION = "2.33";
         
         // Update ALL version displays from single source
         document.addEventListener('DOMContentLoaded', () => {
@@ -1323,6 +1321,9 @@
                     attribution: '© OpenStreetMap',
                     maxZoom: 19
                 }).addTo(mapInstance);
+                
+                // Start smart pre-caching for current zoom level
+                startSmartPreCache();
 
                 // Add click listener to exit map-only mode
                 mapInstance.on('click', () => {
@@ -2015,30 +2016,31 @@
 </html>
     <!-- V2.32: Offline Map Tile Caching (INLINE) -->
     <script>
-        // V2.32: Offline Maps with Location-Based Pre-Cache
+        // V2.32: Smart Offline Maps - Cache Current Zoom Level
         
-        // Get user location and generate pre-cache tiles
-        function initLocationBasedPreCache() {
-          if (!navigator.geolocation) {
-            console.log('📍 Geolocation not available');
-            return;
-          }
+        let mapInstance = null;
+        
+        // Initialize after map is ready
+        function initSmartPreCache() {
+          if (!navigator.geolocation || !mapInstance) return;
           
           navigator.geolocation.getCurrentPosition(
             (position) => {
               const userLat = position.coords.latitude;
               const userLng = position.coords.longitude;
-              console.log(`📍 Your location: ${userLat.toFixed(2)}, ${userLng.toFixed(2)}`);
+              const currentZoom = mapInstance.getZoom();
               
-              generateAndCacheTiles(userLat, userLng);
+              console.log(`📍 Location: ${userLat.toFixed(2)}, ${userLng.toFixed(2)} | Zoom: ${currentZoom}`);
+              
+              generateAndCacheTiles(userLat, userLng, currentZoom);
             },
-            (error) => {
+            () => {
               console.log('📍 Geolocation denied - skipping pre-cache');
             }
           );
         }
         
-        function generateAndCacheTiles(centerLat, centerLng) {
+        function generateAndCacheTiles(centerLat, centerLng, baseZoom) {
           const RADIUS_KM = 50;
           const tileUrls = [];
           
@@ -2068,8 +2070,18 @@
             return tiles;
           }
           
-          // Generate URLs for zoom 10-13
-          for (let zoom = 10; zoom <= 13; zoom++) {
+          // Cache current zoom + context + street detail levels
+          const zoomsToCache = [
+            Math.max(10, baseZoom - 1),  // 1 level out (context)
+            baseZoom,                     // Current zoom (where you are)
+            Math.min(13, baseZoom + 1),  // 1 level in (overview detail)
+            15, 16, 17                    // Street/building detail levels
+          ];
+          
+          // Remove duplicates
+          const uniqueZooms = [...new Set(zoomsToCache)];
+          
+          uniqueZooms.forEach(zoom => {
             const tiles = getTilesForZoom(zoom);
             tiles.forEach(tile => {
               const servers = ['a', 'b', 'c'];
@@ -2078,9 +2090,9 @@
                 tileUrls.push(url);
               });
             });
-          }
+          });
           
-          console.log(`🗺️ Requesting pre-cache of ${tileUrls.length} tiles (50km radius)...`);
+          console.log(`🗺️ Caching ${tileUrls.length} tiles for zoom ${uniqueZooms.join(',')}...`);
           
           // Send to Service Worker
           if (navigator.serviceWorker && navigator.serviceWorker.controller) {
@@ -2098,8 +2110,10 @@
           }
         }
         
-        // Start geolocation-based pre-caching on load
-        if (navigator.serviceWorker) {
-          initLocationBasedPreCache();
+        // Will be called after map initializes
+        function startSmartPreCache() {
+          if (navigator.serviceWorker) {
+            initSmartPreCache();
+          }
         }
     </script>
