@@ -649,7 +649,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "2.35";
+        const APP_VERSION = "2.36";
         
         // Update ALL version displays from single source
         document.addEventListener('DOMContentLoaded', () => {
@@ -1915,10 +1915,11 @@
         }
         
         function updateTrackDisplay() {
-            const trackWidthSpan = document.getElementById('trackWidthDisplay');
-            if (trackWidthSpan) {
-                trackWidthSpan.textContent = trackLineWidth;
-            }
+            // Update both Master and Follower track width displays
+            const displays = document.querySelectorAll('[id="trackWidthDisplay"]');
+            displays.forEach(elem => {
+                elem.textContent = trackLineWidth;
+            });
         }
         
         function redrawAllTracks() {
