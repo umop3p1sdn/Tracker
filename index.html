@@ -358,7 +358,7 @@
         <!-- INSTALL PROMPT SCREEN -->
         <div id="installScreen" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; text-align: center;">
             <!-- VERSION NUMBER -->
-            <div style="position: absolute; top: 15px; right: 15px; font-size: 0.7em; color: #aaa; opacity: 0.6;">v2.31</div>
+            <div style="position: absolute; top: 15px; right: 15px; font-size: 0.7em; color: #aaa; opacity: 0.6;">v<span id="appVersionInstall"></span></div>
             
             <div style="max-width: 300px;">
                 <div style="font-size: 80px; margin-bottom: 20px;">📱</div>
@@ -470,7 +470,7 @@
             <!-- MODE SELECT -->
             <div id="modeSelect" class="mode-select">
                 <p class="subtitle">Start tracking</p>
-                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | 2.32 © Umop3p1sdn</div>
+                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | <span id="appVersionUsers"></span> © Umop3p1sdn</div>
                 
                 <!-- Hidden file input for GPX loading -->
                 <input type="file" id="gpxInputLoad" accept=".gpx" style="display:none;" onchange="loadGPXFile(event)">
@@ -627,21 +627,45 @@
                 <li>ALL TRACKS (incl. Master's route)</li>
             </ul>
             
+            <h3 style="color: #00BCD4; margin-top: 25px;">📡 Offline Kaarten (V2.32)</h3>
+            <p>— <strong>Kaarten worden automatisch opgeslagen terwijl je rijdt</strong></p>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+                <li>50km radius wordt gecacht voor offline gebruik</li>
+                <li>Werkt VOLLEDIG offline</li>
+                <li>Terwijl je rijdt = meer kaart gedownload</li>
+            </ul>
+            
             <h3 style="color: #00BCD4; margin-top: 25px;">⚙️ Tips</h3>
             <ul style="margin: 10px 0; padding-left: 20px;">
                 <li>Houd je scherm OPEN - de app werkt niet op achtergrond</li>
                 <li>GPS werkt best buiten / in open ruimte</li>
                 <li>Langzaam internet? Tracking update elke 3 seconden</li>
+                <li>Offline kaarten gebruiken IndexedDB opslag (~10 MB base, groeit met rijden)</li>
+                <li>Kaarten worden automatisch schoongemaakt (max 100 MB)</li>
             </ul>
             
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                Live Tracker App v2.31 © Umop3p1sdn
+                Live Tracker App v<span id="appVersionFooter"></span> © Umop3p1sdn
             </p>
         </div>
     </div>
 
     <script>
         const APP_VERSION = "2.32";
+        
+        // Update ALL version displays from single source
+        document.addEventListener('DOMContentLoaded', () => {
+            const elements = [
+                'appVersionInstall',
+                'appVersionUsers',
+                'appVersionFooter'
+            ];
+            
+            elements.forEach(id => {
+                const elem = document.getElementById(id);
+                if (elem) elem.textContent = APP_VERSION;
+            });
+        });
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -1286,7 +1310,7 @@
                 followerLoadedGpxPolyline = null;
                 trackingPolyline = null;
 
-                mapInstance = L.map(mapDiv).setView([52.04, 5.67], 13);
+                mapInstance = L.map(mapDiv).setView([54, 10], 4);
                 mapInstance.doubleClickZoom.disable();
                 
                 // Prevent double-click zoom on map
@@ -1991,14 +2015,33 @@
 </html>
     <!-- V2.32: Offline Map Tile Caching (INLINE) -->
     <script>
-        // V2.32: Offline Maps with 50km Pre-Cache
+        // V2.32: Offline Maps with Location-Based Pre-Cache
         
-        // Generate OpenStreetMap tile URLs for 50km radius around Ede
-        function generatePreCacheTiles() {
-          const EDE_LAT = 52.04, EDE_LNG = 5.67, RADIUS_KM = 50;
+        // Get user location and generate pre-cache tiles
+        function initLocationBasedPreCache() {
+          if (!navigator.geolocation) {
+            console.log('📍 Geolocation not available');
+            return;
+          }
+          
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
+              const userLat = position.coords.latitude;
+              const userLng = position.coords.longitude;
+              console.log(`📍 Your location: ${userLat.toFixed(2)}, ${userLng.toFixed(2)}`);
+              
+              generateAndCacheTiles(userLat, userLng);
+            },
+            (error) => {
+              console.log('📍 Geolocation denied - skipping pre-cache');
+            }
+          );
+        }
+        
+        function generateAndCacheTiles(centerLat, centerLng) {
+          const RADIUS_KM = 50;
           const tileUrls = [];
           
-          // Tile coordinate calculation
           function latlngToTile(lat, lng, zoom) {
             const n = Math.pow(2, zoom);
             const x = Math.floor(n * ((lng + 180) / 360));
@@ -2006,13 +2049,12 @@
             return { x, y };
           }
           
-          // Get tiles for radius
           function getTilesForZoom(zoom) {
             const radiusInDegrees = RADIUS_KM / 111;
-            const minLat = EDE_LAT - radiusInDegrees;
-            const maxLat = EDE_LAT + radiusInDegrees;
-            const minLng = EDE_LNG - radiusInDegrees;
-            const maxLng = EDE_LNG + radiusInDegrees;
+            const minLat = centerLat - radiusInDegrees;
+            const maxLat = centerLat + radiusInDegrees;
+            const minLng = centerLng - radiusInDegrees;
+            const maxLng = centerLng + radiusInDegrees;
             
             const nwTile = latlngToTile(maxLat, minLng, zoom);
             const seTile = latlngToTile(minLat, maxLng, zoom);
@@ -2038,28 +2080,26 @@
             });
           }
           
-          return tileUrls;
-        }
-        
-        // Request Service Worker to pre-cache tiles
-        function startPreCaching() {
-          if (!navigator.serviceWorker || !navigator.serviceWorker.controller) return;
-          
-          const tileUrls = generatePreCacheTiles();
           console.log(`🗺️ Requesting pre-cache of ${tileUrls.length} tiles (50km radius)...`);
           
-          navigator.serviceWorker.controller.postMessage({
-            type: 'PRECACHE_TILES',
-            tiles: tileUrls
-          });
+          // Send to Service Worker
+          if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+            navigator.serviceWorker.controller.postMessage({
+              type: 'PRECACHE_TILES',
+              tiles: tileUrls
+            });
+          } else if (navigator.serviceWorker) {
+            navigator.serviceWorker.ready.then(() => {
+              navigator.serviceWorker.controller.postMessage({
+                type: 'PRECACHE_TILES',
+                tiles: tileUrls
+              });
+            });
+          }
         }
         
-        // Start pre-caching when Service Worker is ready
-        if (navigator.serviceWorker && navigator.serviceWorker.controller) {
-          startPreCaching();
-        } else if (navigator.serviceWorker) {
-          navigator.serviceWorker.ready.then(() => {
-            startPreCaching();
-          });
+        // Start geolocation-based pre-caching on load
+        if (navigator.serviceWorker) {
+          initLocationBasedPreCache();
         }
     </script>
