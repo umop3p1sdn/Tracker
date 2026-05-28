@@ -641,7 +641,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "2.31";
+        const APP_VERSION = "2.32";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -1328,8 +1328,10 @@
                     precacheCurrentTimerElement.textContent = precacheCountdown + 's';
                 }
                 
+                // When countdown reaches 0, trigger caching
                 if (precacheCountdown <= 0) {
                     clearInterval(precacheCountdownTimer);
+                    cacheCurrentLocation();  // ← TRIGGER CACHING NOW
                 }
             }, 1000);
         }
@@ -1357,9 +1359,6 @@
             
             // Cache immediately at start
             cacheCurrentLocation();
-            
-            // Then cache every 1 minute (TEST) - change to 30 * 60 * 1000 for production
-            precacheTileTimer = setInterval(cacheCurrentLocation, 1 * 60 * 1000);
         }
         
         // Listen for Service Worker messages (caching completion)
