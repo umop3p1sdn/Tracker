@@ -468,7 +468,7 @@
             <!-- MODE SELECT -->
             <div id="modeSelect" class="mode-select">
                 <p class="subtitle">Start tracking</p>
-                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v5.5 © Umop3p1sdn</div>
+                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v5.7 © Umop3p1sdn</div>
                 
                 <!-- Hidden file input for GPX loading -->
                 <input type="file" id="gpxInputLoad" accept=".gpx" style="display:none;" onchange="loadGPXFile(event)">
@@ -642,15 +642,18 @@
                 <li>Data: ~13 MB de eerste keer, daarna alleen nieuwe stukken</li>
                 <li>OMB uit = zuiniger (alleen scherm-tegels laden nog, ~4 KB)</li>
             </ul>
+
+            <h3 style="color: #00BCD4; margin-top: 25px;">🗺️ Kaart vooraf offline zetten</h3>
+            <p>Pan over de regio waar je straks wilt rijden, op het zoomniveau waarop je navigeert (standaard 15), en je kaart is automatisch offline beschikbaar.</p>
             
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                Live Tracker App v5.5 © Umop3p1sdn
+                Live Tracker App v5.7 © Umop3p1sdn
             </p>
         </div>
     </div>
 
     <script>
-        const APP_VERSION = "5.5";
+        const APP_VERSION = "5.7";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
