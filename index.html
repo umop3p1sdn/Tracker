@@ -1339,6 +1339,11 @@
                         (position) => {
                             const { latitude, longitude } = position.coords;
                             masterPos = { lat: latitude, lng: longitude };
+                            
+                            // Force map to have your location
+                            if (mapInstance && isCenterOn) {
+                                mapInstance.setView([latitude, longitude], 15);
+                            }
 
                             if (masterMarker) {
                                 masterMarker.setLatLng([latitude, longitude]);
@@ -1346,6 +1351,7 @@
                                     masterMarker.setRotationAngle(deviceHeading);
                                 }
                             } else {
+                                // Create marker
                                 masterMarker = L.circleMarker([latitude, longitude], {
                                     radius: 12,
                                     fillColor: '#FF1744',
@@ -1354,6 +1360,7 @@
                                     opacity: 0.8,
                                     fillOpacity: 0.8
                                 }).addTo(mapInstance).bindPopup('YOU');
+                                console.log('📍 Master marker created at', latitude, longitude);
                             }
 
                             // createDirectionMarker(latitude, longitude, deviceHeading, false);
