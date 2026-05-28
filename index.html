@@ -1400,18 +1400,16 @@
             navigator.geolocation.getCurrentPosition((position) => {
                 const lat = position.coords.latitude;
                 const lng = position.coords.longitude;
-                
-                // 50km diameter = 25km radius
-                const radius = 25; // km
                 const tilesToCache = [];
                 
-                // Generate tiles for zoom 15, 16, 17 (25km radius)
-                [15, 16, 17].forEach(zoom => {
+                // Generate tiles for zoom 15, 16, 17, 18 (detail levels)
+                [15, 16, 17, 18].forEach(zoom => {
                     const n = Math.pow(2, zoom);
                     const centerX = Math.floor((lng + 180) / 360 * n);
                     const centerY = Math.floor((1 - Math.log(Math.tan(lat * Math.PI / 180) + 1 / Math.cos(lat * Math.PI / 180)) / Math.PI) / 2 * n);
                     
-                    // Radius in tiles
+                    // Radius in tiles - 75km for fast riding coverage
+                    const radius = 75; // km
                     const latDelta = radius / 111;
                     const offset = Math.ceil(latDelta * 111 / (40075 * Math.cos(lat * Math.PI / 180) / n));
                     
@@ -1428,7 +1426,7 @@
                         type: 'PRECACHE_TILES',
                         tiles: tilesToCache
                     });
-                    console.log(`📦 Cached ${tilesToCache.length} tiles (50km diameter)`);
+                    console.log(`📦 Cached tiles zoom 15-18 (75km radius - fast riding)`);
                     showOfflineNotification();
                     showCacheSuccess();
                 }
