@@ -1264,6 +1264,170 @@
             }
         }
 
+        // ═══════════════════════════════════════════════════════════════
+        // OFFLINE MAPS: 30-minute interval caching (50km diameter)
+        // ═══════════════════════════════════════════════════════════════
+        let precacheTileTimer = null;
+        let precacheCountdownTimer = null;
+        let precacheCountdown = 60;
+        let precacheContainerElement = null;
+        let precacheCurrentTimerElement = null;
+        
+        function createCacheTimerContainer() {
+            // Create container for all timers/status
+            precacheContainerElement = document.createElement('div');
+            precacheContainerElement.id = 'offline-cache-container';
+            precacheContainerElement.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                z-index: 9999;
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+                align-items: flex-end;
+            `;
+            document.body.appendChild(precacheContainerElement);
+            
+            // Start first timer
+            addNewTimer();
+        }
+        
+        function addNewTimer() {
+            // Create timer display
+            precacheCurrentTimerElement = document.createElement('div');
+            precacheCurrentTimerElement.style.cssText = `
+                background: #2196F3;
+                color: white;
+                padding: 15px 20px;
+                border-radius: 8px;
+                font-size: 16px;
+                font-weight: bold;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+                min-width: 80px;
+                text-align: center;
+            `;
+            precacheCurrentTimerElement.textContent = '60s';
+            
+            // Add to container (at top so new ones appear below old ones)
+            precacheContainerElement.insertBefore(precacheCurrentTimerElement, precacheContainerElement.firstChild);
+            
+            // Start countdown
+            startCountdown();
+        }
+        
+        function startCountdown() {
+            precacheCountdown = 60;
+            
+            if (precacheCountdownTimer) clearInterval(precacheCountdownTimer);
+            
+            precacheCountdownTimer = setInterval(() => {
+                precacheCountdown--;
+                
+                if (precacheCurrentTimerElement) {
+                    precacheCurrentTimerElement.textContent = precacheCountdown + 's';
+                }
+                
+                if (precacheCountdown <= 0) {
+                    clearInterval(precacheCountdownTimer);
+                }
+            }, 1000);
+        }
+        
+        function showCacheSuccess() {
+            if (precacheCurrentTimerElement) {
+                // Show success on current timer
+                precacheCurrentTimerElement.textContent = '✓ Oke';
+                precacheCurrentTimerElement.style.background = '#4CAF50';
+                
+                // Add new timer below for next cycle
+                setTimeout(() => {
+                    addNewTimer();
+                }, 500);
+            }
+        }
+        
+        function startSmartPreCache() {
+            if (!navigator.geolocation || !navigator.serviceWorker) return;
+            
+            // Create timer container
+            if (!precacheContainerElement) {
+                createCacheTimerContainer();
+            }
+            
+            // Cache immediately at start
+            cacheCurrentLocation();
+            
+            // Then cache every 1 minute (TEST) - change to 30 * 60 * 1000 for production
+            precacheTileTimer = setInterval(cacheCurrentLocation, 1 * 60 * 1000);
+        }
+        
+        function showOfflineNotification() {
+            // Create notification
+            const notification = document.createElement('div');
+            notification.textContent = 'Offline map updated.';
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: #4CAF50;
+                color: white;
+                padding: 12px 20px;
+                border-radius: 4px;
+                font-size: 14px;
+                z-index: 10000;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            `;
+            document.body.appendChild(notification);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+        
+        function cacheCurrentLocation() {
+            navigator.geolocation.getCurrentPosition((position) => {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+                
+                // 50km diameter = 25km radius
+                const radius = 25; // km
+                const tilesToCache = [];
+                
+                // Generate tiles for zoom 15, 16, 17 (25km radius)
+                [15, 16, 17].forEach(zoom => {
+                    const n = Math.pow(2, zoom);
+                    const centerX = Math.floor((lng + 180) / 360 * n);
+                    const centerY = Math.floor((1 - Math.log(Math.tan(lat * Math.PI / 180) + 1 / Math.cos(lat * Math.PI / 180)) / Math.PI) / 2 * n);
+                    
+                    // Radius in tiles
+                    const latDelta = radius / 111;
+                    const offset = Math.ceil(latDelta * 111 / (40075 * Math.cos(lat * Math.PI / 180) / n));
+                    
+                    for (let x = Math.max(0, centerX - offset); x <= Math.min(n - 1, centerX + offset); x++) {
+                        for (let y = Math.max(0, centerY - offset); y <= Math.min(n - 1, centerY + offset); y++) {
+                            tilesToCache.push(`https://tile.openstreetmap.org/${zoom}/${x}/${y}.png`);
+                        }
+                    }
+                });
+                
+                // Send to Service Worker
+                if (navigator.serviceWorker.controller) {
+                    navigator.serviceWorker.controller.postMessage({
+                        type: 'PRECACHE_TILES',
+                        tiles: tilesToCache
+                    });
+                    console.log(`📦 Cached ${tilesToCache.length} tiles (50km diameter)`);
+                    showOfflineNotification();
+                    showCacheSuccess();
+                }
+            }, () => {
+                console.log('Geolocation unavailable for offline caching');
+            });
+        }
+
         function initializeMap(isMaster, code) {
             setTimeout(() => {
                 const mapDivId = isMaster ? 'mapMaster' : 'mapFollower';
@@ -1306,6 +1470,9 @@
                         toggleMapOnly(isMaster ? 'master' : 'follower');
                     }
                 });
+
+                // Start background pre-caching of offline tiles
+                startSmartPreCache();
 
                 if (isMaster) {
                     initDeviceCompass();
