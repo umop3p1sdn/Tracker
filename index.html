@@ -649,7 +649,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "2.37";
+        const APP_VERSION = "2.38";
         
         // Update ALL version displays from single source
         document.addEventListener('DOMContentLoaded', () => {
@@ -695,6 +695,7 @@
         let followerPos = null;
         let masterPos = null;
         let wakeLock = null;
+        let lastManualZoomTime = 0;
         let zoomLevelValue = 15;
         let trackLineWidth = 3;
         let isAutoFollowActive = false;
@@ -1870,8 +1871,6 @@
             errorDiv.classList.remove('hidden');
         }
 
-        let lastManualZoomTime = 0;
-        
         function zoomIn() {
             if (zoomLevelValue < 20) {
                 zoomLevelValue++;
