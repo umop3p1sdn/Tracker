@@ -86,38 +86,48 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'PRECACHE_TILES') {
     const tiles = event.data.tiles;
-    console.log(`📦 Pre-caching ${tiles.length} tiles (skip already cached)...`);
-    
-    let completed = 0;
-    let downloaded = 0;
+    console.log(`📦 Pre-caching ${tiles.length} tiles (throttled, skip cached)...`);
+
     const total = tiles.length;
-    
-    tiles.forEach(tileUrl => {
-      // Skip download if tile is already cached - saves mobile data!
-      getCachedTile(tileUrl)
-        .then(existing => {
-          if (existing) return null; // already have it
-          downloaded++;
-          return fetch(tileUrl)
-            .then(r => r && r.status === 200 ? r.blob().then(b => cacheTile(tileUrl, b)) : null)
-            .catch(() => {});
-        })
-        .finally(() => {
-          completed++;
-          // Send confirmation when all tiles are processed
-          if (completed === total) {
-            self.clients.matchAll({ includeUncontrolled: true }).then(clients => {
-              clients.forEach(client => {
-                client.postMessage({
-                  type: 'PRECACHE_COMPLETE',
-                  tilesCount: total,
-                  downloaded: downloaded
-                });
-              });
-            });
-          }
+    let downloaded = 0;
+    const BATCH_SIZE = 5;     // tiles fetched in parallel per batch
+    const BATCH_DELAY = 600;  // ms pause between batches (gentle on OSM)
+
+    const sleep = (ms) => new Promise(res => setTimeout(res, ms));
+
+    const processTile = (tileUrl) => {
+      // Skip download if already cached - no request to OSM, saves data
+      return getCachedTile(tileUrl).then(existing => {
+        if (existing) return null;
+        downloaded++;
+        return fetch(tileUrl)
+          .then(r => r && r.status === 200 ? r.blob().then(b => cacheTile(tileUrl, b)) : null)
+          .catch(() => {});
+      });
+    };
+
+    (async () => {
+      for (let i = 0; i < tiles.length; i += BATCH_SIZE) {
+        const batch = tiles.slice(i, i + BATCH_SIZE);
+        const before = downloaded;
+        await Promise.all(batch.map(processTile));
+        // Only pause when this batch actually hit the network AND more remain.
+        // Stationary (all cached) = no delays, instant + zero OSM load.
+        if (downloaded > before && i + BATCH_SIZE < tiles.length) {
+          await sleep(BATCH_DELAY);
+        }
+      }
+      // All done - confirm to the page
+      self.clients.matchAll({ includeUncontrolled: true }).then(clients => {
+        clients.forEach(client => {
+          client.postMessage({
+            type: 'PRECACHE_COMPLETE',
+            tilesCount: total,
+            downloaded: downloaded
+          });
         });
-    });
+      });
+    })();
   }
 });
 
