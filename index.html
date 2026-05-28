@@ -649,7 +649,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "2.36";
+        const APP_VERSION = "2.37";
         
         // Update ALL version displays from single source
         document.addEventListener('DOMContentLoaded', () => {
@@ -1271,6 +1271,9 @@
 
         function updateMapView() {
             if (!mapInstance || !isAutoFollowActive) return;
+            
+            // Skip auto-update if user recently manually zoomed (5 sec cooldown)
+            if (Date.now() - lastManualZoomTime < 5000) return;
 
             if (currentMode === 'master' && masterPos) {
                 mapInstance.setView([masterPos.lat, masterPos.lng], zoomLevelValue);
@@ -1867,9 +1870,12 @@
             errorDiv.classList.remove('hidden');
         }
 
+        let lastManualZoomTime = 0;
+        
         function zoomIn() {
             if (zoomLevelValue < 20) {
                 zoomLevelValue++;
+                lastManualZoomTime = Date.now();
                 updateZoomDisplay();
             }
         }
@@ -1877,6 +1883,7 @@
         function zoomOut() {
             if (zoomLevelValue > 10) {
                 zoomLevelValue--;
+                lastManualZoomTime = Date.now();
                 updateZoomDisplay();
             }
         }
