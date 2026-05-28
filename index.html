@@ -641,7 +641,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "3.0";
+        const APP_VERSION = "3.1";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -1338,14 +1338,21 @@
         
         function showCacheSuccess() {
             if (precacheCurrentTimerElement) {
-                // Show success on current timer
+                // Show "Oke" immediately (caching started)
                 precacheCurrentTimerElement.textContent = '✓ Oke';
                 precacheCurrentTimerElement.style.background = '#4CAF50';
                 
-                // Add new timer below for next cycle
+                // Change to "Finish" after 3 seconds (caching done)
+                setTimeout(() => {
+                    if (precacheCurrentTimerElement) {
+                        precacheCurrentTimerElement.textContent = '✓ Finish';
+                    }
+                }, 3000);
+                
+                // Add new timer after 1 second
                 setTimeout(() => {
                     addNewTimer();
-                }, 500);
+                }, 1000);
             }
         }
         
@@ -1397,7 +1404,9 @@
         }
         
         function cacheCurrentLocation() {
+            console.log('🔄 cacheCurrentLocation triggered');  // DEBUG
             navigator.geolocation.getCurrentPosition((position) => {
+                console.log('📍 Got position:', position.coords);  // DEBUG
                 const lat = position.coords.latitude;
                 const lng = position.coords.longitude;
                 
@@ -1430,7 +1439,7 @@
                     });
                     console.log(`📦 Cached ${tilesToCache.length} tiles (50km diameter)`);
                     showOfflineNotification();
-                    showCacheSuccess();
+                    showCacheSuccess();  // Show Oke immediately when caching triggered
                 }
             }, () => {
                 console.log('Geolocation unavailable for offline caching');
