@@ -358,7 +358,7 @@
         <!-- INSTALL PROMPT SCREEN -->
         <div id="installScreen" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; text-align: center;">
             <!-- VERSION NUMBER -->
-            <div style="position: absolute; top: 15px; right: 15px; font-size: 0.7em; color: #aaa; opacity: 0.6;">v<span id="appVersionInstall"></span></div>
+            <div style="position: absolute; top: 15px; right: 15px; font-size: 0.7em; color: #aaa; opacity: 0.6;">v2.31</div>
             
             <div style="max-width: 300px;">
                 <div style="font-size: 80px; margin-bottom: 20px;">📱</div>
@@ -470,7 +470,7 @@
             <!-- MODE SELECT -->
             <div id="modeSelect" class="mode-select">
                 <p class="subtitle">Start tracking</p>
-                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | <span id="appVersionUsers"></span> © Umop3p1sdn</div>
+                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | 2.4 © Umop3p1sdn</div>
                 
                 <!-- Hidden file input for GPX loading -->
                 <input type="file" id="gpxInputLoad" accept=".gpx" style="display:none;" onchange="loadGPXFile(event)">
@@ -627,43 +627,21 @@
                 <li>ALL TRACKS (incl. Master's route)</li>
             </ul>
             
-            <h3 style="color: #00BCD4; margin-top: 25px;">📡 Offline Kaarten (V2.32)</h3>
-            <p>— <strong>Kaarten worden automatisch opgeslagen terwijl je rijdt</strong></p>
-            <ul style="margin: 10px 0; padding-left: 20px;">
-                <li>50km radius wordt gecacht voor offline gebruik</li>
-            </ul>
-            
             <h3 style="color: #00BCD4; margin-top: 25px;">⚙️ Tips</h3>
             <ul style="margin: 10px 0; padding-left: 20px;">
                 <li>Houd je scherm OPEN - de app werkt niet op achtergrond</li>
                 <li>GPS werkt best buiten / in open ruimte</li>
                 <li>Langzaam internet? Tracking update elke 3 seconden</li>
-                <li>Offline kaarten gebruiken IndexedDB opslag (~10 MB base, groeit met rijden)</li>
-                <li>Kaarten worden automatisch schoongemaakt (max 100 MB)</li>
             </ul>
             
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                Live Tracker App v<span id="appVersionFooter"></span> © Umop3p1sdn
+                Live Tracker App v2.31 © Umop3p1sdn
             </p>
         </div>
     </div>
 
     <script>
-        const APP_VERSION = "2.38";
-        
-        // Update ALL version displays from single source
-        document.addEventListener('DOMContentLoaded', () => {
-            const elements = [
-                'appVersionInstall',
-                'appVersionUsers',
-                'appVersionFooter'
-            ];
-            
-            elements.forEach(id => {
-                const elem = document.getElementById(id);
-                if (elem) elem.textContent = APP_VERSION;
-            });
-        });
+        const APP_VERSION = "2.31";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -695,7 +673,6 @@
         let followerPos = null;
         let masterPos = null;
         let wakeLock = null;
-        let lastManualZoomTime = 0;
         let zoomLevelValue = 15;
         let trackLineWidth = 3;
         let isAutoFollowActive = false;
@@ -1272,9 +1249,6 @@
 
         function updateMapView() {
             if (!mapInstance || !isAutoFollowActive) return;
-            
-            // Skip auto-update if user recently manually zoomed (5 sec cooldown)
-            if (Date.now() - lastManualZoomTime < 5000) return;
 
             if (currentMode === 'master' && masterPos) {
                 mapInstance.setView([masterPos.lat, masterPos.lng], zoomLevelValue);
@@ -1312,7 +1286,7 @@
                 followerLoadedGpxPolyline = null;
                 trackingPolyline = null;
 
-                mapInstance = L.map(mapDiv).setView([54, 10], 4);
+                mapInstance = L.map(mapDiv).setView([52.04, 5.67], 13);
                 mapInstance.doubleClickZoom.disable();
                 
                 // Prevent double-click zoom on map
@@ -1325,9 +1299,6 @@
                     attribution: '© OpenStreetMap',
                     maxZoom: 19
                 }).addTo(mapInstance);
-                
-                // Start smart pre-caching for current zoom level
-                startSmartPreCache();
 
                 // Add click listener to exit map-only mode
                 mapInstance.on('click', () => {
@@ -1343,11 +1314,6 @@
                         (position) => {
                             const { latitude, longitude } = position.coords;
                             masterPos = { lat: latitude, lng: longitude };
-                            
-                            // Force map to have your location
-                            if (mapInstance && isAutoFollowActive) {
-                                mapInstance.setView([latitude, longitude], 15);
-                            }
 
                             if (masterMarker) {
                                 masterMarker.setLatLng([latitude, longitude]);
@@ -1355,7 +1321,6 @@
                                     masterMarker.setRotationAngle(deviceHeading);
                                 }
                             } else {
-                                // Create marker
                                 masterMarker = L.circleMarker([latitude, longitude], {
                                     radius: 12,
                                     fillColor: '#FF1744',
@@ -1364,7 +1329,6 @@
                                     opacity: 0.8,
                                     fillOpacity: 0.8
                                 }).addTo(mapInstance).bindPopup('YOU');
-                                console.log('📍 Master marker created at', latitude, longitude);
                             }
 
                             // createDirectionMarker(latitude, longitude, deviceHeading, false);
@@ -1874,7 +1838,6 @@
         function zoomIn() {
             if (zoomLevelValue < 20) {
                 zoomLevelValue++;
-                lastManualZoomTime = Date.now();
                 updateZoomDisplay();
             }
         }
@@ -1882,7 +1845,6 @@
         function zoomOut() {
             if (zoomLevelValue > 10) {
                 zoomLevelValue--;
-                lastManualZoomTime = Date.now();
                 updateZoomDisplay();
             }
         }
@@ -1921,11 +1883,10 @@
         }
         
         function updateTrackDisplay() {
-            // Update both Master and Follower track width displays
-            const displays = document.querySelectorAll('[id="trackWidthDisplay"]');
-            displays.forEach(elem => {
-                elem.textContent = trackLineWidth;
-            });
+            const trackWidthSpan = document.getElementById('trackWidthDisplay');
+            if (trackWidthSpan) {
+                trackWidthSpan.textContent = trackLineWidth;
+            }
         }
         
         function redrawAllTracks() {
@@ -2028,104 +1989,3 @@
     </script>
 </body>
 </html>
-    <!-- V2.32: Offline Map Tile Caching (INLINE) -->
-    <script>
-        // V2.34: Smart Offline Maps - Cache Current Zoom Level
-        
-        // Initialize after map is ready
-        function initSmartPreCache() {
-          if (!navigator.geolocation || !mapInstance) return;
-          
-          navigator.geolocation.getCurrentPosition(
-            (position) => {
-              const userLat = position.coords.latitude;
-              const userLng = position.coords.longitude;
-              const currentZoom = mapInstance.getZoom();
-              
-              console.log(`📍 Location: ${userLat.toFixed(2)}, ${userLng.toFixed(2)} | Zoom: ${currentZoom}`);
-              
-              generateAndCacheTiles(userLat, userLng, currentZoom);
-            },
-            () => {
-              console.log('📍 Geolocation denied - skipping pre-cache');
-            }
-          );
-        }
-        
-        function generateAndCacheTiles(centerLat, centerLng, baseZoom) {
-          const RADIUS_KM = 50;
-          const tileUrls = [];
-          
-          function latlngToTile(lat, lng, zoom) {
-            const n = Math.pow(2, zoom);
-            const x = Math.floor(n * ((lng + 180) / 360));
-            const y = Math.floor(n * ((1 - Math.log(Math.tan(lat * Math.PI / 180) + 1 / Math.cos(lat * Math.PI / 180)) / Math.PI) / 2));
-            return { x, y };
-          }
-          
-          function getTilesForZoom(zoom) {
-            const radiusInDegrees = RADIUS_KM / 111;
-            const minLat = centerLat - radiusInDegrees;
-            const maxLat = centerLat + radiusInDegrees;
-            const minLng = centerLng - radiusInDegrees;
-            const maxLng = centerLng + radiusInDegrees;
-            
-            const nwTile = latlngToTile(maxLat, minLng, zoom);
-            const seTile = latlngToTile(minLat, maxLng, zoom);
-            
-            const tiles = [];
-            for (let x = nwTile.x; x <= seTile.x; x++) {
-              for (let y = nwTile.y; y <= seTile.y; y++) {
-                tiles.push({ x, y, z: zoom });
-              }
-            }
-            return tiles;
-          }
-          
-          // Cache current zoom + context + street detail levels
-          const zoomsToCache = [
-            Math.max(10, baseZoom - 1),  // 1 level out (context)
-            baseZoom,                     // Current zoom (where you are)
-            Math.min(13, baseZoom + 1),  // 1 level in (overview detail)
-            15, 16, 17                    // Street/building detail levels
-          ];
-          
-          // Remove duplicates
-          const uniqueZooms = [...new Set(zoomsToCache)];
-          
-          uniqueZooms.forEach(zoom => {
-            const tiles = getTilesForZoom(zoom);
-            tiles.forEach(tile => {
-              const servers = ['a', 'b', 'c'];
-              servers.forEach(s => {
-                const url = `https://${s}.tile.openstreetmap.org/${tile.z}/${tile.x}/${tile.y}.png`;
-                tileUrls.push(url);
-              });
-            });
-          });
-          
-          console.log(`🗺️ Caching ${tileUrls.length} tiles for zoom ${uniqueZooms.join(',')}...`);
-          
-          // Send to Service Worker
-          if (navigator.serviceWorker && navigator.serviceWorker.controller) {
-            navigator.serviceWorker.controller.postMessage({
-              type: 'PRECACHE_TILES',
-              tiles: tileUrls
-            });
-          } else if (navigator.serviceWorker) {
-            navigator.serviceWorker.ready.then(() => {
-              navigator.serviceWorker.controller.postMessage({
-                type: 'PRECACHE_TILES',
-                tiles: tileUrls
-              });
-            });
-          }
-        }
-        
-        // Will be called after map initializes
-        function startSmartPreCache() {
-          if (navigator.serviceWorker) {
-            initSmartPreCache();
-          }
-        }
-    </script>
