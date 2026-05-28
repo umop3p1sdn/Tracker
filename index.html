@@ -1362,6 +1362,16 @@
             precacheTileTimer = setInterval(cacheCurrentLocation, 1 * 60 * 1000);
         }
         
+        // Listen for Service Worker messages (caching completion)
+        if (navigator.serviceWorker) {
+            navigator.serviceWorker.addEventListener('message', (event) => {
+                if (event.data && event.data.type === 'PRECACHE_COMPLETE') {
+                    console.log(`✅ ${event.data.tilesCount} tiles cached successfully`);
+                    showCacheSuccess();
+                }
+            });
+        }
+        
         function showOfflineNotification() {
             // Create notification
             const notification = document.createElement('div');
