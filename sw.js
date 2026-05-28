@@ -98,7 +98,7 @@ self.addEventListener('message', (event) => {
           completed++;
           // Send confirmation when all tiles are processed
           if (completed === total) {
-            self.clients.matchAll().then(clients => {
+            self.clients.matchAll({ includeUncontrolled: true }).then(clients => {
               clients.forEach(client => {
                 client.postMessage({
                   type: 'PRECACHE_COMPLETE',
