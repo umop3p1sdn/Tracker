@@ -470,7 +470,7 @@
             <!-- MODE SELECT -->
             <div id="modeSelect" class="mode-select">
                 <p class="subtitle">Start tracking</p>
-                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | 2.4 © Umop3p1sdn</div>
+                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | 2.32 © Umop3p1sdn</div>
                 
                 <!-- Hidden file input for GPX loading -->
                 <input type="file" id="gpxInputLoad" accept=".gpx" style="display:none;" onchange="loadGPXFile(event)">
@@ -641,7 +641,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "2.31";
+        const APP_VERSION = "2.32";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -1989,3 +1989,8 @@
     </script>
 </body>
 </html>
+    <!-- V2.32: Offline Map Tile Caching -->
+    <script src="offline-map-cache.js"></script>
+    <script>
+        if (window.OfflineMapCache) window.OfflineMapCache.init();
+    </script>
