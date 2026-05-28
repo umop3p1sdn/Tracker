@@ -78,15 +78,22 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'PRECACHE_TILES') {
     const tiles = event.data.tiles;
-    console.log(`📦 Pre-caching ${tiles.length} tiles in background...`);
+    console.log(`📦 Pre-caching ${tiles.length} tiles (skip already cached)...`);
     
     let completed = 0;
+    let downloaded = 0;
     const total = tiles.length;
     
     tiles.forEach(tileUrl => {
-      fetch(tileUrl)
-        .then(r => r && r.status === 200 ? r.blob().then(b => cacheTile(tileUrl, b)) : null)
-        .catch(() => {})
+      // Skip download if tile is already cached - saves mobile data!
+      getCachedTile(tileUrl)
+        .then(existing => {
+          if (existing) return null; // already have it
+          downloaded++;
+          return fetch(tileUrl)
+            .then(r => r && r.status === 200 ? r.blob().then(b => cacheTile(tileUrl, b)) : null)
+            .catch(() => {});
+        })
         .finally(() => {
           completed++;
           // Send confirmation when all tiles are processed
@@ -95,7 +102,8 @@ self.addEventListener('message', (event) => {
               clients.forEach(client => {
                 client.postMessage({
                   type: 'PRECACHE_COMPLETE',
-                  tilesCount: total
+                  tilesCount: total,
+                  downloaded: downloaded
                 });
               });
             });
