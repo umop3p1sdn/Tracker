@@ -1989,8 +1989,77 @@
     </script>
 </body>
 </html>
-    <!-- V2.32: Offline Map Tile Caching -->
-    <script src="offline-map-cache.js"></script>
+    <!-- V2.32: Offline Map Tile Caching (INLINE) -->
     <script>
-        if (window.OfflineMapCache) window.OfflineMapCache.init();
+        // V2.32: Offline Maps with 50km Pre-Cache
+        
+        // Generate OpenStreetMap tile URLs for 50km radius around Ede
+        function generatePreCacheTiles() {
+          const EDE_LAT = 52.04, EDE_LNG = 5.67, RADIUS_KM = 50;
+          const tileUrls = [];
+          
+          // Tile coordinate calculation
+          function latlngToTile(lat, lng, zoom) {
+            const n = Math.pow(2, zoom);
+            const x = Math.floor(n * ((lng + 180) / 360));
+            const y = Math.floor(n * ((1 - Math.log(Math.tan(lat * Math.PI / 180) + 1 / Math.cos(lat * Math.PI / 180)) / Math.PI) / 2));
+            return { x, y };
+          }
+          
+          // Get tiles for radius
+          function getTilesForZoom(zoom) {
+            const radiusInDegrees = RADIUS_KM / 111;
+            const minLat = EDE_LAT - radiusInDegrees;
+            const maxLat = EDE_LAT + radiusInDegrees;
+            const minLng = EDE_LNG - radiusInDegrees;
+            const maxLng = EDE_LNG + radiusInDegrees;
+            
+            const nwTile = latlngToTile(maxLat, minLng, zoom);
+            const seTile = latlngToTile(minLat, maxLng, zoom);
+            
+            const tiles = [];
+            for (let x = nwTile.x; x <= seTile.x; x++) {
+              for (let y = nwTile.y; y <= seTile.y; y++) {
+                tiles.push({ x, y, z: zoom });
+              }
+            }
+            return tiles;
+          }
+          
+          // Generate URLs for zoom 10-13
+          for (let zoom = 10; zoom <= 13; zoom++) {
+            const tiles = getTilesForZoom(zoom);
+            tiles.forEach(tile => {
+              const servers = ['a', 'b', 'c'];
+              servers.forEach(s => {
+                const url = `https://${s}.tile.openstreetmap.org/${tile.z}/${tile.x}/${tile.y}.png`;
+                tileUrls.push(url);
+              });
+            });
+          }
+          
+          return tileUrls;
+        }
+        
+        // Request Service Worker to pre-cache tiles
+        function startPreCaching() {
+          if (!navigator.serviceWorker || !navigator.serviceWorker.controller) return;
+          
+          const tileUrls = generatePreCacheTiles();
+          console.log(`🗺️ Requesting pre-cache of ${tileUrls.length} tiles (50km radius)...`);
+          
+          navigator.serviceWorker.controller.postMessage({
+            type: 'PRECACHE_TILES',
+            tiles: tileUrls
+          });
+        }
+        
+        // Start pre-caching when Service Worker is ready
+        if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+          startPreCaching();
+        } else if (navigator.serviceWorker) {
+          navigator.serviceWorker.ready.then(() => {
+            startPreCaching();
+          });
+        }
     </script>
