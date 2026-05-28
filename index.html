@@ -1269,7 +1269,7 @@
         // ═══════════════════════════════════════════════════════════════
         let precacheTileTimer = null;
         let precacheCountdownTimer = null;
-        let precacheCountdown = 60;
+        let precacheCountdown = 10;
         let precacheContainerElement = null;
         let precacheCurrentTimerElement = null;
         
@@ -1307,7 +1307,7 @@
                 min-width: 80px;
                 text-align: center;
             `;
-            precacheCurrentTimerElement.textContent = '60s';
+            precacheCurrentTimerElement.textContent = '10s';
             
             // Add to container (at top so new ones appear below old ones)
             precacheContainerElement.insertBefore(precacheCurrentTimerElement, precacheContainerElement.firstChild);
@@ -1317,7 +1317,7 @@
         }
         
         function startCountdown() {
-            precacheCountdown = 60;
+            precacheCountdown = 10;
             
             if (precacheCountdownTimer) clearInterval(precacheCountdownTimer);
             
