@@ -2,6 +2,10 @@ const CACHE_NAME = 'live-tracker-tiles'; // Static - no version needed
 const TILE_DB_NAME = 'LiveTrackerTiles';
 const TILE_STORE_NAME = 'tiles';
 
+// Gray 256x256 PNG placeholder for offline tiles not yet cached
+// (avoids OffscreenCanvas, which older iOS Safari does not support)
+const GRAY_TILE_B64 = 'iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAIAAADTED8xAAAB+0lEQVR42u3TMQ0AAAzDsPJHWSi9h2E2hEhJ4bFIgAHAAGAAMAAYAAwABgADgAHAAGAAMAAYAAwABgADgAHAAGAAMAAYAAwABgADgAHAAGAAMAAYAAwABgADgAHAAGAAMAAYAAwABgADgAHAAGAAMAAYAAwABgADgAHAAGAADAAGAAOAAcAAYAAwABgADAAGAAOAAcAAYAAwABgADAAGAAOAAcAAYAAwABgADAAGAAOAAcAAYAAwABgADAAGAAOAAcAAYAAwABgADAAGAAOAAcAAYAAwABgADAAGAAOAATAAGAAMAAYAA4ABwABgADAAGAAMAAYAA4ABwABgADAAGAAMAAYAA4ABwABgADAAGAAMAAYAA4ABwABgADAAGAAMAAYAA4ABwABgADAAGAAMAAYAA4ABwABgADAAGAAMgAHAAGAAMAAYAAwABgADgAHAAGAAMAAYAAwABgADgAHAAGAAMAAYAAwABgADgAHAAGAAMAAYAAwABgADgAHAAGAAMAAYAAwABgADgAHAAGAAMAAYAAwABgADgAHAAGAAMAAGAAOAAcAAYAAwABgADAAGAAOAAcAAYAAwABgADAAGAAOAAcAAYAAwABgADAAGAAOAAcAAYAAwABgADAAGAAOAAcAAYAAwABgADAAGAAOAAcAAYAAwABgADADXACh2J2E5vNZJAAAAAElFTkSuQmCC';
+
 const urlsToCache = [
   '/tracker/',
   '/tracker/index.html',
@@ -27,10 +31,14 @@ function openTileDB() {
 }
 
 function cacheTile(url, blob) {
-  openTileDB().then(db => {
-    const tx = db.transaction([TILE_STORE_NAME], 'readwrite');
-    const store = tx.objectStore(TILE_STORE_NAME);
-    store.put({ url: url, blob: blob, time: Date.now() });
+  // Store as ArrayBuffer (raw bytes) - reliable on iOS Safari,
+  // which is buggy storing Blobs directly in IndexedDB
+  blob.arrayBuffer().then(buffer => {
+    openTileDB().then(db => {
+      const tx = db.transaction([TILE_STORE_NAME], 'readwrite');
+      const store = tx.objectStore(TILE_STORE_NAME);
+      store.put({ url: url, buffer: buffer, time: Date.now() });
+    }).catch(() => {});
   }).catch(() => {});
 }
 
@@ -40,7 +48,7 @@ function getCachedTile(url) {
       const tx = db.transaction([TILE_STORE_NAME], 'readonly');
       const store = tx.objectStore(TILE_STORE_NAME);
       const req = store.get(url);
-      req.onsuccess = () => resolve(req.result ? req.result.blob : null);
+      req.onsuccess = () => resolve(req.result ? req.result.buffer : null);
       req.onerror = () => resolve(null);
     });
   }).catch(() => Promise.resolve(null));
@@ -138,24 +146,21 @@ self.addEventListener('fetch', (event) => {
         })
         .catch(() => {
           // Offline: use cached tile
-          return getCachedTile(url).then(blob => {
-            if (blob) {
-              return new Response(blob, {
+          return getCachedTile(url).then(buffer => {
+            if (buffer) {
+              return new Response(buffer, {
                 status: 200,
                 headers: { 'Content-Type': 'image/png' }
               });
             }
-            // No cache: gray tile
-            const canvas = new OffscreenCanvas(256, 256);
-            const ctx = canvas.getContext('2d');
-            ctx.fillStyle = '#e0e0e0';
-            ctx.fillRect(0, 0, 256, 256);
-            return canvas.convertToBlob().then(grayBlob => 
-              new Response(grayBlob, {
-                status: 200,
-                headers: { 'Content-Type': 'image/png' }
-              })
-            );
+            // No cache: gray placeholder (no OffscreenCanvas - works on all iOS)
+            const bin = atob(GRAY_TILE_B64);
+            const bytes = new Uint8Array(bin.length);
+            for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+            return new Response(bytes, {
+              status: 200,
+              headers: { 'Content-Type': 'image/png' }
+            });
           });
         })
     );
