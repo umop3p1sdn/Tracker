@@ -468,7 +468,7 @@
             <!-- MODE SELECT -->
             <div id="modeSelect" class="mode-select">
                 <p class="subtitle">Start tracking</p>
-                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v4.6 © Umop3p1sdn</div>
+                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v4.8 © Umop3p1sdn</div>
                 
                 <!-- Hidden file input for GPX loading -->
                 <input type="file" id="gpxInputLoad" accept=".gpx" style="display:none;" onchange="loadGPXFile(event)">
@@ -637,20 +637,20 @@
             <h3 style="color: #00BCD4; margin-top: 25px;">📡 Offline Map Buffer (OMB)</h3>
             <ul style="margin: 10px 0; padding-left: 20px;">
                 <li><strong>OMB-knop:</strong> bufferen aan/uit</li>
-                <li>Slaat elke 10 min de kaart rond je op (zoom 15 ≈ 20 km)</li>
+                <li>Slaat elke 10 min de kaart rond je op (zoom 15 ≈ 16 km)</li>
                 <li>Geen verbinding? Kaart binnen je buffer blijft zichtbaar</li>
                 <li>Data: ~13 MB de eerste keer, daarna alleen nieuwe stukken</li>
                 <li>OMB uit = zuiniger (alleen scherm-tegels laden nog, ~4 KB)</li>
             </ul>
             
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                Live Tracker App v4.6 © Umop3p1sdn
+                Live Tracker App v4.8 © Umop3p1sdn
             </p>
         </div>
     </div>
 
     <script>
-        const APP_VERSION = "4.6";
+        const APP_VERSION = "4.8";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -1427,8 +1427,8 @@
                 const tilesToCache = [];
                 
                 // Fixed grid per zoom (offset = tiles each direction from center)
-                // 15:27x27(~20km), 16:15x15, 14:9x9, 10-13:3x3
-                const zoomGrids = { 10: 1, 11: 1, 12: 1, 13: 1, 14: 4, 15: 13, 16: 7 };
+                // 15:21x21(~15.8km nood-view), 16:13x13, 10-14:3x3
+                const zoomGrids = { 10: 1, 11: 1, 12: 1, 13: 1, 14: 1, 15: 10, 16: 6 };
                 
                 Object.keys(zoomGrids).forEach(zoomStr => {
                     const zoom = parseInt(zoomStr);
@@ -1444,17 +1444,20 @@
                     }
                 });
                 
-                // Send to Service Worker
-                if (navigator.serviceWorker.controller) {
-                    navigator.serviceWorker.controller.postMessage({
-                        type: 'PRECACHE_TILES',
-                        tiles: tilesToCache
-                    });
-                    console.log(`📤 Sent ${tilesToCache.length} tiles to Service Worker...`);
-                    // Notification fires later, when SW confirms PRECACHE_COMPLETE
-                } else {
-                    console.log('⚠️ Service Worker not ready - skipping cache');
-                }
+                // Send to the ACTIVE Service Worker (works even on first load,
+                // when controller is still null)
+                navigator.serviceWorker.ready.then((reg) => {
+                    const sw = reg.active || navigator.serviceWorker.controller;
+                    if (sw) {
+                        sw.postMessage({
+                            type: 'PRECACHE_TILES',
+                            tiles: tilesToCache
+                        });
+                        console.log(`📤 Sent ${tilesToCache.length} tiles to Service Worker...`);
+                    } else {
+                        console.log('⚠️ No active Service Worker yet');
+                    }
+                });
             }, () => {
                 console.log('Geolocation unavailable for offline caching');
             });
