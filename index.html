@@ -480,7 +480,7 @@
             <!-- MODE SELECT -->
             <div id="modeSelect" class="mode-select">
                 <p class="subtitle">Start tracking</p>
-                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v6.13 © Umop3p1sdn</div>
+                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v6.14 © Umop3p1sdn</div>
                 
                 <!-- Hidden file input for GPX loading -->
                 <input type="file" id="gpxInputLoad" accept=".gpx" style="display:none;" onchange="loadGPXFile(event)">
@@ -513,6 +513,7 @@
                             <button style="padding: 12px 16px; font-size: 2em; min-width: 80px; height: 80px; border-radius: 6px; background: transparent; color: #000; border: 3px solid #000; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center;" onclick="zoomOut()">−</button>
                             <span style="font-size: 1.1em; min-width: 35px; text-align: center; color: #000; font-weight: bold; display: flex; align-items: center; justify-content: center;" id="zoomLevelMaster">15</span>
                             <button style="padding: 12px 16px; font-size: 2em; min-width: 80px; height: 80px; border-radius: 6px; background: transparent; color: #000; border: 3px solid #000; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center;" onclick="zoomIn()">+</button>
+                            <button id="rotBtnMaster" title="Kaart meedraaien" style="padding: 12px; min-width: 80px; height: 80px; border-radius: 6px; background: transparent; color: #000; border: 3px solid #000; cursor: pointer; display: flex; align-items: center; justify-content: center;" onclick="toggleMapRotation()"><svg width="42" height="42" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm2.19 12.19L6 18l3.81-8.19L18 6l-3.81 8.19z"/></svg></button>
                         </div>
                         
                         <div id="mapMaster" class="map"></div>
@@ -537,7 +538,6 @@
                     <div class="controls">
                         <button class="button-secondary" onclick="toggleFollow()" id="followBtnMaster">CENTER: ON</button>
                         <button class="button-secondary" onclick="toggleOMB()" id="ombBtnMaster">OMB: ON</button>
-                        <button class="button-secondary" onclick="toggleMapRotation()" id="rotBtnMaster">DRAAI: UIT</button>
                         <button class="button-secondary button-gpx" onclick="toggleGPXMenu()">GPX</button>
                     </div>
 
@@ -552,6 +552,7 @@
                             <button style="padding: 12px 16px; font-size: 2em; min-width: 80px; height: 80px; border-radius: 6px; background: transparent; color: #000; border: 3px solid #000; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center;" onclick="zoomOut()">−</button>
                             <span style="font-size: 1.1em; min-width: 35px; text-align: center; color: #000; font-weight: bold; display: flex; align-items: center; justify-content: center;" id="zoomLevelFollower">15</span>
                             <button style="padding: 12px 16px; font-size: 2em; min-width: 80px; height: 80px; border-radius: 6px; background: transparent; color: #000; border: 3px solid #000; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center;" onclick="zoomIn()">+</button>
+                            <button id="rotBtnFollower" title="Kaart meedraaien" style="padding: 12px; min-width: 80px; height: 80px; border-radius: 6px; background: transparent; color: #000; border: 3px solid #000; cursor: pointer; display: flex; align-items: center; justify-content: center;" onclick="toggleMapRotation()"><svg width="42" height="42" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm2.19 12.19L6 18l3.81-8.19L18 6l-3.81 8.19z"/></svg></button>
                         </div>
                         
                         <div id="mapFollower" class="map"></div>
@@ -571,7 +572,6 @@
                         <button class="button-secondary" onclick="toggleZoom()" id="zoomBtn">ZOOM: MASTER</button>
                         <button class="button-secondary" onclick="cycleTrackView()" id="trackBtn">HIDE TRACK</button>
                         <button class="button-secondary" onclick="toggleOMB()" id="ombBtnFollower">OMB: ON</button>
-                        <button class="button-secondary" onclick="toggleMapRotation()" id="rotBtnFollower">DRAAI: UIT</button>
                         <button class="button-secondary button-gpx" onclick="toggleGPXMenu()">GPX</button>
                     </div>
 
@@ -661,13 +661,13 @@
             <p>Pan over de regio waar je straks wilt rijden, op het zoomniveau waarop je navigeert (standaard 15), en je kaart is automatisch offline beschikbaar.</p>
             
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                Live Tracker App v6.13 © Umop3p1sdn
+                Live Tracker App v6.14 © Umop3p1sdn
             </p>
         </div>
     </div>
 
     <script>
-        const APP_VERSION = "6.13";
+        const APP_VERSION = "6.14";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -1196,11 +1196,18 @@
 
         function toggleMapRotation() {
             mapRotationEnabled = !mapRotationEnabled;
-            const text = mapRotationEnabled ? 'DRAAI: AAN' : 'DRAAI: UIT';
-            const bm = document.getElementById('rotBtnMaster');
-            const bf = document.getElementById('rotBtnFollower');
-            if (bm) bm.textContent = text;
-            if (bf) bf.textContent = text;
+            [document.getElementById('rotBtnMaster'), document.getElementById('rotBtnFollower')].forEach(b => {
+                if (!b) return;
+                if (mapRotationEnabled) {
+                    b.style.background = '#00BCD4';
+                    b.style.borderColor = '#00BCD4';
+                    b.style.color = '#fff';
+                } else {
+                    b.style.background = 'transparent';
+                    b.style.borderColor = '#000';
+                    b.style.color = '#000';
+                }
+            });
             applyMapOversize();          // enlarge render area (or restore) + apply/clear rotation
             updateSelfMarkerRotation();
         }
