@@ -469,7 +469,7 @@
             <!-- MODE SELECT -->
             <div id="modeSelect" class="mode-select">
                 <p class="subtitle">Start tracking</p>
-                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v6.10 © Umop3p1sdn</div>
+                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v6.11 © Umop3p1sdn</div>
                 
                 <!-- Hidden file input for GPX loading -->
                 <input type="file" id="gpxInputLoad" accept=".gpx" style="display:none;" onchange="loadGPXFile(event)">
@@ -650,13 +650,13 @@
             <p>Pan over de regio waar je straks wilt rijden, op het zoomniveau waarop je navigeert (standaard 15), en je kaart is automatisch offline beschikbaar.</p>
             
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                Live Tracker App v6.10 © Umop3p1sdn
+                Live Tracker App v6.11 © Umop3p1sdn
             </p>
         </div>
     </div>
 
     <script>
-        const APP_VERSION = "6.10";
+        const APP_VERSION = "6.11";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -686,6 +686,7 @@
         let compassMode = 'device';
         let deviceHeading = 0;
         let mapRotationEnabled = false;
+        const MARKER_VPOS = 0.62; // marker screen position when DRAAI on (0.5=center, lower=more ahead)
         let followerPos = null;
         let masterPos = null;
         let wakeLock = null;
@@ -1223,6 +1224,7 @@
                 parent.style.overflow = '';
                 parent.style.borderRadius = '';
                 mapInstance.invalidateSize({ animate: false });
+                updateMapView();
                 return;
             }
 
@@ -1231,18 +1233,25 @@
                 const W = parent.clientWidth;
                 const H = parent.clientHeight;
                 if (!W || !H) return;
-                const D = Math.ceil(Math.sqrt(W * W + H * H) * 1.06);
+                // Place "you" a bit below center so you see more of the road ahead.
+                const cy = H * MARKER_VPOS;
+                // Square big enough that the rotated map still covers every viewport
+                // corner from this (offset) pivot - so no empty/red corners appear.
+                const dTop = Math.sqrt((W / 2) * (W / 2) + cy * cy);
+                const dBot = Math.sqrt((W / 2) * (W / 2) + (H - cy) * (H - cy));
+                const D = Math.ceil(2 * Math.max(dTop, dBot) * 1.06);
                 parent.style.overflow = 'hidden';
                 parent.style.borderRadius = '8px';
                 parent.style.height = H + 'px';
                 el.style.position = 'absolute';
                 el.style.left = ((W - D) / 2) + 'px';
-                el.style.top = ((H - D) / 2) + 'px';
+                el.style.top = (cy - D / 2) + 'px';
                 el.style.width = D + 'px';
                 el.style.height = D + 'px';
                 el.style.transformOrigin = 'center center';
                 mapInstance.invalidateSize({ animate: false });
                 applyMapRotation();
+                updateMapView();
             });
         }
 
