@@ -468,7 +468,7 @@
             <!-- MODE SELECT -->
             <div id="modeSelect" class="mode-select">
                 <p class="subtitle">Start tracking</p>
-                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v5.7 © Umop3p1sdn</div>
+                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v6.1 © Umop3p1sdn</div>
                 
                 <!-- Hidden file input for GPX loading -->
                 <input type="file" id="gpxInputLoad" accept=".gpx" style="display:none;" onchange="loadGPXFile(event)">
@@ -525,6 +525,7 @@
                     <div class="controls">
                         <button class="button-secondary" onclick="toggleFollow()" id="followBtnMaster">CENTER: ON</button>
                         <button class="button-secondary" onclick="toggleOMB()" id="ombBtnMaster">OMB: ON</button>
+                        <button class="button-secondary" onclick="toggleMapRotation()" id="rotBtnMaster">DRAAI: UIT</button>
                         <button class="button-secondary button-gpx" onclick="toggleGPXMenu()">GPX</button>
                     </div>
 
@@ -558,6 +559,7 @@
                         <button class="button-secondary" onclick="toggleZoom()" id="zoomBtn">ZOOM: MASTER</button>
                         <button class="button-secondary" onclick="cycleTrackView()" id="trackBtn">HIDE TRACK</button>
                         <button class="button-secondary" onclick="toggleOMB()" id="ombBtnFollower">OMB: ON</button>
+                        <button class="button-secondary" onclick="toggleMapRotation()" id="rotBtnFollower">DRAAI: UIT</button>
                         <button class="button-secondary button-gpx" onclick="toggleGPXMenu()">GPX</button>
                     </div>
 
@@ -647,13 +649,24 @@
             <p>Pan over de regio waar je straks wilt rijden, op het zoomniveau waarop je navigeert (standaard 15), en je kaart is automatisch offline beschikbaar.</p>
             
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                Live Tracker App v5.7 © Umop3p1sdn
+                Live Tracker App v6.1 © Umop3p1sdn
             </p>
         </div>
     </div>
 
     <script>
-        const APP_VERSION = "5.7";
+        // Show any JS error on screen (helps debug white-screen on mobile)
+        window.addEventListener('error', function(e) {
+            let box = document.getElementById('jsErrorBox');
+            if (!box) {
+                box = document.createElement('div');
+                box.id = 'jsErrorBox';
+                box.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:99999;background:#B71C1C;color:#fff;padding:10px;font-size:12px;font-family:monospace;max-height:40%;overflow:auto;white-space:pre-wrap;';
+                document.body && document.body.appendChild(box);
+            }
+            box.textContent = '⚠️ FOUT: ' + e.message + '\n@ ' + (e.filename||'').split('/').pop() + ':' + e.lineno;
+        });
+        const APP_VERSION = "6.1";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -682,6 +695,8 @@
         let zoomMode = 'master';
         let compassMode = 'device';
         let deviceHeading = 0;
+        let mapRotationEnabled = false;
+        const ROTATE_SCALE = 1.8; // zoom factor so corners stay filled while rotating
         let followerPos = null;
         let masterPos = null;
         let wakeLock = null;
@@ -1177,6 +1192,41 @@
             }
         }
 
+        function toggleMapRotation() {
+            mapRotationEnabled = !mapRotationEnabled;
+            const text = mapRotationEnabled ? 'DRAAI: AAN' : 'DRAAI: UIT';
+            const bm = document.getElementById('rotBtnMaster');
+            const bf = document.getElementById('rotBtnFollower');
+            if (bm) bm.textContent = text;
+            if (bf) bf.textContent = text;
+            ['mapMaster', 'mapFollower'].forEach(id => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                const parent = el.parentElement;
+                if (mapRotationEnabled) {
+                    // Clip only while rotating, so normal layout is untouched
+                    if (parent) { parent.style.overflow = 'hidden'; parent.style.borderRadius = '8px'; }
+                } else {
+                    el.style.transform = '';
+                    if (parent) { parent.style.overflow = ''; parent.style.borderRadius = ''; }
+                }
+            });
+            if (mapRotationEnabled) applyMapRotation();
+        }
+
+        function applyMapRotation() {
+            if (!mapRotationEnabled) return;
+            // Rotate map opposite to heading so "forward" is up; scale to fill corners
+            const t = `rotate(${-deviceHeading}deg) scale(${ROTATE_SCALE})`;
+            ['mapMaster', 'mapFollower'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.style.transformOrigin = 'center center';
+                    el.style.transform = t;
+                }
+            });
+        }
+
         let compassStarted = false;
         function initDeviceCompass() {
             if (!window.DeviceOrientationEvent) return;
@@ -1194,6 +1244,7 @@
                     deviceHeading = heading;
                     const el = document.getElementById('headingReadout');
                     if (el) el.textContent = '🧭 ' + Math.round(heading) + '°';
+                    applyMapRotation();
                 }
             }
 
@@ -1386,8 +1437,16 @@
                 }
             });
             
-            // Cache immediately at start
-            cacheCurrentLocation();
+            // Do the first cache as soon as a tracked position is available
+            let waited = 0;
+            const startWhenReady = setInterval(() => {
+                if (followerPos || masterPos) {
+                    clearInterval(startWhenReady);
+                    cacheCurrentLocation();
+                } else if ((waited += 2000) >= 60000) {
+                    clearInterval(startWhenReady); // stop waiting after 60s
+                }
+            }, 2000);
             
             // Then cache every 10 minutes
             precacheTileTimer = setInterval(cacheCurrentLocation, 10 * 60 * 1000);
@@ -1452,21 +1511,11 @@
         
         function cacheCurrentLocation() {
             if (!ombEnabled) return; // Offline Map Buffer is off
-            // Reuse the position the app already tracks - reliable, avoids a
-            // one-shot getCurrentPosition that can hang forever on iOS
+            // Use the position the app already tracks. If there's no fix yet,
+            // skip quietly - tracking will provide one shortly (no false error).
             const pos = followerPos || masterPos;
             if (pos) {
                 cacheTilesAround(pos.lat, pos.lng);
-            } else {
-                // Fallback: request one fix, with timeout so it can't hang
-                navigator.geolocation.getCurrentPosition(
-                    (position) => cacheTilesAround(position.coords.latitude, position.coords.longitude),
-                    () => {
-                        console.log('Geolocation unavailable for offline caching');
-                        showBufferToast('⚠️ Geen GPS-locatie voor buffer', '#F44336', 5000);
-                    },
-                    { enableHighAccuracy: false, timeout: 15000, maximumAge: 300000 }
-                );
             }
         }
         
