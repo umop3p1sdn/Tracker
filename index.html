@@ -469,7 +469,7 @@
             <!-- MODE SELECT -->
             <div id="modeSelect" class="mode-select">
                 <p class="subtitle">Start tracking</p>
-                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v6.11 © Umop3p1sdn</div>
+                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v6.12 © Umop3p1sdn</div>
                 
                 <!-- Hidden file input for GPX loading -->
                 <input type="file" id="gpxInputLoad" accept=".gpx" style="display:none;" onchange="loadGPXFile(event)">
@@ -650,13 +650,13 @@
             <p>Pan over de regio waar je straks wilt rijden, op het zoomniveau waarop je navigeert (standaard 15), en je kaart is automatisch offline beschikbaar.</p>
             
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                Live Tracker App v6.11 © Umop3p1sdn
+                Live Tracker App v6.12 © Umop3p1sdn
             </p>
         </div>
     </div>
 
     <script>
-        const APP_VERSION = "6.11";
+        const APP_VERSION = "6.12";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -686,6 +686,7 @@
         let compassMode = 'device';
         let deviceHeading = 0;
         let mapRotationEnabled = false;
+        let oversizeToken = 0;
         const MARKER_VPOS = 0.62; // marker screen position when DRAAI on (0.5=center, lower=more ahead)
         let followerPos = null;
         let masterPos = null;
@@ -1210,26 +1211,35 @@
             const el = mapInstance.getContainer();
             const parent = el.parentElement;
             if (!parent) return;
+            const myToken = ++oversizeToken; // invalidate any pending rAF from earlier calls
 
-            // Reset to natural layout first
+            // Full reset to natural layout first
             el.style.position = '';
             el.style.width = '';
             el.style.height = '';
             el.style.left = '';
             el.style.top = '';
             el.style.transform = '';
+            el.style.transformOrigin = '';
             parent.style.height = '';
+            parent.style.overflow = '';
+            parent.style.borderRadius = '';
 
             if (!mapRotationEnabled) {
-                parent.style.overflow = '';
-                parent.style.borderRadius = '';
                 mapInstance.invalidateSize({ animate: false });
                 updateMapView();
+                // Second pass after the reflow settles, so nothing stays enlarged
+                requestAnimationFrame(() => {
+                    if (myToken !== oversizeToken) return;
+                    mapInstance.invalidateSize({ animate: false });
+                    updateMapView();
+                });
                 return;
             }
 
-            // Measure natural size after reset, then oversize to the diagonal
+            // Measure natural size after reset, then oversize to cover rotation
             requestAnimationFrame(() => {
+                if (myToken !== oversizeToken) return; // a newer toggle happened - skip
                 const W = parent.clientWidth;
                 const H = parent.clientHeight;
                 if (!W || !H) return;
