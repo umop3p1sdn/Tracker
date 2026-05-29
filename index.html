@@ -469,7 +469,7 @@
             <!-- MODE SELECT -->
             <div id="modeSelect" class="mode-select">
                 <p class="subtitle">Start tracking</p>
-                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v6.8 © Umop3p1sdn</div>
+                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v6.9 © Umop3p1sdn</div>
                 
                 <!-- Hidden file input for GPX loading -->
                 <input type="file" id="gpxInputLoad" accept=".gpx" style="display:none;" onchange="loadGPXFile(event)">
@@ -650,13 +650,13 @@
             <p>Pan over de regio waar je straks wilt rijden, op het zoomniveau waarop je navigeert (standaard 15), en je kaart is automatisch offline beschikbaar.</p>
             
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                Live Tracker App v6.8 © Umop3p1sdn
+                Live Tracker App v6.9 © Umop3p1sdn
             </p>
         </div>
     </div>
 
     <script>
-        const APP_VERSION = "6.8";
+        const APP_VERSION = "6.9";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -1188,32 +1188,61 @@
             const bf = document.getElementById('rotBtnFollower');
             if (bm) bm.textContent = text;
             if (bf) bf.textContent = text;
-            ['mapMaster', 'mapFollower'].forEach(id => {
-                const el = document.getElementById(id);
-                if (!el) return;
-                const parent = el.parentElement;
-                if (mapRotationEnabled) {
-                    // Clip only while rotating, so normal layout is untouched
-                    if (parent) { parent.style.overflow = 'hidden'; parent.style.borderRadius = '8px'; }
-                } else {
-                    el.style.transform = '';
-                    if (parent) { parent.style.overflow = ''; parent.style.borderRadius = ''; }
-                }
-            });
-            if (mapRotationEnabled) applyMapRotation();
+            applyMapOversize();          // enlarge render area (or restore) + apply/clear rotation
             updateSelfMarkerRotation();
         }
 
+        // Rotate only the active map container around its center.
         function applyMapRotation() {
-            if (!mapRotationEnabled) return;
-            // Rotate map opposite to heading so "forward" is up (no scale - true zoom, sharp tiles)
-            const t = `rotate(${-deviceHeading}deg)`;
-            ['mapMaster', 'mapFollower'].forEach(id => {
-                const el = document.getElementById(id);
-                if (el) {
-                    el.style.transformOrigin = 'center center';
-                    el.style.transform = t;
-                }
+            if (!mapRotationEnabled || !mapInstance) return;
+            const el = mapInstance.getContainer();
+            el.style.transformOrigin = 'center center';
+            el.style.transform = `rotate(${-deviceHeading}deg)`;
+        }
+
+        // When DRAAI is on, render the map as a square the size of the screen
+        // diagonal (centered), so rotation never reveals empty corners - without
+        // zooming. Leaflet loads the extra surrounding tiles (sharp). Idempotent:
+        // resets first, so it also adapts when the view size changes.
+        function applyMapOversize() {
+            if (!mapInstance) return;
+            const el = mapInstance.getContainer();
+            const parent = el.parentElement;
+            if (!parent) return;
+
+            // Reset to natural layout first
+            el.style.position = '';
+            el.style.width = '';
+            el.style.height = '';
+            el.style.left = '';
+            el.style.top = '';
+            el.style.transform = '';
+            parent.style.height = '';
+
+            if (!mapRotationEnabled) {
+                parent.style.overflow = '';
+                parent.style.borderRadius = '';
+                mapInstance.invalidateSize({ animate: false });
+                return;
+            }
+
+            // Measure natural size after reset, then oversize to the diagonal
+            requestAnimationFrame(() => {
+                const W = parent.clientWidth;
+                const H = parent.clientHeight;
+                if (!W || !H) return;
+                const D = Math.ceil(Math.sqrt(W * W + H * H) * 1.06);
+                parent.style.overflow = 'hidden';
+                parent.style.borderRadius = '8px';
+                parent.style.height = H + 'px';
+                el.style.position = 'absolute';
+                el.style.left = ((W - D) / 2) + 'px';
+                el.style.top = ((H - D) / 2) + 'px';
+                el.style.width = D + 'px';
+                el.style.height = D + 'px';
+                el.style.transformOrigin = 'center center';
+                mapInstance.invalidateSize({ animate: false });
+                applyMapRotation();
             });
         }
 
@@ -1323,7 +1352,8 @@
             if (mapInstance) {
                 setTimeout(() => {
                     mapInstance.invalidateSize();
-                }, 100);
+                    if (mapRotationEnabled) applyMapOversize();
+                }, 150);
             }
         }
 
