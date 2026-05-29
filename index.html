@@ -480,7 +480,7 @@
             <!-- MODE SELECT -->
             <div id="modeSelect" class="mode-select">
                 <p class="subtitle">Start tracking</p>
-                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v6.18 © Umop3p1sdn</div>
+                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v6.19 © Umop3p1sdn</div>
                 
                 <!-- Hidden file input for GPX loading -->
                 <input type="file" id="gpxInputLoad" accept=".gpx" style="display:none;" onchange="loadGPXFile(event)">
@@ -537,6 +537,7 @@
 
                     <div class="controls">
                         <button class="button-secondary" onclick="toggleFollow()" id="followBtnMaster">CENTER: ON</button>
+                        <button class="button-secondary" onclick="toggleZoom()" id="zoomBtnMaster">ZOOM: FOLLOWERS</button>
                         <button class="button-secondary" onclick="toggleOMB()" id="ombBtnMaster">OMB: ON</button>
                         <button class="button-secondary button-gpx" onclick="toggleGPXMenu()">GPX</button>
                     </div>
@@ -665,13 +666,13 @@
             <p>Pan over de regio waar je straks wilt rijden, op het zoomniveau waarop je navigeert (standaard 15), en je kaart is automatisch offline beschikbaar.</p>
             
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                Live Tracker App v6.18 © Umop3p1sdn
+                Live Tracker App v6.19 © Umop3p1sdn
             </p>
         </div>
     </div>
 
     <script>
-        const APP_VERSION = "6.18";
+        const APP_VERSION = "6.19";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -681,6 +682,7 @@
         let mapInstance = null;
         let masterMarker = null;
         let followerMarker = null;
+        let followerMarkers = {}; // master's view of followers: deviceId -> marker
         let masterDirection = null;
         let followerDirection = null;
         let polyline = null;
@@ -693,6 +695,7 @@
         let followerLocations = [];
         let followerTrackingPolyline = null;
         let watchId = null;
+        let masterFollowersTimer = null;
         let followInterval = null;
         let trackVisible = false;
         let allTrackVisible = false;
@@ -1092,6 +1095,75 @@
             }
         }
 
+        // Master: fetch all followers and draw them as blue arrows
+        let masterFollowersData = {}; // deviceId -> {lat,lng,heading}
+        async function updateFollowerMarkers(code) {
+            const followers = await fetchFollowers(code);
+            const now = Date.now();
+            const seen = {};
+            masterFollowersData = {};
+
+            Object.keys(followers).forEach(id => {
+                const f = followers[id];
+                if (!f || typeof f.latitude !== 'number') return;
+                // Skip stale followers (no update for 60s)
+                if (f.timestamp && (now - f.timestamp) > 60000) return;
+                seen[id] = true;
+                masterFollowersData[id] = { lat: f.latitude, lng: f.longitude, heading: f.heading || 0 };
+
+                if (followerMarkers[id]) {
+                    followerMarkers[id].setLatLng([f.latitude, f.longitude]);
+                    setMarkerHeading(followerMarkers[id], f.heading || 0);
+                } else {
+                    followerMarkers[id] = createPlaneMarker(f.latitude, f.longitude, '#2196F3', 28)
+                        .addTo(mapInstance).bindPopup('FOLLOWER');
+                    setMarkerHeading(followerMarkers[id], f.heading || 0);
+                }
+            });
+
+            // Remove markers for followers that are gone/stale
+            Object.keys(followerMarkers).forEach(id => {
+                if (!seen[id]) {
+                    mapInstance.removeLayer(followerMarkers[id]);
+                    delete followerMarkers[id];
+                }
+            });
+
+            if (isAutoFollowActive) updateMapView();
+        }
+
+        async function sendFollowerToFirebase(code, lat, lng, heading) {
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 5000);
+                const url = `${firebaseConfig.databaseURL}/tracking/${code}/followers/${deviceId}.json`;
+                await fetch(url, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ latitude: lat, longitude: lng, heading: heading, timestamp: Date.now() }),
+                    signal: controller.signal
+                });
+                clearTimeout(timeoutId);
+            } catch (err) {
+                console.error('Follower Firebase error:', err);
+            }
+        }
+
+        async function fetchFollowers(code) {
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 5000);
+                const url = `${firebaseConfig.databaseURL}/tracking/${code}/followers.json`;
+                const response = await fetch(url, { signal: controller.signal });
+                clearTimeout(timeoutId);
+                const data = await response.json();
+                return data || {};
+            } catch (err) {
+                console.error('Fetch followers error:', err);
+                return {};
+            }
+        }
+
         async function sendToFirebase(code, lat, lng, heading) {
             try {
                 const controller = new AbortController();
@@ -1365,25 +1437,27 @@
         }
 
         function toggleZoom() {
-            if (currentMode === 'master') {
-                // Master: no zoom button anymore
-                return;
-            } else if (currentMode === 'follower') {
-                // Cycle: master → both → self → master
-                if (zoomMode === 'master') {
-                    zoomMode = 'both';
-                    document.getElementById('zoomBtn').textContent = 'ZOOM: BOTH';
-                } else if (zoomMode === 'both') {
-                    zoomMode = 'self';
-                    document.getElementById('zoomBtn').textContent = 'ZOOM: SELF';
-                } else {
-                    zoomMode = 'master';
-                    document.getElementById('zoomBtn').textContent = 'ZOOM: MASTER';
-                }
-                // NOTE: Do NOT turn on CENTER here - just cycle zoom mode
-                if (isAutoFollowActive) {
-                    updateMapView();
-                }
+            // Cycle: master → both → self → master (works for master & follower)
+            if (zoomMode === 'master') {
+                zoomMode = 'both';
+            } else if (zoomMode === 'both') {
+                zoomMode = 'self';
+            } else {
+                zoomMode = 'master';
+            }
+            const label = 'ZOOM: ' + zoomMode.toUpperCase();
+            const zb = document.getElementById('zoomBtn');
+            const zbm = document.getElementById('zoomBtnMaster');
+            if (zb) zb.textContent = label;
+            // Master labels are mirrored: master=followers, self=me
+            if (zbm) {
+                const mLabel = zoomMode === 'master' ? 'ZOOM: FOLLOWERS'
+                             : zoomMode === 'self' ? 'ZOOM: SELF' : 'ZOOM: BOTH';
+                zbm.textContent = mLabel;
+            }
+            // NOTE: Do NOT turn on CENTER here - just cycle zoom mode
+            if (isAutoFollowActive) {
+                updateMapView();
             }
         }
 
@@ -1461,8 +1535,29 @@
         function updateMapView() {
             if (!mapInstance || !isAutoFollowActive) return;
 
-            // Master view: center on own position
+            // Master view: zoomMode mirrored - self=me, master=followers, both=all
             if (currentMode === 'master') {
+                const fMarkers = Object.keys(followerMarkers).map(id => followerMarkers[id]);
+                if (zoomMode === 'self' && masterPos) {
+                    mapInstance.setView([masterPos.lat, masterPos.lng], zoomLevelValue);
+                    return;
+                }
+                if (zoomMode === 'both' && masterMarker && fMarkers.length) {
+                    const group = L.featureGroup([masterMarker, ...fMarkers]);
+                    mapInstance.fitBounds(group.getBounds(), { padding: [50, 50] });
+                    return;
+                }
+                if (zoomMode === 'master' && fMarkers.length) {
+                    const group = L.featureGroup(fMarkers);
+                    if (fMarkers.length === 1) {
+                        const ll = fMarkers[0].getLatLng();
+                        mapInstance.setView([ll.lat, ll.lng], zoomLevelValue);
+                    } else {
+                        mapInstance.fitBounds(group.getBounds(), { padding: [50, 50] });
+                    }
+                    return;
+                }
+                // Fallback: center on self
                 if (masterPos) mapInstance.setView([masterPos.lat, masterPos.lng], zoomLevelValue);
                 return;
             }
@@ -1787,6 +1882,10 @@
                         (err) => showError(`GPS: ${err.message}`),
                         { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
                     );
+
+                    // Master polls followers every 3s to show their positions
+                    updateFollowerMarkers(code);
+                    masterFollowersTimer = setInterval(() => updateFollowerMarkers(code), 3000);
                 } else {
                     watchId = navigator.geolocation.watchPosition(
                         (position) => {
@@ -1804,6 +1903,7 @@
                             
                             // Add to follower's track
                             followerLocations.push([latitude, longitude]);
+                            sendFollowerToFirebase(code, latitude, longitude, deviceHeading);
                             
                             // Update follower's blue tracking polyline
                             if (followerLocations.length > 1) {
@@ -2208,6 +2308,12 @@
                 clearInterval(followInterval);
                 followInterval = null;
             }
+            if (masterFollowersTimer) {
+                clearInterval(masterFollowersTimer);
+                masterFollowersTimer = null;
+            }
+            followerMarkers = {};
+            masterFollowersData = {};
             if (mapInstance) {
                 mapInstance.off();
                 mapInstance.remove();
