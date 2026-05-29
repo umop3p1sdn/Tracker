@@ -468,7 +468,7 @@
             <!-- MODE SELECT -->
             <div id="modeSelect" class="mode-select">
                 <p class="subtitle">Start tracking</p>
-                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v6.1 © Umop3p1sdn</div>
+                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v6.3 © Umop3p1sdn</div>
                 
                 <!-- Hidden file input for GPX loading -->
                 <input type="file" id="gpxInputLoad" accept=".gpx" style="display:none;" onchange="loadGPXFile(event)">
@@ -649,24 +649,13 @@
             <p>Pan over de regio waar je straks wilt rijden, op het zoomniveau waarop je navigeert (standaard 15), en je kaart is automatisch offline beschikbaar.</p>
             
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                Live Tracker App v6.1 © Umop3p1sdn
+                Live Tracker App v6.3 © Umop3p1sdn
             </p>
         </div>
     </div>
 
     <script>
-        // Show any JS error on screen (helps debug white-screen on mobile)
-        window.addEventListener('error', function(e) {
-            let box = document.getElementById('jsErrorBox');
-            if (!box) {
-                box = document.createElement('div');
-                box.id = 'jsErrorBox';
-                box.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:99999;background:#B71C1C;color:#fff;padding:10px;font-size:12px;font-family:monospace;max-height:40%;overflow:auto;white-space:pre-wrap;';
-                document.body && document.body.appendChild(box);
-            }
-            box.textContent = '⚠️ FOUT: ' + e.message + '\n@ ' + (e.filename||'').split('/').pop() + ':' + e.lineno;
-        });
-        const APP_VERSION = "6.1";
+        const APP_VERSION = "6.3";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -696,7 +685,6 @@
         let compassMode = 'device';
         let deviceHeading = 0;
         let mapRotationEnabled = false;
-        const ROTATE_SCALE = 1.8; // zoom factor so corners stay filled while rotating
         let followerPos = null;
         let masterPos = null;
         let wakeLock = null;
@@ -1216,8 +1204,8 @@
 
         function applyMapRotation() {
             if (!mapRotationEnabled) return;
-            // Rotate map opposite to heading so "forward" is up; scale to fill corners
-            const t = `rotate(${-deviceHeading}deg) scale(${ROTATE_SCALE})`;
+            // Rotate map opposite to heading so "forward" is up (no scale - true zoom, sharp tiles)
+            const t = `rotate(${-deviceHeading}deg)`;
             ['mapMaster', 'mapFollower'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) {
