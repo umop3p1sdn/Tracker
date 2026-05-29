@@ -468,7 +468,7 @@
             <!-- MODE SELECT -->
             <div id="modeSelect" class="mode-select">
                 <p class="subtitle">Start tracking</p>
-                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v6.3 © Umop3p1sdn</div>
+                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v6.5 © Umop3p1sdn</div>
                 
                 <!-- Hidden file input for GPX loading -->
                 <input type="file" id="gpxInputLoad" accept=".gpx" style="display:none;" onchange="loadGPXFile(event)">
@@ -649,13 +649,13 @@
             <p>Pan over de regio waar je straks wilt rijden, op het zoomniveau waarop je navigeert (standaard 15), en je kaart is automatisch offline beschikbaar.</p>
             
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                Live Tracker App v6.3 © Umop3p1sdn
+                Live Tracker App v6.5 © Umop3p1sdn
             </p>
         </div>
     </div>
 
     <script>
-        const APP_VERSION = "6.3";
+        const APP_VERSION = "6.5";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -1326,17 +1326,32 @@
         function updateMapView() {
             if (!mapInstance || !isAutoFollowActive) return;
 
-            if (currentMode === 'master' && masterPos) {
+            // Master view: center on own position
+            if (currentMode === 'master') {
+                if (masterPos) mapInstance.setView([masterPos.lat, masterPos.lng], zoomLevelValue);
+                return;
+            }
+
+            // Follower view: honor zoom mode, but always fall back to a known
+            // position so CENTER never silently does nothing.
+            if (zoomMode === 'both' && masterPos && masterMarker && followerMarker) {
+                const group = L.featureGroup([masterMarker, followerMarker]);
+                mapInstance.fitBounds(group.getBounds(), { padding: [50, 50] });
+                return;
+            }
+            if (zoomMode === 'master' && masterPos) {
                 mapInstance.setView([masterPos.lat, masterPos.lng], zoomLevelValue);
-            } else if (currentMode === 'follower' && followerPos) {
-                if (zoomMode === 'master' && masterPos) {
-                    mapInstance.setView([masterPos.lat, masterPos.lng], zoomLevelValue);
-                } else if (zoomMode === 'both' && masterPos && masterMarker && followerMarker) {
-                    const group = L.featureGroup([masterMarker, followerMarker]);
-                    mapInstance.fitBounds(group.getBounds(), { padding: [50, 50] });
-                } else if (zoomMode === 'self') {
-                    mapInstance.setView([followerPos.lat, followerPos.lng], zoomLevelValue);
-                }
+                return;
+            }
+            if (zoomMode === 'self' && followerPos) {
+                mapInstance.setView([followerPos.lat, followerPos.lng], zoomLevelValue);
+                return;
+            }
+            // Chosen target not ready yet → center on whatever we have
+            if (followerPos) {
+                mapInstance.setView([followerPos.lat, followerPos.lng], zoomLevelValue);
+            } else if (masterPos) {
+                mapInstance.setView([masterPos.lat, masterPos.lng], zoomLevelValue);
             }
         }
 
@@ -2145,7 +2160,11 @@
             if (masterSpan) masterSpan.textContent = zoomLevelValue;
             if (followerSpan) followerSpan.textContent = zoomLevelValue;
             
-            updateMapView();
+            // Only move/zoom the map when CENTER is on. With CENTER off the
+            // map stays completely free (number changes only).
+            if (isAutoFollowActive) {
+                updateMapView();
+            }
         }
 
         function updateZoomLevel(value) {
