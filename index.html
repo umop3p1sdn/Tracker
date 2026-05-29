@@ -351,6 +351,7 @@
             height: auto;
             flex: 1;
         }
+        .plane-marker { background: transparent !important; border: none !important; }
     </style>
 </head>
 <body>
@@ -468,7 +469,7 @@
             <!-- MODE SELECT -->
             <div id="modeSelect" class="mode-select">
                 <p class="subtitle">Start tracking</p>
-                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v6.5 © Umop3p1sdn</div>
+                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v6.6 © Umop3p1sdn</div>
                 
                 <!-- Hidden file input for GPX loading -->
                 <input type="file" id="gpxInputLoad" accept=".gpx" style="display:none;" onchange="loadGPXFile(event)">
@@ -649,13 +650,13 @@
             <p>Pan over de regio waar je straks wilt rijden, op het zoomniveau waarop je navigeert (standaard 15), en je kaart is automatisch offline beschikbaar.</p>
             
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                Live Tracker App v6.5 © Umop3p1sdn
+                Live Tracker App v6.6 © Umop3p1sdn
             </p>
         </div>
     </div>
 
     <script>
-        const APP_VERSION = "6.5";
+        const APP_VERSION = "6.6";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -1323,6 +1324,25 @@
             }
         }
 
+        // Directional marker shaped like a paper airplane (top-down view),
+        // rotates to point in the heading direction. Nose = direction of travel.
+        function createPlaneMarker(lat, lng, color, size) {
+            const s = size || 30;
+            const icon = L.divIcon({
+                className: 'plane-marker',
+                html: `<svg width="${s}" height="${s}" viewBox="0 0 24 24" style="display:block;">
+                    <path d="M12 2 L21 21 L12 16.5 L3 21 Z" fill="${color}" stroke="#ffffff" stroke-width="1.3" stroke-linejoin="round"/>
+                </svg>`,
+                iconSize: [s, s],
+                iconAnchor: [s / 2, s / 2]
+            });
+            return L.marker([lat, lng], {
+                icon: icon,
+                rotationAngle: 0,
+                rotationOrigin: 'center center'
+            });
+        }
+
         function updateMapView() {
             if (!mapInstance || !isAutoFollowActive) return;
 
@@ -1625,14 +1645,9 @@
                                     masterMarker.setRotationAngle(deviceHeading);
                                 }
                             } else {
-                                masterMarker = L.circleMarker([latitude, longitude], {
-                                    radius: 12,
-                                    fillColor: '#FF1744',
-                                    color: 'white',
-                                    weight: 2,
-                                    opacity: 0.8,
-                                    fillOpacity: 0.8
-                                }).addTo(mapInstance).bindPopup('YOU');
+                                masterMarker = createPlaneMarker(latitude, longitude, '#FF1744', 32)
+                                    .addTo(mapInstance).bindPopup('YOU');
+                                masterMarker.setRotationAngle(deviceHeading);
                             }
 
                             // createDirectionMarker(latitude, longitude, deviceHeading, false);
@@ -1667,15 +1682,13 @@
                             
                             if (followerMarker) {
                                 followerMarker.setLatLng([latitude, longitude]);
+                                if (followerMarker.setRotationAngle) {
+                                    followerMarker.setRotationAngle(deviceHeading);
+                                }
                             } else {
-                                followerMarker = L.circleMarker([latitude, longitude], {
-                                    radius: 8,
-                                    fillColor: '#2196F3',
-                                    color: '#fff',
-                                    weight: 2,
-                                    opacity: 1,
-                                    fillOpacity: 0.9
-                                }).addTo(mapInstance).bindPopup('YOU');
+                                followerMarker = createPlaneMarker(latitude, longitude, '#2196F3', 28)
+                                    .addTo(mapInstance).bindPopup('YOU');
+                                followerMarker.setRotationAngle(deviceHeading);
                             }
                             
                             // Add to follower's track
@@ -1712,14 +1725,9 @@
                                 }
                             } else {
                                 const heading = location.heading || 0;
-                                masterMarker = L.circleMarker([location.lat, location.lng], {
-                                    radius: 12,
-                                    fillColor: '#FF1744',
-                                    color: 'white',
-                                    weight: 2,
-                                    opacity: 0.8,
-                                    fillOpacity: 0.8
-                                }).addTo(mapInstance).bindPopup('TARGET');
+                                masterMarker = createPlaneMarker(location.lat, location.lng, '#FF1744', 32)
+                                    .addTo(mapInstance).bindPopup('TARGET');
+                                masterMarker.setRotationAngle(heading);
                             }
 
                             // createDirectionMarker(location.lat, location.lng, location.heading, false);
