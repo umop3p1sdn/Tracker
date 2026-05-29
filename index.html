@@ -352,6 +352,17 @@
             flex: 1;
         }
         .plane-marker { background: transparent !important; border: none !important; }
+        /* Map rotation: oversize the map via a class so it fully reverts when removed */
+        .map-rotating { overflow: hidden !important; border-radius: 8px; height: var(--rot-h) !important; }
+        .map-rotating > .map {
+            position: absolute !important;
+            left: var(--rot-left);
+            top: var(--rot-top);
+            width: var(--rot-d) !important;
+            height: var(--rot-d) !important;
+            min-height: 0 !important;
+            transform-origin: center center;
+        }
     </style>
 </head>
 <body>
@@ -469,7 +480,7 @@
             <!-- MODE SELECT -->
             <div id="modeSelect" class="mode-select">
                 <p class="subtitle">Start tracking</p>
-                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v6.12 © Umop3p1sdn</div>
+                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v6.13 © Umop3p1sdn</div>
                 
                 <!-- Hidden file input for GPX loading -->
                 <input type="file" id="gpxInputLoad" accept=".gpx" style="display:none;" onchange="loadGPXFile(event)">
@@ -650,13 +661,13 @@
             <p>Pan over de regio waar je straks wilt rijden, op het zoomniveau waarop je navigeert (standaard 15), en je kaart is automatisch offline beschikbaar.</p>
             
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                Live Tracker App v6.12 © Umop3p1sdn
+                Live Tracker App v6.13 © Umop3p1sdn
             </p>
         </div>
     </div>
 
     <script>
-        const APP_VERSION = "6.12";
+        const APP_VERSION = "6.13";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -1209,26 +1220,21 @@
         function applyMapOversize() {
             if (!mapInstance) return;
             const el = mapInstance.getContainer();
-            const parent = el.parentElement;
-            if (!parent) return;
-            const myToken = ++oversizeToken; // invalidate any pending rAF from earlier calls
+            const wrap = el.parentElement;
+            if (!wrap) return;
+            const myToken = ++oversizeToken;
 
-            // Full reset to natural layout first
-            el.style.position = '';
-            el.style.width = '';
-            el.style.height = '';
-            el.style.left = '';
-            el.style.top = '';
+            // Reset to natural first (also the measurement baseline)
+            wrap.classList.remove('map-rotating');
             el.style.transform = '';
-            el.style.transformOrigin = '';
-            parent.style.height = '';
-            parent.style.overflow = '';
-            parent.style.borderRadius = '';
 
             if (!mapRotationEnabled) {
+                wrap.style.removeProperty('--rot-h');
+                wrap.style.removeProperty('--rot-d');
+                wrap.style.removeProperty('--rot-left');
+                wrap.style.removeProperty('--rot-top');
                 mapInstance.invalidateSize({ animate: false });
                 updateMapView();
-                // Second pass after the reflow settles, so nothing stays enlarged
                 requestAnimationFrame(() => {
                     if (myToken !== oversizeToken) return;
                     mapInstance.invalidateSize({ animate: false });
@@ -1237,11 +1243,11 @@
                 return;
             }
 
-            // Measure natural size after reset, then oversize to cover rotation
+            // Measure natural size (class removed), then apply oversize via class
             requestAnimationFrame(() => {
-                if (myToken !== oversizeToken) return; // a newer toggle happened - skip
-                const W = parent.clientWidth;
-                const H = parent.clientHeight;
+                if (myToken !== oversizeToken) return;
+                const W = wrap.clientWidth;
+                const H = wrap.clientHeight;
                 if (!W || !H) return;
                 // Place "you" a bit below center so you see more of the road ahead.
                 const cy = H * MARKER_VPOS;
@@ -1250,15 +1256,11 @@
                 const dTop = Math.sqrt((W / 2) * (W / 2) + cy * cy);
                 const dBot = Math.sqrt((W / 2) * (W / 2) + (H - cy) * (H - cy));
                 const D = Math.ceil(2 * Math.max(dTop, dBot) * 1.06);
-                parent.style.overflow = 'hidden';
-                parent.style.borderRadius = '8px';
-                parent.style.height = H + 'px';
-                el.style.position = 'absolute';
-                el.style.left = ((W - D) / 2) + 'px';
-                el.style.top = (cy - D / 2) + 'px';
-                el.style.width = D + 'px';
-                el.style.height = D + 'px';
-                el.style.transformOrigin = 'center center';
+                wrap.style.setProperty('--rot-h', H + 'px');
+                wrap.style.setProperty('--rot-d', D + 'px');
+                wrap.style.setProperty('--rot-left', ((W - D) / 2) + 'px');
+                wrap.style.setProperty('--rot-top', (cy - D / 2) + 'px');
+                wrap.classList.add('map-rotating');
                 mapInstance.invalidateSize({ animate: false });
                 applyMapRotation();
                 updateMapView();
