@@ -485,7 +485,7 @@
             <!-- MODE SELECT -->
             <div id="modeSelect" class="mode-select">
                 <p class="subtitle">Start tracking</p>
-                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v6.56 © Umop3p1sdn</div>
+                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v6.58 © Umop3p1sdn</div>
                 
                 <!-- Hidden file input for GPX loading -->
                 <input type="file" id="gpxInputLoad" accept=".gpx" style="display:none;" onchange="loadGPXFile(event)">
@@ -659,6 +659,8 @@
             
             <p>— <strong>◎ Center-knop</strong> - Naast de code. Cyaan = kaart volgt je locatie, grijs = kaart vrij</p>
             
+            <p>— <strong>Kleuren</strong> - Master = rood. Bij verbinden krijgt elke volger een eigen kleur (vanaf blauw). Bij meer dan 8 volgers: zelfde kleuren met een nummer-badge. Reset bij nieuwe track.</p>
+
             <p>— <strong>Track width (− / +)</strong> - Onder op kaart. Range: 3-15px</p>
             
             <p>— <strong>GO knop (onderaan)</strong> - Verbergt alle controls, alleen kaart zichtbaar</p>
@@ -702,13 +704,13 @@
             <p>Pan over de regio waar je straks wilt rijden, op het zoomniveau waarop je navigeert (standaard 15), en je kaart is automatisch offline beschikbaar.</p>
             
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                Live Tracker App v6.56 © Umop3p1sdn
+                Live Tracker App v6.58 © Umop3p1sdn
             </p>
         </div>
     </div>
 
     <script>
-        const APP_VERSION = "6.56";
+        const APP_VERSION = "6.58";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -733,6 +735,7 @@
         let watchId = null;
         let masterFollowersTimer = null;
         let followerHeartbeatTimer = null;
+        let myFollowerIdx = null;      // this follower's assigned color index (read from Firebase)
         let followInterval = null;
         let trackVisible = false;
         let allTrackVisible = false;
@@ -1408,7 +1411,33 @@
             }
         }
 
-        // Master: fetch all followers and draw them as blue arrows
+        // Follower color palette (master = red). Index → color + badge number.
+        const FOLLOWER_COLORS = ['#2196F3','#4CAF50','#FF9800','#9C27B0','#00BCD4','#E91E63','#FFEB3B','#795548'];
+        function colorForIndex(idx) { return FOLLOWER_COLORS[idx % 8]; }
+        function badgeForIndex(idx) { return Math.floor(idx / 8); } // 0 = no badge (followers); shown for master as 0
+
+        // Master assigns the next free index to a follower the first time it's seen,
+        // and writes it back to Firebase so the follower can read its own color.
+        let followerIndexMap = {};   // deviceId -> idx (master's view, this session/code)
+        async function assignFollowerIndex(code, deviceId, existing) {
+            if (existing && typeof existing.idx === 'number') {
+                followerIndexMap[deviceId] = existing.idx;
+                return existing.idx;
+            }
+            if (typeof followerIndexMap[deviceId] === 'number') return followerIndexMap[deviceId];
+            // next free index = highest known + 1
+            const used = Object.values(followerIndexMap);
+            const idx = used.length ? Math.max(...used) + 1 : 0;
+            followerIndexMap[deviceId] = idx;
+            try {
+                await fetch(`${firebaseConfig.databaseURL}/tracking/${code}/followers/${deviceId}/idx.json`, {
+                    method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(idx)
+                });
+            } catch (e) {}
+            return idx;
+        }
+
+        // Master: fetch all followers and draw them as colored arrows
         let masterFollowersData = {}; // deviceId -> {lat,lng,heading}
         async function updateFollowerMarkers(code) {
             const followers = await fetchFollowers(code);
@@ -1416,23 +1445,28 @@
             const seen = {};
             masterFollowersData = {};
 
-            Object.keys(followers).forEach(id => {
+            const ids = Object.keys(followers);
+            for (const id of ids) {
                 const f = followers[id];
-                if (!f || typeof f.latitude !== 'number') return;
-                // Skip stale followers (no update for 60s)
-                if (f.timestamp && (now - f.timestamp) > 60000) return;
+                if (!f || typeof f.latitude !== 'number') continue;
+                if (f.timestamp && (now - f.timestamp) > 60000) continue;
                 seen[id] = true;
                 masterFollowersData[id] = { lat: f.latitude, lng: f.longitude, heading: f.heading || 0 };
+
+                const idx = await assignFollowerIndex(code, id, f);
+                const color = colorForIndex(idx);
+                const badge = badgeForIndex(idx);
 
                 if (followerMarkers[id]) {
                     followerMarkers[id].setLatLng([f.latitude, f.longitude]);
                     setMarkerHeading(followerMarkers[id], f.heading || 0);
                 } else {
-                    followerMarkers[id] = createPlaneMarker(f.latitude, f.longitude, '#2196F3', 28)
-                        .addTo(mapInstance).bindPopup('FOLLOWER');
+                    followerMarkers[id] = createColoredMarker(f.latitude, f.longitude, color, 28, badge > 0 ? badge : null)
+                        .addTo(mapInstance).bindPopup('FOLLOWER ' + (idx + 1));
                     setMarkerHeading(followerMarkers[id], f.heading || 0);
+                    followerMarkers[id]._idx = idx;
                 }
-            });
+            }
 
             // Remove markers for followers that are gone/stale
             Object.keys(followerMarkers).forEach(id => {
@@ -1464,7 +1498,7 @@
                 const timeoutId = setTimeout(() => controller.abort(), 5000);
                 const url = `${firebaseConfig.databaseURL}/tracking/${code}/followers/${deviceId}.json`;
                 await fetch(url, {
-                    method: 'PUT',
+                    method: 'PATCH',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ latitude: lat, longitude: lng, heading: heading, timestamp: Date.now() }),
                     signal: controller.signal
@@ -1497,7 +1531,7 @@
                 
                 const url = `${firebaseConfig.databaseURL}/tracking/${code}.json`;
                 await fetch(url, {
-                    method: 'PUT',
+                    method: 'PATCH',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         latitude: lat,
@@ -1907,6 +1941,24 @@
             return L.marker([lat, lng], { icon: icon });
         }
 
+        // Plane marker with a color and an optional number badge (top-right).
+        function createColoredMarker(lat, lng, color, size, badge) {
+            const s = size || 30;
+            const badgeHtml = (badge !== null && badge !== undefined && badge >= 0)
+                ? `<div style="position:absolute; top:-2px; right:-2px; min-width:14px; height:14px; padding:0 2px; background:${color}; color:#fff; border:1.5px solid #fff; border-radius:8px; font-size:10px; font-weight:bold; line-height:14px; text-align:center; font-family:sans-serif;">${badge}</div>`
+                : '';
+            const icon = L.divIcon({
+                className: 'plane-marker',
+                html: `<div style="position:relative; width:${s}px; height:${s}px;">
+                    <svg width="${s}" height="${s}" viewBox="0 0 24 24" style="display:block; transform-origin:center center;">
+                        <path d="M12 2 L21 21 L12 16.5 L3 21 Z" fill="${color}" stroke="#ffffff" stroke-width="1.3" stroke-linejoin="round"/>
+                    </svg>${badgeHtml}</div>`,
+                iconSize: [s, s],
+                iconAnchor: [s / 2, s / 2]
+            });
+            return L.marker([lat, lng], { icon: icon });
+        }
+
         function updateMapView() {
             if (!mapInstance || !isAutoFollowActive) return;
 
@@ -2249,7 +2301,7 @@
                                 masterMarker.setLatLng([latitude, longitude]);
                                 updateSelfMarkerRotation();
                             } else {
-                                masterMarker = createPlaneMarker(latitude, longitude, '#FF1744', 32)
+                                masterMarker = createColoredMarker(latitude, longitude, '#FF1744', 32, 0)
                                     .addTo(mapInstance).bindPopup('YOU');
                                 updateSelfMarkerRotation();
                             }
@@ -2294,7 +2346,9 @@
                                 followerMarker.setLatLng([latitude, longitude]);
                                 updateSelfMarkerRotation();
                             } else {
-                                followerMarker = createPlaneMarker(latitude, longitude, '#2196F3', 28)
+                                const myColor = (typeof myFollowerIdx === 'number') ? colorForIndex(myFollowerIdx) : '#2196F3';
+                                const myBadge = (typeof myFollowerIdx === 'number') ? badgeForIndex(myFollowerIdx) : 0;
+                                followerMarker = createColoredMarker(latitude, longitude, myColor, 28, myBadge > 0 ? myBadge : null)
                                     .addTo(mapInstance).bindPopup('YOU');
                                 updateSelfMarkerRotation();
                             }
@@ -2331,6 +2385,20 @@
                         if (followerPos) {
                             sendFollowerToFirebase(code, followerPos.lat, followerPos.lng, deviceHeading);
                         }
+                        // Read my own assigned color index (master sets it)
+                        fetch(`${firebaseConfig.databaseURL}/tracking/${code}/followers/${deviceId}/idx.json`)
+                            .then(r => r.json()).then(idx => {
+                                if (typeof idx === 'number' && idx !== myFollowerIdx) {
+                                    myFollowerIdx = idx;
+                                    // recolor my own marker
+                                    if (followerMarker && followerPos) {
+                                        mapInstance.removeLayer(followerMarker);
+                                        followerMarker = createColoredMarker(followerPos.lat, followerPos.lng,
+                                            colorForIndex(idx), 28, badgeForIndex(idx) > 0 ? badgeForIndex(idx) : null).addTo(mapInstance).bindPopup('YOU');
+                                        updateSelfMarkerRotation();
+                                    }
+                                }
+                            }).catch(() => {});
                     }, 4000);
 
                     const updateMasterMarker = async () => {
@@ -2725,6 +2793,8 @@
                 followerHeartbeatTimer = null;
             }
             followerMarkers = {};
+            followerIndexMap = {};
+            myFollowerIdx = null;
             masterFollowersData = {};
             if (mapInstance) {
                 mapInstance.off();
