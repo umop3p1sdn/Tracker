@@ -485,7 +485,7 @@
             <!-- MODE SELECT -->
             <div id="modeSelect" class="mode-select">
                 <p class="subtitle">Start tracking</p>
-                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v6.53 © Umop3p1sdn</div>
+                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v6.54 © Umop3p1sdn</div>
                 
                 <!-- Hidden file input for GPX loading -->
                 <input type="file" id="gpxInputLoad" accept=".gpx" style="display:none;" onchange="loadGPXFile(event)">
@@ -702,13 +702,13 @@
             <p>Pan over de regio waar je straks wilt rijden, op het zoomniveau waarop je navigeert (standaard 15), en je kaart is automatisch offline beschikbaar.</p>
             
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                Live Tracker App v6.53 © Umop3p1sdn
+                Live Tracker App v6.54 © Umop3p1sdn
             </p>
         </div>
     </div>
 
     <script>
-        const APP_VERSION = "6.53";
+        const APP_VERSION = "6.54";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -763,17 +763,27 @@
         let beepedNow = {};             // turn.index -> true (2 beeps done)
 
         // Unlock audio after a user gesture (browser requirement). Called from GO.
-        function unlockAudio() {
+        function unlockAudio(thenBeep) {
             if (!audioEnabled) return;
             try {
                 if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                if (audioCtx.state === 'suspended') audioCtx.resume();
-                // silent tick to fully unlock on iOS
-                const o = audioCtx.createOscillator();
-                const g = audioCtx.createGain();
-                g.gain.value = 0;
-                o.connect(g); g.connect(audioCtx.destination);
-                o.start(); o.stop(audioCtx.currentTime + 0.01);
+                const afterReady = () => {
+                    // silent tick to fully unlock on iOS
+                    try {
+                        const o = audioCtx.createOscillator();
+                        const g = audioCtx.createGain();
+                        g.gain.value = 0;
+                        o.connect(g); g.connect(audioCtx.destination);
+                        o.start(); o.stop(audioCtx.currentTime + 0.01);
+                    } catch (e) {}
+                    if (thenBeep) playBeep(0.05);
+                };
+                if (audioCtx.state === 'suspended') {
+                    const p = audioCtx.resume();
+                    if (p && p.then) p.then(afterReady); else afterReady();
+                } else {
+                    afterReady();
+                }
             } catch (e) { console.warn('audio unlock failed', e); }
         }
 
@@ -1835,9 +1845,8 @@
             // Entering fullscreen (GO): unlock audio + show big speedometer
             const inFull = container.classList.contains('map-only');
             if (inFull) {
-                unlockAudio();
-                // short confirmation beep so you know audio works
-                if (audioEnabled) setTimeout(() => playBeep(0), 150);
+                // test beep fires after the audio context is actually resumed
+                unlockAudio(true);
             }
             const spd = document.getElementById('speedometer');
             if (spd) spd.style.display = inFull ? 'block' : 'none';
