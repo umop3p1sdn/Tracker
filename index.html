@@ -485,7 +485,7 @@
             <!-- MODE SELECT -->
             <div id="modeSelect" class="mode-select">
                 <p class="subtitle">Start tracking</p>
-                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v6.54 © Umop3p1sdn</div>
+                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v6.56 © Umop3p1sdn</div>
                 
                 <!-- Hidden file input for GPX loading -->
                 <input type="file" id="gpxInputLoad" accept=".gpx" style="display:none;" onchange="loadGPXFile(event)">
@@ -702,13 +702,13 @@
             <p>Pan over de regio waar je straks wilt rijden, op het zoomniveau waarop je navigeert (standaard 15), en je kaart is automatisch offline beschikbaar.</p>
             
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                Live Tracker App v6.54 © Umop3p1sdn
+                Live Tracker App v6.56 © Umop3p1sdn
             </p>
         </div>
     </div>
 
     <script>
-        const APP_VERSION = "6.54";
+        const APP_VERSION = "6.56";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -732,6 +732,7 @@
         let followerTrackingPolyline = null;
         let watchId = null;
         let masterFollowersTimer = null;
+        let followerHeartbeatTimer = null;
         let followInterval = null;
         let trackVisible = false;
         let allTrackVisible = false;
@@ -790,6 +791,11 @@
         // One short beep (same tone everywhere)
         function playBeep(when = 0) {
             if (!audioEnabled || !audioCtx) return;
+            // Context can fall back to "suspended" after other interactions /
+            // the screen sleeping. Resume it before each beep so every beep plays.
+            if (audioCtx.state === 'suspended') {
+                try { audioCtx.resume(); } catch (e) {}
+            }
             const t = audioCtx.currentTime + when;
             const o = audioCtx.createOscillator();
             const g = audioCtx.createGain();
@@ -2319,6 +2325,14 @@
                         { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
                     );
 
+                    // Heartbeat: send last known position every 4s, even when standing
+                    // still (GPS may not fire), so the master keeps seeing this follower.
+                    followerHeartbeatTimer = setInterval(() => {
+                        if (followerPos) {
+                            sendFollowerToFirebase(code, followerPos.lat, followerPos.lng, deviceHeading);
+                        }
+                    }, 4000);
+
                     const updateMasterMarker = async () => {
                         const location = await fetchMasterLocation(code);
                         if (location) {
@@ -2705,6 +2719,10 @@
             if (masterFollowersTimer) {
                 clearInterval(masterFollowersTimer);
                 masterFollowersTimer = null;
+            }
+            if (followerHeartbeatTimer) {
+                clearInterval(followerHeartbeatTimer);
+                followerHeartbeatTimer = null;
             }
             followerMarkers = {};
             masterFollowersData = {};
