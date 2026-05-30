@@ -484,7 +484,7 @@
             <!-- MODE SELECT -->
             <div id="modeSelect" class="mode-select">
                 <p class="subtitle">Start tracking</p>
-                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v6.44 © Umop3p1sdn</div>
+                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v6.46 © Umop3p1sdn</div>
                 
                 <!-- Hidden file input for GPX loading -->
                 <input type="file" id="gpxInputLoad" accept=".gpx" style="display:none;" onchange="loadGPXFile(event)">
@@ -699,13 +699,13 @@
             <p>Pan over de regio waar je straks wilt rijden, op het zoomniveau waarop je navigeert (standaard 15), en je kaart is automatisch offline beschikbaar.</p>
             
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                Live Tracker App v6.44 © Umop3p1sdn
+                Live Tracker App v6.46 © Umop3p1sdn
             </p>
         </div>
     </div>
 
     <script>
-        const APP_VERSION = "6.44";
+        const APP_VERSION = "6.46";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -823,12 +823,16 @@
         }
 
         function analyzeAndDrawTurns(route) {
+            activeRoute = route;
             detectedTurns = detectTurns(route);
             drawTurnDots();
             console.log(`🛣️ ${detectedTurns.length} bochten gedetecteerd`);
         }
 
-        // Live: check upcoming turn vs my position, show left/right corner arrow
+        let activeRoute = null; // the route currently being followed (for turn logic)
+
+        // Live: show arrow for the turn ahead, based on MY travel direction
+        // (works regardless of which way the GPX was recorded).
         function checkUpcomingTurn(lat, lng) {
             const left = document.getElementById('turnArrowLeft');
             const right = document.getElementById('turnArrowRight');
@@ -838,26 +842,51 @@
                 if (right) right.style.display = 'none';
                 if (distEl) distEl.style.display = 'none';
             };
-            if (!detectedTurns.length) { hideAll(); return; }
+            if (!detectedTurns.length || !activeRoute) { hideAll(); return; }
 
             const here = [lat, lng];
+
+            // closest route point = how far off-route I am
+            let myDist = Infinity;
+            for (let i = 0; i < activeRoute.length; i++) {
+                const d = distMeters(here, activeRoute[i]);
+                if (d < myDist) myDist = d;
+            }
+            if (myDist > 120) { hideAll(); return; }
+
+            // Among all turns within range, pick the nearest one that lies AHEAD
+            // of me (bearing to it is within ~80° of my heading).
             let best = null, bestDist = Infinity;
             for (const t of detectedTurns) {
                 const d = distMeters(here, [t.lat, t.lng]);
+                if (d > 350 || d < 4) continue;
+                const brg = bearing(here, [t.lat, t.lng]);
+                let off = Math.abs(((brg - deviceHeading + 540) % 360) - 180);
+                if (off > 80) continue;             // behind me → skip
                 if (d < bestDist) { bestDist = d; best = t; }
             }
-            if (!best || bestDist > 350) { hideAll(); return; }
+            if (!best) { hideAll(); return; }
 
-            // Color: red when close (<=50m), orange when approaching
+            // Determine left/right relative to MY heading using the route shape
+            // around the turn point: compare my heading to the bearing leaving the turn.
+            const idx = best.index;
+            const after = activeRoute[Math.min(idx + 2, activeRoute.length - 1)];
+            const outB = bearing([best.lat, best.lng], after);
+            let rel = ((outB - deviceHeading + 540) % 360) - 180; // + = right, - = left
+            // If route runs opposite my heading (GPX reversed), flip
+            if (Math.abs(rel) > 120) {
+                const before = activeRoute[Math.max(idx - 2, 0)];
+                const inB = bearing(before, [best.lat, best.lng]);
+                rel = ((deviceHeading - inB + 540) % 360) - 180;
+            }
+            const goRight = rel > 0;
+
             const near = bestDist <= 50;
             const bg = near ? '#FF1744' : '#FF9800';
-            const target = best.dir === 'R' ? right : left;
-            const other = best.dir === 'R' ? left : right;
+            const target = goRight ? right : left;
+            const other = goRight ? left : right;
             if (other) other.style.display = 'none';
-            if (target) {
-                target.style.background = bg;
-                target.style.display = 'flex';
-            }
+            if (target) { target.style.background = bg; target.style.display = 'flex'; }
             if (distEl) {
                 distEl.textContent = near ? 'NU' : Math.round(bestDist) + ' m';
                 distEl.style.display = 'block';
