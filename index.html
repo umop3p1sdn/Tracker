@@ -484,7 +484,7 @@
             <!-- MODE SELECT -->
             <div id="modeSelect" class="mode-select">
                 <p class="subtitle">Start tracking</p>
-                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v6.46 © Umop3p1sdn</div>
+                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v6.51 © Umop3p1sdn</div>
                 
                 <!-- Hidden file input for GPX loading -->
                 <input type="file" id="gpxInputLoad" accept=".gpx" style="display:none;" onchange="loadGPXFile(event)">
@@ -699,13 +699,13 @@
             <p>Pan over de regio waar je straks wilt rijden, op het zoomniveau waarop je navigeert (standaard 15), en je kaart is automatisch offline beschikbaar.</p>
             
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                Live Tracker App v6.46 © Umop3p1sdn
+                Live Tracker App v6.51 © Umop3p1sdn
             </p>
         </div>
     </div>
 
     <script>
-        const APP_VERSION = "6.46";
+        const APP_VERSION = "6.51";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -830,6 +830,24 @@
         }
 
         let activeRoute = null; // the route currently being followed (for turn logic)
+        let currentSpeedKmh = 0;       // estimated speed
+        let lastSpeedSample = null;    // {lat, lng, t}
+
+        // Update speed estimate from successive positions (robust; coords.speed is often null)
+        function updateSpeed(lat, lng) {
+            const now = Date.now();
+            if (lastSpeedSample) {
+                const dt = (now - lastSpeedSample.t) / 1000; // sec
+                if (dt > 0.5) {
+                    const d = distMeters([lastSpeedSample.lat, lastSpeedSample.lng], [lat, lng]);
+                    const kmh = (d / dt) * 3.6;
+                    currentSpeedKmh = currentSpeedKmh ? currentSpeedKmh * 0.6 + kmh * 0.4 : kmh;
+                    lastSpeedSample = { lat, lng, t: now };
+                }
+            } else {
+                lastSpeedSample = { lat, lng, t: now };
+            }
+        }
 
         // Live: show arrow for the turn ahead, based on MY travel direction
         // (works regardless of which way the GPX was recorded).
@@ -854,15 +872,26 @@
             }
             if (myDist > 120) { hideAll(); return; }
 
-            // Among all turns within range, pick the nearest one that lies AHEAD
-            // of me (bearing to it is within ~80° of my heading).
+            // Time-based look-ahead: convert seconds-to-turn into distance using
+            // current speed, so warnings scale naturally (highway = far, town = close).
+            const mps = Math.max(currentSpeedKmh / 3.6, 5);  // m/s, floor ~18km/u
+            const SEC_FIRST = 45;   // first heads-up
+            const SEC_BIG   = 22;   // arrow goes big
+            const SEC_SOON  = 10;   // "bijna"
+            const SEC_NOW   = 4;    // "NU"
+            const maxRange = Math.min(mps * SEC_FIRST, 6000); // cap at 6km
+            const bigAt    = mps * SEC_BIG;
+            const soonAt   = mps * SEC_SOON;
+            const nowAt    = mps * SEC_NOW;
+
+            // nearest turn ahead within range
             let best = null, bestDist = Infinity;
             for (const t of detectedTurns) {
                 const d = distMeters(here, [t.lat, t.lng]);
-                if (d > 350 || d < 4) continue;
+                if (d > maxRange || d < 4) continue;
                 const brg = bearing(here, [t.lat, t.lng]);
                 let off = Math.abs(((brg - deviceHeading + 540) % 360) - 180);
-                if (off > 80) continue;             // behind me → skip
+                if (off > 80) continue;
                 if (d < bestDist) { bestDist = d; best = t; }
             }
             if (!best) { hideAll(); return; }
@@ -881,14 +910,36 @@
             }
             const goRight = rel > 0;
 
-            const near = bestDist <= 50;
-            const bg = near ? '#FF1744' : '#FF9800';
             const target = goRight ? right : left;
             const other = goRight ? left : right;
             if (other) other.style.display = 'none';
-            if (target) { target.style.background = bg; target.style.display = 'flex'; }
+
+            // Size & label scale with the time-based thresholds:
+            let size, bg, label;
+            const roundDist = (d) => d >= 1000
+                ? (d / 1000).toFixed(1).replace('.', ',') + ' km'
+                : (Math.round(d / 50) * 50) + ' m';
+            if (bestDist > bigAt) {
+                size = 48;
+                bg = '#1976D2';                       // blue = far heads-up
+                label = roundDist(bestDist);
+            } else {
+                size = 80;                            // big when approaching
+                if (bestDist <= nowAt) { bg = '#FF1744'; label = 'NU'; }
+                else if (bestDist <= soonAt) { bg = '#FF1744'; label = roundDist(bestDist); }
+                else { bg = '#FF9800'; label = roundDist(bestDist); }
+            }
+
+            if (target) {
+                target.style.width = size + 'px';
+                target.style.height = size + 'px';
+                target.style.background = bg;
+                target.querySelector('svg').setAttribute('width', Math.round(size * 0.7));
+                target.querySelector('svg').setAttribute('height', Math.round(size * 0.7));
+                target.style.display = 'flex';
+            }
             if (distEl) {
-                distEl.textContent = near ? 'NU' : Math.round(bestDist) + ' m';
+                distEl.textContent = label;
                 distEl.style.display = 'block';
             }
         }
@@ -2085,6 +2136,7 @@
                         (position) => {
                             const { latitude, longitude } = position.coords;
                             masterPos = { lat: latitude, lng: longitude };
+                            updateSpeed(latitude, longitude);
                             checkUpcomingTurn(latitude, longitude);
 
                             if (masterMarker) {
@@ -2129,6 +2181,7 @@
                         (position) => {
                             const { latitude, longitude } = position.coords;
                             followerPos = { lat: latitude, lng: longitude };
+                            updateSpeed(latitude, longitude);
                             checkUpcomingTurn(latitude, longitude);
                             
                             if (followerMarker) {
