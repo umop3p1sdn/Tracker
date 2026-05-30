@@ -370,6 +370,7 @@
     <div id="turnArrowLeft" style="display:none; position: fixed; top: 110px; left: 12px; z-index: 2000; width: 80px; height: 80px; border-radius: 10px; align-items: center; justify-content: center; box-shadow: 0 2px 10px rgba(0,0,0,0.4);"><svg width="56" height="56" viewBox="0 0 24 24" fill="#fff"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20z"/></svg></div>
     <div id="turnArrowRight" style="display:none; position: fixed; top: 110px; right: 12px; z-index: 2000; width: 80px; height: 80px; border-radius: 10px; align-items: center; justify-content: center; box-shadow: 0 2px 10px rgba(0,0,0,0.4);"><svg width="56" height="56" viewBox="0 0 24 24" fill="#fff"><path d="M4 11h12.17l-5.59-5.59L12 4l8 8-8 8-1.41-1.41L16.17 13H4z"/></svg></div>
     <div id="turnDist" style="display:none; position: fixed; top: 196px; left: 50%; transform: translateX(-50%); z-index: 2000; color: #fff; font-weight: bold; font-size: 1em; padding: 4px 14px; border-radius: 8px; background: rgba(0,0,0,0.6); font-family: sans-serif;"></div>
+    <div id="speedometer" style="display:none; position: fixed; bottom: 0; left: 0; right: 0; z-index: 1500; background: #000; color: #fff; text-align: center; font-family: sans-serif; padding: 8px 0;"><span id="speedValue" style="font-size: 3.5em; font-weight: bold; line-height: 1;">0</span><span style="font-size: 1em; opacity: 0.7;"> km/u</span></div>
     <div class="container">
         <!-- INSTALL PROMPT SCREEN -->
         <div id="installScreen" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; text-align: center;">
@@ -484,7 +485,7 @@
             <!-- MODE SELECT -->
             <div id="modeSelect" class="mode-select">
                 <p class="subtitle">Start tracking</p>
-                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v6.51 © Umop3p1sdn</div>
+                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v6.53 © Umop3p1sdn</div>
                 
                 <!-- Hidden file input for GPX loading -->
                 <input type="file" id="gpxInputLoad" accept=".gpx" style="display:none;" onchange="loadGPXFile(event)">
@@ -607,6 +608,8 @@
             </div>
             <div style="display: flex; flex-direction: column; gap: 12px;">
                 <button class="button-secondary" onclick="toggleOMB()" id="ombBtnMenu" style="width: 100%;">OMB: ON</button>
+                <button class="button-secondary" onclick="toggleAudio()" id="audioBtnMenu" style="width: 100%;">Audio: AAN</button>
+                <button class="button-secondary" onclick="toggleNavArrows()" id="navBtnMenu" style="width: 100%;">Navigatie pijlen: AAN</button>
                 <button class="button-secondary" onclick="toggleAppMenu(); toggleGPXMenu();" style="width: 100%;">GPX (routes)</button>
                 <button class="button-secondary" onclick="toggleAppMenu(); toggleHandleiding();" style="width: 100%;">Handleiding</button>
             </div>
@@ -699,13 +702,13 @@
             <p>Pan over de regio waar je straks wilt rijden, op het zoomniveau waarop je navigeert (standaard 15), en je kaart is automatisch offline beschikbaar.</p>
             
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                Live Tracker App v6.51 © Umop3p1sdn
+                Live Tracker App v6.53 © Umop3p1sdn
             </p>
         </div>
     </div>
 
     <script>
-        const APP_VERSION = "6.51";
+        const APP_VERSION = "6.53";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -750,6 +753,46 @@
         let detectedTurns = [];        // [{lat, lng, dir:'L'|'R', angle, index}]
         let turnMarkers = [];          // map markers for the dots
         let lastAnnouncedTurn = null;   // to avoid repeating the same announcement
+
+        // ─── AUDIO (piep) + toggles ───
+        let audioEnabled = true;        // menu toggle
+        let navArrowsEnabled = true;    // menu toggle
+        let audioCtx = null;            // Web Audio context (created on unlock)
+        // Remember which beep already fired per turn, so each plays once:
+        let beepedApproach = {};        // turn.index -> true (1 beep done)
+        let beepedNow = {};             // turn.index -> true (2 beeps done)
+
+        // Unlock audio after a user gesture (browser requirement). Called from GO.
+        function unlockAudio() {
+            if (!audioEnabled) return;
+            try {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                // silent tick to fully unlock on iOS
+                const o = audioCtx.createOscillator();
+                const g = audioCtx.createGain();
+                g.gain.value = 0;
+                o.connect(g); g.connect(audioCtx.destination);
+                o.start(); o.stop(audioCtx.currentTime + 0.01);
+            } catch (e) { console.warn('audio unlock failed', e); }
+        }
+
+        // One short beep (same tone everywhere)
+        function playBeep(when = 0) {
+            if (!audioEnabled || !audioCtx) return;
+            const t = audioCtx.currentTime + when;
+            const o = audioCtx.createOscillator();
+            const g = audioCtx.createGain();
+            o.type = 'sine';
+            o.frequency.value = 880;          // single fixed tone
+            g.gain.setValueAtTime(0.0001, t);
+            g.gain.exponentialRampToValueAtTime(0.4, t + 0.02);
+            g.gain.exponentialRampToValueAtTime(0.0001, t + 0.18);
+            o.connect(g); g.connect(audioCtx.destination);
+            o.start(t); o.stop(t + 0.2);
+        }
+        function beepApproach() { playBeep(0); }                 // 1 beep
+        function beepTurnNow() { playBeep(0); playBeep(0.25); }  // 2 beeps
 
         // Distance in meters between two [lat,lng]
         function distMeters(a, b) {
@@ -843,6 +886,8 @@
                     const kmh = (d / dt) * 3.6;
                     currentSpeedKmh = currentSpeedKmh ? currentSpeedKmh * 0.6 + kmh * 0.4 : kmh;
                     lastSpeedSample = { lat, lng, t: now };
+                    const sv = document.getElementById('speedValue');
+                    if (sv) sv.textContent = Math.round(currentSpeedKmh);
                 }
             } else {
                 lastSpeedSample = { lat, lng, t: now };
@@ -861,6 +906,7 @@
                 if (distEl) distEl.style.display = 'none';
             };
             if (!detectedTurns.length || !activeRoute) { hideAll(); return; }
+            if (!navArrowsEnabled) { hideAll(); }
 
             const here = [lat, lng];
 
@@ -909,6 +955,23 @@
                 rel = ((deviceHeading - inB + 540) % 360) - 180;
             }
             const goRight = rel > 0;
+
+            // ─── BEEPS (independent of visual arrows) ───
+            // 1 beep when the turn enters the "big" zone; 2 beeps just before it.
+            const ti = best.index;
+            if (bestDist <= bigAt && bestDist > nowAt && !beepedApproach[ti]) {
+                beepApproach();
+                beepedApproach[ti] = true;
+            }
+            if (bestDist <= nowAt && !beepedNow[ti]) {
+                beepTurnNow();
+                beepedNow[ti] = true;
+            }
+            // Clean up flags for turns far behind so a re-pass can beep again
+            if (bestDist > maxRange * 0.95) { delete beepedApproach[ti]; delete beepedNow[ti]; }
+
+            // If nav arrows are off, we still beep but draw nothing.
+            if (!navArrowsEnabled) { hideAll(); return; }
 
             const target = goRight ? right : left;
             const other = goRight ? left : right;
@@ -1768,6 +1831,16 @@
             
             container.classList.toggle('map-only');
             body.classList.toggle('map-only');
+
+            // Entering fullscreen (GO): unlock audio + show big speedometer
+            const inFull = container.classList.contains('map-only');
+            if (inFull) {
+                unlockAudio();
+                // short confirmation beep so you know audio works
+                if (audioEnabled) setTimeout(() => playBeep(0), 150);
+            }
+            const spd = document.getElementById('speedometer');
+            if (spd) spd.style.display = inFull ? 'block' : 'none';
             
             // Force map to recalculate size
             if (mapInstance) {
@@ -1972,6 +2045,24 @@
             precacheTileTimer = setInterval(cacheCurrentLocation, 10 * 60 * 1000);
         }
         
+        function toggleAudio() {
+            audioEnabled = !audioEnabled;
+            const b = document.getElementById('audioBtnMenu');
+            if (b) b.textContent = audioEnabled ? 'Audio: AAN' : 'Audio: UIT';
+            if (audioEnabled) unlockAudio();
+        }
+
+        function toggleNavArrows() {
+            navArrowsEnabled = !navArrowsEnabled;
+            const b = document.getElementById('navBtnMenu');
+            if (b) b.textContent = navArrowsEnabled ? 'Navigatie pijlen: AAN' : 'Navigatie pijlen: UIT';
+            if (!navArrowsEnabled) {
+                ['turnArrowLeft','turnArrowRight','turnDist'].forEach(id => {
+                    const el = document.getElementById(id); if (el) el.style.display = 'none';
+                });
+            }
+        }
+
         function toggleOMB() {
             ombEnabled = !ombEnabled;
             const text = ombEnabled ? 'OMB: ON' : 'OMB: OFF';
