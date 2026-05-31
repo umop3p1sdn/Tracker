@@ -485,7 +485,7 @@
             <!-- MODE SELECT -->
             <div id="modeSelect" class="mode-select">
                 <p class="subtitle">Start tracking</p>
-                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v6.59 © Umop3p1sdn</div>
+                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v6.60 © Umop3p1sdn</div>
                 
                 <!-- Hidden file input for GPX loading -->
                 <input type="file" id="gpxInputLoad" accept=".gpx" style="display:none;" onchange="loadGPXFile(event)">
@@ -705,13 +705,13 @@
             <p>Pan over de regio waar je straks wilt rijden, op het zoomniveau waarop je navigeert (standaard 15), en je kaart is automatisch offline beschikbaar.</p>
             
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                Live Tracker App v6.59 © Umop3p1sdn
+                Live Tracker App v6.60 © Umop3p1sdn
             </p>
         </div>
     </div>
 
     <script>
-        const APP_VERSION = "6.59";
+        const APP_VERSION = "6.60";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -1430,25 +1430,40 @@
             el.style.display = 'flex';
         }
 
-        // Master assigns the next free index to a follower the first time it's seen,
-        // and writes it back to Firebase so the follower can read its own color.
-        let followerIndexMap = {};   // deviceId -> idx (master's view, this session/code)
-        async function assignFollowerIndex(code, deviceId, existing) {
-            if (existing && typeof existing.idx === 'number') {
-                followerIndexMap[deviceId] = existing.idx;
-                return existing.idx;
-            }
-            if (typeof followerIndexMap[deviceId] === 'number') return followerIndexMap[deviceId];
-            // next free index = highest known + 1
-            const used = Object.values(followerIndexMap);
-            const idx = used.length ? Math.max(...used) + 1 : 0;
-            followerIndexMap[deviceId] = idx;
+        // Follower claims its own index when joining: reuse own if already set
+        // (came back after switching apps), else take the lowest free number.
+        // Index is tied to deviceId within this code, so a returning rider keeps color.
+        async function claimMyFollowerIndex(code) {
             try {
+                const followers = await fetchFollowers(code) || {};
+                // already have one under this code? keep it (returning rider)
+                if (followers[deviceId] && typeof followers[deviceId].idx === 'number') {
+                    myFollowerIdx = followers[deviceId].idx;
+                } else {
+                    // collect taken indices, pick lowest free
+                    const taken = {};
+                    Object.keys(followers).forEach(id => {
+                        if (id !== deviceId && followers[id] && typeof followers[id].idx === 'number') {
+                            taken[followers[id].idx] = true;
+                        }
+                    });
+                    let idx = 0;
+                    while (taken[idx]) idx++;
+                    myFollowerIdx = idx;
+                }
+                // write it
                 await fetch(`${firebaseConfig.databaseURL}/tracking/${code}/followers/${deviceId}/idx.json`, {
-                    method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(idx)
+                    method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(myFollowerIdx)
                 });
-            } catch (e) {}
-            return idx;
+                updateMyColorBadge();
+                // recolor my own arrow to my color
+                if (followerMarker && followerPos && typeof myFollowerIdx === 'number') {
+                    mapInstance.removeLayer(followerMarker);
+                    followerMarker = createColoredMarker(followerPos.lat, followerPos.lng,
+                        colorForIndex(myFollowerIdx), 28, null).addTo(mapInstance).bindPopup('YOU');
+                    updateSelfMarkerRotation();
+                }
+            } catch (e) { console.warn('claim index failed', e); }
         }
 
         // Master: fetch all followers and draw them as colored arrows
@@ -1467,14 +1482,21 @@
                 seen[id] = true;
                 masterFollowersData[id] = { lat: f.latitude, lng: f.longitude, heading: f.heading || 0 };
 
-                const idx = await assignFollowerIndex(code, id, f);
+                const idx = (f && typeof f.idx === 'number') ? f.idx : 0;
                 const color = colorForIndex(idx);
-                const badge = badgeForIndex(idx);
 
                 if (followerMarkers[id]) {
                     followerMarkers[id].setLatLng([f.latitude, f.longitude]);
                     setMarkerHeading(followerMarkers[id], f.heading || 0);
                 } else {
+                    followerMarkers[id] = createColoredMarker(f.latitude, f.longitude, color, 28, null)
+                        .addTo(mapInstance).bindPopup('FOLLOWER ' + (idx + 1));
+                    setMarkerHeading(followerMarkers[id], f.heading || 0);
+                    followerMarkers[id]._idx = idx;
+                }
+                // recolor if index changed
+                if (followerMarkers[id]._idx !== idx) {
+                    mapInstance.removeLayer(followerMarkers[id]);
                     followerMarkers[id] = createColoredMarker(f.latitude, f.longitude, color, 28, null)
                         .addTo(mapInstance).bindPopup('FOLLOWER ' + (idx + 1));
                     setMarkerHeading(followerMarkers[id], f.heading || 0);
@@ -2315,7 +2337,7 @@
                                 masterMarker.setLatLng([latitude, longitude]);
                                 updateSelfMarkerRotation();
                             } else {
-                                masterMarker = createColoredMarker(latitude, longitude, '#FF1744', 32, 0)
+                                masterMarker = createColoredMarker(latitude, longitude, '#FF1744', 32, null)
                                     .addTo(mapInstance).bindPopup('YOU');
                                 updateSelfMarkerRotation();
                             }
@@ -2392,27 +2414,17 @@
                         { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
                     );
 
+                    // Claim my color index now (reuses my own if returning, else lowest free)
+                    claimMyFollowerIndex(code);
+
                     // Heartbeat: send last known position every 4s, even when standing
                     // still (GPS may not fire), so the master keeps seeing this follower.
                     followerHeartbeatTimer = setInterval(() => {
                         if (followerPos) {
                             sendFollowerToFirebase(code, followerPos.lat, followerPos.lng, deviceHeading);
                         }
-                        // Read my own assigned color index (master sets it)
-                        fetch(`${firebaseConfig.databaseURL}/tracking/${code}/followers/${deviceId}/idx.json`)
-                            .then(r => r.json()).then(idx => {
-                                if (typeof idx === 'number' && idx !== myFollowerIdx) {
-                                    myFollowerIdx = idx;
-                                    // recolor my own marker (color only, no badge on arrow)
-                                    if (followerMarker && followerPos) {
-                                        mapInstance.removeLayer(followerMarker);
-                                        followerMarker = createColoredMarker(followerPos.lat, followerPos.lng,
-                                            colorForIndex(idx), 28, null).addTo(mapInstance).bindPopup('YOU');
-                                        updateSelfMarkerRotation();
-                                    }
-                                    updateMyColorBadge();
-                                }
-                            }).catch(() => {});
+                        // Safety: if I somehow lost my index (data cleaned), re-claim it
+                        if (typeof myFollowerIdx !== 'number') claimMyFollowerIndex(code);
                     }, 4000);
 
                     const updateMasterMarker = async () => {
@@ -2807,7 +2819,6 @@
                 followerHeartbeatTimer = null;
             }
             followerMarkers = {};
-            followerIndexMap = {};
             myFollowerIdx = null;
             const mcb = document.getElementById('myColorBadge');
             if (mcb) mcb.style.display = 'none';
