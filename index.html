@@ -370,6 +370,16 @@
     <div id="turnArrowLeft" style="display:none; position: fixed; top: 110px; left: 12px; z-index: 2000; width: 80px; height: 80px; border-radius: 10px; align-items: center; justify-content: center; box-shadow: 0 2px 10px rgba(0,0,0,0.4);"><svg width="56" height="56" viewBox="0 0 24 24" fill="#fff"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20z"/></svg></div>
     <div id="turnArrowRight" style="display:none; position: fixed; top: 110px; right: 12px; z-index: 2000; width: 80px; height: 80px; border-radius: 10px; align-items: center; justify-content: center; box-shadow: 0 2px 10px rgba(0,0,0,0.4);"><svg width="56" height="56" viewBox="0 0 24 24" fill="#fff"><path d="M4 11h12.17l-5.59-5.59L12 4l8 8-8 8-1.41-1.41L16.17 13H4z"/></svg></div>
     <div id="turnDist" style="display:none; position: fixed; top: 196px; left: 50%; transform: translateX(-50%); z-index: 2000; color: #fff; font-weight: bold; font-size: 1em; padding: 4px 14px; border-radius: 8px; background: rgba(0,0,0,0.6); font-family: sans-serif;"></div>
+    <!-- SCREEN LOCK: open lock icon (top-right) + full overlay when locked -->
+    <div id="lockIcon" style="display:none; position: fixed; top: 12px; right: 12px; z-index: 1600; width: 40px; height: 40px; cursor: pointer; align-items: center; justify-content: center;">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="#000"><path d="M12 1a5 5 0 00-5 5v2H6a2 2 0 00-2 2v9a2 2 0 002 2h12a2 2 0 002-2v-9a2 2 0 00-2-2h-7V6a3 3 0 016 0h2a5 5 0 00-5-5zm0 11a2 2 0 011 3.73V18a1 1 0 01-2 0v-2.27A2 2 0 0112 12z"/></svg>
+    </div>
+    <div id="lockOverlay" style="display:none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 5000; background: rgba(0,0,0,0.02);">
+        <div id="lockClosedBtn" style="position: absolute; top: 12px; right: 12px; width: 56px; height: 56px; cursor: pointer; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.45); border-radius: 12px;">
+            <svg width="38" height="38" viewBox="0 0 24 24" fill="#fff"><path d="M12 1a5 5 0 00-5 5v2H6a2 2 0 00-2 2v9a2 2 0 002 2h12a2 2 0 002-2v-9a2 2 0 00-2-2h-1V6a4 4 0 00-4-4zm-3 7V6a3 3 0 016 0v2H9zm3 4a2 2 0 011 3.73V18a1 1 0 01-2 0v-2.27A2 2 0 0112 12z"/></svg>
+        </div>
+        <div id="lockHint" style="position: absolute; top: 76px; right: 12px; color: #fff; font-family: sans-serif; font-size: 0.75em; background: rgba(0,0,0,0.5); padding: 4px 8px; border-radius: 6px;">1 sec vasthouden om te ontgrendelen</div>
+    </div>
     <div id="tagList" style="display:none; position: fixed; top: 200px; left: 22px; z-index: 1400; display: none; flex-direction: column; gap: 4px; font-family: sans-serif;"></div>
     <div id="speedometer" style="display:none; position: fixed; bottom: 0; left: 0; right: 0; z-index: 1500; background: #000; color: #fff; text-align: center; font-family: sans-serif; padding: 8px 0;"><span id="speedValue" style="font-size: 3.5em; font-weight: bold; line-height: 1;">0</span><span style="font-size: 1em; opacity: 0.7;"> km/u</span></div>
     <div class="container">
@@ -486,7 +496,7 @@
             <!-- MODE SELECT -->
             <div id="modeSelect" class="mode-select">
                 <p class="subtitle">Start tracking</p>
-                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v6.63 © Umop3p1sdn</div>
+                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v6.64 © Umop3p1sdn</div>
                 
                 <!-- Hidden file input for GPX loading -->
                 <input type="file" id="gpxInputLoad" accept=".gpx" style="display:none;" onchange="loadGPXFile(event)">
@@ -685,6 +695,8 @@
             
             <p>— <strong>Kleuren &amp; TAG</strong> - Master = rood. Elke volger krijgt een eigen kleur (vanaf blauw), bij meer dan 8 met een nummer. Volger kan rechts een TAG invullen (max 5 tekens); die ziet de Master linksboven. Via het menu stelt de Master in hoe zichtbaar de tags zijn.</p>
 
+            <p>— <strong>Slotje (rechtsboven)</strong> - Houd 1 sec vast om het scherm te vergrendelen (handig in je zak — tracking loopt door, geen ongewenste tikken). Houd het gesloten slot 1 sec vast om te ontgrendelen.</p>
+
             <p>— <strong>Track width (− / +)</strong> - Onder op kaart. Range: 3-15px</p>
             
             <p>— <strong>GO knop (onderaan)</strong> - Verbergt alle controls, alleen kaart zichtbaar</p>
@@ -728,13 +740,13 @@
             <p>Pan over de regio waar je straks wilt rijden, op het zoomniveau waarop je navigeert (standaard 15), en je kaart is automatisch offline beschikbaar.</p>
             
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                Live Tracker App v6.63 © Umop3p1sdn
+                Live Tracker App v6.64 © Umop3p1sdn
             </p>
         </div>
     </div>
 
     <script>
-        const APP_VERSION = "6.63";
+        const APP_VERSION = "6.64";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -1502,6 +1514,61 @@
             const v = document.getElementById('tagOpacityVal');
             if (v) v.textContent = tagOpacity + '%';
             renderTagList();
+        }
+
+        // ─── SCREEN LOCK (hold 1s to lock/unlock) ───
+        let screenLocked = false;
+        let lockHoldTimer = null;
+
+        function showLockIcon() {
+            const ic = document.getElementById('lockIcon');
+            if (ic) ic.style.display = 'flex';
+        }
+
+        function lockScreen() {
+            screenLocked = true;
+            const ov = document.getElementById('lockOverlay');
+            const ic = document.getElementById('lockIcon');
+            if (ov) ov.style.display = 'block';
+            if (ic) ic.style.display = 'none';
+        }
+        function unlockScreen() {
+            screenLocked = false;
+            const ov = document.getElementById('lockOverlay');
+            if (ov) ov.style.display = 'none';
+            showLockIcon();
+        }
+
+        // Generic "hold 1s" helper with visual feedback on the given element
+        function attachHold(el, onComplete) {
+            if (!el) return;
+            let t = null, active = false;
+            const start = (e) => {
+                e.preventDefault();
+                active = true;
+                el.style.transform = 'scale(0.85)';
+                el.style.transition = 'transform 1s ease';
+                el.style.transform = 'scale(1.15)';
+                t = setTimeout(() => { if (active) { active = false; el.style.transform=''; onComplete(); } }, 1000);
+            };
+            const cancel = () => {
+                active = false;
+                el.style.transition = 'transform 0.15s';
+                el.style.transform = '';
+                if (t) { clearTimeout(t); t = null; }
+            };
+            el.addEventListener('touchstart', start, { passive: false });
+            el.addEventListener('mousedown', start);
+            el.addEventListener('touchend', cancel);
+            el.addEventListener('touchcancel', cancel);
+            el.addEventListener('mouseup', cancel);
+            el.addEventListener('mouseleave', cancel);
+        }
+
+        function initScreenLock() {
+            attachHold(document.getElementById('lockIcon'), lockScreen);
+            attachHold(document.getElementById('lockClosedBtn'), unlockScreen);
+            showLockIcon();
         }
 
         function openTagInput() {
@@ -2425,6 +2492,7 @@
                 // Start background pre-caching of offline tiles
                 startSmartPreCache();
                 updateZoomIcons();
+                initScreenLock();
 
                 if (isMaster) {
                     watchId = navigator.geolocation.watchPosition(
@@ -2928,6 +2996,11 @@
             if (tb) tb.style.display = 'none';
             const tl = document.getElementById('tagList');
             if (tl) tl.style.display = 'none';
+            const li = document.getElementById('lockIcon');
+            if (li) li.style.display = 'none';
+            const lo = document.getElementById('lockOverlay');
+            if (lo) lo.style.display = 'none';
+            screenLocked = false;
             masterFollowersData = {};
             if (mapInstance) {
                 mapInstance.off();
