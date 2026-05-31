@@ -346,7 +346,8 @@
             display: flex;
             flex-direction: column;
         }
-        .map-only .speedo-flow { display: block !important; }
+        .map-only .speedo-flow { display: flex !important; }
+        .map-only #mapMaster, .map-only #mapFollower { flex: 1 1 auto; }
 
         .map-only .map {
             height: auto;
@@ -496,7 +497,7 @@
             <!-- MODE SELECT -->
             <div id="modeSelect" class="mode-select">
                 <p class="subtitle">Start tracking</p>
-                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v6.65 © Umop3p1sdn</div>
+                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v6.67 © Umop3p1sdn</div>
                 
                 <!-- Hidden file input for GPX loading -->
                 <input type="file" id="gpxInputLoad" accept=".gpx" style="display:none;" onchange="loadGPXFile(event)">
@@ -539,7 +540,6 @@
                         </div>
                         
                         <div id="mapMaster" class="map"></div>
-                        <div class="speedo-flow" style="display:none; background:#000; color:#fff; text-align:center; padding:6px 0;"><span class="speedoValue" style="font-size:3em; font-weight:bold; line-height:1;">0</span><span style="font-size:0.9em; opacity:0.7;"> km/u</span></div>
                         
                         <!-- TRACK WIDTH CONTROLS BAR (BELOW MAP) -->
                         <div style="position: absolute; bottom: 10px; left: 10px; right: 10px; z-index: 1001; display: flex; gap: 8px; justify-content: center; background: rgba(0,0,0,0.15); padding: 8px 16px; border-radius: 8px; width: fit-content; margin: 0 auto; left: 50%; transform: translateX(-50%);">
@@ -549,6 +549,7 @@
                         </div>
                         
                         <button class="go-button show" id="goButtonMaster" onclick="toggleMapOnly('master')">GO</button>
+                        <div class="speedo-flow" style="display:none; background:#000; color:#fff; text-align:center; align-items:center; justify-content:center; padding:18px 0; margin-top:8px; border-radius:8px;"><span class="speedoValue" style="font-size:5em; font-weight:bold; line-height:1;">0</span><span style="font-size:1.1em; opacity:0.7; margin-left:6px;">km/u</span></div>
                     </div>
                     
                     <div class="info-bottom">
@@ -582,7 +583,6 @@
                         </div>
                         
                         <div id="mapFollower" class="map"></div>
-                        <div class="speedo-flow" style="display:none; background:#000; color:#fff; text-align:center; padding:6px 0;"><span class="speedoValue" style="font-size:3em; font-weight:bold; line-height:1;">0</span><span style="font-size:0.9em; opacity:0.7;"> km/u</span></div>
                         
                         <!-- TRACK WIDTH CONTROLS BAR (BELOW MAP) -->
                         <div style="position: absolute; bottom: 10px; left: 10px; right: 10px; z-index: 1001; display: flex; gap: 8px; justify-content: center; background: rgba(0,0,0,0.15); padding: 8px 16px; border-radius: 8px; width: fit-content; margin: 0 auto; left: 50%; transform: translateX(-50%);">
@@ -592,6 +592,7 @@
                         </div>
                         
                         <button class="go-button show" id="goButtonFollower" onclick="toggleMapOnly('follower')">GO</button>
+                        <div class="speedo-flow" style="display:none; background:#000; color:#fff; text-align:center; align-items:center; justify-content:center; padding:18px 0; margin-top:8px; border-radius:8px;"><span class="speedoValue" style="font-size:5em; font-weight:bold; line-height:1;">0</span><span style="font-size:1.1em; opacity:0.7; margin-left:6px;">km/u</span></div>
                     </div>
                     
                     <div class="buttons-controls" style="display: flex; gap: 10px; align-items: stretch;">
@@ -742,13 +743,13 @@
             <p>Pan over de regio waar je straks wilt rijden, op het zoomniveau waarop je navigeert (standaard 15), en je kaart is automatisch offline beschikbaar.</p>
             
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                Live Tracker App v6.65 © Umop3p1sdn
+                Live Tracker App v6.67 © Umop3p1sdn
             </p>
         </div>
     </div>
 
     <script>
-        const APP_VERSION = "6.65";
+        const APP_VERSION = "6.67";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
