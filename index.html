@@ -501,7 +501,7 @@
             <!-- MODE SELECT -->
             <div id="modeSelect" class="mode-select">
                 <p class="subtitle">Start tracking</p>
-                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v6.73 © Umop3p1sdn</div>
+                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v6.74 © Umop3p1sdn</div>
                 
                 <!-- Hidden file input for GPX loading -->
                 <input type="file" id="gpxInputLoad" accept=".gpx" style="display:none;" onchange="loadGPXFile(event)">
@@ -656,14 +656,14 @@
     </div>
 
     <div id="handleidingModal" class="hidden" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); display: none; z-index: 1002; overflow-y: auto; padding: 20px;">
-        <div style="background: #0a0e27; color: #fff; border-radius: 10px; max-width: 600px; margin: 0 auto; padding: 30px; font-family: sans-serif; line-height: 1.6;">
+        <div style="background: #f5f5f7; color: #1a1a2e; border-radius: 10px; max-width: 600px; margin: 0 auto; padding: 30px; font-family: sans-serif; line-height: 1.6;">
             <div style="text-align: right; margin-bottom: 20px;">
-                <button onclick="toggleHandleiding()" style="background: #FF1744; color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; font-size: 1em;">✕ Sluiten</button>
+                <button onclick="toggleHandleiding()" style="background: #FF1744; color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; font-size: 1em;">Sluiten</button>
             </div>
             
-            <h2 style="color: #00BCD4; margin-top: 0;">📍 Live Tracker App - Handleiding</h2>
+            <h2 style="color: #00BCD4; margin-top: 0;">Live Tracker App — Handleiding</h2>
             
-            <h3 style="color: #00BCD4; margin-top: 25px;">🚀 Hoe te starten?</h3>
+            <h3 style="color: #00BCD4; margin-top: 25px;">Hoe te starten?</h3>
             <p>— <strong>Optie 1: Master (Jij deelt je locatie)</strong></p>
             <ul style="margin: 10px 0; padding-left: 20px;">
                 <li>Klik "START TRACKING"</li>
@@ -679,7 +679,7 @@
                 <li>Je ziet de Master direct op de kaart!</li>
             </ul>
             
-            <h3 style="color: #00BCD4; margin-top: 25px;">🗺️ Knoppen op de kaart</h3>
+            <h3 style="color: #00BCD4; margin-top: 25px;">Knoppen op de kaart</h3>
 
             <div style="margin: 20px 0;">
                 <div style="display:flex; gap:6px; margin-bottom:8px;">
@@ -718,9 +718,9 @@
                 <p style="margin:4px 0 0;">Master = rode pijl. Elke volger krijgt een eigen kleur (vanaf blauw), bij meer dan 8 met een nummer. Het rondje rechts toont jouw kleur. Met de TAG-knop eronder zet je een korte naam (max 5 tekens) die de Master linksboven ziet. De Master regelt in het menu hoe zichtbaar de tags zijn.</p>
             </div>
 
-            <h3 style="color: #00BCD4; margin-top: 25px;">🧭 Navigatie met eigen GPX</h3>
+            <h3 style="color: #00BCD4; margin-top: 25px;">Navigatie met eigen GPX</h3>
             <p>Laad je een GPX-route, dan verschijnen vóór elke bocht links/rechts pijlen (klein + ver weg → groot + dichtbij). Geluid: 1 piep als een bocht nadert, 2 piepjes vlak voor het afslaan. Uit te zetten in het menu (Audio / Navigatie pijlen).</p>
-            <p style="background:#1a2148; padding:10px 14px; border-radius:8px;"><strong>Let op:</strong> de pijlen volgen de <strong>punten van je GPX-bestand</strong>, niet de echte weg. Wijkt je GPX af van de werkelijke weg, dan wijst de pijl naar het GPX-spoor — niet naar de afslag op straat.</p>
+            <p style="background:#e3e7f5; padding:10px 14px; border-radius:8px;"><strong>Let op:</strong> de pijlen volgen de <strong>punten van je GPX-bestand</strong>, niet de echte weg. Wijkt je GPX af van de werkelijke weg, dan wijst de pijl naar het GPX-spoor — niet naar de afslag op straat.</p>
 
             <p style="margin-top:20px;">— <strong>Snelheid (km/u)</strong> - Tijdens GO onderaan in beeld (staand). Bij GO klinkt 1 piep als test dat de audio werkt.</p>
 
@@ -730,12 +730,12 @@
 
             <p>— <strong>Privacy / STOP</strong> - Bij STOP worden je gegevens uit de cloud gewist (geen sporen). Sluit je de app zonder STOP, dan ruimt de app het later vanzelf op (binnen ~10 min).</p>
             
-            <h3 style="color: #00BCD4; margin-top: 25px;">📊 GPX (Routes)</h3>
+            <h3 style="color: #00BCD4; margin-top: 25px;">GPX (Routes)</h3>
             <p>— <strong>Load:</strong> Laad een route</p>
             <p>— <strong>Save:</strong> Sla je tracking op</p>
             <p>— <strong>Delete:</strong> Verwijder ingeladen route</p>
             
-            <h3 style="color: #00BCD4; margin-top: 25px;">👥 Follower-modus</h3>
+            <h3 style="color: #00BCD4; margin-top: 25px;">Follower-modus</h3>
             <p>— <strong>ZOOM:</strong></p>
             <ul style="margin: 5px 0 15px 0; padding-left: 30px;">
                 <li>MASTER (volg Master)</li>
@@ -749,14 +749,14 @@
                 <li>ALL TRACKS (incl. Master's route)</li>
             </ul>
             
-            <h3 style="color: #00BCD4; margin-top: 25px;">⚙️ Tips</h3>
+            <h3 style="color: #00BCD4; margin-top: 25px;">Tips</h3>
             <ul style="margin: 10px 0; padding-left: 20px;">
                 <li>Houd je scherm OPEN - de app werkt niet op achtergrond</li>
                 <li>GPS werkt best buiten / in open ruimte</li>
                 <li>Langzaam internet? Tracking update elke 3 seconden</li>
             </ul>
 
-            <h3 style="color: #00BCD4; margin-top: 25px;">📡 Offline Map Buffer (OMB)</h3>
+            <h3 style="color: #00BCD4; margin-top: 25px;">Offline Map Buffer (OMB)</h3>
             <ul style="margin: 10px 0; padding-left: 20px;">
                 <li><strong>OMB</strong> (in het ☰ menu): bufferen aan/uit</li>
                 <li>Slaat elke 10 min de kaart rond je op (zoom 15 ≈ 16 km)</li>
@@ -765,17 +765,17 @@
                 <li>OMB uit = zuiniger (alleen scherm-tegels laden nog, ~4 KB)</li>
             </ul>
 
-            <h3 style="color: #00BCD4; margin-top: 25px;">🗺️ Kaart vooraf offline zetten</h3>
+            <h3 style="color: #00BCD4; margin-top: 25px;">Kaart vooraf offline zetten</h3>
             <p>Pan over de regio waar je straks wilt rijden, op het zoomniveau waarop je navigeert (standaard 15), en je kaart is automatisch offline beschikbaar.</p>
             
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                Live Tracker App v6.73 © Umop3p1sdn
+                Live Tracker App v6.74 © Umop3p1sdn
             </p>
         </div>
     </div>
 
     <script>
-        const APP_VERSION = "6.73";
+        const APP_VERSION = "6.74";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
