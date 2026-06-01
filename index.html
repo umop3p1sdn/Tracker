@@ -351,6 +351,10 @@
             height: auto;
             flex: 1;
         }
+        /* km-teller alleen staand; liggend (zijkant) verbergen — voorkomt overlap */
+        @media (orientation: landscape) {
+            #speedometer { display: none !important; }
+        }
         .plane-marker { background: transparent !important; border: none !important; }
         /* Map rotation: oversize the map via a class so it fully reverts when removed */
         .map-rotating { overflow: hidden !important; border-radius: 8px; height: var(--rot-h) !important; }
@@ -496,7 +500,7 @@
             <!-- MODE SELECT -->
             <div id="modeSelect" class="mode-select">
                 <p class="subtitle">Start tracking</p>
-                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v6.69 © Umop3p1sdn</div>
+                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v6.70 © Umop3p1sdn</div>
                 
                 <!-- Hidden file input for GPX loading -->
                 <input type="file" id="gpxInputLoad" accept=".gpx" style="display:none;" onchange="loadGPXFile(event)">
@@ -681,7 +685,7 @@
             
             <p>— <strong>🧭 Kompas-knop</strong> - Rechts op de kaart. AAN (cyaan) = kaart draait mee met je rijrichting, jouw pijl wijst dan omhoog en de kaart volgt je GPS (slepen staat uit). UIT = noord boven, vrij pannen</p>
             
-            <p>— <strong>Richtingspijlen</strong> - Rode pijl = Master, blauwe pijl = jij. De neus wijst in de rijrichting</p>
+            <p>— <strong>Richtingspijlen</strong> - Master = rode pijl, elke volger een eigen kleur. De neus wijst in de rijrichting</p>
             
             <p>— <strong>Toon-knop (rechts op de kaart)</strong> - Kies wie er in beeld komt. Het icoon laat de stand zien:</p>
             <ul style="margin: 5px 0 15px 0; padding-left: 30px;">
@@ -689,11 +693,15 @@
                 <li><strong>Follower:</strong> MASTER (vliegtuig linksboven) · IK (rechtsonder) · BEIDE</li>
             </ul>
             
-            <p>— <strong>☰ Menu-knop</strong> - Naast de code. Opent OMB, GPX en deze handleiding</p>
+            <p>— <strong>☰ Menu-knop</strong> - Naast de code. Opent OMB, Audio aan/uit, Navigatie pijlen aan/uit, Tags-zichtbaarheid (Master), GPX en deze handleiding</p>
             
             <p>— <strong>◎ Center-knop</strong> - Naast de code. Cyaan = kaart volgt je locatie, grijs = kaart vrij</p>
             
             <p>— <strong>Kleuren &amp; TAG</strong> - Master = rood. Elke volger krijgt een eigen kleur (vanaf blauw), bij meer dan 8 met een nummer. Volger kan rechts een TAG invullen (max 5 tekens); die ziet de Master linksboven. Via het menu stelt de Master in hoe zichtbaar de tags zijn.</p>
+
+            <p>— <strong>Bocht-waarschuwing</strong> - Na het laden van een GPX-route verschijnen links/rechts pijlen vóór elke bocht (klein + ver → groot + dichtbij). Geluid: 1 piep als een bocht nadert, 2 piepjes vlak voor het afslaan. Uit te zetten in het menu (Audio / Navigatie pijlen)</p>
+
+            <p>— <strong>Snelheid (km/u)</strong> - Tijdens GO onderaan in beeld (staand). Bij GO klinkt 1 piep als test dat de audio werkt</p>
 
             <p>— <strong>Slotje (rechtsboven)</strong> - Houd 1 sec vast om het scherm te vergrendelen (handig in je zak — tracking loopt door, geen ongewenste tikken). Houd het gesloten slot 1 sec vast om te ontgrendelen.</p>
 
@@ -740,13 +748,13 @@
             <p>Pan over de regio waar je straks wilt rijden, op het zoomniveau waarop je navigeert (standaard 15), en je kaart is automatisch offline beschikbaar.</p>
             
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                Live Tracker App v6.69 © Umop3p1sdn
+                Live Tracker App v6.70 © Umop3p1sdn
             </p>
         </div>
     </div>
 
     <script>
-        const APP_VERSION = "6.69";
+        const APP_VERSION = "6.70";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
