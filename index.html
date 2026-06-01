@@ -501,7 +501,7 @@
             <!-- MODE SELECT -->
             <div id="modeSelect" class="mode-select">
                 <p class="subtitle">Start tracking</p>
-                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v6.72 © Umop3p1sdn</div>
+                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v6.73 © Umop3p1sdn</div>
                 
                 <!-- Hidden file input for GPX loading -->
                 <input type="file" id="gpxInputLoad" accept=".gpx" style="display:none;" onchange="loadGPXFile(event)">
@@ -668,7 +668,7 @@
             <ul style="margin: 10px 0; padding-left: 20px;">
                 <li>Klik "START TRACKING"</li>
                 <li>Je krijgt een 4-cijfer code</li>
-                <li>Klik "COPY CODE" en stuur via WhatsApp/SMS naar je vrienden</li>
+                <li>Deel de code met je vrienden</li>
                 <li>Je locatie wordt gedeeld in real-time</li>
             </ul>
             
@@ -679,38 +679,56 @@
                 <li>Je ziet de Master direct op de kaart!</li>
             </ul>
             
-            <h3 style="color: #00BCD4; margin-top: 25px;">🗺️ Kaart-opties</h3>
-            <p>— <strong>CENTER: ON/OFF</strong> - Kaart volgt je locatie automatisch. UIT = kaart volledig vrij</p>
-            
-            <p>— <strong>Zoom (+ / −)</strong> - Boven op kaart. Range: 10-20</p>
-            
-            <p>— <strong>🧭 Kompas-knop</strong> - Rechts op de kaart. AAN (cyaan) = kaart draait mee met je rijrichting, jouw pijl wijst dan omhoog en de kaart volgt je GPS (slepen staat uit). UIT = noord boven, vrij pannen</p>
-            
-            <p>— <strong>Richtingspijlen</strong> - Master = rode pijl, elke volger een eigen kleur. De neus wijst in de rijrichting</p>
-            
-            <p>— <strong>Toon-knop (rechts op de kaart)</strong> - Kies wie er in beeld komt. Het icoon laat de stand zien:</p>
-            <ul style="margin: 5px 0 15px 0; padding-left: 30px;">
-                <li><strong>Master:</strong> IK (vliegtuig) · VOLGERS (pijlen) · BEIDE. Het getal eronder toont hoeveel volgers meerijden</li>
-                <li><strong>Follower:</strong> MASTER (vliegtuig linksboven) · IK (rechtsonder) · BEIDE</li>
-            </ul>
-            
-            <p>— <strong>☰ Menu-knop</strong> - Naast de code. Opent OMB, Audio aan/uit, Navigatie pijlen aan/uit, Tags-zichtbaarheid (Master), GPX en deze handleiding</p>
-            
-            <p>— <strong>◎ Center-knop</strong> - Naast de code. Cyaan = kaart volgt je locatie, grijs = kaart vrij</p>
-            
-            <p>— <strong>Kleuren &amp; TAG</strong> - Master = rood. Elke volger krijgt een eigen kleur (vanaf blauw), bij meer dan 8 met een nummer. Volger kan rechts een TAG invullen (max 5 tekens); die ziet de Master linksboven. Via het menu stelt de Master in hoe zichtbaar de tags zijn.</p>
+            <h3 style="color: #00BCD4; margin-top: 25px;">🗺️ Knoppen op de kaart</h3>
 
-            <p>— <strong>Bocht-waarschuwing</strong> - Na het laden van een GPX-route verschijnen links/rechts pijlen vóór elke bocht (klein + ver → groot + dichtbij). Geluid: 1 piep als een bocht nadert, 2 piepjes vlak voor het afslaan. Uit te zetten in het menu (Audio / Navigatie pijlen)</p>
+            <div style="margin: 20px 0;">
+                <div style="display:flex; gap:6px; margin-bottom:8px;">
+                    <div style="width:64px; height:64px; border-radius:6px; background:transparent; border:3px solid #000; display:flex; align-items:center; justify-content:center;"><svg width="40" height="40" viewBox="0 0 36 36"><circle cx="18" cy="18" r="14" fill="none" stroke="#000" stroke-width="2.5"/><polygon points="18,8 22,18 18,16 14,18" fill="#000"/><polygon points="18,28 14,18 18,20 22,18" fill="#000"/></svg></div>
+                    <div style="width:64px; height:64px; border-radius:6px; background:#00BCD4; display:flex; align-items:center; justify-content:center;"><svg width="40" height="40" viewBox="0 0 36 36"><circle cx="18" cy="18" r="14" fill="none" stroke="#fff" stroke-width="2.5"/><polygon points="18,8 22,18 18,16 14,18" fill="#fff"/><polygon points="18,28 14,18 18,20 22,18" fill="#fff"/></svg></div>
+                </div>
+                <strong>Kompas</strong>
+                <p style="margin:4px 0 0;">Rechtsboven op de kaart. UIT (zwart) = noord boven, vrij pannen. AAN (cyaan) = kaart draait mee met je rijrichting, jouw pijl wijst omhoog en de kaart volgt je GPS.</p>
+            </div>
 
-            <p>— <strong>Snelheid (km/u)</strong> - Tijdens GO onderaan in beeld (staand). Bij GO klinkt 1 piep als test dat de audio werkt</p>
+            <div style="margin: 20px 0;">
+                <div style="width:64px; height:64px; border-radius:6px; background:transparent; border:3px solid #000; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; margin-bottom:8px;"><svg width="34" height="34" viewBox="0 0 24 24" fill="#000"><path d="M12 2 L21 21 L12 16.5 L3 21 Z"/></svg><span style="font-size:0.5em; font-weight:bold;">IK</span></div>
+                <strong>Toon-knop</strong>
+                <p style="margin:4px 0 0;">Rechts op de kaart. Kies wie er in beeld komt; het icoon laat de stand zien.<br><strong>Master:</strong> IK · VOLGERS · BEIDE (het getal eronder = aantal volgers).<br><strong>Follower:</strong> MASTER · IK · BEIDE.</p>
+            </div>
 
-            <p>— <strong>Slotje (rechtsboven)</strong> - Houd 1 sec vast om het scherm te vergrendelen (handig in je zak — tracking loopt door, geen ongewenste tikken). Houd het gesloten slot 1 sec vast om te ontgrendelen.</p>
+            <div style="margin: 20px 0;">
+                <div style="display:flex; gap:8px; align-items:center; margin-bottom:8px;">
+                    <div style="width:64px; height:64px; border-radius:6px; background:transparent; border:3px solid #000; display:flex; align-items:center; justify-content:center; font-size:2em; font-weight:bold; color:#000;">−</div>
+                    <span style="font-weight:bold; font-size:1.3em;">15</span>
+                    <div style="width:64px; height:64px; border-radius:6px; background:transparent; border:3px solid #000; display:flex; align-items:center; justify-content:center; font-size:2em; font-weight:bold; color:#000;">+</div>
+                </div>
+                <strong>Zoom (boven) &amp; Lijndikte (onder)</strong>
+                <p style="margin:4px 0 0;">Bovenaan op de kaart: zoomniveau (10-20). Onderaan op de kaart: dikte van de route-lijn (3-15px).</p>
+            </div>
+
+            <div style="margin: 20px 0;">
+                <div style="width:48px; height:48px; display:flex; align-items:center; justify-content:center; margin-bottom:8px;"><svg width="40" height="40" viewBox="0 0 24 24" fill="#000"><path d="M12 1a5 5 0 00-5 5v2H6a2 2 0 00-2 2v9a2 2 0 002 2h12a2 2 0 002-2v-9a2 2 0 00-2-2h-7V6a3 3 0 016 0h2a5 5 0 00-5-5zm0 11a2 2 0 011 3.73V18a1 1 0 01-2 0v-2.27A2 2 0 0112 12z"/></svg></div>
+                <strong>Slotje</strong>
+                <p style="margin:4px 0 0;">Rechtsboven. Houd 1 sec vast om het scherm te vergrendelen (handig in je zak — tracking loopt door, geen ongewenste tikken). Houd het gesloten slot 1 sec vast om te ontgrendelen.</p>
+            </div>
+
+            <div style="margin: 20px 0;">
+                <div style="width:64px; height:64px; border-radius:50%; background:rgba(33,150,243,0.55); border:3px solid #fff; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:bold; font-size:1.6em; margin-bottom:8px;">1</div>
+                <strong>Kleur &amp; TAG (volger)</strong>
+                <p style="margin:4px 0 0;">Master = rode pijl. Elke volger krijgt een eigen kleur (vanaf blauw), bij meer dan 8 met een nummer. Het rondje rechts toont jouw kleur. Met de TAG-knop eronder zet je een korte naam (max 5 tekens) die de Master linksboven ziet. De Master regelt in het menu hoe zichtbaar de tags zijn.</p>
+            </div>
+
+            <h3 style="color: #00BCD4; margin-top: 25px;">🧭 Navigatie met eigen GPX</h3>
+            <p>Laad je een GPX-route, dan verschijnen vóór elke bocht links/rechts pijlen (klein + ver weg → groot + dichtbij). Geluid: 1 piep als een bocht nadert, 2 piepjes vlak voor het afslaan. Uit te zetten in het menu (Audio / Navigatie pijlen).</p>
+            <p style="background:#1a2148; padding:10px 14px; border-radius:8px;"><strong>Let op:</strong> de pijlen volgen de <strong>punten van je GPX-bestand</strong>, niet de echte weg. Wijkt je GPX af van de werkelijke weg, dan wijst de pijl naar het GPX-spoor — niet naar de afslag op straat.</p>
+
+            <p style="margin-top:20px;">— <strong>Snelheid (km/u)</strong> - Tijdens GO onderaan in beeld (staand). Bij GO klinkt 1 piep als test dat de audio werkt.</p>
+
+            <p>— <strong>CENTER</strong> - Kaart volgt je locatie automatisch (cyaan = aan, grijs = vrij).</p>
+
+            <p>— <strong>GO knop (onderaan)</strong> - Verbergt alle knoppen, alleen de kaart blijft over.</p>
 
             <p>— <strong>Privacy / STOP</strong> - Bij STOP worden je gegevens uit de cloud gewist (geen sporen). Sluit je de app zonder STOP, dan ruimt de app het later vanzelf op (binnen ~10 min).</p>
-
-            <p>— <strong>Track width (− / +)</strong> - Onder op kaart. Range: 3-15px</p>
-            
-            <p>— <strong>GO knop (onderaan)</strong> - Verbergt alle controls, alleen kaart zichtbaar</p>
             
             <h3 style="color: #00BCD4; margin-top: 25px;">📊 GPX (Routes)</h3>
             <p>— <strong>Load:</strong> Laad een route</p>
@@ -751,13 +769,13 @@
             <p>Pan over de regio waar je straks wilt rijden, op het zoomniveau waarop je navigeert (standaard 15), en je kaart is automatisch offline beschikbaar.</p>
             
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                Live Tracker App v6.72 © Umop3p1sdn
+                Live Tracker App v6.73 © Umop3p1sdn
             </p>
         </div>
     </div>
 
     <script>
-        const APP_VERSION = "6.72";
+        const APP_VERSION = "6.73";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
