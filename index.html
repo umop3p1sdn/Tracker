@@ -501,7 +501,7 @@
             <!-- MODE SELECT -->
             <div id="modeSelect" class="mode-select">
                 <p class="subtitle">Start tracking</p>
-                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v6.76 © Umop3p1sdn</div>
+                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v6.77 © Umop3p1sdn</div>
                 
                 <!-- Hidden file input for GPX loading -->
                 <input type="file" id="gpxInputLoad" accept=".gpx" style="display:none;" onchange="loadGPXFile(event)">
@@ -767,12 +767,7 @@
             <p>— <strong>Delete:</strong> Verwijder ingeladen route</p>
             
             <h3 style="color: #00BCD4; margin-top: 25px;">Follower-modus</h3>
-            <p>— <strong>ZOOM:</strong></p>
-            <ul style="margin: 5px 0 15px 0; padding-left: 30px;">
-                <li>MASTER (volg Master)</li>
-                <li>BOTH (beide zichtbaar)</li>
-                <li>SELF (jouw locatie)</li>
-            </ul>
+            <p>De toon-knop (hierboven beschreven) bepaalt wie je ziet. Daarnaast:</p>
             <p>— <strong>TRACK:</strong></p>
             <ul style="margin: 5px 0; padding-left: 30px;">
                 <li>HIDE</li>
@@ -788,9 +783,10 @@
             </ul>
 
             <h3 style="color: #00BCD4; margin-top: 25px;">Offline Map Buffer (OMB)</h3>
+            <p>Elk stukje kaart dat je bekijkt wordt automatisch opgeslagen. Zo bouw je vanzelf een offline-buffer op: gebieden waar je al gereden of gekeken hebt, blijven zichtbaar zonder verbinding.</p>
             <ul style="margin: 10px 0; padding-left: 20px;">
-                <li><strong>OMB</strong> (in het ☰ menu): bufferen aan/uit</li>
-                <li>Slaat elke 10 min de kaart rond je op (zoom 15 ≈ 16 km)</li>
+                <li><strong>OMB</strong> (in het ☰ menu): automatisch bufferen aan/uit</li>
+                <li>Slaat elke 10 min ook de kaart rondom je op (zoom 15 ≈ 16 km)</li>
                 <li>Geen verbinding? Kaart binnen je buffer blijft zichtbaar</li>
                 <li>Data: ~13 MB de eerste keer, daarna alleen nieuwe stukken</li>
                 <li>OMB uit = zuiniger (alleen scherm-tegels laden nog, ~4 KB)</li>
@@ -800,13 +796,13 @@
             <p>Pan over de regio waar je straks wilt rijden, op het zoomniveau waarop je navigeert (standaard 15), en je kaart is automatisch offline beschikbaar.</p>
             
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                Live Tracker App v6.76 © Umop3p1sdn
+                Live Tracker App v6.77 © Umop3p1sdn
             </p>
         </div>
     </div>
 
     <script>
-        const APP_VERSION = "6.76";
+        const APP_VERSION = "6.77";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
