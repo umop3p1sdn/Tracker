@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Route Planner</title>
+    <title>Route Planner v0.2</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
@@ -114,41 +114,41 @@
             const q = searchInput.value.trim();
             clearTimeout(searchTimer);
             if (q.length < 3) { resultsEl.style.display = 'none'; return; }
-            // debounce so we don't hammer the server while typing
-            searchTimer = setTimeout(() => doSearch(q), 350);
+            // Nominatim asks for max ~1 req/sec, so wait until typing pauses (800ms)
+            searchTimer = setTimeout(() => doSearch(q), 800);
         });
 
         async function doSearch(q) {
+            showStatus('Zoeken...');
             try {
-                // bias results toward the current map center
-                const c = map.getCenter();
-                const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&lat=${c.lat}&lon=${c.lng}&limit=6&lang=nl`;
-                const res = await fetch(url);
+                // Nominatim free-form search. countrycodes biases to NL/BE/DE (motor-regio); remove for wereldwijd.
+                const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&addressdetails=1&limit=6&accept-language=nl`;
+                const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+                if (!res.ok) throw new Error('HTTP ' + res.status);
                 const data = await res.json();
-                showResults(data.features || []);
+                if (!Array.isArray(data) || !data.length) {
+                    showStatus('Geen resultaten voor "' + q + '"');
+                    return;
+                }
+                showResults(data);
             } catch (e) {
                 console.error('search failed', e);
-                resultsEl.innerHTML = '<div class="result-item">Zoeken mislukt — verbinding?</div>';
-                resultsEl.style.display = 'block';
+                showStatus('Zoeken mislukt: ' + (e.message || 'verbinding?') + ' — probeer opnieuw.');
             }
         }
 
-        function labelFor(props) {
-            // Build a readable address line from Photon properties
-            const parts = [];
-            if (props.name) parts.push(props.name);
-            if (props.street) parts.push(props.street + (props.housenumber ? ' ' + props.housenumber : ''));
-            if (props.city || props.town || props.village) parts.push(props.city || props.town || props.village);
-            if (props.country) parts.push(props.country);
-            return parts.filter((v, i, a) => v && a.indexOf(v) === i).join(', ');
+        function showStatus(msg) {
+            resultsEl.innerHTML = '<div class="result-item" style="opacity:0.8;">' + msg + '</div>';
+            resultsEl.style.display = 'block';
         }
 
-        function showResults(features) {
-            if (!features.length) { resultsEl.style.display = 'none'; return; }
+        function showResults(items) {
+            if (!items.length) { resultsEl.style.display = 'none'; return; }
             resultsEl.innerHTML = '';
-            features.forEach(f => {
-                const [lng, lat] = f.geometry.coordinates;
-                const label = labelFor(f.properties);
+            items.forEach(item => {
+                const lat = parseFloat(item.lat);
+                const lng = parseFloat(item.lon);
+                const label = item.display_name || 'Onbekend';
                 const div = document.createElement('div');
                 div.className = 'result-item';
                 div.textContent = label;
