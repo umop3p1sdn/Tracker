@@ -501,7 +501,7 @@
             <!-- MODE SELECT -->
             <div id="modeSelect" class="mode-select">
                 <p class="subtitle">Start tracking</p>
-                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v6.71 © Umop3p1sdn</div>
+                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v6.72 © Umop3p1sdn</div>
                 
                 <!-- Hidden file input for GPX loading -->
                 <input type="file" id="gpxInputLoad" accept=".gpx" style="display:none;" onchange="loadGPXFile(event)">
@@ -706,6 +706,8 @@
 
             <p>— <strong>Slotje (rechtsboven)</strong> - Houd 1 sec vast om het scherm te vergrendelen (handig in je zak — tracking loopt door, geen ongewenste tikken). Houd het gesloten slot 1 sec vast om te ontgrendelen.</p>
 
+            <p>— <strong>Privacy / STOP</strong> - Bij STOP worden je gegevens uit de cloud gewist (geen sporen). Sluit je de app zonder STOP, dan ruimt de app het later vanzelf op (binnen ~10 min).</p>
+
             <p>— <strong>Track width (− / +)</strong> - Onder op kaart. Range: 3-15px</p>
             
             <p>— <strong>GO knop (onderaan)</strong> - Verbergt alle controls, alleen kaart zichtbaar</p>
@@ -749,13 +751,13 @@
             <p>Pan over de regio waar je straks wilt rijden, op het zoomniveau waarop je navigeert (standaard 15), en je kaart is automatisch offline beschikbaar.</p>
             
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                Live Tracker App v6.71 © Umop3p1sdn
+                Live Tracker App v6.72 © Umop3p1sdn
             </p>
         </div>
     </div>
 
     <script>
-        const APP_VERSION = "6.71";
+        const APP_VERSION = "6.72";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -1675,7 +1677,13 @@
             for (const id of ids) {
                 const f = followers[id];
                 if (!f || typeof f.latitude !== 'number') continue;
-                if (f.timestamp && (now - f.timestamp) > 60000) continue;
+                if (f.timestamp && (now - f.timestamp) > 60000) {
+                    // off the map after 60s; if really gone (>10 min), wipe from Firebase too
+                    if ((now - f.timestamp) > 600000) {
+                        fetch(`${firebaseConfig.databaseURL}/tracking/${code}/followers/${id}.json`, { method: 'DELETE' }).catch(() => {});
+                    }
+                    continue;
+                }
                 seen[id] = true;
                 masterFollowersData[id] = { lat: f.latitude, lng: f.longitude, heading: f.heading || 0, idx: (typeof f.idx==='number'?f.idx:0), tag: f.tag || '' };
 
