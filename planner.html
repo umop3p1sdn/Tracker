@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Route Planner v0.2</title>
+    <title>Route Planner v0.3</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
@@ -84,6 +84,7 @@
     <button id="clearBtn" onclick="clearAll()" title="Wissen">✕</button>
 
     <div id="infoBar"></div>
+    <div id="debugBox" style="display:none; position:absolute; bottom:0; left:0; right:0; max-height:45%; overflow-y:auto; z-index:1100; background:rgba(0,0,0,0.92); color:#0f0; font-family:monospace; font-size:11px; white-space:pre-wrap; padding:12px; border-top:2px solid #00BCD4;"></div>
 
     <script>
         // ─── Map setup (same tiles as the tracker) ───
@@ -201,16 +202,48 @@
             if (!startPoint || !destPoint) return;
             showInfo('Route berekenen...');
             try {
-                // BRouter wants lon,lat pairs. profile: car-fast for now (Fase 1)
+                // BRouter wants lon,lat pairs. profile: car-fast for now.
+                // turnInstructionMode=2 → voice hints in the GeoJSON output.
                 const lonlats = `${startPoint.lng},${startPoint.lat}|${destPoint.lng},${destPoint.lat}`;
-                const url = `https://brouter.de/brouter?lonlats=${lonlats}&profile=car-fast&alternativeidx=0&format=geojson`;
+                const url = `https://brouter.de/brouter?lonlats=${lonlats}&profile=car-fast&alternativeidx=0&format=geojson&turnInstructionMode=2`;
                 const res = await fetch(url);
                 const data = await res.json();
                 drawRoute(data);
+                inspectTurns(data);   // STEP 1: show what BRouter returns
             } catch (e) {
                 console.error('route failed', e);
                 showInfo('Route berekenen mislukt — probeer opnieuw.');
             }
+        }
+
+        // STEP 1 (diagnostic): dump the structure of any turn/voice-hint data
+        // so we can see exactly how BRouter delivers it, then build GPX export.
+        function inspectTurns(geojson) {
+            let report = [];
+            try {
+                const feat = geojson.features && geojson.features[0];
+                const props = feat ? feat.properties : {};
+                // List all property keys (so we spot where the hints live)
+                report.push('PROPS keys: ' + Object.keys(props).join(', '));
+                // BRouter usually puts voice hints under "voicehints"
+                if (props.voicehints) {
+                    report.push('voicehints count: ' + props.voicehints.length);
+                    report.push('eerste 3: ' + JSON.stringify(props.voicehints.slice(0, 3)));
+                } else {
+                    report.push('GEEN props.voicehints gevonden');
+                }
+                // Some versions use a "messages" table
+                if (props.messages) {
+                    report.push('messages[0]: ' + JSON.stringify(props.messages[0]));
+                    report.push('messages[1]: ' + JSON.stringify(props.messages[1]));
+                }
+            } catch (e) {
+                report.push('inspect-fout: ' + e.message);
+            }
+            // Show on screen in a scrollable box
+            const box = document.getElementById('debugBox');
+            box.textContent = report.join('\n\n');
+            box.style.display = 'block';
         }
 
         function drawRoute(geojson) {
@@ -244,6 +277,8 @@
             [startMarker, destMarker, routeLine].forEach(l => { if (l) map.removeLayer(l); });
             startMarker = destMarker = routeLine = null;
             document.getElementById('infoBar').style.display = 'none';
+            const db = document.getElementById('debugBox');
+            if (db) db.style.display = 'none';
             searchInput.value = '';
             resultsEl.style.display = 'none';
             setSearchMode('start');
