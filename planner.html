@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Route Planner v0.9</title>
+    <title>Route Planner v1.0</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
@@ -43,19 +43,19 @@
             display: flex; gap: 6px; margin-top: 6px;
         }
         .mode-btn {
-            flex: 1; padding: 8px; border-radius: 8px; border: 2px solid #00BCD4;
-            background: transparent; color: #00BCD4; font-weight: bold; font-size: 0.8em;
+            flex: 1; padding: 8px; border-radius: 8px; border: 2px solid #555;
+            background: #e8e8ea; color: #1a1a2e; font-weight: bold; font-size: 0.8em;
             cursor: pointer;
         }
-        .mode-btn.active { background: #00BCD4; color: #0a0e27; }
+        .mode-btn.active { background: #00BCD4; color: #0a0e27; border-color: #00BCD4; }
 
         #profileRow { display: flex; gap: 6px; margin-top: 6px; }
         .prof-btn {
-            flex: 1; padding: 8px; border-radius: 8px; border: 2px solid #9C27B0;
-            background: transparent; color: #ce93d8; font-weight: bold; font-size: 0.8em;
+            flex: 1; padding: 8px; border-radius: 8px; border: 2px solid #555;
+            background: #e8e8ea; color: #1a1a2e; font-weight: bold; font-size: 0.8em;
             cursor: pointer;
         }
-        .prof-btn.active { background: #9C27B0; color: #fff; }
+        .prof-btn.active { background: #00BCD4; color: #0a0e27; border-color: #00BCD4; }
 
         /* Info bar bottom */
         #infoBar {
@@ -88,14 +88,14 @@
             <button class="mode-btn" id="useGps" onclick="useMyLocation()" style="flex:0 0 auto; border-color:#4CAF50; color:#4CAF50;">📍</button>
         </div>
         <div id="profileRow">
-            <button class="prof-btn active" data-profile="car-fast" onclick="setProfile(this)">Snelste</button>
-            <button class="prof-btn" data-profile="car-eco" onclick="setProfile(this)">Rustig</button>
-            <button class="prof-btn" data-profile="trekking" onclick="setProfile(this)">Bochtig</button>
+            <button class="prof-btn active" data-profile="car-fast" onclick="setProfile(this)">Snel</button>
+            <button class="prof-btn" data-profile="rustig" onclick="setProfile(this)">Rustig</button>
+            <button class="prof-btn" data-profile="bochtig" onclick="setProfile(this)">Bochtig</button>
         </div>
         <div id="detourRow" style="display:flex; gap:6px; margin-top:6px; align-items:center;">
-            <input id="targetKm" type="number" inputmode="numeric" placeholder="km" style="width:64px; padding:8px; border-radius:8px; border:2px solid #FF9800; background:#0a0e27; color:#fff; font-size:0.9em; text-align:center;">
-            <button onclick="generateDetour()" style="flex:1; padding:8px; border-radius:8px; border:2px solid #FF9800; background:transparent; color:#FFB74D; font-weight:bold; font-size:0.8em; cursor:pointer;">Genereer omweg</button>
-            <button onclick="otherDetour()" style="flex:0 0 auto; padding:8px 10px; border-radius:8px; border:2px solid #FF9800; background:transparent; color:#FFB74D; font-weight:bold; font-size:0.8em; cursor:pointer;">↔</button>
+            <input id="targetKm" type="number" inputmode="numeric" placeholder="km" style="width:64px; padding:8px; border-radius:8px; border:2px solid #555; background:#e8e8ea; color:#1a1a2e; font-size:0.9em; text-align:center;">
+            <button onclick="generateDetour()" style="flex:1; padding:8px; border-radius:8px; border:2px solid #555; background:#e8e8ea; color:#1a1a2e; font-weight:bold; font-size:0.8em; cursor:pointer;">Genereer omweg</button>
+            <button onclick="otherDetour()" style="flex:0 0 auto; padding:8px 12px; border-radius:8px; border:2px solid #555; background:#e8e8ea; color:#1a1a2e; font-weight:bold; font-size:0.9em; cursor:pointer;">↔</button>
         </div>
         <div id="results"></div>
     </div>
@@ -129,7 +129,16 @@
         let startMarker = null, destMarker = null, routeLine = null;
         let searchMode = 'start';   // which point the search fills: start | dest | via
         let searchTimer = null;
-        let selectedProfile = 'car-fast';   // route style
+        let selectedProfile = 'car-fast';   // UI-keuze: car-fast | rustig | bochtig
+
+        // Vertaal de UI-keuze naar de echte BRouter-parameters.
+        function brouterParams() {
+            if (selectedProfile === 'rustig' || selectedProfile === 'bochtig') {
+                // car-vario met snelweg vermijden (echte autowegen, geen fietspad)
+                return 'profile=car-vario&profile:avoid_motorways=1';
+            }
+            return 'profile=car-fast';   // Snel = via snelweg
+        }
         let pendingTap = null;      // {lat,lng} while the Start/Finish/Via menu is open
 
         // ─── Marker icons ───
@@ -345,7 +354,7 @@
         // Meet de routeafstand (km) langs gegeven punten via BRouter. Geeft null bij fout.
         async function measureRoute(points) {
             const lonlats = points.map(p => `${p.lng},${p.lat}`).join('|');
-            const url = `https://brouter.de/brouter?lonlats=${lonlats}&profile=${selectedProfile}&alternativeidx=0&format=geojson`;
+            const url = `https://brouter.de/brouter?lonlats=${lonlats}&${brouterParams()}&alternativeidx=0&format=geojson`;
             const res = await fetch(url);
             const data = await res.json();
             const km = data.features[0].properties['track-length'] / 1000;
@@ -447,7 +456,7 @@
             try {
                 // all points in order: start|via|via|...|dest  as lon,lat
                 const lonlats = seq.map(p => `${p.lng},${p.lat}`).join('|');
-                const url = `https://brouter.de/brouter?lonlats=${lonlats}&profile=${selectedProfile}&alternativeidx=0&format=geojson&turnInstructionMode=2`;
+                const url = `https://brouter.de/brouter?lonlats=${lonlats}&${brouterParams()}&alternativeidx=0&format=geojson&turnInstructionMode=2`;
                 const res = await fetch(url);
                 const data = await res.json();
                 drawRoute(data);
