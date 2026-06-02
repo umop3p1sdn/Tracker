@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Route Planner v0.3</title>
+    <title>Route Planner v0.4</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
@@ -84,7 +84,10 @@
     <button id="clearBtn" onclick="clearAll()" title="Wissen">✕</button>
 
     <div id="infoBar"></div>
-    <div id="debugBox" style="display:none; position:absolute; bottom:0; left:0; right:0; max-height:45%; overflow-y:auto; z-index:1100; background:rgba(0,0,0,0.92); color:#0f0; font-family:monospace; font-size:11px; white-space:pre-wrap; padding:12px; border-top:2px solid #00BCD4;"></div>
+    <div id="debugWrap" style="display:none; position:absolute; bottom:0; left:0; right:0; max-height:48%; z-index:1100; background:rgba(0,0,0,0.92); border-top:2px solid #00BCD4;">
+        <button id="copyDebug" onclick="copyDebug()" style="position:sticky; top:0; width:100%; padding:10px; background:#00BCD4; color:#0a0e27; border:none; font-weight:bold; font-size:0.9em; cursor:pointer;">📋 Kopieer data</button>
+        <div id="debugBox" style="max-height:calc(48vh - 40px); overflow-y:auto; color:#0f0; font-family:monospace; font-size:11px; white-space:pre-wrap; padding:12px;"></div>
+    </div>
 
     <script>
         // ─── Map setup (same tiles as the tracker) ───
@@ -243,7 +246,23 @@
             // Show on screen in a scrollable box
             const box = document.getElementById('debugBox');
             box.textContent = report.join('\n\n');
-            box.style.display = 'block';
+            document.getElementById('debugWrap').style.display = 'block';
+        }
+
+        function copyDebug() {
+            const txt = document.getElementById('debugBox').textContent;
+            const btn = document.getElementById('copyDebug');
+            navigator.clipboard.writeText(txt).then(() => {
+                btn.textContent = '✓ Gekopieerd!';
+                setTimeout(() => btn.textContent = '📋 Kopieer data', 1500);
+            }).catch(() => {
+                // fallback: select the text so the user can copy manually
+                const range = document.createRange();
+                range.selectNodeContents(document.getElementById('debugBox'));
+                const sel = window.getSelection();
+                sel.removeAllRanges(); sel.addRange(range);
+                btn.textContent = 'Selecteer + kopieer handmatig';
+            });
         }
 
         function drawRoute(geojson) {
@@ -277,7 +296,7 @@
             [startMarker, destMarker, routeLine].forEach(l => { if (l) map.removeLayer(l); });
             startMarker = destMarker = routeLine = null;
             document.getElementById('infoBar').style.display = 'none';
-            const db = document.getElementById('debugBox');
+            const db = document.getElementById('debugWrap');
             if (db) db.style.display = 'none';
             searchInput.value = '';
             resultsEl.style.display = 'none';
