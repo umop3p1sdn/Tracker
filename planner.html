@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Route Planner v0.6</title>
+    <title>Route Planner v0.7</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
@@ -83,7 +83,8 @@
         </div>
         <div id="modeRow">
             <button class="mode-btn active" id="modeStart" onclick="setSearchMode('start')">Start</button>
-            <button class="mode-btn" id="modeDest" onclick="setSearchMode('dest')">Bestemming</button>
+            <button class="mode-btn" id="modeVia" onclick="setSearchMode('via')">Tussen</button>
+            <button class="mode-btn" id="modeDest" onclick="setSearchMode('dest')">Finish</button>
             <button class="mode-btn" id="useGps" onclick="useMyLocation()" style="flex:0 0 auto; border-color:#4CAF50; color:#4CAF50;">📍</button>
         </div>
         <div id="profileRow">
@@ -98,19 +99,53 @@
 
     <div id="infoBar"></div>
 
+    <!-- Tap-on-map menu -->
+    <div id="tapMenu" style="display:none; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); z-index:1200; background:#0a0e27; border:2px solid #00BCD4; border-radius:12px; padding:16px; flex-direction:column; gap:8px; box-shadow:0 4px 16px rgba(0,0,0,0.6); min-width:200px;">
+        <div style="color:#00BCD4; font-weight:bold; text-align:center; margin-bottom:4px;">Punt toevoegen als:</div>
+        <button onclick="tapChoose('start')" style="padding:12px; border-radius:8px; border:2px solid #4CAF50; background:transparent; color:#4CAF50; font-weight:bold; font-size:1em; cursor:pointer;">Start</button>
+        <button onclick="tapChoose('via')" style="padding:12px; border-radius:8px; border:2px solid #9C27B0; background:transparent; color:#ce93d8; font-weight:bold; font-size:1em; cursor:pointer;">Tussenpunt</button>
+        <button onclick="tapChoose('dest')" style="padding:12px; border-radius:8px; border:2px solid #E91E63; background:transparent; color:#E91E63; font-weight:bold; font-size:1em; cursor:pointer;">Finish</button>
+        <button onclick="tapCancel()" style="padding:8px; border-radius:8px; border:none; background:transparent; color:#889; font-size:0.85em; cursor:pointer;">Annuleer</button>
+    </div>
+
     <script>
         // ─── Map setup (same tiles as the tracker) ───
         const map = L.map('map', { zoomControl: true }).setView([52.04, 5.66], 13); // Ede default
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19, attribution: '© OpenStreetMap'
         }).addTo(map);
+        map.on('click', onMapTap);
 
         let startPoint = null;      // {lat, lng, label}
         let destPoint = null;       // {lat, lng, label}
+        let viaPoints = [];         // [{lat,lng,label,marker}] tussenpunten, in routevolgorde
+        let viaMarkers = [];
         let startMarker = null, destMarker = null, routeLine = null;
-        let searchMode = 'start';   // which point the search fills
+        let searchMode = 'start';   // which point the search fills: start | dest | via
         let searchTimer = null;
         let selectedProfile = 'car-fast';   // route style
+        let pendingTap = null;      // {lat,lng} while the Start/Finish/Via menu is open
+
+        // ─── Tap on map → choose Start / Finish / Tussenpunt ───
+        function onMapTap(e) {
+            pendingTap = { lat: e.latlng.lat, lng: e.latlng.lng };
+            document.getElementById('tapMenu').style.display = 'flex';
+        }
+        function tapChoose(kind) {
+            document.getElementById('tapMenu').style.display = 'none';
+            if (!pendingTap) return;
+            const { lat, lng } = pendingTap;
+            const label = `(${lat.toFixed(4)}, ${lng.toFixed(4)})`;
+            if (kind === 'start') setStart(lat, lng, label);
+            else if (kind === 'dest') setDest(lat, lng, label);
+            else if (kind === 'via') addVia(lat, lng, label);
+            pendingTap = null;
+            maybeRoute();
+        }
+        function tapCancel() {
+            document.getElementById('tapMenu').style.display = 'none';
+            pendingTap = null;
+        }
 
         function setProfile(btn) {
             document.querySelectorAll('.prof-btn').forEach(b => b.classList.remove('active'));
@@ -123,9 +158,12 @@
         function setSearchMode(mode) {
             searchMode = mode;
             document.getElementById('modeStart').classList.toggle('active', mode === 'start');
+            document.getElementById('modeVia').classList.toggle('active', mode === 'via');
             document.getElementById('modeDest').classList.toggle('active', mode === 'dest');
-            document.getElementById('searchInput').placeholder =
-                mode === 'start' ? 'Zoek startadres...' : 'Zoek bestemming...';
+            const ph = mode === 'start' ? 'Zoek startadres...'
+                     : mode === 'via' ? 'Zoek tussenpunt...'
+                     : 'Zoek bestemming...';
+            document.getElementById('searchInput').placeholder = ph;
         }
 
         // ─── Address search via Photon (free OSM geocoder) ───
@@ -185,7 +223,9 @@
             searchInput.value = '';
             if (searchMode === 'start') {
                 setStart(lat, lng, label);
-                setSearchMode('dest');   // next, look for destination
+                setSearchMode('dest');
+            } else if (searchMode === 'via') {
+                addVia(lat, lng, label);
             } else {
                 setDest(lat, lng, label);
             }
@@ -204,6 +244,58 @@
             destMarker = L.marker([lat, lng], { title: 'Bestemming' }).addTo(map).bindPopup('Bestemming: ' + label);
         }
 
+        // Add a via point, inserted at the smartest position in the route.
+        function addVia(lat, lng, label) {
+            const via = { lat, lng, label };
+            via.marker = L.circleMarker([lat, lng], {
+                radius: 9, color: '#fff', weight: 2, fillColor: '#9C27B0', fillOpacity: 0.9
+            }).addTo(map);
+            via.marker.on('click', () => removeViaObj(via));
+            via.marker.bindPopup('Tussenpunt — tik nogmaals om te verwijderen');
+            // Smart insert: find which leg of the current route this point is closest to.
+            const seq = routeSequence();
+            if (seq.length < 2) {
+                viaPoints.push(via);
+            } else {
+                let bestI = viaPoints.length, bestD = Infinity;
+                // test inserting between each consecutive pair (start..vias..dest)
+                for (let i = 0; i < seq.length - 1; i++) {
+                    const d = distToSegment(via, seq[i], seq[i + 1]);
+                    if (d < bestD) { bestD = d; bestI = i; }
+                }
+                viaPoints.splice(bestI, 0, via);   // insert into the closest leg
+            }
+        }
+
+        function removeViaObj(via) {
+            const i = viaPoints.indexOf(via);
+            if (i !== -1) {
+                if (via.marker) map.removeLayer(via.marker);
+                viaPoints.splice(i, 1);
+                maybeRoute();
+            }
+        }
+
+        // Ordered list of all points: start, vias (in order), dest
+        function routeSequence() {
+            const seq = [];
+            if (startPoint) seq.push(startPoint);
+            viaPoints.forEach(v => seq.push(v));
+            if (destPoint) seq.push(destPoint);
+            return seq;
+        }
+
+        // Rough distance (in degrees²) from point P to segment A-B — good enough for "closest leg".
+        function distToSegment(p, a, b) {
+            const ax = a.lng, ay = a.lat, bx = b.lng, by = b.lat, px = p.lng, py = p.lat;
+            const dx = bx - ax, dy = by - ay;
+            const len2 = dx*dx + dy*dy || 1e-9;
+            let t = ((px-ax)*dx + (py-ay)*dy) / len2;
+            t = Math.max(0, Math.min(1, t));
+            const cx = ax + t*dx, cy = ay + t*dy;
+            return (px-cx)*(px-cx) + (py-cy)*(py-cy);
+        }
+
         function useMyLocation() {
             if (!navigator.geolocation) { alert('Geen GPS beschikbaar'); return; }
             navigator.geolocation.getCurrentPosition(
@@ -220,12 +312,12 @@
 
         // ─── Route via BRouter (free public server) ───
         async function maybeRoute() {
-            if (!startPoint || !destPoint) return;
+            const seq = routeSequence();
+            if (seq.length < 2) return;   // need at least start + dest
             showInfo('Route berekenen...');
             try {
-                // BRouter wants lon,lat pairs. profile: car-fast for now.
-                // turnInstructionMode=2 → voice hints in the GeoJSON output.
-                const lonlats = `${startPoint.lng},${startPoint.lat}|${destPoint.lng},${destPoint.lat}`;
+                // all points in order: start|via|via|...|dest  as lon,lat
+                const lonlats = seq.map(p => `${p.lng},${p.lat}`).join('|');
                 const url = `https://brouter.de/brouter?lonlats=${lonlats}&profile=${selectedProfile}&alternativeidx=0&format=geojson&turnInstructionMode=2`;
                 const res = await fetch(url);
                 const data = await res.json();
@@ -314,6 +406,8 @@
 
         function clearAll() {
             startPoint = destPoint = null;
+            viaPoints.forEach(v => { if (v.marker) map.removeLayer(v.marker); });
+            viaPoints = [];
             [startMarker, destMarker, routeLine].forEach(l => { if (l) map.removeLayer(l); });
             startMarker = destMarker = routeLine = null;
             document.getElementById('infoBar').style.display = 'none';
