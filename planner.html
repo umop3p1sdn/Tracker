@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Route Planner v1.1</title>
+    <title>Route Planner v1.2</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
@@ -353,11 +353,47 @@
         // Meet de routeafstand (km) langs gegeven punten via BRouter. Geeft null bij fout.
         async function measureRoute(points) {
             const lonlats = points.map(p => `${p.lng},${p.lat}`).join('|');
-            const url = `https://brouter.de/brouter?lonlats=${lonlats}&${brouterParams()}&alternativeidx=0&format=geojson`;
+            const url = `https://brouter.de/brouter?lonlats=${lonlats}&${brouterParams()}&alternativeidx=0&format=geojson&turnInstructionMode=2`;
             const res = await fetch(url);
             const data = await res.json();
-            const km = data.features[0].properties['track-length'] / 1000;
-            return { km, data };
+            const feat = data.features[0];
+            const km = feat.properties['track-length'] / 1000;
+            const hints = feat.properties.voicehints || [];
+            const coords = feat.geometry.coordinates;
+            return { km, data, hints, coords };
+        }
+
+        // Voor elke via die een 180°-keer (TU=15) veroorzaakt: verplaats 'm naar het
+        // dichtstbijzijnde DOORGAANDE routepunt, zodat de keer verdwijnt maar het punt
+        // ongeveer op z'n plek blijft. Geeft een nieuwe array via-punten terug.
+        function repositionUturnVias(vias, hints, coords) {
+            // verzamel de keerpunt-indices in coords
+            const uturnIdx = hints.filter(h => h[1] === 15).map(h => h[0]);
+            if (!uturnIdx.length) return vias;
+
+            return vias.map(v => {
+                // ligt er een keerpunt dicht bij deze via?
+                let nearU = null, nearUD = Infinity;
+                uturnIdx.forEach(ci => {
+                    const pt = coords[ci];
+                    if (!pt) return;
+                    const d = (v.lat - pt[1]) ** 2 + (v.lng - pt[0]) ** 2;
+                    if (d < nearUD) { nearUD = d; nearU = ci; }
+                });
+                if (nearU === null) return v;   // geen keer bij deze via → laat staan
+
+                // zoek het dichtstbijzijnde DOORGAANDE routepunt, maar NIET vlak bij de keer
+                // (sla punten over die te dicht op het keerpunt liggen = het doodlopende stukje)
+                let bestPt = null, bestD = Infinity;
+                for (let i = 0; i < coords.length; i++) {
+                    if (Math.abs(i - nearU) < 4) continue;   // skip het keer-stukje zelf
+                    const pt = coords[i];
+                    const d = (v.lat - pt[1]) ** 2 + (v.lng - pt[0]) ** 2;
+                    if (d < bestD) { bestD = d; bestPt = pt; }
+                }
+                if (bestPt) return { lat: bestPt[1], lng: bestPt[0], label: 'omweg' };
+                return v;
+            });
         }
 
         // Bereken een punt loodrecht op het midden van start→finish, 'side' = +1/-1, 'offsetKm' opzij.
@@ -438,14 +474,21 @@
 
                 if (!best) { showInfo('Omweg zoeken mislukt — probeer opnieuw.'); return; }
 
-                // plaats de gevonden punten als tussenpunten en teken de route
+                // ── Doodlopers corrigeren: verplaats via's met 180°-keer naar de doorgaande route ──
+                let finalPts = best.pts;
+                try {
+                    const measured = await measureRoute([startPoint, ...finalPts, destPoint]);
+                    finalPts = repositionUturnVias(finalPts, measured.hints, measured.coords);
+                } catch (e) { /* meten mislukt: gebruik originele punten */ }
+
+                // plaats de (gecorrigeerde) punten als tussenpunten en teken de route
                 viaPoints.forEach(v => { if (v.marker) map.removeLayer(v.marker); });
                 viaPoints = [];
-                best.pts.forEach(p => addVia(p.lat, p.lng, 'omweg', false));
+                finalPts.forEach(p => addVia(p.lat, p.lng, 'omweg', false));
                 await maybeRoute();
                 showInfo(document.getElementById('infoBar').innerHTML + ` &nbsp;(doel ${target} km)`);
 
-                detourStartSide = -detourStartSide;   // volgende keer slinger andersom
+                detourStartSide = -detourStartSide;
             } catch (e) {
                 console.error('detour failed', e);
                 showInfo('Omweg zoeken mislukt — probeer opnieuw.');
