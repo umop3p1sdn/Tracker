@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Route Planner v1.4</title>
+    <title>Route Planner v1.5</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
@@ -75,7 +75,7 @@
 </head>
 <body>
     <div id="map"></div>
-    <div id="versionLabel" style="position:absolute; bottom:4px; right:6px; z-index:1000; font-family:sans-serif; font-size:10px; color:rgba(255,255,255,0.7); background:rgba(0,0,0,0.4); padding:2px 6px; border-radius:6px; pointer-events:none;">v1.4</div>
+    <div id="versionLabel" style="position:absolute; bottom:4px; right:6px; z-index:1000; font-family:sans-serif; font-size:10px; color:rgba(255,255,255,0.7); background:rgba(0,0,0,0.4); padding:2px 6px; border-radius:6px; pointer-events:none;">v1.5</div>
 
     <div id="searchWrap">
         <div id="searchBar">
@@ -383,52 +383,56 @@
         function repositionUturnVias(vias, hints, coords) {
             if (!hints.length) return vias;
 
-            // 1. Verzamel kandidaat-"keerplekken" (coord-index van de T-splitsing).
-            const turnSpots = [];   // {idx, lat, lng}
+            // 1. Verzamel kandidaat-T-splitsingen: plek + richting van de doorgaande weg.
+            const turnSpots = [];   // {lat, lng, dirLat, dirLng}
 
-            // (a) directe 180°-keren
+            // (a) directe 180°-keer (TU): doorgaande richting = langs de route bij dat punt
             hints.forEach(h => {
-                if (h[1] === 15) {
-                    const pt = coords[h[0]];
-                    if (pt) turnSpots.push({ idx: h[0], lat: pt[1], lng: pt[0] });
-                }
+                if (h[1] !== 15) return;
+                const i = h[0];
+                const pt = coords[i], nxt = coords[i + 1] || coords[i - 1];
+                if (!pt || !nxt) return;
+                turnSpots.push({ lat: pt[1], lng: pt[0], dirLat: nxt[1] - pt[1], dirLng: nxt[0] - pt[0] });
             });
 
-            // (b) tegengestelde bochten dicht bij elkaar (in + uit op dezelfde kruising)
+            // (b) tegengesteld bochtenpaar (links↔rechts) in DEZELFDE kruising (heel dichtbij).
+            // Als je de 2 afslagen verbindt is dat de doorgaande (rechte) weg.
             for (let i = 0; i < hints.length - 1; i++) {
                 const a = hints[i], b = hints[i + 1];
-                const aLeft = LEFT_CMDS.includes(a[1]), aRight = RIGHT_CMDS.includes(a[1]);
-                const bLeft = LEFT_CMDS.includes(b[1]), bRight = RIGHT_CMDS.includes(b[1]);
-                const opposite = (aLeft && bRight) || (aRight && bLeft);
-                if (!opposite) continue;
+                const aL = LEFT_CMDS.includes(a[1]), aR = RIGHT_CMDS.includes(a[1]);
+                const bL = LEFT_CMDS.includes(b[1]), bR = RIGHT_CMDS.includes(b[1]);
+                if (!((aL && bR) || (aR && bL))) continue;
                 const pa = coords[a[0]], pb = coords[b[0]];
                 if (!pa || !pb) continue;
-                // hoe dicht liggen de twee afslagen bij elkaar? (klein = tongetje)
                 const gap = distMeters(pa[1], pa[0], pb[1], pb[0]);
-                if (gap < 250) {
-                    // de T-splitsing zit ~tussen de twee afslagen in
-                    turnSpots.push({
-                        idx: a[0],
-                        lat: (pa[1] + pb[1]) / 2,
-                        lng: (pa[0] + pb[0]) / 2
-                    });
-                }
+                if (gap > 15) continue;                 // zelfde kruising = heel dichtbij
+                // doorgaande weg = lijn tussen de 2 afslagen; richting = van b weg van het tongetje
+                // pak een routepunt iets vóór de eerste afslag als doorgaande richting
+                const before = coords[Math.max(0, a[0] - 2)];
+                turnSpots.push({
+                    lat: pa[1], lng: pa[0],
+                    dirLat: pa[1] - before[1], dirLng: pa[0] - before[0]
+                });
             }
 
             if (!turnSpots.length) return vias;
 
-            // 2. Voor elke via: ligt er een keerplek dichtbij? → verplaats via NAAR die T-splitsing.
+            // 2. Voor elke via dichtbij een T-splitsing: zet 'm 10m VOORBIJ op de doorgaande weg.
             return vias.map(v => {
                 let near = null, nearD = Infinity;
                 turnSpots.forEach(s => {
                     const d = distMeters(v.lat, v.lng, s.lat, s.lng);
                     if (d < nearD) { nearD = d; near = s; }
                 });
-                // alleen corrigeren als de keer echt bij deze via hoort (binnen ~1.5 km)
-                if (near && nearD < 1500) {
-                    return { lat: near.lat, lng: near.lng, label: 'omweg' };
-                }
-                return v;
+                if (!near || nearD > 1500) return v;
+                // normaliseer de doorgaande richting en stap 10m vooruit
+                const dLen = Math.sqrt(near.dirLat ** 2 + near.dirLng ** 2) || 1e-9;
+                const stepDeg = 10 / 111000;            // 10 meter in graden
+                return {
+                    lat: near.lat + (near.dirLat / dLen) * stepDeg,
+                    lng: near.lng + (near.dirLng / dLen) * stepDeg,
+                    label: 'omweg'
+                };
             });
         }
 
