@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Route Planner v1.3</title>
+    <title>Route Planner v1.4</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
@@ -75,7 +75,7 @@
 </head>
 <body>
     <div id="map"></div>
-    <div id="versionLabel" style="position:absolute; bottom:4px; right:6px; z-index:1000; font-family:sans-serif; font-size:10px; color:rgba(255,255,255,0.7); background:rgba(0,0,0,0.4); padding:2px 6px; border-radius:6px; pointer-events:none;">v1.3</div>
+    <div id="versionLabel" style="position:absolute; bottom:4px; right:6px; z-index:1000; font-family:sans-serif; font-size:10px; color:rgba(255,255,255,0.7); background:rgba(0,0,0,0.4); padding:2px 6px; border-radius:6px; pointer-events:none;">v1.4</div>
 
     <div id="searchWrap">
         <div id="searchBar">
@@ -364,35 +364,70 @@
             return { km, data, hints, coords };
         }
 
-        // Voor elke via die een 180°-keer (TU=15) veroorzaakt: verplaats 'm naar het
-        // dichtstbijzijnde DOORGAANDE routepunt, zodat de keer verdwijnt maar het punt
-        // ongeveer op z'n plek blijft. Geeft een nieuwe array via-punten terug.
+        // Doodloper-correctie via T-splitsing-detectie.
+        // Een doodlopend tongetje verraadt zich op 2 manieren:
+        //   (a) een 180°-keer (TU = cmd 15), of
+        //   (b) een paar TEGENGESTELDE bochten (links↔rechts) die dicht bij elkaar liggen
+        //       = je gaat de doodloper in en komt bij dezelfde T-splitsing weer uit.
+        // De T-splitsing (waar in+uit elkaar kruisen) ligt op de DOORGAANDE weg → daar zet
+        // we de via naartoe. Geeft een nieuwe array via-punten terug.
+        const LEFT_CMDS = [2,3,4,8];     // TL, TSLL, TSHL, KL
+        const RIGHT_CMDS = [5,6,7,9];    // TR, TSLR, TSHR, KR
+
+        function distMeters(aLat, aLng, bLat, bLng) {
+            const dLat = (bLat - aLat) * 111000;
+            const dLng = (bLng - aLng) * 111000 * Math.cos(aLat * Math.PI / 180);
+            return Math.sqrt(dLat*dLat + dLng*dLng);
+        }
+
         function repositionUturnVias(vias, hints, coords) {
-            // verzamel de keerpunt-indices in coords
-            const uturnIdx = hints.filter(h => h[1] === 15).map(h => h[0]);
-            if (!uturnIdx.length) return vias;
+            if (!hints.length) return vias;
 
-            return vias.map(v => {
-                // ligt er een keerpunt dicht bij deze via?
-                let nearU = null, nearUD = Infinity;
-                uturnIdx.forEach(ci => {
-                    const pt = coords[ci];
-                    if (!pt) return;
-                    const d = (v.lat - pt[1]) ** 2 + (v.lng - pt[0]) ** 2;
-                    if (d < nearUD) { nearUD = d; nearU = ci; }
-                });
-                if (nearU === null) return v;   // geen keer bij deze via → laat staan
+            // 1. Verzamel kandidaat-"keerplekken" (coord-index van de T-splitsing).
+            const turnSpots = [];   // {idx, lat, lng}
 
-                // zoek het dichtstbijzijnde DOORGAANDE routepunt, maar NIET vlak bij de keer
-                // (sla punten over die te dicht op het keerpunt liggen = het doodlopende stukje)
-                let bestPt = null, bestD = Infinity;
-                for (let i = 0; i < coords.length; i++) {
-                    if (Math.abs(i - nearU) < 4) continue;   // skip het keer-stukje zelf
-                    const pt = coords[i];
-                    const d = (v.lat - pt[1]) ** 2 + (v.lng - pt[0]) ** 2;
-                    if (d < bestD) { bestD = d; bestPt = pt; }
+            // (a) directe 180°-keren
+            hints.forEach(h => {
+                if (h[1] === 15) {
+                    const pt = coords[h[0]];
+                    if (pt) turnSpots.push({ idx: h[0], lat: pt[1], lng: pt[0] });
                 }
-                if (bestPt) return { lat: bestPt[1], lng: bestPt[0], label: 'omweg' };
+            });
+
+            // (b) tegengestelde bochten dicht bij elkaar (in + uit op dezelfde kruising)
+            for (let i = 0; i < hints.length - 1; i++) {
+                const a = hints[i], b = hints[i + 1];
+                const aLeft = LEFT_CMDS.includes(a[1]), aRight = RIGHT_CMDS.includes(a[1]);
+                const bLeft = LEFT_CMDS.includes(b[1]), bRight = RIGHT_CMDS.includes(b[1]);
+                const opposite = (aLeft && bRight) || (aRight && bLeft);
+                if (!opposite) continue;
+                const pa = coords[a[0]], pb = coords[b[0]];
+                if (!pa || !pb) continue;
+                // hoe dicht liggen de twee afslagen bij elkaar? (klein = tongetje)
+                const gap = distMeters(pa[1], pa[0], pb[1], pb[0]);
+                if (gap < 250) {
+                    // de T-splitsing zit ~tussen de twee afslagen in
+                    turnSpots.push({
+                        idx: a[0],
+                        lat: (pa[1] + pb[1]) / 2,
+                        lng: (pa[0] + pb[0]) / 2
+                    });
+                }
+            }
+
+            if (!turnSpots.length) return vias;
+
+            // 2. Voor elke via: ligt er een keerplek dichtbij? → verplaats via NAAR die T-splitsing.
+            return vias.map(v => {
+                let near = null, nearD = Infinity;
+                turnSpots.forEach(s => {
+                    const d = distMeters(v.lat, v.lng, s.lat, s.lng);
+                    if (d < nearD) { nearD = d; near = s; }
+                });
+                // alleen corrigeren als de keer echt bij deze via hoort (binnen ~1.5 km)
+                if (near && nearD < 1500) {
+                    return { lat: near.lat, lng: near.lng, label: 'omweg' };
+                }
                 return v;
             });
         }
@@ -475,12 +510,21 @@
 
                 if (!best) { showInfo('Omweg zoeken mislukt — probeer opnieuw.'); return; }
 
-                // ── Doodlopers corrigeren: verplaats via's met 180°-keer naar de doorgaande route ──
+                // ── Doodlopers corrigeren: T-splitsing-detectie, herhaal tot schoon (max 3 rondes) ──
                 let finalPts = best.pts;
-                try {
-                    const measured = await measureRoute([startPoint, ...finalPts, destPoint]);
-                    finalPts = repositionUturnVias(finalPts, measured.hints, measured.coords);
-                } catch (e) { /* meten mislukt: gebruik originele punten */ }
+                showInfo('Doodlopers controleren...');
+                for (let round = 0; round < 3; round++) {
+                    let measured;
+                    try { measured = await measureRoute([startPoint, ...finalPts, destPoint]); }
+                    catch (e) { break; }
+                    // nog een 180°-keer aanwezig?
+                    const hasUturn = measured.hints.some(h => h[1] === 15);
+                    const corrected = repositionUturnVias(finalPts, measured.hints, measured.coords);
+                    // niets veranderd én geen keer meer? klaar.
+                    const changed = corrected.some((p, i) => p.lat !== finalPts[i].lat || p.lng !== finalPts[i].lng);
+                    finalPts = corrected;
+                    if (!hasUturn && !changed) break;
+                }
 
                 // plaats de (gecorrigeerde) punten als tussenpunten en teken de route
                 viaPoints.forEach(v => { if (v.marker) map.removeLayer(v.marker); });
