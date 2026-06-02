@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Route Planner v0.7</title>
+    <title>Route Planner v0.8</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
@@ -102,9 +102,10 @@
     <!-- Tap-on-map menu -->
     <div id="tapMenu" style="display:none; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); z-index:1200; background:#0a0e27; border:2px solid #00BCD4; border-radius:12px; padding:16px; flex-direction:column; gap:8px; box-shadow:0 4px 16px rgba(0,0,0,0.6); min-width:200px;">
         <div style="color:#00BCD4; font-weight:bold; text-align:center; margin-bottom:4px;">Punt toevoegen als:</div>
-        <button onclick="tapChoose('start')" style="padding:12px; border-radius:8px; border:2px solid #4CAF50; background:transparent; color:#4CAF50; font-weight:bold; font-size:1em; cursor:pointer;">Start</button>
-        <button onclick="tapChoose('via')" style="padding:12px; border-radius:8px; border:2px solid #9C27B0; background:transparent; color:#ce93d8; font-weight:bold; font-size:1em; cursor:pointer;">Tussenpunt</button>
-        <button onclick="tapChoose('dest')" style="padding:12px; border-radius:8px; border:2px solid #E91E63; background:transparent; color:#E91E63; font-weight:bold; font-size:1em; cursor:pointer;">Finish</button>
+        <button onclick="tapChoose('start')" style="padding:12px; border-radius:8px; border:2px solid #9E9E9E; background:transparent; color:#bbb; font-weight:bold; font-size:1em; cursor:pointer;">Start</button>
+        <button onclick="tapChoose('via')" style="padding:12px; border-radius:8px; border:2px solid #9C27B0; background:transparent; color:#ce93d8; font-weight:bold; font-size:1em; cursor:pointer;">Tussen (slim)</button>
+        <button onclick="tapChoose('achteraan')" style="padding:12px; border-radius:8px; border:2px solid #9C27B0; background:transparent; color:#ce93d8; font-weight:bold; font-size:1em; cursor:pointer;">Achteraan</button>
+        <button onclick="tapChoose('dest')" style="padding:12px; border-radius:8px; border:2px solid #000; color:#000; font-weight:bold; font-size:1em; cursor:pointer; background:#eee;">Finish 🏁</button>
         <button onclick="tapCancel()" style="padding:8px; border-radius:8px; border:none; background:transparent; color:#889; font-size:0.85em; cursor:pointer;">Annuleer</button>
     </div>
 
@@ -126,6 +127,22 @@
         let selectedProfile = 'car-fast';   // route style
         let pendingTap = null;      // {lat,lng} while the Start/Finish/Via menu is open
 
+        // ─── Marker icons ───
+        function pinIcon(color) {
+            return L.divIcon({
+                className: 'pin-marker',
+                html: `<svg width="30" height="40" viewBox="0 0 24 32"><path d="M12 0C5.4 0 0 5.4 0 12c0 8 12 20 12 20s12-12 12-20C24 5.4 18.6 0 12 0z" fill="${color}" stroke="#fff" stroke-width="1.5"/><circle cx="12" cy="12" r="4.5" fill="#fff"/></svg>`,
+                iconSize: [30, 40], iconAnchor: [15, 40], popupAnchor: [0, -38]
+            });
+        }
+        function flagIcon() {
+            return L.divIcon({
+                className: 'flag-marker',
+                html: `<svg width="30" height="40" viewBox="0 0 24 32"><line x1="4" y1="2" x2="4" y2="32" stroke="#000" stroke-width="2"/><path d="M4 3 h16 v11 h-16 z" fill="#fff" stroke="#000" stroke-width="1"/><path d="M4 3 h4 v4 h-4 z M12 3 h4 v4 h-4 z M8 7 h4 v4 h-4 z M16 7 h4 v4 h-4 z M4 11 h4 v3 h-4 z M12 11 h4 v3 h-4 z" fill="#000"/></svg>`,
+                iconSize: [30, 40], iconAnchor: [4, 32], popupAnchor: [10, -30]
+            });
+        }
+
         // ─── Tap on map → choose Start / Finish / Tussenpunt ───
         function onMapTap(e) {
             pendingTap = { lat: e.latlng.lat, lng: e.latlng.lng };
@@ -136,9 +153,10 @@
             if (!pendingTap) return;
             const { lat, lng } = pendingTap;
             const label = `(${lat.toFixed(4)}, ${lng.toFixed(4)})`;
-            if (kind === 'start') setStart(lat, lng, label);
+            if (kind === 'start') setStart(lat, lng, label, false);
             else if (kind === 'dest') setDest(lat, lng, label);
-            else if (kind === 'via') addVia(lat, lng, label);
+            else if (kind === 'via') addVia(lat, lng, label, true);       // slim
+            else if (kind === 'achteraan') addVia(lat, lng, label, false); // achteraan
             pendingTap = null;
             maybeRoute();
         }
@@ -222,10 +240,10 @@
             resultsEl.style.display = 'none';
             searchInput.value = '';
             if (searchMode === 'start') {
-                setStart(lat, lng, label);
+                setStart(lat, lng, label, false);
                 setSearchMode('dest');
             } else if (searchMode === 'via') {
-                addVia(lat, lng, label);
+                addVia(lat, lng, label, true);   // zoeken = slim invoegen
             } else {
                 setDest(lat, lng, label);
             }
@@ -238,42 +256,63 @@
             startMarker = L.marker([lat, lng], { title: 'Start' }).addTo(map).bindPopup('Start: ' + label);
             map.setView([lat, lng], 14);
         }
+        function setStart(lat, lng, label, isGps) {
+            startPoint = { lat, lng, label };
+            if (startMarker) map.removeLayer(startMarker);
+            const color = isGps ? '#E91E63' : '#9E9E9E';   // rood = eigen locatie, grijs = gekozen
+            startMarker = L.marker([lat, lng], { icon: pinIcon(color) }).addTo(map);
+            startMarker.on('click', () => confirmDelete('start'));
+        }
         function setDest(lat, lng, label) {
             destPoint = { lat, lng, label };
             if (destMarker) map.removeLayer(destMarker);
-            destMarker = L.marker([lat, lng], { title: 'Bestemming' }).addTo(map).bindPopup('Bestemming: ' + label);
+            destMarker = L.marker([lat, lng], { icon: flagIcon() }).addTo(map);
+            destMarker.on('click', () => confirmDelete('dest'));
         }
 
-        // Add a via point, inserted at the smartest position in the route.
-        function addVia(lat, lng, label) {
+        // Add a via point. slim=true → insert into closest leg; slim=false → append.
+        function addVia(lat, lng, label, slim) {
             const via = { lat, lng, label };
             via.marker = L.circleMarker([lat, lng], {
                 radius: 9, color: '#fff', weight: 2, fillColor: '#9C27B0', fillOpacity: 0.9
             }).addTo(map);
-            via.marker.on('click', () => removeViaObj(via));
-            via.marker.bindPopup('Tussenpunt — tik nogmaals om te verwijderen');
-            // Smart insert: find which leg of the current route this point is closest to.
-            const seq = routeSequence();
-            if (seq.length < 2) {
-                viaPoints.push(via);
-            } else {
-                let bestI = viaPoints.length, bestD = Infinity;
-                // test inserting between each consecutive pair (start..vias..dest)
-                for (let i = 0; i < seq.length - 1; i++) {
-                    const d = distToSegment(via, seq[i], seq[i + 1]);
-                    if (d < bestD) { bestD = d; bestI = i; }
-                }
-                viaPoints.splice(bestI, 0, via);   // insert into the closest leg
+            via.marker.on('click', () => confirmDelete('via', via));
+
+            if (!slim) {
+                viaPoints.push(via);   // achteraan
+                return;
             }
+            // slim: insert into the closest leg of start..vias..dest
+            const seq = routeSequence();
+            if (seq.length < 2) { viaPoints.push(via); return; }
+            let bestSeg = 0, bestD = Infinity;
+            for (let i = 0; i < seq.length - 1; i++) {
+                const d = distToSegment(via, seq[i], seq[i + 1]);
+                if (d < bestD) { bestD = d; bestSeg = i; }
+            }
+            // seq = [start, via0, via1, ..., dest]; segment i sits before viaPoints index i.
+            // Clamp into the viaPoints range so it can never land after the finish.
+            let insertAt = bestSeg;                 // segment index → via index
+            if (startPoint) insertAt = bestSeg;     // start occupies seq[0]
+            insertAt = Math.max(0, Math.min(insertAt, viaPoints.length));
+            viaPoints.splice(insertAt, 0, via);
         }
 
-        function removeViaObj(via) {
-            const i = viaPoints.indexOf(via);
-            if (i !== -1) {
-                if (via.marker) map.removeLayer(via.marker);
-                viaPoints.splice(i, 1);
-                maybeRoute();
+        // Tap on an existing point → confirm before removing.
+        function confirmDelete(kind, via) {
+            let what = kind === 'start' ? 'startpunt' : kind === 'dest' ? 'finish' : 'tussenpunt';
+            if (!confirm(what.charAt(0).toUpperCase() + what.slice(1) + ' verwijderen?')) return;
+            if (kind === 'start') {
+                if (startMarker) map.removeLayer(startMarker);
+                startMarker = null; startPoint = null;
+            } else if (kind === 'dest') {
+                if (destMarker) map.removeLayer(destMarker);
+                destMarker = null; destPoint = null;
+            } else if (kind === 'via' && via) {
+                const i = viaPoints.indexOf(via);
+                if (i !== -1) { if (via.marker) map.removeLayer(via.marker); viaPoints.splice(i, 1); }
             }
+            maybeRoute();
         }
 
         // Ordered list of all points: start, vias (in order), dest
@@ -301,7 +340,7 @@
             navigator.geolocation.getCurrentPosition(
                 pos => {
                     const { latitude, longitude } = pos.coords;
-                    setStart(latitude, longitude, 'Mijn locatie');
+                    setStart(latitude, longitude, 'Mijn locatie', true);
                     setSearchMode('dest');
                     maybeRoute();
                 },
