@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Route Planner v0.4</title>
+    <title>Route Planner v0.5</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
@@ -84,10 +84,6 @@
     <button id="clearBtn" onclick="clearAll()" title="Wissen">✕</button>
 
     <div id="infoBar"></div>
-    <div id="debugWrap" style="display:none; position:absolute; bottom:0; left:0; right:0; max-height:48%; z-index:1100; background:rgba(0,0,0,0.92); border-top:2px solid #00BCD4;">
-        <button id="copyDebug" onclick="copyDebug()" style="position:sticky; top:0; width:100%; padding:10px; background:#00BCD4; color:#0a0e27; border:none; font-weight:bold; font-size:0.9em; cursor:pointer;">📋 Kopieer data</button>
-        <div id="debugBox" style="max-height:calc(48vh - 40px); overflow-y:auto; color:#0f0; font-family:monospace; font-size:11px; white-space:pre-wrap; padding:12px;"></div>
-    </div>
 
     <script>
         // ─── Map setup (same tiles as the tracker) ───
@@ -212,57 +208,60 @@
                 const res = await fetch(url);
                 const data = await res.json();
                 drawRoute(data);
-                inspectTurns(data);   // STEP 1: show what BRouter returns
+                const turns = processTurns(data);   // echte afslagen op de kaart
+                if (turns.length) {
+                    showInfo(document.getElementById('infoBar').innerHTML +
+                        ` &nbsp; <b>${turns.length}</b> afslagen`);
+                }
             } catch (e) {
                 console.error('route failed', e);
                 showInfo('Route berekenen mislukt — probeer opnieuw.');
             }
         }
 
-        // STEP 1 (diagnostic): dump the structure of any turn/voice-hint data
-        // so we can see exactly how BRouter delivers it, then build GPX export.
-        function inspectTurns(geojson) {
-            let report = [];
-            try {
-                const feat = geojson.features && geojson.features[0];
-                const props = feat ? feat.properties : {};
-                // List all property keys (so we spot where the hints live)
-                report.push('PROPS keys: ' + Object.keys(props).join(', '));
-                // BRouter usually puts voice hints under "voicehints"
-                if (props.voicehints) {
-                    report.push('voicehints count: ' + props.voicehints.length);
-                    report.push('eerste 3: ' + JSON.stringify(props.voicehints.slice(0, 3)));
-                } else {
-                    report.push('GEEN props.voicehints gevonden');
-                }
-                // Some versions use a "messages" table
-                if (props.messages) {
-                    report.push('messages[0]: ' + JSON.stringify(props.messages[0]));
-                    report.push('messages[1]: ' + JSON.stringify(props.messages[1]));
-                }
-            } catch (e) {
-                report.push('inspect-fout: ' + e.message);
-            }
-            // Show on screen in a scrollable box
-            const box = document.getElementById('debugBox');
-            box.textContent = report.join('\n\n');
-            document.getElementById('debugWrap').style.display = 'block';
-        }
+        // BRouter voice-hint command codes → leesbare NL richting
+        const TURN_NAMES = {
+            1: 'rechtdoor', 2: 'links', 3: 'flauw links', 4: 'scherp links',
+            5: 'rechts', 6: 'flauw rechts', 7: 'scherp rechts',
+            8: 'links aanhouden', 9: 'rechts aanhouden',
+            10: 'keren (links)', 11: 'keren (rechts)', 12: 'van route',
+            13: 'rotonde', 14: 'rotonde links', 15: '180° keren',
+            16: 'rechte lijn', 17: 'afrit links', 18: 'afrit rechts'
+        };
+        let turnMarkers = [];
 
-        function copyDebug() {
-            const txt = document.getElementById('debugBox').textContent;
-            const btn = document.getElementById('copyDebug');
-            navigator.clipboard.writeText(txt).then(() => {
-                btn.textContent = '✓ Gekopieerd!';
-                setTimeout(() => btn.textContent = '📋 Kopieer data', 1500);
-            }).catch(() => {
-                // fallback: select the text so the user can copy manually
-                const range = document.createRange();
-                range.selectNodeContents(document.getElementById('debugBox'));
-                const sel = window.getSelection();
-                sel.removeAllRanges(); sel.addRange(range);
-                btn.textContent = 'Selecteer + kopieer handmatig';
-            });
+        // Turn the BRouter voicehints into map markers on the real turn points.
+        // voicehint = [trackPointIndex, command, ?, distanceToNext, angle]
+        function processTurns(geojson) {
+            // clear old
+            turnMarkers.forEach(m => map.removeLayer(m));
+            turnMarkers = [];
+            try {
+                const feat = geojson.features[0];
+                const coords = feat.geometry.coordinates;   // [ [lng,lat,ele], ... ]
+                const hints = feat.properties.voicehints || [];
+                let list = [];
+                hints.forEach(h => {
+                    const idx = h[0];          // index into coords
+                    const cmd = h[1];          // command code
+                    if (cmd === 1) return;     // skip plain "rechtdoor"
+                    const pt = coords[idx];
+                    if (!pt) return;
+                    const lat = pt[1], lng = pt[0];
+                    const name = TURN_NAMES[cmd] || ('cmd ' + cmd);
+                    const isLeft = [2,3,4,8,10,14,17].includes(cmd);
+                    const color = isLeft ? '#2196F3' : '#FF9800';
+                    const m = L.circleMarker([lat, lng], {
+                        radius: 7, color: '#fff', weight: 2, fillColor: color, fillOpacity: 0.9
+                    }).addTo(map).bindPopup(name);
+                    turnMarkers.push(m);
+                    list.push(name);
+                });
+                return list;
+            } catch (e) {
+                console.error('processTurns', e);
+                return [];
+            }
         }
 
         function drawRoute(geojson) {
@@ -296,8 +295,8 @@
             [startMarker, destMarker, routeLine].forEach(l => { if (l) map.removeLayer(l); });
             startMarker = destMarker = routeLine = null;
             document.getElementById('infoBar').style.display = 'none';
-            const db = document.getElementById('debugWrap');
-            if (db) db.style.display = 'none';
+            turnMarkers.forEach(m => map.removeLayer(m));
+            turnMarkers = [];
             searchInput.value = '';
             resultsEl.style.display = 'none';
             setSearchMode('start');
