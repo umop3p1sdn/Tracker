@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Route Planner v1.0</title>
+    <title>Route Planner v1.1</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
@@ -90,12 +90,11 @@
         <div id="profileRow">
             <button class="prof-btn active" data-profile="car-fast" onclick="setProfile(this)">Snel</button>
             <button class="prof-btn" data-profile="rustig" onclick="setProfile(this)">Rustig</button>
-            <button class="prof-btn" data-profile="bochtig" onclick="setProfile(this)">Bochtig</button>
         </div>
         <div id="detourRow" style="display:flex; gap:6px; margin-top:6px; align-items:center;">
-            <input id="targetKm" type="number" inputmode="numeric" placeholder="km" style="width:64px; padding:8px; border-radius:8px; border:2px solid #555; background:#e8e8ea; color:#1a1a2e; font-size:0.9em; text-align:center;">
+            <input id="targetKm" type="number" inputmode="numeric" placeholder="km" style="width:56px; padding:8px; border-radius:8px; border:2px solid #555; background:#e8e8ea; color:#1a1a2e; font-size:0.9em; text-align:center;">
+            <input id="targetPts" type="number" inputmode="numeric" placeholder="ptn" style="width:48px; padding:8px; border-radius:8px; border:2px solid #555; background:#e8e8ea; color:#1a1a2e; font-size:0.9em; text-align:center;">
             <button onclick="generateDetour()" style="flex:1; padding:8px; border-radius:8px; border:2px solid #555; background:#e8e8ea; color:#1a1a2e; font-weight:bold; font-size:0.8em; cursor:pointer;">Genereer omweg</button>
-            <button onclick="otherDetour()" style="flex:0 0 auto; padding:8px 12px; border-radius:8px; border:2px solid #555; background:#e8e8ea; color:#1a1a2e; font-weight:bold; font-size:0.9em; cursor:pointer;">↔</button>
         </div>
         <div id="results"></div>
     </div>
@@ -365,73 +364,92 @@
         function sideMidpoint(side, offsetKm) {
             const a = startPoint, b = destPoint;
             const midLat = (a.lat + b.lat) / 2, midLng = (a.lng + b.lng) / 2;
-            // richting start→finish
             const dLat = b.lat - a.lat, dLng = b.lng - a.lng;
             const len = Math.sqrt(dLat*dLat + dLng*dLng) || 1e-9;
-            // loodrecht (genormaliseerd), dan opzij in graden (~111 km per graad lat)
             const perpLat = -dLng / len, perpLng = dLat / len;
             const offDeg = offsetKm / 111;
-            // lng schaalt met cos(lat)
             const cosLat = Math.cos(midLat * Math.PI / 180) || 1;
             return {
-                lat: midLat + perpLat * offDeg,
-                lng: midLng + perpLng * offDeg / cosLat,
+                lat: midLat + side * perpLat * offDeg,
+                lng: midLng + side * perpLng * offDeg / cosLat,
                 label: 'omweg'
             };
         }
+
+        // Plaats N punten verdeeld langs start→finish, afwisselend opzij (slinger).
+        // startSide bepaalt of de eerste omhoog (+1) of omlaag (-1) gaat.
+        function slalomPoints(n, offsetKm, startSide) {
+            const a = startPoint, b = destPoint;
+            const dLat = b.lat - a.lat, dLng = b.lng - a.lng;
+            const len = Math.sqrt(dLat*dLat + dLng*dLng) || 1e-9;
+            const perpLat = -dLng / len, perpLng = dLat / len;
+            const offDeg = offsetKm / 111;
+            const pts = [];
+            for (let i = 1; i <= n; i++) {
+                const t = i / (n + 1);                 // verdeel op 1/(n+1), 2/(n+1), ...
+                const baseLat = a.lat + dLat * t, baseLng = a.lng + dLng * t;
+                const side = (startSide > 0)
+                    ? (i % 2 === 1 ? 1 : -1)           // +,-,+,-...
+                    : (i % 2 === 1 ? -1 : 1);          // -,+,-,+...
+                const cosLat = Math.cos(baseLat * Math.PI / 180) || 1;
+                pts.push({
+                    lat: baseLat + side * perpLat * offDeg,
+                    lng: baseLng + side * perpLng * offDeg / cosLat,
+                    label: 'omweg'
+                });
+            }
+            return pts;
+        }
+
+        let detourStartSide = 1;   // +1 = eerste punt omhoog; wisselt bij elke generatie
 
         async function generateDetour() {
             if (!startPoint || !destPoint) { alert('Zet eerst start en finish.'); return; }
             const target = parseFloat(document.getElementById('targetKm').value);
             if (!target || target < 1) { alert('Vul een gewenste afstand in (km).'); return; }
+            let nPts = parseInt(document.getElementById('targetPts').value);
+            if (!nPts || nPts < 1) nPts = 1;           // leeg = 1 punt
 
             showInfo('Omweg zoeken...');
             try {
-                // 1. directe afstand
                 const base = await measureRoute([startPoint, destPoint]);
                 if (target <= base.km + 5) {
                     showInfo(`Directe route is al ${base.km.toFixed(1)} km — kies een grotere afstand.`);
                     return;
                 }
-                const extra = target - base.km;          // hoeveel km erbij moet
-                let offset = extra / 2;                   // eerste schatting zijwaarts
-                const side = detourSide;                  // +1 of -1 (knop "andere omweg")
+                const extra = target - base.km;
+                // begin-schatting: zijwaartse afstand. Meer punten → elk minder ver opzij.
+                let offset = (extra / 2) / Math.sqrt(nPts);
+                const startSide = detourStartSide;
 
                 let best = null, bestDiff = Infinity;
-                // 2-3. itereren: punt opzij, meten, bijsturen
                 for (let i = 0; i < 6; i++) {
-                    const via = sideMidpoint(side, offset);
+                    const pts = slalomPoints(nPts, offset, startSide);
                     let r;
-                    try { r = await measureRoute([startPoint, via, destPoint]); }
+                    try { r = await measureRoute([startPoint, ...pts, destPoint]); }
                     catch (e) { break; }
                     const diff = Math.abs(r.km - target);
-                    if (diff < bestDiff) { bestDiff = diff; best = { via, km: r.km }; }
-                    if (diff <= 5) break;                 // binnen marge → klaar
-                    // bijsturen: te kort → verder opzij, te lang → dichterbij
-                    if (r.km < target) offset *= (extra / Math.max(r.km - base.km, 1));
+                    if (diff < bestDiff) { bestDiff = diff; best = { pts, km: r.km }; }
+                    if (diff <= 5) break;
+                    if (r.km < target) offset *= Math.max(1.1, (extra / Math.max(r.km - base.km, 1)));
                     else offset *= 0.7;
-                    offset = Math.max(0.5, Math.min(offset, extra)); // grenzen
+                    offset = Math.max(0.3, Math.min(offset, extra));
                 }
 
                 if (!best) { showInfo('Omweg zoeken mislukt — probeer opnieuw.'); return; }
 
-                // plaats het gevonden omweg-punt als tussenpunt en teken de route
+                // plaats de gevonden punten als tussenpunten en teken de route
                 viaPoints.forEach(v => { if (v.marker) map.removeLayer(v.marker); });
                 viaPoints = [];
-                addVia(best.via.lat, best.via.lng, 'omweg', false);
+                best.pts.forEach(p => addVia(p.lat, p.lng, 'omweg', false));
                 await maybeRoute();
-                showInfo(document.getElementById('infoBar').innerHTML +
-                    ` &nbsp;(doel ${target} km)`);
+                showInfo(document.getElementById('infoBar').innerHTML + ` &nbsp;(doel ${target} km)`);
+
+                detourStartSide = -detourStartSide;   // volgende keer slinger andersom
             } catch (e) {
                 console.error('detour failed', e);
                 showInfo('Omweg zoeken mislukt — probeer opnieuw.');
             }
-        }
-
-        let detourSide = 1;
-        function otherDetour() {
-            detourSide = -detourSide;   // andere kant op
-            generateDetour();
         }
 
         function useMyLocation() {
