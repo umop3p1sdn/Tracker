@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Route Planner v0.5</title>
+    <title>Route Planner v0.6</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
@@ -49,6 +49,14 @@
         }
         .mode-btn.active { background: #00BCD4; color: #0a0e27; }
 
+        #profileRow { display: flex; gap: 6px; margin-top: 6px; }
+        .prof-btn {
+            flex: 1; padding: 8px; border-radius: 8px; border: 2px solid #9C27B0;
+            background: transparent; color: #ce93d8; font-weight: bold; font-size: 0.8em;
+            cursor: pointer;
+        }
+        .prof-btn.active { background: #9C27B0; color: #fff; }
+
         /* Info bar bottom */
         #infoBar {
             position: absolute; bottom: 0; left: 0; right: 0; z-index: 1000;
@@ -78,6 +86,11 @@
             <button class="mode-btn" id="modeDest" onclick="setSearchMode('dest')">Bestemming</button>
             <button class="mode-btn" id="useGps" onclick="useMyLocation()" style="flex:0 0 auto; border-color:#4CAF50; color:#4CAF50;">📍</button>
         </div>
+        <div id="profileRow">
+            <button class="prof-btn active" data-profile="car-fast" onclick="setProfile(this)">Snelste</button>
+            <button class="prof-btn" data-profile="car-eco" onclick="setProfile(this)">Rustig</button>
+            <button class="prof-btn" data-profile="trekking" onclick="setProfile(this)">Bochtig</button>
+        </div>
         <div id="results"></div>
     </div>
 
@@ -97,6 +110,15 @@
         let startMarker = null, destMarker = null, routeLine = null;
         let searchMode = 'start';   // which point the search fills
         let searchTimer = null;
+        let selectedProfile = 'car-fast';   // route style
+
+        function setProfile(btn) {
+            document.querySelectorAll('.prof-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            selectedProfile = btn.dataset.profile;
+            // recalculate if a route already exists
+            if (startPoint && destPoint) maybeRoute();
+        }
 
         function setSearchMode(mode) {
             searchMode = mode;
@@ -204,7 +226,7 @@
                 // BRouter wants lon,lat pairs. profile: car-fast for now.
                 // turnInstructionMode=2 → voice hints in the GeoJSON output.
                 const lonlats = `${startPoint.lng},${startPoint.lat}|${destPoint.lng},${destPoint.lat}`;
-                const url = `https://brouter.de/brouter?lonlats=${lonlats}&profile=car-fast&alternativeidx=0&format=geojson&turnInstructionMode=2`;
+                const url = `https://brouter.de/brouter?lonlats=${lonlats}&profile=${selectedProfile}&alternativeidx=0&format=geojson&turnInstructionMode=2`;
                 const res = await fetch(url);
                 const data = await res.json();
                 drawRoute(data);
