@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Route Planner v2.0-debug</title>
+    <title>Route Planner v2.1-debug</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
@@ -75,7 +75,7 @@
 </head>
 <body>
     <div id="map"></div>
-    <div id="versionLabel" style="position:absolute; bottom:4px; right:6px; z-index:1000; font-family:sans-serif; font-size:10px; color:rgba(255,255,255,0.7); background:rgba(0,0,0,0.4); padding:2px 6px; border-radius:6px; pointer-events:none;">v2.0-debug</div>
+    <div id="versionLabel" style="position:absolute; bottom:4px; right:6px; z-index:1000; font-family:sans-serif; font-size:10px; color:rgba(255,255,255,0.7); background:rgba(0,0,0,0.4); padding:2px 6px; border-radius:6px; pointer-events:none;">v2.1-debug</div>
 
     <div id="searchWrap">
         <div id="searchBar">
@@ -416,9 +416,9 @@
                     const d = distMeters(v.lat, v.lng, coords[i][1], coords[i][0]);
                     if (d < bestD) { bestD = d; bestI = i; }
                 }
-                // 2. loop 1km verder langs de route vanaf bestI
+                // 2. loop 3km verder langs de route vanaf bestI
                 let walked = 0, i = bestI;
-                while (i < coords.length - 1 && walked < 1000) {
+                while (i < coords.length - 1 && walked < 3000) {
                     walked += distMeters(coords[i][1], coords[i][0], coords[i+1][1], coords[i+1][0]);
                     i++;
                 }
