@@ -501,7 +501,7 @@
             <!-- MODE SELECT -->
             <div id="modeSelect" class="mode-select">
                 <p class="subtitle">Start tracking</p>
-                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v6.77 © Umop3p1sdn</div>
+                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v6.79 © Umop3p1sdn</div>
                 
                 <!-- Hidden file input for GPX loading -->
                 <input type="file" id="gpxInputLoad" accept=".gpx" style="display:none;" onchange="loadGPXFile(event)">
@@ -795,14 +795,90 @@
             <h3 style="color: #00BCD4; margin-top: 25px;">Kaart vooraf offline zetten</h3>
             <p>Pan over de regio waar je straks wilt rijden, op het zoomniveau waarop je navigeert (standaard 15), en je kaart is automatisch offline beschikbaar.</p>
             
+            <h2 style="color: #00BCD4; margin-top: 40px; border-top: 2px solid #00BCD4; padding-top: 25px;">Route Planner — Handleiding</h2>
+            <p>Met de Route Planner bouw je vooraf je eigen motorrit op de kaart: zoeken, een route laten berekenen, omwegen toevoegen, gebieden vermijden en plekken onderweg (POI) opzoeken. Daarna rijd je 'm.</p>
+
+            <h3 style="color: #00BCD4; margin-top: 25px;">De drie menu-knoppen</h3>
+            <p>Bij het openen zie je drie knoppen. Je klapt zelf uit wat je nodig hebt — zo blijft de kaart vrij.</p>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+                <li><strong>Route</strong> — zoekbalk + Start/Tussen/Finish/📍 + de profielen. <em>Route en Extra mogen samen open staan.</em></li>
+                <li><strong>Extra</strong> — omweg-generator (km + punten) + Lock.</li>
+                <li><strong>POI</strong> — opent de focus-modus: alle andere menu's verdwijnen voor maximaal zicht op de kaart. Knoppen onderin, lijst linksboven. Sluiten met de rode ✕.</li>
+            </ul>
+
+            <h3 style="color: #00BCD4; margin-top: 25px;">Een route maken</h3>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+                <li><strong>Zoeken:</strong> typ een adres of plaats. Kies eerst of het je <strong>Start</strong>, een <strong>Tussen</strong>punt of de <strong>Finish</strong> is.</li>
+                <li><strong>📍-knop:</strong> gebruikt je huidige GPS-locatie als startpunt.</li>
+                <li><strong>Op de kaart tikken:</strong> opent een menu — kies Start, Tussen (slim ingevoegd), Achteraan, Finish of Vermijden.</li>
+                <li><strong>Punt verwijderen/verzetten:</strong> tik op een punt op de kaart.</li>
+            </ul>
+
+            <h3 style="color: #00BCD4; margin-top: 25px;">Profielen</h3>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+                <li><strong>Snel</strong> — de snelste route (kortste tijd).</li>
+                <li><strong>Rustig</strong> — vermijdt de snelweg, lekker binnendoor.</li>
+                <li><strong>Neutraal</strong> — geen voorkeur, de kortste; jouw tussenpunten bepalen de route. Handig om ná een Rustig-route via de snelweg naar huis te bouwen.</li>
+            </ul>
+
+            <h3 style="color: #00BCD4; margin-top: 25px;">Omweg-generator</h3>
+            <p>Vul een gewenste <strong>afstand</strong> (km) en het aantal <strong>punten</strong> in en druk op <strong>Genereer omweg</strong>. De planner maakt een slingerroute die rond je doelafstand uitkomt. De omweg-punten (oranje) liggen op de route; je eigen punten (paars) blijven staan. Nog eens drukken = een nieuwe variant.</p>
+
+            <h3 style="color: #00BCD4; margin-top: 25px;">Lock — route vastleggen</h3>
+            <p>Met <strong>Lock</strong> zet je groene punten op alle echte bochten van je route. Zo ligt 'ie vast en verandert 'ie niet meer als je daarna van profiel wisselt of verder bouwt. Stapelt: je kunt 'm meerdere keren als 'save' gebruiken.</p>
+
+            <h3 style="color: #00BCD4; margin-top: 25px;">Vermijden</h3>
+            <p>Tik op de kaart → <strong>Vermijden</strong> en vul een straal (km) in. Er verschijnt een rode pin met cirkel: de route probeert daar omheen. Het is een 'zachte' zone — kan het echt niet anders, dan mag de route er toch doorheen. Tik op de pin om de straal aan te passen of de zone te verwijderen.</p>
+
+            <h3 style="color: #00BCD4; margin-top: 25px;">POI — onderweg iets vinden</h3>
+            <p>Open <strong>POI</strong> voor de focus-modus. Kies <strong>Benzine</strong>, <strong>Eten</strong> of <strong>Koffie</strong>, of typ een steekwoord (bv hotel, bakker, supermarkt, uitzicht, pin, wc) of een naam (bv Shell).</p>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+                <li>Op de kaart verschijnen iconen per soort. Je pant zelf over de kaart om in de buurt te kijken.</li>
+                <li>Linksboven een lijstje van plekken vlak langs je route: <strong>links de afstand vanaf jou</strong> (oranje, dichtstbij eerst), daarnaast de <strong>afstand tot de route</strong> (cyaan) en de naam. Klik = centreer op de kaart.</li>
+                <li>Tik op een icoon → naam, details en openingstijden + <strong>Slim toevoegen aan route</strong>. De plek wordt dan een tussenpunt; de overige iconen verdwijnen.</li>
+            </ul>
+
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                Live Tracker App v6.77 © Umop3p1sdn
+                Live Tracker App v6.79 © Umop3p1sdn
             </p>
         </div>
     </div>
 
+    <!-- ════════ ROUTE PLANNER MODULE (gescheiden van tracker) ════════ -->
+    <!-- Knop links op de kaart om de planner te openen -->
+    <button id="plannerToggleBtn" onclick="plannerOpen()" style="display:none; position:absolute; top:90px; left:10px; z-index:1200; width:56px; height:56px; border-radius:10px; background:rgba(10,14,39,0.85); border:2px solid #00BCD4; color:#fff; font-weight:bold; font-size:0.7em; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.5); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px);">Plan</button>
+
+    <!-- Planner-paneel (leeg voor nu — schil). Vult zich later met planner-functies. -->
+    <div id="plannerPanel" style="display:none; position:absolute; top:10px; left:10px; z-index:1250; width:300px; max-width:80%; background:rgba(10,14,39,0.92); border:2px solid #00BCD4; border-radius:12px; box-shadow:0 4px 16px rgba(0,0,0,0.6); padding:12px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <span style="color:#00BCD4; font-weight:bold;">Route Planner</span>
+            <span onclick="plannerClose()" style="color:#FF5252; font-weight:bold; cursor:pointer; font-size:1.4em; line-height:1; padding:0 6px;">✕</span>
+        </div>
+        <div id="plannerBody" style="color:#bbb; font-size:0.85em;">
+            (planner-functies komen hier — schil werkt)
+        </div>
+    </div>
+    <!-- ════════ EINDE ROUTE PLANNER MODULE ════════ -->
+
     <script>
-        const APP_VERSION = "6.77";
+        // ════════ ROUTE PLANNER MODULE — eigen functies, raakt tracker-logica niet ════════
+        function plannerOpen() {
+            document.getElementById('plannerPanel').style.display = 'block';
+            var b = document.getElementById('plannerToggleBtn'); if (b) b.style.display = 'none';
+        }
+        function plannerClose() {
+            document.getElementById('plannerPanel').style.display = 'none';
+            var b = document.getElementById('plannerToggleBtn'); if (b) b.style.display = 'block';
+        }
+        // De Plan-knop alleen tonen zodra de kaart/tracking actief is (master of follower).
+        function plannerShowToggle() {
+            var b = document.getElementById('plannerToggleBtn'); if (b) b.style.display = 'block';
+        }
+        // ════════ EINDE PLANNER MODULE ════════
+    </script>
+
+    <script>
+        const APP_VERSION = "6.79";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -2554,6 +2630,7 @@
 
                 mapInstance = L.map(mapDiv).setView([52.04, 5.67], 13);
                 mapInstance.doubleClickZoom.disable();
+                if (typeof plannerShowToggle === 'function') plannerShowToggle();   // PLANNER MODULE: toon Plan-knop
                 
                 // Prevent double-click zoom on map
                 mapDiv.addEventListener('dblclick', (e) => {
