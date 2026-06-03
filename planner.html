@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Route Planner v1.5</title>
+    <title>Route Planner v1.7</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
@@ -75,7 +75,7 @@
 </head>
 <body>
     <div id="map"></div>
-    <div id="versionLabel" style="position:absolute; bottom:4px; right:6px; z-index:1000; font-family:sans-serif; font-size:10px; color:rgba(255,255,255,0.7); background:rgba(0,0,0,0.4); padding:2px 6px; border-radius:6px; pointer-events:none;">v1.5</div>
+    <div id="versionLabel" style="position:absolute; bottom:4px; right:6px; z-index:1000; font-family:sans-serif; font-size:10px; color:rgba(255,255,255,0.7); background:rgba(0,0,0,0.4); padding:2px 6px; border-radius:6px; pointer-events:none;">v1.7</div>
 
     <div id="searchWrap">
         <div id="searchBar">
@@ -140,6 +140,7 @@
             return 'profile=car-fast';   // Snel = via snelweg
         }
         let pendingTap = null;      // {lat,lng} while the Start/Finish/Via menu is open
+        let hasFitOnce = false;     // alleen 1e route inzoomen, daarna zoom/positie behouden
 
         // ─── Marker icons ───
         function pinIcon(color) {
@@ -415,6 +416,39 @@
                 });
             }
 
+            // (c) GEOMETRISCH: twee route-stukken die dicht naast elkaar in TEGENGESTELDE
+            // richting lopen = een heen-en-terug uitstapje (vangt T-doorrijden, Y-splitsing,
+            // lange doodlopers). Het beginpunt van de lus ligt op de doorgaande weg.
+            const N = coords.length;
+            const STEP = N > 1500 ? 3 : 1;   // bij lange routes grover scannen (snelheid)
+            for (let i = 2; i < N - 2; i += STEP) {
+                const p = coords[i];
+                // richting van het 'heen'-stuk bij i
+                const hLat = coords[i + 1][1] - coords[i - 1][1];
+                const hLng = coords[i + 1][0] - coords[i - 1][0];
+                const hLen = Math.sqrt(hLat*hLat + hLng*hLng) || 1e-9;
+                // zoek verderop een punt j dat dichtbij p ligt maar tegengesteld loopt
+                for (let j = i + 6; j < N - 1; j += STEP) {
+                    const q = coords[j];
+                    const d = distMeters(p[1], p[0], q[1], q[0]);
+                    if (d > 30) continue;               // moet dicht naast elkaar liggen
+                    const tLat = coords[j + 1][1] - coords[j - 1][1];
+                    const tLng = coords[j + 1][0] - coords[j - 1][0];
+                    const tLen = Math.sqrt(tLat*tLat + tLng*tLng) || 1e-9;
+                    // genormaliseerd inproduct: ~-1 = tegengesteld
+                    const dot = (hLat*tLat + hLng*tLng) / (hLen * tLen);
+                    if (dot < -0.7) {
+                        // begin van de lus ≈ punt i; doorgaande richting = vóór i
+                        const before = coords[Math.max(0, i - 2)];
+                        turnSpots.push({
+                            lat: p[1], lng: p[0],
+                            dirLat: p[1] - before[1], dirLng: p[0] - before[0]
+                        });
+                        break;   // dit heen-stuk afgehandeld
+                    }
+                }
+            }
+
             if (!turnSpots.length) return vias;
 
             // 2. Voor elke via dichtbij een T-splitsing: zet 'm 10m VOORBIJ op de doorgaande weg.
@@ -631,7 +665,11 @@
             routeLine = L.geoJSON(geojson, {
                 style: { color: '#00BCD4', weight: 6, opacity: 0.9 }
             }).addTo(map);
-            map.fitBounds(routeLine.getBounds(), { padding: [50, 50] });
+            // Alleen de allereerste keer inzoomen op de route; daarna je eigen zoom/positie houden.
+            if (!hasFitOnce) {
+                map.fitBounds(routeLine.getBounds(), { padding: [50, 50] });
+                hasFitOnce = true;
+            }
 
             // Pull distance & time from BRouter properties if present
             let info = '';
@@ -658,6 +696,7 @@
             viaPoints = [];
             [startMarker, destMarker, routeLine].forEach(l => { if (l) map.removeLayer(l); });
             startMarker = destMarker = routeLine = null;
+            hasFitOnce = false;   // nieuwe route mag weer 1x inzoomen
             document.getElementById('infoBar').style.display = 'none';
             turnMarkers.forEach(m => map.removeLayer(m));
             turnMarkers = [];
