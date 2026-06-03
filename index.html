@@ -593,7 +593,7 @@
             <!-- MODE SELECT -->
             <div id="modeSelect" class="mode-select">
                 <p class="subtitle">Start tracking</p>
-                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v6.81 © Umop3p1sdn</div>
+                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v6.82 © Umop3p1sdn</div>
                 
                 <!-- Hidden file input for GPX loading -->
                 <input type="file" id="gpxInputLoad" accept=".gpx" style="display:none;" onchange="loadGPXFile(event)">
@@ -931,7 +931,7 @@
             </ul>
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                Live Tracker App v6.81 © Umop3p1sdn
+                Live Tracker App v6.82 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -980,6 +980,7 @@
                     <button onclick="lockRoute()" style="flex:1; padding:8px; border-radius:8px; border:2px solid #4CAF50; background:#e8e8ea; color:#1a1a2e; font-weight:bold; font-size:0.8em; cursor:pointer;">Lock</button>
                 </div>
             </div>
+            <button onclick="plannerGo()" style="width:100%; margin-top:8px; padding:14px; border-radius:10px; border:2px solid #4CAF50; background:#4CAF50; color:#fff; font-weight:bold; font-size:1.1em; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.4);">GO — Rijden ▶</button>
         </div>
     </div>
 
@@ -1033,6 +1034,45 @@
         function plannerShowToggle() {
             var b = document.getElementById('plannerToggleBtn'); if (b) b.style.display = 'block';
         }
+
+        // ─── GO: van plannen naar RIJDEN ───
+        // Geeft de geplande route + ECHTE afslagen (voicehints) door aan de tracker-navigatie.
+        function plannerGo() {
+            if (!lastRouteGeo) { alert('Maak eerst een route.'); return; }
+            try {
+                const feat = lastRouteGeo.features[0];
+                const coords = feat.geometry.coordinates;           // [ [lng,lat,ele], ... ]
+                const hints = feat.properties.voicehints || [];
+                // 1. route naar tracker-formaat [lat,lng]
+                const route = coords.map(c => [c[1], c[0]]);
+                // 2. ECHTE afslagen → tracker-formaat {lat,lng,dir,angle,index}
+                const LEFT = [2,3,4,8,10,14,17];                    // zelfde als planner processTurns
+                const turns = [];
+                hints.forEach(h => {
+                    const idx = h[0], cmd = h[1];
+                    if (cmd === 1) return;                          // rechtdoor overslaan
+                    const pt = coords[idx];
+                    if (!pt) return;
+                    turns.push({
+                        lat: pt[1], lng: pt[0],
+                        dir: LEFT.includes(cmd) ? 'L' : 'R',
+                        angle: 90,                                  // echte afslag → behandel als duidelijke bocht
+                        index: idx
+                    });
+                });
+                // 3. in de tracker-navigatie zetten (i.p.v. detectTurns-schatting)
+                activeRoute = route;
+                detectedTurns = turns;
+                if (typeof drawTurnDots === 'function') drawTurnDots();
+                console.log(`🏍️ GO: route met ${turns.length} echte afslagen geladen`);
+                // 4. planner sluiten → rij-modus, kaart vrij
+                plannerClose();
+                if (typeof showBufferToast === 'function') showBufferToast('Route geladen — GO!', '#4CAF50', 2500);
+            } catch (e) {
+                console.error('GO failed', e);
+                alert('Route laden mislukt.');
+            }
+        }
         // Tik-op-kaart aan/uit: alleen actief als de planner open is, zodat de tracker-kaart
         // tijdens het rijden niet gekaapt wordt.
         function plannerSetMapClick(on) {
@@ -1070,6 +1110,7 @@
         let pendingTap = null;      // {lat,lng} while the Start/Finish/Via menu is open
         let hasFitOnce = false;     // alleen 1e route inzoomen, daarna zoom/positie behouden
         let lastRouteCoords = null; // laatste route-coördinaten (voor 'snappen' van eigen via's)
+        let lastRouteGeo = null;    // laatste hele route-geojson (coords + voicehints) voor GO
         let lastTurnSpots = [];     // DIAGNOSE: laatst gevonden keerplekken
         let diagMarkers = [];       // DIAGNOSE: rode stipjes op de kaart
 
@@ -1673,6 +1714,7 @@
             }).addTo(map);
             // bewaar de route-coördinaten zodat eigen via's hierop kunnen 'snappen'
             try { lastRouteCoords = geojson.features[0].geometry.coordinates; } catch (e) {}
+            try { lastRouteGeo = geojson; } catch (e) {}   // hele geojson (coords + voicehints) voor GO
             // Alleen de allereerste keer inzoomen op de route; daarna je eigen zoom/positie houden.
             if (!hasFitOnce) {
                 map.fitBounds(routeLine.getBounds(), { padding: [50, 50] });
@@ -1897,7 +1939,7 @@
     </script>
 
     <script>
-        const APP_VERSION = "6.81";
+        const APP_VERSION = "6.82";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
