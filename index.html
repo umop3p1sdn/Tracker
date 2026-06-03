@@ -501,7 +501,7 @@
             <!-- MODE SELECT -->
             <div id="modeSelect" class="mode-select">
                 <p class="subtitle">Start tracking</p>
-                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v6.79 © Umop3p1sdn</div>
+                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v6.80 © Umop3p1sdn</div>
                 
                 <!-- Hidden file input for GPX loading -->
                 <input type="file" id="gpxInputLoad" accept=".gpx" style="display:none;" onchange="loadGPXFile(event)">
@@ -839,7 +839,7 @@
             </ul>
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                Live Tracker App v6.79 © Umop3p1sdn
+                Live Tracker App v6.80 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -861,24 +861,887 @@
     <!-- ════════ EINDE ROUTE PLANNER MODULE ════════ -->
 
     <script>
-        // ════════ ROUTE PLANNER MODULE — eigen functies, raakt tracker-logica niet ════════
+        // ════════ ROUTE PLANNER MODULE — eigen config & functies, deelt alleen mapInstance ════════
         function plannerOpen() {
+            map = mapInstance;                         // koppel de planner aan de tracker-kaart
+            plannerWireUp();                           // koppel zoekveld (1x, als HTML aanwezig)
+            plannerSetMapClick(true);                  // tik-op-kaart → planner-tikmenu AAN
             document.getElementById('plannerPanel').style.display = 'block';
             var b = document.getElementById('plannerToggleBtn'); if (b) b.style.display = 'none';
         }
         function plannerClose() {
+            plannerSetMapClick(false);                 // tik-handler weer UIT (tracker-kaart vrij)
             document.getElementById('plannerPanel').style.display = 'none';
             var b = document.getElementById('plannerToggleBtn'); if (b) b.style.display = 'block';
         }
-        // De Plan-knop alleen tonen zodra de kaart/tracking actief is (master of follower).
         function plannerShowToggle() {
             var b = document.getElementById('plannerToggleBtn'); if (b) b.style.display = 'block';
         }
+        // Tik-op-kaart aan/uit: alleen actief als de planner open is, zodat de tracker-kaart
+        // tijdens het rijden niet gekaapt wordt.
+        function plannerSetMapClick(on) {
+            if (!map) return;
+            map.off('click', onMapTap);
+            if (on) map.on('click', onMapTap);
+        }
+
+        // ─── PLANNER MODULE: gebruikt de TRACKER-kaart (mapInstance) via alias ───
+        // map-clicks worden aan/uit gezet bij openen/sluiten van de planner (zie plannerSetMapClick).
+        let map = null;  // wordt gezet op mapInstance bij plannerOpen()
+
+        let startPoint = null;      // {lat, lng, label}
+        let destPoint = null;       // {lat, lng, label}
+        let viaPoints = [];         // [{lat,lng,label,marker}] tussenpunten, in routevolgorde
+        let nogoZones = [];         // [{lat,lng,radius,marker,circle}] te vermijden gebieden
+        let viaMarkers = [];
+        let startMarker = null, destMarker = null, routeLine = null;
+        let searchMode = 'start';   // which point the search fills: start | dest | via
+        let searchTimer = null;
+        let selectedProfile = 'car-fast';   // UI-keuze: car-fast | rustig | bochtig
+
+        // Vertaal de UI-keuze naar de echte BRouter-parameters.
+        function brouterParams() {
+            if (selectedProfile === 'rustig') {
+                // car-vario met snelweg vermijden (echte autowegen, geen fietspad)
+                return 'profile=car-vario&profile:avoid_motorways=1';
+            }
+            if (selectedProfile === 'neutraal') {
+                // car-vario zonder voorkeur: noch snelweg zoeken noch mijden → via's leiden
+                return 'profile=car-vario';
+            }
+            return 'profile=car-fast';   // Snel = snelste tijdpad
+        }
+        let pendingTap = null;      // {lat,lng} while the Start/Finish/Via menu is open
+        let hasFitOnce = false;     // alleen 1e route inzoomen, daarna zoom/positie behouden
+        let lastRouteCoords = null; // laatste route-coördinaten (voor 'snappen' van eigen via's)
+        let lastTurnSpots = [];     // DIAGNOSE: laatst gevonden keerplekken
+        let diagMarkers = [];       // DIAGNOSE: rode stipjes op de kaart
+
+        // ─── Marker icons ───
+        function pinIcon(color) {
+            return L.divIcon({
+                className: 'pin-marker',
+                html: `<svg width="30" height="40" viewBox="0 0 24 32"><path d="M12 0C5.4 0 0 5.4 0 12c0 8 12 20 12 20s12-12 12-20C24 5.4 18.6 0 12 0z" fill="${color}" stroke="#fff" stroke-width="1.5"/><circle cx="12" cy="12" r="4.5" fill="#fff"/></svg>`,
+                iconSize: [30, 40], iconAnchor: [15, 40], popupAnchor: [0, -38]
+            });
+        }
+        function flagIcon() {
+            return L.divIcon({
+                className: 'flag-marker',
+                html: `<svg width="30" height="40" viewBox="0 0 24 32"><line x1="4" y1="2" x2="4" y2="32" stroke="#000" stroke-width="2"/><path d="M4 3 h16 v11 h-16 z" fill="#fff" stroke="#000" stroke-width="1"/><path d="M4 3 h4 v4 h-4 z M12 3 h4 v4 h-4 z M8 7 h4 v4 h-4 z M16 7 h4 v4 h-4 z M4 11 h4 v3 h-4 z M12 11 h4 v3 h-4 z" fill="#000"/></svg>`,
+                iconSize: [30, 40], iconAnchor: [4, 32], popupAnchor: [10, -30]
+            });
+        }
+        function nogoIcon() {
+            return L.divIcon({
+                className: 'nogo-marker',
+                html: `<svg width="28" height="28" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#FF1744" stroke="#fff" stroke-width="2"/><rect x="5" y="10.5" width="14" height="3" fill="#fff"/></svg>`,
+                iconSize: [28, 28], iconAnchor: [14, 14], popupAnchor: [0, -14]
+            });
+        }
+        // ─── Menu-tabs: Route + Extra mogen samen open; POI = focus-modus ───
+        function toggleTab(which) {
+            const panel = document.getElementById(which === 'route' ? 'panelRoute' : 'panelExtra');
+            const tab = document.getElementById(which === 'route' ? 'tabRoute' : 'tabExtra');
+            const open = panel.classList.toggle('open');
+            tab.classList.toggle('active', open);
+        }
+        function openPoiFocus() {
+            // verberg alle gewone menu's → focus op de kaart
+            document.getElementById('menuTabs').style.display = 'none';
+            document.getElementById('panelRoute').classList.remove('open');
+            document.getElementById('panelExtra').classList.remove('open');
+            document.getElementById('poiFocusBar').style.display = 'flex';
+        }
+        function closePoiFocus() {
+            clearPOI();
+            document.getElementById('poiFocusBar').style.display = 'none';
+            document.getElementById('poiFocusList').style.display = 'none';
+            // alleen de menu-knoppen terug (panelen blijven dicht)
+            document.getElementById('menuTabs').style.display = 'flex';
+        }
+
+        function onMapTap(e) {
+            pendingTap = { lat: e.latlng.lat, lng: e.latlng.lng };
+            document.getElementById('tapMenu').style.display = 'flex';
+        }
+        function tapChoose(kind) {
+            document.getElementById('tapMenu').style.display = 'none';
+            if (!pendingTap) return;
+            const { lat, lng } = pendingTap;
+            const label = `(${lat.toFixed(4)}, ${lng.toFixed(4)})`;
+            if (kind === 'start') setStart(lat, lng, label, false);
+            else if (kind === 'dest') setDest(lat, lng, label);
+            else if (kind === 'via') addVia(lat, lng, label, true);       // slim
+            else if (kind === 'achteraan') addVia(lat, lng, label, false); // achteraan
+            else if (kind === 'nogo') {
+                const km = parseFloat(document.getElementById('nogoKm').value) || 2;
+                addNogo(lat, lng, km);
+            }
+            pendingTap = null;
+            maybeRoute();
+        }
+        function tapCancel() {
+            document.getElementById('tapMenu').style.display = 'none';
+            pendingTap = null;
+        }
+
+        function setProfile(btn) {
+            document.querySelectorAll('.prof-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            selectedProfile = btn.dataset.profile;
+            // recalculate if a route already exists
+            if (startPoint && destPoint) maybeRoute();
+        }
+
+        function setSearchMode(mode) {
+            searchMode = mode;
+            document.getElementById('modeStart').classList.toggle('active', mode === 'start');
+            document.getElementById('modeVia').classList.toggle('active', mode === 'via');
+            document.getElementById('modeDest').classList.toggle('active', mode === 'dest');
+            const ph = mode === 'start' ? 'Zoek startadres...'
+                     : mode === 'via' ? 'Zoek tussenpunt...'
+                     : 'Zoek bestemming...';
+            document.getElementById('searchInput').placeholder = ph;
+        }
+
+        // ─── Address search via Photon (free OSM geocoder) ───
+        // searchInput/resultsEl bestaan pas als de planner-HTML geladen is → lui koppelen.
+        let searchInput = null;
+        let resultsEl = null;
+        let plannerWired = false;
+        function plannerWireUp() {
+            if (plannerWired) return;
+            searchInput = document.getElementById('searchInput');
+            resultsEl = document.getElementById('results');
+            if (!searchInput) return;   // HTML nog niet aanwezig
+            searchInput.addEventListener('input', () => {
+                const q = searchInput.value.trim();
+                clearTimeout(searchTimer);
+                if (q.length < 3) { resultsEl.style.display = 'none'; return; }
+                searchTimer = setTimeout(() => doSearch(q), 800);
+            });
+            plannerWired = true;
+        }
+
+        async function doSearch(q) {
+            showStatus('Zoeken...');
+            try {
+                // Nominatim free-form search. countrycodes biases to NL/BE/DE (motor-regio); remove for wereldwijd.
+                const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&addressdetails=1&limit=6&accept-language=nl`;
+                const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                const data = await res.json();
+                if (!Array.isArray(data) || !data.length) {
+                    showStatus('Geen resultaten voor "' + q + '"');
+                    return;
+                }
+                showResults(data);
+            } catch (e) {
+                console.error('search failed', e);
+                showStatus('Zoeken mislukt: ' + (e.message || 'verbinding?') + ' — probeer opnieuw.');
+            }
+        }
+
+        function showStatus(msg) {
+            resultsEl.innerHTML = '<div class="result-item" style="opacity:0.8;">' + msg + '</div>';
+            resultsEl.style.display = 'block';
+        }
+
+        function showResults(items) {
+            if (!items.length) { resultsEl.style.display = 'none'; return; }
+            resultsEl.innerHTML = '';
+            items.forEach(item => {
+                const lat = parseFloat(item.lat);
+                const lng = parseFloat(item.lon);
+                const label = item.display_name || 'Onbekend';
+                const div = document.createElement('div');
+                div.className = 'result-item';
+                div.textContent = label;
+                div.onclick = () => pickResult(lat, lng, label);
+                resultsEl.appendChild(div);
+            });
+            resultsEl.style.display = 'block';
+        }
+
+        function pickResult(lat, lng, label) {
+            resultsEl.style.display = 'none';
+            searchInput.value = '';
+            if (searchMode === 'start') {
+                setStart(lat, lng, label, false);
+                setSearchMode('dest');
+            } else if (searchMode === 'via') {
+                addVia(lat, lng, label, true);   // zoeken = slim invoegen
+            } else {
+                setDest(lat, lng, label);
+            }
+            maybeRoute();
+        }
+
+        function setStart(lat, lng, label) {
+            startPoint = { lat, lng, label };
+            if (startMarker) map.removeLayer(startMarker);
+            startMarker = L.marker([lat, lng], { title: 'Start' }).addTo(map).bindPopup('Start: ' + label);
+            map.setView([lat, lng], 14);
+        }
+        function setStart(lat, lng, label, isGps) {
+            startPoint = { lat, lng, label };
+            if (startMarker) map.removeLayer(startMarker);
+            const color = isGps ? '#E91E63' : '#9E9E9E';   // rood = eigen locatie, grijs = gekozen
+            startMarker = L.marker([lat, lng], { icon: pinIcon(color) }).addTo(map);
+            startMarker.on('click', () => confirmDelete('start'));
+        }
+        function setDest(lat, lng, label) {
+            destPoint = { lat, lng, label };
+            if (destMarker) map.removeLayer(destMarker);
+            destMarker = L.marker([lat, lng], { icon: flagIcon() }).addTo(map);
+            destMarker.on('click', () => confirmDelete('dest'));
+        }
+
+        // Add a via point. slim=true → insert into closest leg; slim=false → append.
+        function addVia(lat, lng, label, slim, kind) {
+            kind = kind || 'eigen';   // 'eigen' (handmatig) of 'omweg' (generator)
+            const via = { lat, lng, label, kind };
+            const fill = kind === 'omweg' ? '#FF9800' : kind === 'lock' ? '#4CAF50' : '#9C27B0';  // omweg=oranje, lock=groen, eigen=paars
+            via.marker = L.circleMarker([lat, lng], {
+                radius: 14, color: '#fff', weight: 2, fillColor: fill, fillOpacity: 0.85
+            }).addTo(map);
+            via.marker.on('click', () => confirmDelete('via', via));
+
+            if (!slim) {
+                viaPoints.push(via);   // achteraan
+                return;
+            }
+            // slim: insert into the closest leg of start..vias..dest
+            const seq = routeSequence();
+            if (seq.length < 2) { viaPoints.push(via); return; }
+            let bestSeg = 0, bestD = Infinity;
+            for (let i = 0; i < seq.length - 1; i++) {
+                const d = distToSegment(via, seq[i], seq[i + 1]);
+                if (d < bestD) { bestD = d; bestSeg = i; }
+            }
+            // seq = [start, via0, via1, ..., dest]; segment i sits before viaPoints index i.
+            // Clamp into the viaPoints range so it can never land after the finish.
+            let insertAt = bestSeg;                 // segment index → via index
+            if (startPoint) insertAt = bestSeg;     // start occupies seq[0]
+            insertAt = Math.max(0, Math.min(insertAt, viaPoints.length));
+            viaPoints.splice(insertAt, 0, via);
+        }
+
+        // Tap on an existing point → confirm before removing.
+        function confirmDelete(kind, via) {
+            let what = kind === 'start' ? 'startpunt' : kind === 'dest' ? 'finish' : 'tussenpunt';
+            if (!confirm(what.charAt(0).toUpperCase() + what.slice(1) + ' verwijderen?')) return;
+            if (kind === 'start') {
+                if (startMarker) map.removeLayer(startMarker);
+                startMarker = null; startPoint = null;
+            } else if (kind === 'dest') {
+                if (destMarker) map.removeLayer(destMarker);
+                destMarker = null; destPoint = null;
+            } else if (kind === 'via' && via) {
+                const i = viaPoints.indexOf(via);
+                if (i !== -1) { if (via.marker) map.removeLayer(via.marker); viaPoints.splice(i, 1); }
+            }
+            maybeRoute();
+        }
+
+        // Vermijd-zone: rode pin + zichtbare cirkel met radius (km). Tik om aan te passen/verwijderen.
+        function addNogo(lat, lng, km) {
+            const radiusM = km * 1000;
+            const zone = { lat, lng, radius: radiusM };
+            zone.circle = L.circle([lat, lng], {
+                radius: radiusM, color: '#FF1744', weight: 2,
+                fillColor: '#FF1744', fillOpacity: 0.15, interactive: false
+            }).addTo(map);
+            zone.marker = L.marker([lat, lng], { icon: nogoIcon() }).addTo(map);
+            zone.marker.on('click', () => editNogo(zone));
+            nogoZones.push(zone);
+        }
+
+        function editNogo(zone) {
+            const cur = (zone.radius / 1000).toFixed(1);
+            const ans = prompt('Vermijd-straal in km (leeg = verwijderen):', cur);
+            if (ans === null) return;                 // geannuleerd
+            const km = parseFloat(ans);
+            if (!km || km <= 0) {                     // leeg/0 = verwijderen
+                map.removeLayer(zone.marker); map.removeLayer(zone.circle);
+                nogoZones = nogoZones.filter(z => z !== zone);
+            } else {
+                zone.radius = km * 1000;
+                zone.circle.setRadius(zone.radius);
+            }
+            maybeRoute();
+        }
+
+        // BRouter nogos-parameter: "lng,lat,radius[,weight]" per zone, met komma's aaneen.
+        // weight maakt het ZACHT (mag erdoor als het echt niet anders kan).
+        function nogosParam() {
+            if (!nogoZones.length) return '';
+            const parts = nogoZones.map(z => `${z.lng},${z.lat},${Math.round(z.radius)},2`);
+            return '&nogos=' + parts.join(',');
+        }
+
+
+        // Ordered list of all points: start, vias (in order), dest
+        function routeSequence() {
+            const seq = [];
+            if (startPoint) seq.push(startPoint);
+            viaPoints.forEach(v => seq.push(v));
+            if (destPoint) seq.push(destPoint);
+            return seq;
+        }
+
+        // Rough distance (in degrees²) from point P to segment A-B — good enough for "closest leg".
+        function distToSegment(p, a, b) {
+            const ax = a.lng, ay = a.lat, bx = b.lng, by = b.lat, px = p.lng, py = p.lat;
+            const dx = bx - ax, dy = by - ay;
+            const len2 = dx*dx + dy*dy || 1e-9;
+            let t = ((px-ax)*dx + (py-ay)*dy) / len2;
+            t = Math.max(0, Math.min(1, t));
+            const cx = ax + t*dx, cy = ay + t*dy;
+            return (px-cx)*(px-cx) + (py-cy)*(py-cy);
+        }
+
+        // ─── Omweg-generator: gebruiker geeft gewenste km, planner zet 1 tussenpunt ───
+
+        // Meet de routeafstand (km) langs gegeven punten via BRouter. Geeft null bij fout.
+        async function measureRoute(points) {
+            const lonlats = points.map(p => `${p.lng},${p.lat}`).join('|');
+            const url = `https://brouter.de/brouter?lonlats=${lonlats}&${brouterParams()}${nogosParam()}&alternativeidx=0&format=geojson&turnInstructionMode=2`;
+            const res = await fetch(url);
+            const data = await res.json();
+            const feat = data.features[0];
+            const km = feat.properties['track-length'] / 1000;
+            const hints = feat.properties.voicehints || [];
+            const coords = feat.geometry.coordinates;
+            return { km, data, hints, coords };
+        }
+
+        // LOCK: leg de huidige route vast met groene via's op de echte bochten.
+        // Stapelt (bestaande lock-via's blijven), geen dubbelen op dezelfde plek.
+        const LOCK_CMDS = [2,4,5,7];   // duidelijke bochten: TL, TSHL, TR, TSHR (flauw/aanhouden niet)
+        async function lockRoute() {
+            const seq = routeSequence();
+            if (seq.length < 2) { alert('Maak eerst een route.'); return; }
+            showInfo('Route vastleggen...');
+            try {
+                const m = await measureRoute(seq);
+                let added = 0;
+                m.hints.forEach(h => {
+                    if (!LOCK_CMDS.includes(h[1])) return;       // alleen echte bochten
+                    const pt = m.coords[h[0]];
+                    if (!pt) return;
+                    const lat = pt[1], lng = pt[0];
+                    // geen lock-via plaatsen als er al een via (van welk type) heel dichtbij ligt
+                    const tooClose = viaPoints.some(v => distM4(v.lat, v.lng, lat, lng) < 80);
+                    if (tooClose) return;
+                    addVia(lat, lng, 'lock', false, 'lock');
+                    added++;
+                });
+                await maybeRoute();
+                showInfo(document.getElementById('infoBar').innerHTML + ` &nbsp;🔒 ${added} bochten vastgelegd`);
+            } catch (e) {
+                console.error('lock failed', e);
+                showInfo('Vastleggen mislukt — probeer opnieuw.');
+            }
+        }
+
+        // Doodloper-correctie via T-splitsing-detectie.
+        // Een doodlopend tongetje verraadt zich op 2 manieren:
+        //   (a) een 180°-keer (TU = cmd 15), of
+        //   (b) een paar TEGENGESTELDE bochten (links↔rechts) die dicht bij elkaar liggen
+        //       = je gaat de doodloper in en komt bij dezelfde T-splitsing weer uit.
+        // De T-splitsing (waar in+uit elkaar kruisen) ligt op de DOORGAANDE weg → daar zet
+        // we de via naartoe. Geeft een nieuwe array via-punten terug.
+        const LEFT_CMDS = [2,3,4,8];     // TL, TSLL, TSHL, KL
+        const RIGHT_CMDS = [5,6,7,9];    // TR, TSLR, TSHR, KR
+
+        function distM4(aLat, aLng, bLat, bLng) {
+            const dLat = (bLat - aLat) * 111000;
+            const dLng = (bLng - aLng) * 111000 * Math.cos(aLat * Math.PI / 180);
+            return Math.sqrt(dLat*dLat + dLng*dLng);
+        }
+
+        // DIAGNOSE: teken hoe elke via verplaatst is (oude plek → nieuwe plek op de route).
+        function drawDiagnosis() {
+            diagMarkers.forEach(m => map.removeLayer(m));
+            diagMarkers = [];
+            lastTurnSpots.forEach(s => {
+                if (s.fromLat != null) {
+                    // lijn van oude naar nieuwe positie
+                    const line = L.polyline([[s.fromLat, s.fromLng], [s.lat, s.lng]],
+                        { color: '#FF1744', weight: 2, dashArray: '4,4' }).addTo(map);
+                    diagMarkers.push(line);
+                    // klein rood stipje op de OUDE plek
+                    const old = L.circleMarker([s.fromLat, s.fromLng], {
+                        radius: 5, color: '#fff', weight: 1, fillColor: '#FF1744', fillOpacity: 0.9
+                    }).addTo(map).bindPopup('via stond hier → verplaatst naar route');
+                    diagMarkers.push(old);
+                }
+            });
+        }
+
+        // Verplaats elke opzij-via naar een punt OP de route: zoek het dichtstbijzijnde
+        // routepunt bij de via, ga dan 250m verder langs de route. Zo ligt de via op een
+        // rijdbare lijn (geen tongetje/doodloper mogelijk).
+        function repositionUturnVias(vias, hints, coords) {
+            lastTurnSpots = [];   // DIAGNOSE: reset
+            if (!coords || coords.length < 2) return vias;
+
+            return vias.map(v => {
+                // 1. dichtstbijzijnde routepunt-index bij deze via
+                let bestI = 0, bestD = Infinity;
+                for (let i = 0; i < coords.length; i++) {
+                    const d = distM4(v.lat, v.lng, coords[i][1], coords[i][0]);
+                    if (d < bestD) { bestD = d; bestI = i; }
+                }
+                // 2. loop 10km verder langs de route vanaf bestI
+                let walked = 0, i = bestI;
+                while (i < coords.length - 1 && walked < 10000) {
+                    walked += distM4(coords[i][1], coords[i][0], coords[i+1][1], coords[i+1][0]);
+                    i++;
+                }
+                const np = coords[i];
+                // DIAGNOSE: bewaar oude→nieuwe positie om te tonen
+                lastTurnSpots.push({ fromLat: v.lat, fromLng: v.lng, lat: np[1], lng: np[0] });
+                return { lat: np[1], lng: np[0], label: 'omweg' };
+            });
+        }
+
+        // Bereken een punt loodrecht op het midden van start→finish, 'side' = +1/-1, 'offsetKm' opzij.
+        function sideMidpoint(side, offsetKm) {
+            const a = startPoint, b = destPoint;
+            const midLat = (a.lat + b.lat) / 2, midLng = (a.lng + b.lng) / 2;
+            const dLat = b.lat - a.lat, dLng = b.lng - a.lng;
+            const len = Math.sqrt(dLat*dLat + dLng*dLng) || 1e-9;
+            const perpLat = -dLng / len, perpLng = dLat / len;
+            const offDeg = offsetKm / 111;
+            const cosLat = Math.cos(midLat * Math.PI / 180) || 1;
+            return {
+                lat: midLat + side * perpLat * offDeg,
+                lng: midLng + side * perpLng * offDeg / cosLat,
+                label: 'omweg'
+            };
+        }
+
+        // Plaats N punten verdeeld langs start→finish, afwisselend opzij (slinger).
+        // startSide bepaalt of de eerste omhoog (+1) of omlaag (-1) gaat.
+        function slalomPoints(n, offsetKm, startSide) {
+            const a = startPoint, b = destPoint;
+            const dLat = b.lat - a.lat, dLng = b.lng - a.lng;
+            const len = Math.sqrt(dLat*dLat + dLng*dLng) || 1e-9;
+            const perpLat = -dLng / len, perpLng = dLat / len;
+            const offDeg = offsetKm / 111;
+            const pts = [];
+            for (let i = 1; i <= n; i++) {
+                const t = i / (n + 1);                 // verdeel op 1/(n+1), 2/(n+1), ...
+                const baseLat = a.lat + dLat * t, baseLng = a.lng + dLng * t;
+                const side = (startSide > 0)
+                    ? (i % 2 === 1 ? 1 : -1)           // +,-,+,-...
+                    : (i % 2 === 1 ? -1 : 1);          // -,+,-,+...
+                const cosLat = Math.cos(baseLat * Math.PI / 180) || 1;
+                pts.push({
+                    lat: baseLat + side * perpLat * offDeg,
+                    lng: baseLng + side * perpLng * offDeg / cosLat,
+                    label: 'omweg'
+                });
+            }
+            return pts;
+        }
+
+        let detourStartSide = 1;   // +1 = eerste punt omhoog; wisselt bij elke generatie
+
+        async function generateDetour() {
+            if (!startPoint || !destPoint) { alert('Zet eerst start en finish.'); return; }
+            const target = parseFloat(document.getElementById('targetKm').value);
+            if (!target || target < 1) { alert('Vul een gewenste afstand in (km).'); return; }
+            let nPts = parseInt(document.getElementById('targetPts').value);
+            if (!nPts || nPts < 1) nPts = 1;           // leeg = 1 punt
+
+            showInfo('Omweg zoeken...');
+            try {
+                // eigen via's (handmatig) blijven staan en tellen mee als basis
+                const ownVias = viaPoints.filter(v => v.kind !== 'omweg');
+                const base = await measureRoute([startPoint, ...ownVias, destPoint]);
+                if (target <= base.km + 5) {
+                    showInfo(`Route is al ${base.km.toFixed(1)} km — kies een grotere afstand.`);
+                    return;
+                }
+                const extra = target - base.km;
+                // begin-schatting: zijwaartse afstand. Meer punten → elk minder ver opzij.
+                let offset = (extra / 2) / Math.sqrt(nPts);
+                const startSide = detourStartSide;
+
+                // Meet de EINDafstand: slalom → verankeren op route → opnieuw meten.
+                // Zo stuurt de lus op de afstand ná correctie (die kleiner wordt door afsnijden).
+                async function measureAnchored(off) {
+                    const pts = slalomPoints(nPts, off, startSide);
+                    const seq1 = [startPoint, ...ownVias, ...pts, destPoint];
+                    const m1 = await measureRoute(seq1);
+                    const anchored = repositionUturnVias(pts, m1.hints, m1.coords);
+                    const m2 = await measureRoute([startPoint, ...ownVias, ...anchored, destPoint]);
+                    return { km: m2.km, pts: anchored };
+                }
+
+                let best = null, bestDiff = Infinity;
+                for (let i = 0; i < 6; i++) {
+                    let r;
+                    try { r = await measureAnchored(offset); }
+                    catch (e) { break; }
+                    const diff = Math.abs(r.km - target);
+                    if (diff < bestDiff) { bestDiff = diff; best = { pts: r.pts, km: r.km }; }
+                    if (diff <= 5) break;
+                    // bijsturen op de EINDafstand
+                    if (r.km < target) offset *= Math.max(1.1, (extra / Math.max(r.km - base.km, 1)));
+                    else offset *= 0.7;
+                    offset = Math.max(0.3, Math.min(offset, extra * 2));   // ruimer plafond (compenseert krimp)
+                }
+
+                if (!best) { showInfo('Omweg zoeken mislukt — probeer opnieuw.'); return; }
+
+                // SCHONE HEROPBOUW (jouw aanpak):
+                // 1. eigen via's zijn al bewaard in ownVias (met hun volgorde)
+                // 2. wis ALLE via's van de kaart → schone lei
+                viaPoints.forEach(v => { if (v.marker) map.removeLayer(v.marker); });
+                viaPoints = [];
+                // 3. zet de eigen via's terug op hun oorspronkelijke plek (paars)
+                ownVias.forEach(v => addVia(v.lat, v.lng, v.label, false, 'eigen'));
+                // 4. weef de nieuwe omweg-via's ertussen (slim invoegen op geografische plek, oranje)
+                best.pts.forEach(p => addVia(p.lat, p.lng, 'omweg', true, 'omweg'));
+                await maybeRoute();
+                showInfo(document.getElementById('infoBar').innerHTML + ` &nbsp;(doel ${target} km)`);
+                drawDiagnosis();
+
+                detourStartSide = -detourStartSide;
+            } catch (e) {
+                console.error('detour failed', e);
+                showInfo('Omweg zoeken mislukt — probeer opnieuw.');
+            }
+        }
+
+        let lastGps = null;   // laatst bekende GPS-positie (van 📍), voor afstand-vanaf-mij
+        function useMyLocation() {
+            if (!navigator.geolocation) { alert('Geen GPS beschikbaar'); return; }
+            navigator.geolocation.getCurrentPosition(
+                pos => {
+                    const { latitude, longitude } = pos.coords;
+                    lastGps = { lat: latitude, lng: longitude };
+                    setStart(latitude, longitude, 'Mijn locatie', true);
+                    setSearchMode('dest');
+                    maybeRoute();
+                },
+                () => alert('Locatie ophalen mislukt'),
+                { enableHighAccuracy: true, timeout: 10000 }
+            );
+        }
+        // "Mijn positie": GPS als bekend, anders het startpunt (smart, ook klaar voor de tracker)
+        function myPosition() {
+            if (lastGps) return lastGps;
+            if (startPoint) return startPoint;
+            return null;
+        }
+
+        // ─── Route via BRouter (free public server) ───
+        async function maybeRoute() {
+            const seq = routeSequence();
+            if (seq.length < 2) return;   // need at least start + dest
+            showInfo('Route berekenen...');
+            try {
+                // all points in order: start|via|via|...|dest  as lon,lat
+                const lonlats = seq.map(p => `${p.lng},${p.lat}`).join('|');
+                const url = `https://brouter.de/brouter?lonlats=${lonlats}&${brouterParams()}${nogosParam()}&alternativeidx=0&format=geojson&turnInstructionMode=2`;
+                const res = await fetch(url);
+                const data = await res.json();
+                drawRoute(data);
+                const turns = processTurns(data);   // echte afslagen op de kaart
+                if (turns.length) {
+                    showInfo(document.getElementById('infoBar').innerHTML +
+                        ` &nbsp; <b>${turns.length}</b> afslagen`);
+                }
+            } catch (e) {
+                console.error('route failed', e);
+                showInfo('Route berekenen mislukt — probeer opnieuw.');
+            }
+        }
+
+        // BRouter voice-hint command codes → leesbare NL richting
+        const TURN_NAMES = {
+            1: 'rechtdoor', 2: 'links', 3: 'flauw links', 4: 'scherp links',
+            5: 'rechts', 6: 'flauw rechts', 7: 'scherp rechts',
+            8: 'links aanhouden', 9: 'rechts aanhouden',
+            10: 'keren (links)', 11: 'keren (rechts)', 12: 'van route',
+            13: 'rotonde', 14: 'rotonde links', 15: '180° keren',
+            16: 'rechte lijn', 17: 'afrit links', 18: 'afrit rechts'
+        };
+        let plTurnMarkers = [];
+
+        // Turn the BRouter voicehints into map markers on the real turn points.
+        // voicehint = [trackPointIndex, command, ?, distanceToNext, angle]
+        function processTurns(geojson) {
+            // clear old
+            plTurnMarkers.forEach(m => map.removeLayer(m));
+            plTurnMarkers = [];
+            try {
+                const feat = geojson.features[0];
+                const coords = feat.geometry.coordinates;   // [ [lng,lat,ele], ... ]
+                const hints = feat.properties.voicehints || [];
+                let list = [];
+                hints.forEach(h => {
+                    const idx = h[0];          // index into coords
+                    const cmd = h[1];          // command code
+                    if (cmd === 1) return;     // skip plain "rechtdoor"
+                    const pt = coords[idx];
+                    if (!pt) return;
+                    const lat = pt[1], lng = pt[0];
+                    const name = TURN_NAMES[cmd] || ('cmd ' + cmd);
+                    const isLeft = [2,3,4,8,10,14,17].includes(cmd);
+                    const color = isLeft ? '#2196F3' : '#FF9800';
+                    const m = L.circleMarker([lat, lng], {
+                        radius: 7, color: '#fff', weight: 2, fillColor: color, fillOpacity: 0.9
+                    }).addTo(map).bindPopup(name);
+                    plTurnMarkers.push(m);
+                    list.push(name);
+                });
+                return list;
+            } catch (e) {
+                console.error('processTurns', e);
+                return [];
+            }
+        }
+
+        function drawRoute(geojson) {
+            if (routeLine) map.removeLayer(routeLine);
+            routeLine = L.geoJSON(geojson, {
+                style: { color: '#00BCD4', weight: 6, opacity: 0.9 },
+                interactive: false   // lijn vangt geen kliks → via's blijven aantikbaar
+            }).addTo(map);
+            // bewaar de route-coördinaten zodat eigen via's hierop kunnen 'snappen'
+            try { lastRouteCoords = geojson.features[0].geometry.coordinates; } catch (e) {}
+            // Alleen de allereerste keer inzoomen op de route; daarna je eigen zoom/positie houden.
+            if (!hasFitOnce) {
+                map.fitBounds(routeLine.getBounds(), { padding: [50, 50] });
+                hasFitOnce = true;
+            }
+
+            // Pull distance & time from BRouter properties if present
+            let info = '';
+            try {
+                const props = geojson.features[0].properties;
+                const km = (props['track-length'] / 1000).toFixed(1);
+                const min = Math.round(props['total-time'] / 60);
+                info = `<b>Afstand:</b> ${km} km &nbsp; <b>Tijd:</b> ${min} min`;
+            } catch (e) {
+                info = 'Route gevonden.';
+            }
+            showInfo(info);
+            // via's, start en finish bovenop de route houden zodat ze aantikbaar blijven
+            viaPoints.forEach(v => { if (v.marker && v.marker.bringToFront) v.marker.bringToFront(); });
+            if (startMarker && startMarker.bringToFront) startMarker.bringToFront();
+            if (destMarker && destMarker.bringToFront) destMarker.bringToFront();
+        }
+
+        function showInfo(html) {
+            const bar = document.getElementById('infoBar');
+            bar.innerHTML = html;
+            bar.style.display = 'block';
+        }
+
+        // ─── POI-zoek (Overpass): markers op de kaart + lijst van POI's langs de route ───
+        let poiMarkers = [];   // markers van gevonden POI's
+
+        // steekwoord → OSM-tag. Onbekend woord → naam-zoek (fallback).
+        const POI_TAGS = {
+            benzine: 'amenity=fuel', tanken: 'amenity=fuel', pomp: 'amenity=fuel',
+            eten: 'amenity=restaurant', restaurant: 'amenity=restaurant', eetcafe: 'amenity=restaurant',
+            koffie: 'amenity=cafe', cafe: 'amenity=cafe',
+            hotel: 'tourism=hotel', overnachten: 'tourism=hotel',
+            bakker: 'shop=bakery', supermarkt: 'shop=supermarket',
+            pin: 'amenity=atm', pinautomaat: 'amenity=atm', geld: 'amenity=atm',
+            uitzicht: 'tourism=viewpoint', bezienswaardigheid: 'tourism=attraction',
+            parkeren: 'amenity=parking', wc: 'amenity=toilets', toilet: 'amenity=toilets',
+            fastfood: 'amenity=fast_food', snackbar: 'amenity=fast_food'
+        };
+        // icoon-kleur per soort (op de kaart)
+        function poiColor(kind) {
+            if (kind === 'benzine') return '#2196F3';
+            if (kind === 'eten') return '#FF5722';
+            if (kind === 'koffie') return '#795548';
+            return '#009688';
+        }
+        function poiEmoji(tag) {
+            if (tag.includes('fuel')) return '⛽';
+            if (tag.includes('restaurant') || tag.includes('fast_food')) return '🍽';
+            if (tag.includes('cafe')) return '☕';
+            if (tag.includes('hotel')) return '🛏';
+            if (tag.includes('bakery')) return '🥐';
+            if (tag.includes('supermarket')) return '🛒';
+            if (tag.includes('atm')) return '🏧';
+            if (tag.includes('viewpoint') || tag.includes('attraction')) return '📷';
+            if (tag.includes('parking')) return '🅿️';
+            if (tag.includes('toilets')) return '🚻';
+            return '📍';
+        }
+
+        async function searchPOI(term) {
+            term = (term || '').trim().toLowerCase();
+            if (!term) { alert('Typ een zoekterm of kies een knop.'); return; }
+            clearPOI();
+            showInfo('POI zoeken...');
+
+            // bepaal de query: bekende tag of naam-zoek
+            const tag = POI_TAGS[term];
+            const c = map.getCenter();
+            // grote diameter rond kaartmidden (jij pant zelf)
+            const radius = 20000;   // 20 km
+            let filter;
+            if (tag) {
+                const [k, v] = tag.split('=');
+                filter = `["${k}"="${v}"]`;
+            } else {
+                // onbekend woord → zoek op naam (hoofdletterongevoelig)
+                filter = `["name"~"${term}",i]`;
+            }
+            const q = `[out:json][timeout:25];(node${filter}(around:${radius},${c.lat},${c.lng});way${filter}(around:${radius},${c.lat},${c.lng}););out center 60;`;
+            try {
+                const res = await fetch('https://overpass-api.de/api/interpreter', {
+                    method: 'POST', body: 'data=' + encodeURIComponent(q)
+                });
+                const data = await res.json();
+                const els = (data.elements || []).map(e => {
+                    const lat = e.lat || (e.center && e.center.lat);
+                    const lng = e.lon || (e.center && e.center.lon);
+                    return { lat, lng, tags: e.tags || {} };
+                }).filter(e => e.lat && e.lng);
+                if (!els.length) { showInfo(`Geen resultaten voor "${term}" in de buurt.`); return; }
+                drawPOI(els, term, tag || 'name');
+            } catch (e) {
+                console.error('POI search failed', e);
+                showInfo('POI zoeken mislukt — probeer opnieuw.');
+            }
+        }
+
+        function drawPOI(els, term, tag) {
+            const kind = ['benzine','eten','koffie'].includes(term) ? term : 'overig';
+            const color = poiColor(kind);
+            const emoji = poiEmoji(tag);
+
+            // route-coords voor "langs de route"-filtering van de lijst
+            const coords = lastRouteCoords;
+
+            const listItems = [];
+            els.forEach(e => {
+                // marker met emoji-icoon
+                const icon = L.divIcon({
+                    className: 'poi-marker',
+                    html: `<div style="background:${color};border:2px solid #fff;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-size:13px;">${emoji}</div>`,
+                    iconSize: [26,26], iconAnchor: [13,13], popupAnchor: [0,-13]
+                });
+                const m = L.marker([e.lat, e.lng], { icon }).addTo(map);
+                m.on('click', () => openPOI(e, m));
+                poiMarkers.push(m);
+
+                // afstand tot de route (voor de lijst): min. afstand tot een routepunt
+                let dRoute = Infinity;
+                if (coords && coords.length) {
+                    for (let i = 0; i < coords.length; i++) {
+                        const d = distM4(e.lat, e.lng, coords[i][1], coords[i][0]);
+                        if (d < dRoute) dRoute = d;
+                    }
+                }
+                e._dRoute = dRoute;
+            });
+
+            // lijst: alleen POI's binnen ~2km van de route, gesorteerd op afstand VANAF JOU (laag→hoog)
+            if (coords && coords.length) {
+                const myPos = myPosition();   // GPS of start
+                const near = els.filter(e => e._dRoute <= 2000);
+                // afstand vanaf jou vooraf berekenen zodat we erop kunnen sorteren
+                near.forEach(e => {
+                    e._dPos = myPos ? distM4(myPos.lat, myPos.lng, e.lat, e.lng) : Infinity;
+                });
+                near.sort((a,b) => a._dPos - b._dPos);   // dichtstbij jou eerst
+                const box = document.getElementById('poiFocusList');
+                if (near.length) {
+                    box.innerHTML = '';
+                    near.forEach(e => {
+                        const name = e.tags.name || e.tags.brand || '(naamloos)';
+                        const kmRoute = (e._dRoute/1000).toFixed(1);
+                        let posStr = '';
+                        if (myPos) {
+                            posStr = `<span style="color:#FFB74D;font-weight:bold;min-width:54px;">${(e._dPos/1000).toFixed(1)} km</span>`;
+                        }
+                        const div = document.createElement('div');
+                        div.style.cssText = 'padding:10px 12px;color:#fff;cursor:pointer;border-bottom:1px solid #1a2148;font-size:0.85em;display:flex;gap:8px;align-items:center;';
+                        div.innerHTML = `${posStr}<span style="color:#00BCD4;font-weight:bold;min-width:54px;">↦ ${kmRoute}</span><span>${name}</span>`;
+                        div.onclick = () => { map.setView([e.lat, e.lng], 15); };
+                        box.appendChild(div);
+                    });
+                    // kop met sluitknop (rode X)
+                    const head = document.createElement('div');
+                    head.style.cssText = 'padding:6px 12px;color:#889;font-size:0.7em;border-bottom:1px solid #1a2148;display:flex;justify-content:space-between;align-items:center;';
+                    head.innerHTML = `<span><span style="color:#FFB74D;">vanaf jou</span> &nbsp;<span style="color:#00BCD4;">↦ vanaf route</span></span>` +
+                        `<span onclick="clearPOI()" style="color:#FF5252;font-weight:bold;cursor:pointer;font-size:1.3em;line-height:1;padding:0 4px;">✕</span>`;
+                    box.insertBefore(head, box.firstChild);
+                    box.style.display = 'block';
+                }
+            }
+            showInfo(`${els.length} gevonden voor "${term}" — tik een icoon voor info.`);
+        }
+
+        function openPOI(e, marker) {
+            const t = e.tags;
+            const name = t.name || t.brand || '(naamloos)';
+            let details = [];
+            if (t.brand && t.brand !== name) details.push(t.brand);
+            if (t.cuisine) details.push('keuken: ' + t.cuisine.replace(/_/g,' '));
+            if (t.amenity) details.push(t.amenity.replace(/_/g,' '));
+            if (t.shop) details.push(t.shop.replace(/_/g,' '));
+            if (t.opening_hours) details.push('🕒 ' + t.opening_hours);
+            const html = `<b>${name}</b>${details.length ? '<br>' + details.join('<br>') : ''}` +
+                `<br><button onclick="addPOIasVia(${e.lat},${e.lng},'${name.replace(/'/g,"")}')" style="margin-top:8px;padding:8px 10px;border-radius:8px;border:none;background:#9C27B0;color:#fff;font-weight:bold;cursor:pointer;">Slim toevoegen aan route</button>`;
+            marker.bindPopup(html).openPopup();
+        }
+
+        function addPOIasVia(lat, lng, name) {
+            addVia(lat, lng, name, true, 'eigen');   // slim invoegen als eigen via
+            clearPOI();                               // overige POI's van de kaart
+            maybeRoute();
+        }
+
+        function clearPOI() {
+            poiMarkers.forEach(m => map.removeLayer(m));
+            poiMarkers = [];
+            ['poiList', 'poiFocusList'].forEach(id => {
+                const box = document.getElementById(id);
+                if (box) { box.style.display = 'none'; box.innerHTML = ''; }
+            });
+        }
+
+        function clearAll() {
+            clearPOI();
+            startPoint = destPoint = null;
+            viaPoints.forEach(v => { if (v.marker) map.removeLayer(v.marker); });
+            viaPoints = [];
+            nogoZones.forEach(z => { if (z.marker) map.removeLayer(z.marker); if (z.circle) map.removeLayer(z.circle); });
+            nogoZones = [];
+            [startMarker, destMarker, routeLine].forEach(l => { if (l) map.removeLayer(l); });
+            startMarker = destMarker = routeLine = null;
+            hasFitOnce = false;   // nieuwe route mag weer 1x inzoomen
+            document.getElementById('infoBar').style.display = 'none';
+            plTurnMarkers.forEach(m => map.removeLayer(m));
+            plTurnMarkers = [];
+            diagMarkers.forEach(m => map.removeLayer(m));
+            diagMarkers = [];
+            searchInput.value = '';
+            resultsEl.style.display = 'none';
+            setSearchMode('start');
+        }
+    
         // ════════ EINDE PLANNER MODULE ════════
     </script>
 
     <script>
-        const APP_VERSION = "6.79";
+        const APP_VERSION = "6.80";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
