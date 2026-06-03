@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Route Planner v3.9-debug</title>
+    <title>Route Planner v4.0-debug</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
@@ -101,7 +101,7 @@
 </head>
 <body>
     <div id="map"></div>
-    <div id="versionLabel" style="position:absolute; bottom:4px; right:6px; z-index:1000; font-family:sans-serif; font-size:10px; color:rgba(255,255,255,0.7); background:rgba(0,0,0,0.4); padding:2px 6px; border-radius:6px; pointer-events:none;">v3.9-debug</div>
+    <div id="versionLabel" style="position:absolute; bottom:4px; right:6px; z-index:1000; font-family:sans-serif; font-size:10px; color:rgba(255,255,255,0.7); background:rgba(0,0,0,0.4); padding:2px 6px; border-radius:6px; pointer-events:none;">v4.0-debug</div>
 
     <div id="searchWrap">
         <div id="menuTabs">
@@ -525,7 +525,7 @@
                     if (!pt) return;
                     const lat = pt[1], lng = pt[0];
                     // geen lock-via plaatsen als er al een via (van welk type) heel dichtbij ligt
-                    const tooClose = viaPoints.some(v => distMeters(v.lat, v.lng, lat, lng) < 80);
+                    const tooClose = viaPoints.some(v => distM4(v.lat, v.lng, lat, lng) < 80);
                     if (tooClose) return;
                     addVia(lat, lng, 'lock', false, 'lock');
                     added++;
@@ -548,7 +548,7 @@
         const LEFT_CMDS = [2,3,4,8];     // TL, TSLL, TSHL, KL
         const RIGHT_CMDS = [5,6,7,9];    // TR, TSLR, TSHR, KR
 
-        function distMeters(aLat, aLng, bLat, bLng) {
+        function distM4(aLat, aLng, bLat, bLng) {
             const dLat = (bLat - aLat) * 111000;
             const dLng = (bLng - aLng) * 111000 * Math.cos(aLat * Math.PI / 180);
             return Math.sqrt(dLat*dLat + dLng*dLng);
@@ -584,13 +584,13 @@
                 // 1. dichtstbijzijnde routepunt-index bij deze via
                 let bestI = 0, bestD = Infinity;
                 for (let i = 0; i < coords.length; i++) {
-                    const d = distMeters(v.lat, v.lng, coords[i][1], coords[i][0]);
+                    const d = distM4(v.lat, v.lng, coords[i][1], coords[i][0]);
                     if (d < bestD) { bestD = d; bestI = i; }
                 }
                 // 2. loop 10km verder langs de route vanaf bestI
                 let walked = 0, i = bestI;
                 while (i < coords.length - 1 && walked < 10000) {
-                    walked += distMeters(coords[i][1], coords[i][0], coords[i+1][1], coords[i+1][0]);
+                    walked += distM4(coords[i][1], coords[i][0], coords[i+1][1], coords[i+1][0]);
                     i++;
                 }
                 const np = coords[i];
@@ -765,14 +765,14 @@
             13: 'rotonde', 14: 'rotonde links', 15: '180° keren',
             16: 'rechte lijn', 17: 'afrit links', 18: 'afrit rechts'
         };
-        let turnMarkers = [];
+        let plTurnMarkers = [];
 
         // Turn the BRouter voicehints into map markers on the real turn points.
         // voicehint = [trackPointIndex, command, ?, distanceToNext, angle]
         function processTurns(geojson) {
             // clear old
-            turnMarkers.forEach(m => map.removeLayer(m));
-            turnMarkers = [];
+            plTurnMarkers.forEach(m => map.removeLayer(m));
+            plTurnMarkers = [];
             try {
                 const feat = geojson.features[0];
                 const coords = feat.geometry.coordinates;   // [ [lng,lat,ele], ... ]
@@ -791,7 +791,7 @@
                     const m = L.circleMarker([lat, lng], {
                         radius: 7, color: '#fff', weight: 2, fillColor: color, fillOpacity: 0.9
                     }).addTo(map).bindPopup(name);
-                    turnMarkers.push(m);
+                    plTurnMarkers.push(m);
                     list.push(name);
                 });
                 return list;
@@ -936,7 +936,7 @@
                 let dRoute = Infinity;
                 if (coords && coords.length) {
                     for (let i = 0; i < coords.length; i++) {
-                        const d = distMeters(e.lat, e.lng, coords[i][1], coords[i][0]);
+                        const d = distM4(e.lat, e.lng, coords[i][1], coords[i][0]);
                         if (d < dRoute) dRoute = d;
                     }
                 }
@@ -949,7 +949,7 @@
                 const near = els.filter(e => e._dRoute <= 2000);
                 // afstand vanaf jou vooraf berekenen zodat we erop kunnen sorteren
                 near.forEach(e => {
-                    e._dPos = myPos ? distMeters(myPos.lat, myPos.lng, e.lat, e.lng) : Infinity;
+                    e._dPos = myPos ? distM4(myPos.lat, myPos.lng, e.lat, e.lng) : Infinity;
                 });
                 near.sort((a,b) => a._dPos - b._dPos);   // dichtstbij jou eerst
                 const box = document.getElementById('poiFocusList');
@@ -1020,8 +1020,8 @@
             startMarker = destMarker = routeLine = null;
             hasFitOnce = false;   // nieuwe route mag weer 1x inzoomen
             document.getElementById('infoBar').style.display = 'none';
-            turnMarkers.forEach(m => map.removeLayer(m));
-            turnMarkers = [];
+            plTurnMarkers.forEach(m => map.removeLayer(m));
+            plTurnMarkers = [];
             diagMarkers.forEach(m => map.removeLayer(m));
             diagMarkers = [];
             searchInput.value = '';
