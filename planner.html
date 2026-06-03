@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Route Planner v2.5-debug</title>
+    <title>Route Planner v2.6-debug</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
@@ -75,7 +75,7 @@
 </head>
 <body>
     <div id="map"></div>
-    <div id="versionLabel" style="position:absolute; bottom:4px; right:6px; z-index:1000; font-family:sans-serif; font-size:10px; color:rgba(255,255,255,0.7); background:rgba(0,0,0,0.4); padding:2px 6px; border-radius:6px; pointer-events:none;">v2.5-debug</div>
+    <div id="versionLabel" style="position:absolute; bottom:4px; right:6px; z-index:1000; font-family:sans-serif; font-size:10px; color:rgba(255,255,255,0.7); background:rgba(0,0,0,0.4); padding:2px 6px; border-radius:6px; pointer-events:none;">v2.6-debug</div>
 
     <div id="searchWrap">
         <div id="searchBar">
@@ -522,11 +522,15 @@
 
                 if (!best) { showInfo('Omweg zoeken mislukt — probeer opnieuw.'); return; }
 
-                // best.pts zijn al verankerd op de route → plaats als OMWEG-via's.
-                // Eigen via's blijven staan; alleen oude omweg-via's verwijderen.
-                viaPoints.filter(v => v.kind === 'omweg').forEach(v => { if (v.marker) map.removeLayer(v.marker); });
-                viaPoints = viaPoints.filter(v => v.kind !== 'omweg');
-                best.pts.forEach(p => addVia(p.lat, p.lng, 'omweg', false, 'omweg'));
+                // SCHONE HEROPBOUW (jouw aanpak):
+                // 1. eigen via's zijn al bewaard in ownVias (met hun volgorde)
+                // 2. wis ALLE via's van de kaart → schone lei
+                viaPoints.forEach(v => { if (v.marker) map.removeLayer(v.marker); });
+                viaPoints = [];
+                // 3. zet de eigen via's terug op hun oorspronkelijke plek (paars)
+                ownVias.forEach(v => addVia(v.lat, v.lng, v.label, false, 'eigen'));
+                // 4. weef de nieuwe omweg-via's ertussen (slim invoegen op geografische plek, oranje)
+                best.pts.forEach(p => addVia(p.lat, p.lng, 'omweg', true, 'omweg'));
                 await maybeRoute();
                 showInfo(document.getElementById('infoBar').innerHTML + ` &nbsp;(doel ${target} km)`);
                 drawDiagnosis();
