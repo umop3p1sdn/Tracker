@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Route Planner v1.7</title>
+    <title>Route Planner v1.8-debug</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
@@ -75,7 +75,7 @@
 </head>
 <body>
     <div id="map"></div>
-    <div id="versionLabel" style="position:absolute; bottom:4px; right:6px; z-index:1000; font-family:sans-serif; font-size:10px; color:rgba(255,255,255,0.7); background:rgba(0,0,0,0.4); padding:2px 6px; border-radius:6px; pointer-events:none;">v1.7</div>
+    <div id="versionLabel" style="position:absolute; bottom:4px; right:6px; z-index:1000; font-family:sans-serif; font-size:10px; color:rgba(255,255,255,0.7); background:rgba(0,0,0,0.4); padding:2px 6px; border-radius:6px; pointer-events:none;">v1.8-debug</div>
 
     <div id="searchWrap">
         <div id="searchBar">
@@ -141,6 +141,8 @@
         }
         let pendingTap = null;      // {lat,lng} while the Start/Finish/Via menu is open
         let hasFitOnce = false;     // alleen 1e route inzoomen, daarna zoom/positie behouden
+        let lastTurnSpots = [];     // DIAGNOSE: laatst gevonden keerplekken
+        let diagMarkers = [];       // DIAGNOSE: rode stipjes op de kaart
 
         // ─── Marker icons ───
         function pinIcon(color) {
@@ -381,7 +383,22 @@
             return Math.sqrt(dLat*dLat + dLng*dLng);
         }
 
+        // DIAGNOSE: teken de laatst gevonden keerplekken als rode stipjes + telling.
+        function drawDiagnosis() {
+            diagMarkers.forEach(m => map.removeLayer(m));
+            diagMarkers = [];
+            lastTurnSpots.forEach(s => {
+                const m = L.circleMarker([s.lat, s.lng], {
+                    radius: 6, color: '#fff', weight: 1, fillColor: '#FF1744', fillOpacity: 0.95
+                }).addTo(map).bindPopup('keerplek gevonden');
+                diagMarkers.push(m);
+            });
+            const info = document.getElementById('infoBar');
+            info.innerHTML += ` &nbsp; 🔴 ${lastTurnSpots.length} keerplekken`;
+        }
+
         function repositionUturnVias(vias, hints, coords) {
+            lastTurnSpots = [];   // DIAGNOSE: reset bij elke run
             if (!hints.length) return vias;
 
             // 1. Verzamel kandidaat-T-splitsingen: plek + richting van de doorgaande weg.
@@ -450,6 +467,7 @@
             }
 
             if (!turnSpots.length) return vias;
+            lastTurnSpots = turnSpots;   // DIAGNOSE: bewaar voor het tonen op de kaart
 
             // 2. Voor elke via dichtbij een T-splitsing: zet 'm 10m VOORBIJ op de doorgaande weg.
             return vias.map(v => {
@@ -570,6 +588,7 @@
                 finalPts.forEach(p => addVia(p.lat, p.lng, 'omweg', false));
                 await maybeRoute();
                 showInfo(document.getElementById('infoBar').innerHTML + ` &nbsp;(doel ${target} km)`);
+                drawDiagnosis();   // DIAGNOSE: toon gevonden keerplekken
 
                 detourStartSide = -detourStartSide;
             } catch (e) {
@@ -700,6 +719,8 @@
             document.getElementById('infoBar').style.display = 'none';
             turnMarkers.forEach(m => map.removeLayer(m));
             turnMarkers = [];
+            diagMarkers.forEach(m => map.removeLayer(m));
+            diagMarkers = [];
             searchInput.value = '';
             resultsEl.style.display = 'none';
             setSearchMode('start');
