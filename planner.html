@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Route Planner v1.8-debug</title>
+    <title>Route Planner v1.9-debug</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
@@ -75,7 +75,7 @@
 </head>
 <body>
     <div id="map"></div>
-    <div id="versionLabel" style="position:absolute; bottom:4px; right:6px; z-index:1000; font-family:sans-serif; font-size:10px; color:rgba(255,255,255,0.7); background:rgba(0,0,0,0.4); padding:2px 6px; border-radius:6px; pointer-events:none;">v1.8-debug</div>
+    <div id="versionLabel" style="position:absolute; bottom:4px; right:6px; z-index:1000; font-family:sans-serif; font-size:10px; color:rgba(255,255,255,0.7); background:rgba(0,0,0,0.4); padding:2px 6px; border-radius:6px; pointer-events:none;">v1.9-debug</div>
 
     <div id="searchWrap">
         <div id="searchBar">
@@ -383,108 +383,49 @@
             return Math.sqrt(dLat*dLat + dLng*dLng);
         }
 
-        // DIAGNOSE: teken de laatst gevonden keerplekken als rode stipjes + telling.
+        // DIAGNOSE: teken hoe elke via verplaatst is (oude plek → nieuwe plek op de route).
         function drawDiagnosis() {
             diagMarkers.forEach(m => map.removeLayer(m));
             diagMarkers = [];
             lastTurnSpots.forEach(s => {
-                const m = L.circleMarker([s.lat, s.lng], {
-                    radius: 6, color: '#fff', weight: 1, fillColor: '#FF1744', fillOpacity: 0.95
-                }).addTo(map).bindPopup('keerplek gevonden');
-                diagMarkers.push(m);
+                if (s.fromLat != null) {
+                    // lijn van oude naar nieuwe positie
+                    const line = L.polyline([[s.fromLat, s.fromLng], [s.lat, s.lng]],
+                        { color: '#FF1744', weight: 2, dashArray: '4,4' }).addTo(map);
+                    diagMarkers.push(line);
+                    // klein rood stipje op de OUDE plek
+                    const old = L.circleMarker([s.fromLat, s.fromLng], {
+                        radius: 5, color: '#fff', weight: 1, fillColor: '#FF1744', fillOpacity: 0.9
+                    }).addTo(map).bindPopup('via stond hier → verplaatst naar route');
+                    diagMarkers.push(old);
+                }
             });
-            const info = document.getElementById('infoBar');
-            info.innerHTML += ` &nbsp; 🔴 ${lastTurnSpots.length} keerplekken`;
         }
 
+        // Verplaats elke opzij-via naar een punt OP de route: zoek het dichtstbijzijnde
+        // routepunt bij de via, ga dan 250m verder langs de route. Zo ligt de via op een
+        // rijdbare lijn (geen tongetje/doodloper mogelijk).
         function repositionUturnVias(vias, hints, coords) {
-            lastTurnSpots = [];   // DIAGNOSE: reset bij elke run
-            if (!hints.length) return vias;
+            lastTurnSpots = [];   // DIAGNOSE: reset
+            if (!coords || coords.length < 2) return vias;
 
-            // 1. Verzamel kandidaat-T-splitsingen: plek + richting van de doorgaande weg.
-            const turnSpots = [];   // {lat, lng, dirLat, dirLng}
-
-            // (a) directe 180°-keer (TU): doorgaande richting = langs de route bij dat punt
-            hints.forEach(h => {
-                if (h[1] !== 15) return;
-                const i = h[0];
-                const pt = coords[i], nxt = coords[i + 1] || coords[i - 1];
-                if (!pt || !nxt) return;
-                turnSpots.push({ lat: pt[1], lng: pt[0], dirLat: nxt[1] - pt[1], dirLng: nxt[0] - pt[0] });
-            });
-
-            // (b) tegengesteld bochtenpaar (links↔rechts) in DEZELFDE kruising (heel dichtbij).
-            // Als je de 2 afslagen verbindt is dat de doorgaande (rechte) weg.
-            for (let i = 0; i < hints.length - 1; i++) {
-                const a = hints[i], b = hints[i + 1];
-                const aL = LEFT_CMDS.includes(a[1]), aR = RIGHT_CMDS.includes(a[1]);
-                const bL = LEFT_CMDS.includes(b[1]), bR = RIGHT_CMDS.includes(b[1]);
-                if (!((aL && bR) || (aR && bL))) continue;
-                const pa = coords[a[0]], pb = coords[b[0]];
-                if (!pa || !pb) continue;
-                const gap = distMeters(pa[1], pa[0], pb[1], pb[0]);
-                if (gap > 15) continue;                 // zelfde kruising = heel dichtbij
-                // doorgaande weg = lijn tussen de 2 afslagen; richting = van b weg van het tongetje
-                // pak een routepunt iets vóór de eerste afslag als doorgaande richting
-                const before = coords[Math.max(0, a[0] - 2)];
-                turnSpots.push({
-                    lat: pa[1], lng: pa[0],
-                    dirLat: pa[1] - before[1], dirLng: pa[0] - before[0]
-                });
-            }
-
-            // (c) GEOMETRISCH: twee route-stukken die dicht naast elkaar in TEGENGESTELDE
-            // richting lopen = een heen-en-terug uitstapje (vangt T-doorrijden, Y-splitsing,
-            // lange doodlopers). Het beginpunt van de lus ligt op de doorgaande weg.
-            const N = coords.length;
-            const STEP = N > 1500 ? 3 : 1;   // bij lange routes grover scannen (snelheid)
-            for (let i = 2; i < N - 2; i += STEP) {
-                const p = coords[i];
-                // richting van het 'heen'-stuk bij i
-                const hLat = coords[i + 1][1] - coords[i - 1][1];
-                const hLng = coords[i + 1][0] - coords[i - 1][0];
-                const hLen = Math.sqrt(hLat*hLat + hLng*hLng) || 1e-9;
-                // zoek verderop een punt j dat dichtbij p ligt maar tegengesteld loopt
-                for (let j = i + 6; j < N - 1; j += STEP) {
-                    const q = coords[j];
-                    const d = distMeters(p[1], p[0], q[1], q[0]);
-                    if (d > 30) continue;               // moet dicht naast elkaar liggen
-                    const tLat = coords[j + 1][1] - coords[j - 1][1];
-                    const tLng = coords[j + 1][0] - coords[j - 1][0];
-                    const tLen = Math.sqrt(tLat*tLat + tLng*tLng) || 1e-9;
-                    // genormaliseerd inproduct: ~-1 = tegengesteld
-                    const dot = (hLat*tLat + hLng*tLng) / (hLen * tLen);
-                    if (dot < -0.7) {
-                        // begin van de lus ≈ punt i; doorgaande richting = vóór i
-                        const before = coords[Math.max(0, i - 2)];
-                        turnSpots.push({
-                            lat: p[1], lng: p[0],
-                            dirLat: p[1] - before[1], dirLng: p[0] - before[0]
-                        });
-                        break;   // dit heen-stuk afgehandeld
-                    }
-                }
-            }
-
-            if (!turnSpots.length) return vias;
-            lastTurnSpots = turnSpots;   // DIAGNOSE: bewaar voor het tonen op de kaart
-
-            // 2. Voor elke via dichtbij een T-splitsing: zet 'm 10m VOORBIJ op de doorgaande weg.
             return vias.map(v => {
-                let near = null, nearD = Infinity;
-                turnSpots.forEach(s => {
-                    const d = distMeters(v.lat, v.lng, s.lat, s.lng);
-                    if (d < nearD) { nearD = d; near = s; }
-                });
-                if (!near || nearD > 1500) return v;
-                // normaliseer de doorgaande richting en stap 10m vooruit
-                const dLen = Math.sqrt(near.dirLat ** 2 + near.dirLng ** 2) || 1e-9;
-                const stepDeg = 10 / 111000;            // 10 meter in graden
-                return {
-                    lat: near.lat + (near.dirLat / dLen) * stepDeg,
-                    lng: near.lng + (near.dirLng / dLen) * stepDeg,
-                    label: 'omweg'
-                };
+                // 1. dichtstbijzijnde routepunt-index bij deze via
+                let bestI = 0, bestD = Infinity;
+                for (let i = 0; i < coords.length; i++) {
+                    const d = distMeters(v.lat, v.lng, coords[i][1], coords[i][0]);
+                    if (d < bestD) { bestD = d; bestI = i; }
+                }
+                // 2. loop 250m verder langs de route vanaf bestI
+                let walked = 0, i = bestI;
+                while (i < coords.length - 1 && walked < 250) {
+                    walked += distMeters(coords[i][1], coords[i][0], coords[i+1][1], coords[i+1][0]);
+                    i++;
+                }
+                const np = coords[i];
+                // DIAGNOSE: bewaar oude→nieuwe positie om te tonen
+                lastTurnSpots.push({ fromLat: v.lat, fromLng: v.lng, lat: np[1], lng: np[0] });
+                return { lat: np[1], lng: np[0], label: 'omweg' };
             });
         }
 
@@ -566,29 +507,21 @@
 
                 if (!best) { showInfo('Omweg zoeken mislukt — probeer opnieuw.'); return; }
 
-                // ── Doodlopers corrigeren: T-splitsing-detectie, herhaal tot schoon (max 3 rondes) ──
+                // ── Via's op de route verankeren: meet route, verplaats elke via 250m verder op de lijn ──
                 let finalPts = best.pts;
-                showInfo('Doodlopers controleren...');
-                for (let round = 0; round < 3; round++) {
-                    let measured;
-                    try { measured = await measureRoute([startPoint, ...finalPts, destPoint]); }
-                    catch (e) { break; }
-                    // nog een 180°-keer aanwezig?
-                    const hasUturn = measured.hints.some(h => h[1] === 15);
-                    const corrected = repositionUturnVias(finalPts, measured.hints, measured.coords);
-                    // niets veranderd én geen keer meer? klaar.
-                    const changed = corrected.some((p, i) => p.lat !== finalPts[i].lat || p.lng !== finalPts[i].lng);
-                    finalPts = corrected;
-                    if (!hasUturn && !changed) break;
-                }
+                showInfo('Via\'s op route plaatsen...');
+                try {
+                    const measured = await measureRoute([startPoint, ...finalPts, destPoint]);
+                    finalPts = repositionUturnVias(finalPts, measured.hints, measured.coords);
+                } catch (e) { /* meten mislukt: gebruik opzij-punten */ }
 
-                // plaats de (gecorrigeerde) punten als tussenpunten en teken de route
+                // plaats de (verankerde) punten als tussenpunten en teken de route
                 viaPoints.forEach(v => { if (v.marker) map.removeLayer(v.marker); });
                 viaPoints = [];
                 finalPts.forEach(p => addVia(p.lat, p.lng, 'omweg', false));
                 await maybeRoute();
                 showInfo(document.getElementById('infoBar').innerHTML + ` &nbsp;(doel ${target} km)`);
-                drawDiagnosis();   // DIAGNOSE: toon gevonden keerplekken
+                drawDiagnosis();   // DIAGNOSE: toon via-verplaatsing (oud → op route)
 
                 detourStartSide = -detourStartSide;
             } catch (e) {
