@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Route Planner v3.0-debug</title>
+    <title>Route Planner v3.1-debug</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
@@ -75,7 +75,7 @@
 </head>
 <body>
     <div id="map"></div>
-    <div id="versionLabel" style="position:absolute; bottom:4px; right:6px; z-index:1000; font-family:sans-serif; font-size:10px; color:rgba(255,255,255,0.7); background:rgba(0,0,0,0.4); padding:2px 6px; border-radius:6px; pointer-events:none;">v3.0-debug</div>
+    <div id="versionLabel" style="position:absolute; bottom:4px; right:6px; z-index:1000; font-family:sans-serif; font-size:10px; color:rgba(255,255,255,0.7); background:rgba(0,0,0,0.4); padding:2px 6px; border-radius:6px; pointer-events:none;">v3.1-debug</div>
 
     <div id="searchWrap">
         <div id="searchBar">
@@ -111,6 +111,10 @@
         <button onclick="tapChoose('via')" style="padding:12px; border-radius:8px; border:2px solid #9C27B0; background:transparent; color:#ce93d8; font-weight:bold; font-size:1em; cursor:pointer;">Tussen (slim)</button>
         <button onclick="tapChoose('achteraan')" style="padding:12px; border-radius:8px; border:2px solid #9C27B0; background:transparent; color:#ce93d8; font-weight:bold; font-size:1em; cursor:pointer;">Achteraan</button>
         <button onclick="tapChoose('dest')" style="padding:12px; border-radius:8px; border:2px solid #000; color:#000; font-weight:bold; font-size:1em; cursor:pointer; background:#eee;">Finish 🏁</button>
+        <div style="display:flex; gap:6px; align-items:center;">
+            <input id="nogoKm" type="number" inputmode="decimal" placeholder="km" value="2" style="width:60px; padding:12px; border-radius:8px; border:2px solid #FF1744; background:#0a0e27; color:#fff; font-size:1em; text-align:center;">
+            <button onclick="tapChoose('nogo')" style="flex:1; padding:12px; border-radius:8px; border:2px solid #FF1744; background:transparent; color:#FF5252; font-weight:bold; font-size:1em; cursor:pointer;">Vermijden ⛔</button>
+        </div>
         <button onclick="tapCancel()" style="padding:8px; border-radius:8px; border:none; background:transparent; color:#889; font-size:0.85em; cursor:pointer;">Annuleer</button>
     </div>
 
@@ -125,6 +129,7 @@
         let startPoint = null;      // {lat, lng, label}
         let destPoint = null;       // {lat, lng, label}
         let viaPoints = [];         // [{lat,lng,label,marker}] tussenpunten, in routevolgorde
+        let nogoZones = [];         // [{lat,lng,radius,marker,circle}] te vermijden gebieden
         let viaMarkers = [];
         let startMarker = null, destMarker = null, routeLine = null;
         let searchMode = 'start';   // which point the search fills: start | dest | via
@@ -160,8 +165,13 @@
                 iconSize: [30, 40], iconAnchor: [4, 32], popupAnchor: [10, -30]
             });
         }
-
-        // ─── Tap on map → choose Start / Finish / Tussenpunt ───
+        function nogoIcon() {
+            return L.divIcon({
+                className: 'nogo-marker',
+                html: `<svg width="28" height="28" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#FF1744" stroke="#fff" stroke-width="2"/><rect x="5" y="10.5" width="14" height="3" fill="#fff"/></svg>`,
+                iconSize: [28, 28], iconAnchor: [14, 14], popupAnchor: [0, -14]
+            });
+        }
         function onMapTap(e) {
             pendingTap = { lat: e.latlng.lat, lng: e.latlng.lng };
             document.getElementById('tapMenu').style.display = 'flex';
@@ -175,6 +185,10 @@
             else if (kind === 'dest') setDest(lat, lng, label);
             else if (kind === 'via') addVia(lat, lng, label, true);       // slim
             else if (kind === 'achteraan') addVia(lat, lng, label, false); // achteraan
+            else if (kind === 'nogo') {
+                const km = parseFloat(document.getElementById('nogoKm').value) || 2;
+                addNogo(lat, lng, km);
+            }
             pendingTap = null;
             maybeRoute();
         }
@@ -335,6 +349,43 @@
             maybeRoute();
         }
 
+        // Vermijd-zone: rode pin + zichtbare cirkel met radius (km). Tik om aan te passen/verwijderen.
+        function addNogo(lat, lng, km) {
+            const radiusM = km * 1000;
+            const zone = { lat, lng, radius: radiusM };
+            zone.circle = L.circle([lat, lng], {
+                radius: radiusM, color: '#FF1744', weight: 2,
+                fillColor: '#FF1744', fillOpacity: 0.15, interactive: false
+            }).addTo(map);
+            zone.marker = L.marker([lat, lng], { icon: nogoIcon() }).addTo(map);
+            zone.marker.on('click', () => editNogo(zone));
+            nogoZones.push(zone);
+        }
+
+        function editNogo(zone) {
+            const cur = (zone.radius / 1000).toFixed(1);
+            const ans = prompt('Vermijd-straal in km (leeg = verwijderen):', cur);
+            if (ans === null) return;                 // geannuleerd
+            const km = parseFloat(ans);
+            if (!km || km <= 0) {                     // leeg/0 = verwijderen
+                map.removeLayer(zone.marker); map.removeLayer(zone.circle);
+                nogoZones = nogoZones.filter(z => z !== zone);
+            } else {
+                zone.radius = km * 1000;
+                zone.circle.setRadius(zone.radius);
+            }
+            maybeRoute();
+        }
+
+        // BRouter nogos-parameter: "lng,lat,radius[,weight]" per zone, met komma's aaneen.
+        // weight maakt het ZACHT (mag erdoor als het echt niet anders kan).
+        function nogosParam() {
+            if (!nogoZones.length) return '';
+            const parts = nogoZones.map(z => `${z.lng},${z.lat},${Math.round(z.radius)},2`);
+            return '&nogos=' + parts.join(',');
+        }
+
+
         // Ordered list of all points: start, vias (in order), dest
         function routeSequence() {
             const seq = [];
@@ -360,7 +411,7 @@
         // Meet de routeafstand (km) langs gegeven punten via BRouter. Geeft null bij fout.
         async function measureRoute(points) {
             const lonlats = points.map(p => `${p.lng},${p.lat}`).join('|');
-            const url = `https://brouter.de/brouter?lonlats=${lonlats}&${brouterParams()}&alternativeidx=0&format=geojson&turnInstructionMode=2`;
+            const url = `https://brouter.de/brouter?lonlats=${lonlats}&${brouterParams()}${nogosParam()}&alternativeidx=0&format=geojson&turnInstructionMode=2`;
             const res = await fetch(url);
             const data = await res.json();
             const feat = data.features[0];
@@ -565,7 +616,7 @@
             try {
                 // all points in order: start|via|via|...|dest  as lon,lat
                 const lonlats = seq.map(p => `${p.lng},${p.lat}`).join('|');
-                const url = `https://brouter.de/brouter?lonlats=${lonlats}&${brouterParams()}&alternativeidx=0&format=geojson&turnInstructionMode=2`;
+                const url = `https://brouter.de/brouter?lonlats=${lonlats}&${brouterParams()}${nogosParam()}&alternativeidx=0&format=geojson&turnInstructionMode=2`;
                 const res = await fetch(url);
                 const data = await res.json();
                 drawRoute(data);
@@ -666,6 +717,8 @@
             startPoint = destPoint = null;
             viaPoints.forEach(v => { if (v.marker) map.removeLayer(v.marker); });
             viaPoints = [];
+            nogoZones.forEach(z => { if (z.marker) map.removeLayer(z.marker); if (z.circle) map.removeLayer(z.circle); });
+            nogoZones = [];
             [startMarker, destMarker, routeLine].forEach(l => { if (l) map.removeLayer(l); });
             startMarker = destMarker = routeLine = null;
             hasFitOnce = false;   // nieuwe route mag weer 1x inzoomen
