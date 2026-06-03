@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Route Planner v3.3-debug</title>
+    <title>Route Planner v3.4-debug</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
@@ -75,7 +75,7 @@
 </head>
 <body>
     <div id="map"></div>
-    <div id="versionLabel" style="position:absolute; bottom:4px; right:6px; z-index:1000; font-family:sans-serif; font-size:10px; color:rgba(255,255,255,0.7); background:rgba(0,0,0,0.4); padding:2px 6px; border-radius:6px; pointer-events:none;">v3.3-debug</div>
+    <div id="versionLabel" style="position:absolute; bottom:4px; right:6px; z-index:1000; font-family:sans-serif; font-size:10px; color:rgba(255,255,255,0.7); background:rgba(0,0,0,0.4); padding:2px 6px; border-radius:6px; pointer-events:none;">v3.4-debug</div>
 
     <div id="searchWrap">
         <div id="searchBar">
@@ -101,6 +101,16 @@
         <div id="lockRow" style="display:flex; gap:6px; margin-top:6px;">
             <button onclick="lockRoute()" style="flex:1; padding:8px; border-radius:8px; border:2px solid #4CAF50; background:#e8e8ea; color:#1a1a2e; font-weight:bold; font-size:0.8em; cursor:pointer;">Lock</button>
         </div>
+        <div id="poiRow" style="display:flex; gap:6px; margin-top:6px;">
+            <button onclick="searchPOI('benzine')" style="flex:1; padding:8px; border-radius:8px; border:2px solid #555; background:#e8e8ea; color:#1a1a2e; font-weight:bold; font-size:0.8em; cursor:pointer;">Benzine</button>
+            <button onclick="searchPOI('eten')" style="flex:1; padding:8px; border-radius:8px; border:2px solid #555; background:#e8e8ea; color:#1a1a2e; font-weight:bold; font-size:0.8em; cursor:pointer;">Eten</button>
+            <button onclick="searchPOI('koffie')" style="flex:1; padding:8px; border-radius:8px; border:2px solid #555; background:#e8e8ea; color:#1a1a2e; font-weight:bold; font-size:0.8em; cursor:pointer;">Koffie</button>
+        </div>
+        <div id="poiSearchRow" style="display:flex; gap:6px; margin-top:6px;">
+            <input id="poiText" type="text" placeholder="Zoek POI (bv hotel, bakker, uitzicht)..." autocomplete="off" style="flex:1; padding:8px; border-radius:8px; border:2px solid #555; background:#e8e8ea; color:#1a1a2e; font-size:0.85em;">
+            <button onclick="searchPOI(document.getElementById('poiText').value)" style="flex:0 0 auto; padding:8px 12px; border-radius:8px; border:2px solid #555; background:#e8e8ea; color:#1a1a2e; font-weight:bold; font-size:0.85em; cursor:pointer;">Zoek</button>
+        </div>
+        <div id="poiList" style="display:none; margin-top:6px; max-height:160px; overflow-y:auto; background:#0a0e27; border:1px solid #1a2148; border-radius:10px;"></div>
         <div id="results"></div>
     </div>
 
@@ -750,7 +760,161 @@
             bar.style.display = 'block';
         }
 
+        // ─── POI-zoek (Overpass): markers op de kaart + lijst van POI's langs de route ───
+        let poiMarkers = [];   // markers van gevonden POI's
+
+        // steekwoord → OSM-tag. Onbekend woord → naam-zoek (fallback).
+        const POI_TAGS = {
+            benzine: 'amenity=fuel', tanken: 'amenity=fuel', pomp: 'amenity=fuel',
+            eten: 'amenity=restaurant', restaurant: 'amenity=restaurant', eetcafe: 'amenity=restaurant',
+            koffie: 'amenity=cafe', cafe: 'amenity=cafe',
+            hotel: 'tourism=hotel', overnachten: 'tourism=hotel',
+            bakker: 'shop=bakery', supermarkt: 'shop=supermarket',
+            pin: 'amenity=atm', pinautomaat: 'amenity=atm', geld: 'amenity=atm',
+            uitzicht: 'tourism=viewpoint', bezienswaardigheid: 'tourism=attraction',
+            parkeren: 'amenity=parking', wc: 'amenity=toilets', toilet: 'amenity=toilets',
+            fastfood: 'amenity=fast_food', snackbar: 'amenity=fast_food'
+        };
+        // icoon-kleur per soort (op de kaart)
+        function poiColor(kind) {
+            if (kind === 'benzine') return '#2196F3';
+            if (kind === 'eten') return '#FF5722';
+            if (kind === 'koffie') return '#795548';
+            return '#009688';
+        }
+        function poiEmoji(tag) {
+            if (tag.includes('fuel')) return '⛽';
+            if (tag.includes('restaurant') || tag.includes('fast_food')) return '🍽';
+            if (tag.includes('cafe')) return '☕';
+            if (tag.includes('hotel')) return '🛏';
+            if (tag.includes('bakery')) return '🥐';
+            if (tag.includes('supermarket')) return '🛒';
+            if (tag.includes('atm')) return '🏧';
+            if (tag.includes('viewpoint') || tag.includes('attraction')) return '📷';
+            if (tag.includes('parking')) return '🅿️';
+            if (tag.includes('toilets')) return '🚻';
+            return '📍';
+        }
+
+        async function searchPOI(term) {
+            term = (term || '').trim().toLowerCase();
+            if (!term) { alert('Typ een zoekterm of kies een knop.'); return; }
+            clearPOI();
+            showInfo('POI zoeken...');
+
+            // bepaal de query: bekende tag of naam-zoek
+            const tag = POI_TAGS[term];
+            const c = map.getCenter();
+            // grote diameter rond kaartmidden (jij pant zelf)
+            const radius = 20000;   // 20 km
+            let filter;
+            if (tag) {
+                const [k, v] = tag.split('=');
+                filter = `["${k}"="${v}"]`;
+            } else {
+                // onbekend woord → zoek op naam (hoofdletterongevoelig)
+                filter = `["name"~"${term}",i]`;
+            }
+            const q = `[out:json][timeout:25];(node${filter}(around:${radius},${c.lat},${c.lng});way${filter}(around:${radius},${c.lat},${c.lng}););out center 60;`;
+            try {
+                const res = await fetch('https://overpass-api.de/api/interpreter', {
+                    method: 'POST', body: 'data=' + encodeURIComponent(q)
+                });
+                const data = await res.json();
+                const els = (data.elements || []).map(e => {
+                    const lat = e.lat || (e.center && e.center.lat);
+                    const lng = e.lon || (e.center && e.center.lon);
+                    return { lat, lng, tags: e.tags || {} };
+                }).filter(e => e.lat && e.lng);
+                if (!els.length) { showInfo(`Geen resultaten voor "${term}" in de buurt.`); return; }
+                drawPOI(els, term, tag || 'name');
+            } catch (e) {
+                console.error('POI search failed', e);
+                showInfo('POI zoeken mislukt — probeer opnieuw.');
+            }
+        }
+
+        function drawPOI(els, term, tag) {
+            const kind = ['benzine','eten','koffie'].includes(term) ? term : 'overig';
+            const color = poiColor(kind);
+            const emoji = poiEmoji(tag);
+
+            // route-coords voor "langs de route"-filtering van de lijst
+            const coords = lastRouteCoords;
+
+            const listItems = [];
+            els.forEach(e => {
+                // marker met emoji-icoon
+                const icon = L.divIcon({
+                    className: 'poi-marker',
+                    html: `<div style="background:${color};border:2px solid #fff;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-size:13px;">${emoji}</div>`,
+                    iconSize: [26,26], iconAnchor: [13,13], popupAnchor: [0,-13]
+                });
+                const m = L.marker([e.lat, e.lng], { icon }).addTo(map);
+                m.on('click', () => openPOI(e, m));
+                poiMarkers.push(m);
+
+                // afstand tot de route (voor de lijst): min. afstand tot een routepunt
+                let dRoute = Infinity;
+                if (coords && coords.length) {
+                    for (let i = 0; i < coords.length; i++) {
+                        const d = distMeters(e.lat, e.lng, coords[i][1], coords[i][0]);
+                        if (d < dRoute) dRoute = d;
+                    }
+                }
+                e._dRoute = dRoute;
+            });
+
+            // lijst: alleen POI's binnen ~2km van de route, gesorteerd op afstand-tot-route
+            if (coords && coords.length) {
+                const near = els.filter(e => e._dRoute <= 2000).sort((a,b) => a._dRoute - b._dRoute);
+                const box = document.getElementById('poiList');
+                if (near.length) {
+                    box.innerHTML = '';
+                    near.forEach(e => {
+                        const name = e.tags.name || e.tags.brand || '(naamloos)';
+                        const km = (e._dRoute/1000).toFixed(1);
+                        const div = document.createElement('div');
+                        div.style.cssText = 'padding:10px 12px;color:#fff;cursor:pointer;border-bottom:1px solid #1a2148;font-size:0.85em;display:flex;gap:10px;';
+                        div.innerHTML = `<span style="color:#00BCD4;font-weight:bold;min-width:48px;">${km} km</span><span>${name}</span>`;
+                        div.onclick = () => { map.setView([e.lat, e.lng], 15); };
+                        box.appendChild(div);
+                    });
+                    box.style.display = 'block';
+                }
+            }
+            showInfo(`${els.length} gevonden voor "${term}" — tik een icoon voor info.`);
+        }
+
+        function openPOI(e, marker) {
+            const t = e.tags;
+            const name = t.name || t.brand || '(naamloos)';
+            let details = [];
+            if (t.brand && t.brand !== name) details.push(t.brand);
+            if (t.cuisine) details.push('keuken: ' + t.cuisine.replace(/_/g,' '));
+            if (t.amenity) details.push(t.amenity.replace(/_/g,' '));
+            if (t.shop) details.push(t.shop.replace(/_/g,' '));
+            if (t.opening_hours) details.push('🕒 ' + t.opening_hours);
+            const html = `<b>${name}</b>${details.length ? '<br>' + details.join('<br>') : ''}` +
+                `<br><button onclick="addPOIasVia(${e.lat},${e.lng},'${name.replace(/'/g,"")}')" style="margin-top:8px;padding:8px 10px;border-radius:8px;border:none;background:#9C27B0;color:#fff;font-weight:bold;cursor:pointer;">Slim toevoegen aan route</button>`;
+            marker.bindPopup(html).openPopup();
+        }
+
+        function addPOIasVia(lat, lng, name) {
+            addVia(lat, lng, name, true, 'eigen');   // slim invoegen als eigen via
+            clearPOI();                               // overige POI's van de kaart
+            maybeRoute();
+        }
+
+        function clearPOI() {
+            poiMarkers.forEach(m => map.removeLayer(m));
+            poiMarkers = [];
+            const box = document.getElementById('poiList');
+            if (box) { box.style.display = 'none'; box.innerHTML = ''; }
+        }
+
         function clearAll() {
+            clearPOI();
             startPoint = destPoint = null;
             viaPoints.forEach(v => { if (v.marker) map.removeLayer(v.marker); });
             viaPoints = [];
