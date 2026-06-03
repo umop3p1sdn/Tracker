@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Route Planner v2.3-debug</title>
+    <title>Route Planner v2.4-debug</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
@@ -75,7 +75,7 @@
 </head>
 <body>
     <div id="map"></div>
-    <div id="versionLabel" style="position:absolute; bottom:4px; right:6px; z-index:1000; font-family:sans-serif; font-size:10px; color:rgba(255,255,255,0.7); background:rgba(0,0,0,0.4); padding:2px 6px; border-radius:6px; pointer-events:none;">v2.3-debug</div>
+    <div id="versionLabel" style="position:absolute; bottom:4px; right:6px; z-index:1000; font-family:sans-serif; font-size:10px; color:rgba(255,255,255,0.7); background:rgba(0,0,0,0.4); padding:2px 6px; border-radius:6px; pointer-events:none;">v2.4-debug</div>
 
     <div id="searchWrap">
         <div id="searchBar">
@@ -491,37 +491,40 @@
                 let offset = (extra / 2) / Math.sqrt(nPts);
                 const startSide = detourStartSide;
 
+                // Meet de EINDafstand: slalom → verankeren op route → opnieuw meten.
+                // Zo stuurt de lus op de afstand ná correctie (die kleiner wordt door afsnijden).
+                async function measureAnchored(off) {
+                    const pts = slalomPoints(nPts, off, startSide);
+                    const m1 = await measureRoute([startPoint, ...pts, destPoint]);
+                    const anchored = repositionUturnVias(pts, m1.hints, m1.coords);
+                    const m2 = await measureRoute([startPoint, ...anchored, destPoint]);
+                    return { km: m2.km, pts: anchored };
+                }
+
                 let best = null, bestDiff = Infinity;
                 for (let i = 0; i < 6; i++) {
-                    const pts = slalomPoints(nPts, offset, startSide);
                     let r;
-                    try { r = await measureRoute([startPoint, ...pts, destPoint]); }
+                    try { r = await measureAnchored(offset); }
                     catch (e) { break; }
                     const diff = Math.abs(r.km - target);
-                    if (diff < bestDiff) { bestDiff = diff; best = { pts, km: r.km }; }
+                    if (diff < bestDiff) { bestDiff = diff; best = { pts: r.pts, km: r.km }; }
                     if (diff <= 5) break;
+                    // bijsturen op de EINDafstand
                     if (r.km < target) offset *= Math.max(1.1, (extra / Math.max(r.km - base.km, 1)));
                     else offset *= 0.7;
-                    offset = Math.max(0.3, Math.min(offset, extra));
+                    offset = Math.max(0.3, Math.min(offset, extra * 2));   // ruimer plafond (compenseert krimp)
                 }
 
                 if (!best) { showInfo('Omweg zoeken mislukt — probeer opnieuw.'); return; }
 
-                // ── Via's op de route verankeren: meet route, verplaats elke via 250m verder op de lijn ──
+                // best.pts zijn al verankerd op de route → direct plaatsen
                 let finalPts = best.pts;
-                showInfo('Via\'s op route plaatsen...');
-                try {
-                    const measured = await measureRoute([startPoint, ...finalPts, destPoint]);
-                    finalPts = repositionUturnVias(finalPts, measured.hints, measured.coords);
-                } catch (e) { /* meten mislukt: gebruik opzij-punten */ }
-
-                // plaats de (verankerde) punten als tussenpunten en teken de route
                 viaPoints.forEach(v => { if (v.marker) map.removeLayer(v.marker); });
                 viaPoints = [];
                 finalPts.forEach(p => addVia(p.lat, p.lng, 'omweg', false));
                 await maybeRoute();
                 showInfo(document.getElementById('infoBar').innerHTML + ` &nbsp;(doel ${target} km)`);
-                drawDiagnosis();   // DIAGNOSE: toon via-verplaatsing (oud → op route)
+                drawDiagnosis();
 
                 detourStartSide = -detourStartSide;
             } catch (e) {
