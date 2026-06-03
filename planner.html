@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Route Planner v3.2-debug</title>
+    <title>Route Planner v3.3-debug</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
@@ -75,7 +75,7 @@
 </head>
 <body>
     <div id="map"></div>
-    <div id="versionLabel" style="position:absolute; bottom:4px; right:6px; z-index:1000; font-family:sans-serif; font-size:10px; color:rgba(255,255,255,0.7); background:rgba(0,0,0,0.4); padding:2px 6px; border-radius:6px; pointer-events:none;">v3.2-debug</div>
+    <div id="versionLabel" style="position:absolute; bottom:4px; right:6px; z-index:1000; font-family:sans-serif; font-size:10px; color:rgba(255,255,255,0.7); background:rgba(0,0,0,0.4); padding:2px 6px; border-radius:6px; pointer-events:none;">v3.3-debug</div>
 
     <div id="searchWrap">
         <div id="searchBar">
@@ -97,6 +97,9 @@
             <input id="targetKm" type="number" inputmode="numeric" placeholder="km" style="width:56px; padding:8px; border-radius:8px; border:2px solid #555; background:#e8e8ea; color:#1a1a2e; font-size:0.9em; text-align:center;">
             <input id="targetPts" type="number" inputmode="numeric" placeholder="ptn" style="width:48px; padding:8px; border-radius:8px; border:2px solid #555; background:#e8e8ea; color:#1a1a2e; font-size:0.9em; text-align:center;">
             <button onclick="generateDetour()" style="flex:1; padding:8px; border-radius:8px; border:2px solid #555; background:#e8e8ea; color:#1a1a2e; font-weight:bold; font-size:0.8em; cursor:pointer;">Genereer omweg</button>
+        </div>
+        <div id="lockRow" style="display:flex; gap:6px; margin-top:6px;">
+            <button onclick="lockRoute()" style="flex:1; padding:8px; border-radius:8px; border:2px solid #4CAF50; background:#e8e8ea; color:#1a1a2e; font-weight:bold; font-size:0.8em; cursor:pointer;">Lock</button>
         </div>
         <div id="results"></div>
     </div>
@@ -311,7 +314,7 @@
         function addVia(lat, lng, label, slim, kind) {
             kind = kind || 'eigen';   // 'eigen' (handmatig) of 'omweg' (generator)
             const via = { lat, lng, label, kind };
-            const fill = kind === 'omweg' ? '#FF9800' : '#9C27B0';  // omweg=oranje, eigen=paars
+            const fill = kind === 'omweg' ? '#FF9800' : kind === 'lock' ? '#4CAF50' : '#9C27B0';  // omweg=oranje, lock=groen, eigen=paars
             via.marker = L.circleMarker([lat, lng], {
                 radius: 14, color: '#fff', weight: 2, fillColor: fill, fillOpacity: 0.85
             }).addTo(map);
@@ -424,6 +427,35 @@
             const hints = feat.properties.voicehints || [];
             const coords = feat.geometry.coordinates;
             return { km, data, hints, coords };
+        }
+
+        // LOCK: leg de huidige route vast met groene via's op de echte bochten.
+        // Stapelt (bestaande lock-via's blijven), geen dubbelen op dezelfde plek.
+        const LOCK_CMDS = [2,4,5,7];   // duidelijke bochten: TL, TSHL, TR, TSHR (flauw/aanhouden niet)
+        async function lockRoute() {
+            const seq = routeSequence();
+            if (seq.length < 2) { alert('Maak eerst een route.'); return; }
+            showInfo('Route vastleggen...');
+            try {
+                const m = await measureRoute(seq);
+                let added = 0;
+                m.hints.forEach(h => {
+                    if (!LOCK_CMDS.includes(h[1])) return;       // alleen echte bochten
+                    const pt = m.coords[h[0]];
+                    if (!pt) return;
+                    const lat = pt[1], lng = pt[0];
+                    // geen lock-via plaatsen als er al een via (van welk type) heel dichtbij ligt
+                    const tooClose = viaPoints.some(v => distMeters(v.lat, v.lng, lat, lng) < 80);
+                    if (tooClose) return;
+                    addVia(lat, lng, 'lock', false, 'lock');
+                    added++;
+                });
+                await maybeRoute();
+                showInfo(document.getElementById('infoBar').innerHTML + ` &nbsp;🔒 ${added} bochten vastgelegd`);
+            } catch (e) {
+                console.error('lock failed', e);
+                showInfo('Vastleggen mislukt — probeer opnieuw.');
+            }
         }
 
         // Doodloper-correctie via T-splitsing-detectie.
