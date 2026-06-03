@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Route Planner v2.4-debug</title>
+    <title>Route Planner v2.5-debug</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
@@ -75,7 +75,7 @@
 </head>
 <body>
     <div id="map"></div>
-    <div id="versionLabel" style="position:absolute; bottom:4px; right:6px; z-index:1000; font-family:sans-serif; font-size:10px; color:rgba(255,255,255,0.7); background:rgba(0,0,0,0.4); padding:2px 6px; border-radius:6px; pointer-events:none;">v2.4-debug</div>
+    <div id="versionLabel" style="position:absolute; bottom:4px; right:6px; z-index:1000; font-family:sans-serif; font-size:10px; color:rgba(255,255,255,0.7); background:rgba(0,0,0,0.4); padding:2px 6px; border-radius:6px; pointer-events:none;">v2.5-debug</div>
 
     <div id="searchWrap">
         <div id="searchBar">
@@ -288,10 +288,12 @@
         }
 
         // Add a via point. slim=true → insert into closest leg; slim=false → append.
-        function addVia(lat, lng, label, slim) {
-            const via = { lat, lng, label };
+        function addVia(lat, lng, label, slim, kind) {
+            kind = kind || 'eigen';   // 'eigen' (handmatig) of 'omweg' (generator)
+            const via = { lat, lng, label, kind };
+            const fill = kind === 'omweg' ? '#FF9800' : '#9C27B0';  // omweg=oranje, eigen=paars
             via.marker = L.circleMarker([lat, lng], {
-                radius: 14, color: '#fff', weight: 2, fillColor: '#9C27B0', fillOpacity: 0.85
+                radius: 14, color: '#fff', weight: 2, fillColor: fill, fillOpacity: 0.85
             }).addTo(map);
             via.marker.on('click', () => confirmDelete('via', via));
 
@@ -481,9 +483,11 @@
 
             showInfo('Omweg zoeken...');
             try {
-                const base = await measureRoute([startPoint, destPoint]);
+                // eigen via's (handmatig) blijven staan en tellen mee als basis
+                const ownVias = viaPoints.filter(v => v.kind !== 'omweg');
+                const base = await measureRoute([startPoint, ...ownVias, destPoint]);
                 if (target <= base.km + 5) {
-                    showInfo(`Directe route is al ${base.km.toFixed(1)} km — kies een grotere afstand.`);
+                    showInfo(`Route is al ${base.km.toFixed(1)} km — kies een grotere afstand.`);
                     return;
                 }
                 const extra = target - base.km;
@@ -495,9 +499,10 @@
                 // Zo stuurt de lus op de afstand ná correctie (die kleiner wordt door afsnijden).
                 async function measureAnchored(off) {
                     const pts = slalomPoints(nPts, off, startSide);
-                    const m1 = await measureRoute([startPoint, ...pts, destPoint]);
+                    const seq1 = [startPoint, ...ownVias, ...pts, destPoint];
+                    const m1 = await measureRoute(seq1);
                     const anchored = repositionUturnVias(pts, m1.hints, m1.coords);
-                    const m2 = await measureRoute([startPoint, ...anchored, destPoint]);
+                    const m2 = await measureRoute([startPoint, ...ownVias, ...anchored, destPoint]);
                     return { km: m2.km, pts: anchored };
                 }
 
@@ -517,11 +522,11 @@
 
                 if (!best) { showInfo('Omweg zoeken mislukt — probeer opnieuw.'); return; }
 
-                // best.pts zijn al verankerd op de route → direct plaatsen
-                let finalPts = best.pts;
-                viaPoints.forEach(v => { if (v.marker) map.removeLayer(v.marker); });
-                viaPoints = [];
-                finalPts.forEach(p => addVia(p.lat, p.lng, 'omweg', false));
+                // best.pts zijn al verankerd op de route → plaats als OMWEG-via's.
+                // Eigen via's blijven staan; alleen oude omweg-via's verwijderen.
+                viaPoints.filter(v => v.kind === 'omweg').forEach(v => { if (v.marker) map.removeLayer(v.marker); });
+                viaPoints = viaPoints.filter(v => v.kind !== 'omweg');
+                best.pts.forEach(p => addVia(p.lat, p.lng, 'omweg', false, 'omweg'));
                 await maybeRoute();
                 showInfo(document.getElementById('infoBar').innerHTML + ` &nbsp;(doel ${target} km)`);
                 drawDiagnosis();
