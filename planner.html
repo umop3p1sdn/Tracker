@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Route Planner v2.8-debug</title>
+    <title>Route Planner v2.9-debug</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
@@ -75,7 +75,7 @@
 </head>
 <body>
     <div id="map"></div>
-    <div id="versionLabel" style="position:absolute; bottom:4px; right:6px; z-index:1000; font-family:sans-serif; font-size:10px; color:rgba(255,255,255,0.7); background:rgba(0,0,0,0.4); padding:2px 6px; border-radius:6px; pointer-events:none;">v2.8-debug</div>
+    <div id="versionLabel" style="position:absolute; bottom:4px; right:6px; z-index:1000; font-family:sans-serif; font-size:10px; color:rgba(255,255,255,0.7); background:rgba(0,0,0,0.4); padding:2px 6px; border-radius:6px; pointer-events:none;">v2.9-debug</div>
 
     <div id="searchWrap">
         <div id="searchBar">
@@ -291,8 +291,8 @@
         // Add a via point. slim=true → insert into closest leg; slim=false → append.
         function addVia(lat, lng, label, slim, kind) {
             kind = kind || 'eigen';   // 'eigen' (handmatig) of 'omweg' (generator)
-            // snap naar het dichtstbijzijnde routepunt (als er een route is) → makkelijker aantikken
-            if (lastRouteCoords && lastRouteCoords.length) {
+            // alleen GEGENEREERDE via's snappen naar de route; eigen via's blijven waar je tikt
+            if (kind === 'omweg' && lastRouteCoords && lastRouteCoords.length) {
                 let bestD = Infinity, bL = lat, bG = lng;
                 for (let i = 0; i < lastRouteCoords.length; i++) {
                     const c = lastRouteCoords[i];
