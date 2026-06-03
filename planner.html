@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Route Planner v3.6-debug</title>
+    <title>Route Planner v3.7-debug</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
@@ -14,6 +14,32 @@
         /* Search box top-left */
         #searchWrap {
             position: absolute; top: 12px; left: 12px; right: 70px; z-index: 1000;
+        }
+        /* Hoofdmenu-knoppen (transparant, tracker-stijl) */
+        #menuTabs { display: flex; gap: 6px; margin-bottom: 6px; }
+        .tab-btn {
+            flex: 1; padding: 10px; border-radius: 10px;
+            border: 2px solid rgba(0,188,212,0.6);
+            background: rgba(10,14,39,0.55); color: #fff; font-weight: bold;
+            font-size: 0.9em; cursor: pointer; backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+        }
+        .tab-btn.active { background: #00BCD4; color: #0a0e27; border-color: #00BCD4; }
+        .panel { display: none; }
+        .panel.open { display: block; }
+        /* POI focus-modus: lijst linksboven, scrollbaar window */
+        #poiFocusList {
+            position: absolute; top: 12px; left: 12px; width: 270px; max-width: 60%;
+            max-height: 45vh; overflow-y: auto; z-index: 1100;
+            background: rgba(10,14,39,0.92); border: 2px solid #00BCD4; border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.6); display: none;
+        }
+        /* POI focus-modus: knoppen onderin */
+        #poiFocusBar {
+            position: absolute; bottom: 16px; left: 12px; right: 12px; z-index: 1100;
+            background: rgba(10,14,39,0.92); border: 2px solid #00BCD4; border-radius: 12px;
+            padding: 10px; box-shadow: 0 4px 16px rgba(0,0,0,0.6); display: none;
+            flex-direction: column; gap: 6px;
         }
         #searchBar {
             display: flex; align-items: center; gap: 8px;
@@ -75,44 +101,66 @@
 </head>
 <body>
     <div id="map"></div>
-    <div id="versionLabel" style="position:absolute; bottom:4px; right:6px; z-index:1000; font-family:sans-serif; font-size:10px; color:rgba(255,255,255,0.7); background:rgba(0,0,0,0.4); padding:2px 6px; border-radius:6px; pointer-events:none;">v3.6-debug</div>
+    <div id="versionLabel" style="position:absolute; bottom:4px; right:6px; z-index:1000; font-family:sans-serif; font-size:10px; color:rgba(255,255,255,0.7); background:rgba(0,0,0,0.4); padding:2px 6px; border-radius:6px; pointer-events:none;">v3.7-debug</div>
 
     <div id="searchWrap">
-        <div id="searchBar">
-            <svg id="searchIcon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#00BCD4" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/></svg>
-            <input id="searchInput" type="text" placeholder="Zoek adres of straat..." autocomplete="off">
+        <div id="menuTabs">
+            <button class="tab-btn active" id="tabRoute" onclick="toggleTab('route')">Route</button>
+            <button class="tab-btn" id="tabExtra" onclick="toggleTab('extra')">Extra</button>
+            <button class="tab-btn" id="tabPoi" onclick="openPoiFocus()">POI</button>
         </div>
-        <div id="modeRow">
-            <button class="mode-btn active" id="modeStart" onclick="setSearchMode('start')">Start</button>
-            <button class="mode-btn" id="modeVia" onclick="setSearchMode('via')">Tussen</button>
-            <button class="mode-btn" id="modeDest" onclick="setSearchMode('dest')">Finish</button>
-            <button class="mode-btn" id="useGps" onclick="useMyLocation()" style="flex:0 0 auto; border-color:#4CAF50; color:#4CAF50;">📍</button>
+
+        <div id="panelRoute" class="panel open">
+            <div id="searchBar">
+                <svg id="searchIcon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#00BCD4" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/></svg>
+                <input id="searchInput" type="text" placeholder="Zoek adres of straat..." autocomplete="off">
+            </div>
+            <div id="modeRow">
+                <button class="mode-btn active" id="modeStart" onclick="setSearchMode('start')">Start</button>
+                <button class="mode-btn" id="modeVia" onclick="setSearchMode('via')">Tussen</button>
+                <button class="mode-btn" id="modeDest" onclick="setSearchMode('dest')">Finish</button>
+                <button class="mode-btn" id="useGps" onclick="useMyLocation()" style="flex:0 0 auto; border-color:#4CAF50; color:#4CAF50;">📍</button>
+            </div>
+            <div id="profileRow">
+                <button class="prof-btn active" data-profile="car-fast" onclick="setProfile(this)">Snel</button>
+                <button class="prof-btn" data-profile="rustig" onclick="setProfile(this)">Rustig</button>
+                <button class="prof-btn" data-profile="neutraal" onclick="setProfile(this)">Neutraal</button>
+            </div>
+            <div id="results"></div>
         </div>
-        <div id="profileRow">
-            <button class="prof-btn active" data-profile="car-fast" onclick="setProfile(this)">Snel</button>
-            <button class="prof-btn" data-profile="rustig" onclick="setProfile(this)">Rustig</button>
-            <button class="prof-btn" data-profile="neutraal" onclick="setProfile(this)">Neutraal</button>
+
+        <div id="panelExtra" class="panel">
+            <div id="detourRow" style="display:flex; gap:6px; align-items:center;">
+                <input id="targetKm" type="number" inputmode="numeric" placeholder="km" style="width:56px; padding:8px; border-radius:8px; border:2px solid #555; background:#e8e8ea; color:#1a1a2e; font-size:0.9em; text-align:center;">
+                <input id="targetPts" type="number" inputmode="numeric" placeholder="ptn" style="width:48px; padding:8px; border-radius:8px; border:2px solid #555; background:#e8e8ea; color:#1a1a2e; font-size:0.9em; text-align:center;">
+                <button onclick="generateDetour()" style="flex:1; padding:8px; border-radius:8px; border:2px solid #555; background:#e8e8ea; color:#1a1a2e; font-weight:bold; font-size:0.8em; cursor:pointer;">Genereer omweg</button>
+            </div>
+            <div id="lockRow" style="display:flex; gap:6px; margin-top:6px;">
+                <button onclick="lockRoute()" style="flex:1; padding:8px; border-radius:8px; border:2px solid #4CAF50; background:#e8e8ea; color:#1a1a2e; font-weight:bold; font-size:0.8em; cursor:pointer;">Lock</button>
+            </div>
         </div>
-        <div id="detourRow" style="display:flex; gap:6px; margin-top:6px; align-items:center;">
-            <input id="targetKm" type="number" inputmode="numeric" placeholder="km" style="width:56px; padding:8px; border-radius:8px; border:2px solid #555; background:#e8e8ea; color:#1a1a2e; font-size:0.9em; text-align:center;">
-            <input id="targetPts" type="number" inputmode="numeric" placeholder="ptn" style="width:48px; padding:8px; border-radius:8px; border:2px solid #555; background:#e8e8ea; color:#1a1a2e; font-size:0.9em; text-align:center;">
-            <button onclick="generateDetour()" style="flex:1; padding:8px; border-radius:8px; border:2px solid #555; background:#e8e8ea; color:#1a1a2e; font-weight:bold; font-size:0.8em; cursor:pointer;">Genereer omweg</button>
-        </div>
-        <div id="lockRow" style="display:flex; gap:6px; margin-top:6px;">
-            <button onclick="lockRoute()" style="flex:1; padding:8px; border-radius:8px; border:2px solid #4CAF50; background:#e8e8ea; color:#1a1a2e; font-weight:bold; font-size:0.8em; cursor:pointer;">Lock</button>
-        </div>
-        <div id="poiRow" style="display:flex; gap:6px; margin-top:6px;">
-            <button onclick="searchPOI('benzine')" style="flex:1; padding:8px; border-radius:8px; border:2px solid #555; background:#e8e8ea; color:#1a1a2e; font-weight:bold; font-size:0.8em; cursor:pointer;">Benzine</button>
-            <button onclick="searchPOI('eten')" style="flex:1; padding:8px; border-radius:8px; border:2px solid #555; background:#e8e8ea; color:#1a1a2e; font-weight:bold; font-size:0.8em; cursor:pointer;">Eten</button>
-            <button onclick="searchPOI('koffie')" style="flex:1; padding:8px; border-radius:8px; border:2px solid #555; background:#e8e8ea; color:#1a1a2e; font-weight:bold; font-size:0.8em; cursor:pointer;">Koffie</button>
-        </div>
-        <div id="poiSearchRow" style="display:flex; gap:6px; margin-top:6px;">
-            <input id="poiText" type="text" placeholder="Zoek POI (bv hotel, bakker, uitzicht)..." autocomplete="off" style="flex:1; padding:8px; border-radius:8px; border:2px solid #555; background:#e8e8ea; color:#1a1a2e; font-size:0.85em;">
-            <button onclick="searchPOI(document.getElementById('poiText').value)" style="flex:0 0 auto; padding:8px 12px; border-radius:8px; border:2px solid #555; background:#e8e8ea; color:#1a1a2e; font-weight:bold; font-size:0.85em; cursor:pointer;">Zoek</button>
-        </div>
-        <div id="poiList" style="display:none; margin-top:6px; max-height:160px; overflow-y:auto; background:#0a0e27; border:1px solid #1a2148; border-radius:10px;"></div>
-        <div id="results"></div>
     </div>
+
+    <!-- POI focus-modus: lijst linksboven (scrollbaar) + knoppen onderin -->
+    <div id="poiFocusList"></div>
+    <div id="poiFocusBar">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2px;">
+            <span style="color:#00BCD4; font-weight:bold;">POI zoeken</span>
+            <span onclick="closePoiFocus()" style="color:#FF5252; font-weight:bold; cursor:pointer; font-size:1.4em; line-height:1; padding:0 6px;">✕</span>
+        </div>
+        <div style="display:flex; gap:6px;">
+            <button onclick="searchPOI('benzine')" style="flex:1; padding:10px; border-radius:8px; border:2px solid #555; background:#e8e8ea; color:#1a1a2e; font-weight:bold; font-size:0.85em; cursor:pointer;">Benzine</button>
+            <button onclick="searchPOI('eten')" style="flex:1; padding:10px; border-radius:8px; border:2px solid #555; background:#e8e8ea; color:#1a1a2e; font-weight:bold; font-size:0.85em; cursor:pointer;">Eten</button>
+            <button onclick="searchPOI('koffie')" style="flex:1; padding:10px; border-radius:8px; border:2px solid #555; background:#e8e8ea; color:#1a1a2e; font-weight:bold; font-size:0.85em; cursor:pointer;">Koffie</button>
+        </div>
+        <div style="display:flex; gap:6px;">
+            <input id="poiText" type="text" placeholder="Zoek POI (bv hotel, bakker, uitzicht)..." autocomplete="off" style="flex:1; padding:10px; border-radius:8px; border:2px solid #555; background:#e8e8ea; color:#1a1a2e; font-size:0.85em;">
+            <button onclick="searchPOI(document.getElementById('poiText').value)" style="flex:0 0 auto; padding:10px 14px; border-radius:8px; border:2px solid #555; background:#e8e8ea; color:#1a1a2e; font-weight:bold; font-size:0.85em; cursor:pointer;">Zoek</button>
+        </div>
+    </div>
+    <!-- oude verborgen lijst-container (niet meer gebruikt in focus, behouden voor compat) -->
+    <div id="poiList" style="display:none;"></div>
+
 
     <button id="clearBtn" onclick="clearAll()" title="Wissen">✕</button>
 
@@ -190,6 +238,30 @@
                 iconSize: [28, 28], iconAnchor: [14, 14], popupAnchor: [0, -14]
             });
         }
+        // ─── Menu-tabs: Route + Extra mogen samen open; POI = focus-modus ───
+        function toggleTab(which) {
+            const panel = document.getElementById(which === 'route' ? 'panelRoute' : 'panelExtra');
+            const tab = document.getElementById(which === 'route' ? 'tabRoute' : 'tabExtra');
+            const open = panel.classList.toggle('open');
+            tab.classList.toggle('active', open);
+        }
+        function openPoiFocus() {
+            // verberg alle gewone menu's → focus op de kaart
+            document.getElementById('menuTabs').style.display = 'none';
+            document.getElementById('panelRoute').classList.remove('open');
+            document.getElementById('panelExtra').classList.remove('open');
+            document.getElementById('poiFocusBar').style.display = 'flex';
+        }
+        function closePoiFocus() {
+            clearPOI();
+            document.getElementById('poiFocusBar').style.display = 'none';
+            document.getElementById('poiFocusList').style.display = 'none';
+            // menu's terug; Route weer open (Extra zoals 'ie was)
+            document.getElementById('menuTabs').style.display = 'flex';
+            document.getElementById('panelRoute').classList.add('open');
+            document.getElementById('tabRoute').classList.add('active');
+        }
+
         function onMapTap(e) {
             pendingTap = { lat: e.latlng.lat, lng: e.latlng.lng };
             document.getElementById('tapMenu').style.display = 'flex';
@@ -882,7 +954,7 @@
                     e._dPos = myPos ? distMeters(myPos.lat, myPos.lng, e.lat, e.lng) : Infinity;
                 });
                 near.sort((a,b) => a._dPos - b._dPos);   // dichtstbij jou eerst
-                const box = document.getElementById('poiList');
+                const box = document.getElementById('poiFocusList');
                 if (near.length) {
                     box.innerHTML = '';
                     near.forEach(e => {
@@ -933,8 +1005,10 @@
         function clearPOI() {
             poiMarkers.forEach(m => map.removeLayer(m));
             poiMarkers = [];
-            const box = document.getElementById('poiList');
-            if (box) { box.style.display = 'none'; box.innerHTML = ''; }
+            ['poiList', 'poiFocusList'].forEach(id => {
+                const box = document.getElementById(id);
+                if (box) { box.style.display = 'none'; box.innerHTML = ''; }
+            });
         }
 
         function clearAll() {
