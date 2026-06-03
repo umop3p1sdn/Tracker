@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Route Planner v3.4-debug</title>
+    <title>Route Planner v3.5-debug</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
@@ -75,7 +75,7 @@
 </head>
 <body>
     <div id="map"></div>
-    <div id="versionLabel" style="position:absolute; bottom:4px; right:6px; z-index:1000; font-family:sans-serif; font-size:10px; color:rgba(255,255,255,0.7); background:rgba(0,0,0,0.4); padding:2px 6px; border-radius:6px; pointer-events:none;">v3.4-debug</div>
+    <div id="versionLabel" style="position:absolute; bottom:4px; right:6px; z-index:1000; font-family:sans-serif; font-size:10px; color:rgba(255,255,255,0.7); background:rgba(0,0,0,0.4); padding:2px 6px; border-radius:6px; pointer-events:none;">v3.5-debug</div>
 
     <div id="searchWrap">
         <div id="searchBar">
@@ -641,11 +641,13 @@
             }
         }
 
+        let lastGps = null;   // laatst bekende GPS-positie (van 📍), voor afstand-vanaf-mij
         function useMyLocation() {
             if (!navigator.geolocation) { alert('Geen GPS beschikbaar'); return; }
             navigator.geolocation.getCurrentPosition(
                 pos => {
                     const { latitude, longitude } = pos.coords;
+                    lastGps = { lat: latitude, lng: longitude };
                     setStart(latitude, longitude, 'Mijn locatie', true);
                     setSearchMode('dest');
                     maybeRoute();
@@ -653,6 +655,12 @@
                 () => alert('Locatie ophalen mislukt'),
                 { enableHighAccuracy: true, timeout: 10000 }
             );
+        }
+        // "Mijn positie": GPS als bekend, anders het startpunt (smart, ook klaar voor de tracker)
+        function myPosition() {
+            if (lastGps) return lastGps;
+            if (startPoint) return startPoint;
+            return null;
         }
 
         // ─── Route via BRouter (free public server) ───
@@ -869,17 +877,29 @@
             if (coords && coords.length) {
                 const near = els.filter(e => e._dRoute <= 2000).sort((a,b) => a._dRoute - b._dRoute);
                 const box = document.getElementById('poiList');
+                const myPos = myPosition();   // GPS of start
                 if (near.length) {
                     box.innerHTML = '';
                     near.forEach(e => {
                         const name = e.tags.name || e.tags.brand || '(naamloos)';
-                        const km = (e._dRoute/1000).toFixed(1);
+                        const kmRoute = (e._dRoute/1000).toFixed(1);
+                        // afstand vanaf mijn positie (hemelsbreed)
+                        let posStr = '';
+                        if (myPos) {
+                            const dPos = distMeters(myPos.lat, myPos.lng, e.lat, e.lng) / 1000;
+                            posStr = `<span style="color:#FFB74D;font-weight:bold;min-width:54px;">${dPos.toFixed(1)} km</span>`;
+                        }
                         const div = document.createElement('div');
-                        div.style.cssText = 'padding:10px 12px;color:#fff;cursor:pointer;border-bottom:1px solid #1a2148;font-size:0.85em;display:flex;gap:10px;';
-                        div.innerHTML = `<span style="color:#00BCD4;font-weight:bold;min-width:48px;">${km} km</span><span>${name}</span>`;
+                        div.style.cssText = 'padding:10px 12px;color:#fff;cursor:pointer;border-bottom:1px solid #1a2148;font-size:0.85em;display:flex;gap:8px;align-items:center;';
+                        div.innerHTML = `${posStr}<span style="color:#00BCD4;font-weight:bold;min-width:54px;">↦ ${kmRoute}</span><span>${name}</span>`;
                         div.onclick = () => { map.setView([e.lat, e.lng], 15); };
                         box.appendChild(div);
                     });
+                    // kleine kop zodat de twee afstanden duidelijk zijn
+                    const head = document.createElement('div');
+                    head.style.cssText = 'padding:6px 12px;color:#889;font-size:0.7em;border-bottom:1px solid #1a2148;';
+                    head.innerHTML = `<span style="color:#FFB74D;min-width:54px;display:inline-block;">vanaf jou</span> <span style="color:#00BCD4;">↦ vanaf route</span>`;
+                    box.insertBefore(head, box.firstChild);
                     box.style.display = 'block';
                 }
             }
