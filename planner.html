@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Route Planner v3.7-debug</title>
+    <title>Route Planner v3.9-debug</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
@@ -30,7 +30,7 @@
         /* POI focus-modus: lijst linksboven, scrollbaar window */
         #poiFocusList {
             position: absolute; top: 12px; left: 12px; width: 270px; max-width: 60%;
-            max-height: 45vh; overflow-y: auto; z-index: 1100;
+            max-height: 22vh; overflow-y: auto; z-index: 1100;
             background: rgba(10,14,39,0.92); border: 2px solid #00BCD4; border-radius: 12px;
             box-shadow: 0 4px 16px rgba(0,0,0,0.6); display: none;
         }
@@ -101,16 +101,16 @@
 </head>
 <body>
     <div id="map"></div>
-    <div id="versionLabel" style="position:absolute; bottom:4px; right:6px; z-index:1000; font-family:sans-serif; font-size:10px; color:rgba(255,255,255,0.7); background:rgba(0,0,0,0.4); padding:2px 6px; border-radius:6px; pointer-events:none;">v3.7-debug</div>
+    <div id="versionLabel" style="position:absolute; bottom:4px; right:6px; z-index:1000; font-family:sans-serif; font-size:10px; color:rgba(255,255,255,0.7); background:rgba(0,0,0,0.4); padding:2px 6px; border-radius:6px; pointer-events:none;">v3.9-debug</div>
 
     <div id="searchWrap">
         <div id="menuTabs">
-            <button class="tab-btn active" id="tabRoute" onclick="toggleTab('route')">Route</button>
+            <button class="tab-btn" id="tabRoute" onclick="toggleTab('route')">Route</button>
             <button class="tab-btn" id="tabExtra" onclick="toggleTab('extra')">Extra</button>
             <button class="tab-btn" id="tabPoi" onclick="openPoiFocus()">POI</button>
         </div>
 
-        <div id="panelRoute" class="panel open">
+        <div id="panelRoute" class="panel">
             <div id="searchBar">
                 <svg id="searchIcon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#00BCD4" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/></svg>
                 <input id="searchInput" type="text" placeholder="Zoek adres of straat..." autocomplete="off">
@@ -256,10 +256,8 @@
             clearPOI();
             document.getElementById('poiFocusBar').style.display = 'none';
             document.getElementById('poiFocusList').style.display = 'none';
-            // menu's terug; Route weer open (Extra zoals 'ie was)
+            // alleen de menu-knoppen terug (panelen blijven dicht)
             document.getElementById('menuTabs').style.display = 'flex';
-            document.getElementById('panelRoute').classList.add('open');
-            document.getElementById('tabRoute').classList.add('active');
         }
 
         function onMapTap(e) {
