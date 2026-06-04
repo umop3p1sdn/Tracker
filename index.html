@@ -609,7 +609,7 @@
             <!-- MODE SELECT -->
             <div id="modeSelect" class="mode-select">
                 <p class="subtitle">Start tracking</p>
-                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v7.03 © Umop3p1sdn</div>
+                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v7.04 © Umop3p1sdn</div>
                 
                 <!-- Hidden file input for GPX loading -->
                 <input type="file" id="gpxInputLoad" accept=".gpx" style="display:none;" onchange="loadGPXFile(event)">
@@ -948,7 +948,7 @@
             </ul>
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                Live Tracker App v7.03 © Umop3p1sdn
+                Live Tracker App v7.04 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -977,7 +977,7 @@
                         <svg id="searchIcon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#00BCD4" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/></svg>
                         <input id="searchInput" type="text" placeholder="Zoek adres of straat..." autocomplete="off">
                     </div>
-                    <button onclick="clearAll()" title="Wis route" style="flex:0 0 auto; width:46px; background:#0a0e27; border:2px solid #FF1744; border-radius:10px; color:#FF1744; font-weight:bold; font-size:1.3em; line-height:1; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.4);">✕</button>
+                    <button onclick="clearAll()" title="Wis route" style="flex:0 0 auto; padding:0 12px; background:#0a0e27; border:2px solid #FF1744; border-radius:10px; color:#FF1744; font-weight:bold; font-size:0.8em; line-height:1; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.4); white-space:nowrap;">Wis route</button>
                 </div>
                 <div id="modeRow">
                     <button class="mode-btn active" id="modeStart" onclick="setSearchMode('start')">Start</button>
@@ -1976,7 +1976,7 @@
     </script>
 
     <script>
-        const APP_VERSION = "7.03";
+        const APP_VERSION = "7.04";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
