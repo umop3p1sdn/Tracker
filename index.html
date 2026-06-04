@@ -609,7 +609,7 @@
             <!-- MODE SELECT -->
             <div id="modeSelect" class="mode-select">
                 <p class="subtitle">Start tracking</p>
-                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v7.22 © Umop3p1sdn</div>
+                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v7.24 © Umop3p1sdn</div>
                 
                 <!-- Hidden file input for GPX loading -->
                 <input type="file" id="gpxInputLoad" accept=".gpx" style="display:none;" onchange="loadGPXviaPlanner(event)">
@@ -947,7 +947,7 @@
             </ul>
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                Live Tracker App v7.22 © Umop3p1sdn
+                Live Tracker App v7.24 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1975,6 +1975,7 @@
             plTurnMarkers = [];
             diagMarkers.forEach(m => map.removeLayer(m));
             diagMarkers = [];
+            if (typeof clearTurnDots === 'function') clearTurnDots();  // navigatie afslag-stippen ook weg
             if (searchInput) searchInput.value = '';
             if (resultsEl) resultsEl.style.display = 'none';
             setSearchMode('start');
@@ -1984,7 +1985,7 @@
     </script>
 
     <script>
-        const APP_VERSION = "7.22";
+        const APP_VERSION = "7.24";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -2192,6 +2193,11 @@
                 }).addTo(mapInstance).bindPopup((t.dir==='R'?'Rechts':'Links') + ' ' + Math.round(t.angle) + '°');
                 turnMarkers.push(m);
             });
+        }
+        // Afslag-stippen opruimen (bij wissen/delete/stop) — anders blijven ze hangen.
+        function clearTurnDots() {
+            turnMarkers.forEach(m => { try { mapInstance.removeLayer(m); } catch(e){} });
+            turnMarkers = [];
         }
 
         function analyzeAndDrawTurns(route) {
@@ -2776,6 +2782,7 @@
             window._gpxLoaded = null;
             activeRoute = null;
             detectedTurns = [];
+            if (typeof clearTurnDots === 'function') clearTurnDots();   // afslag-stippen weg
             if (typeof clearEaten === 'function') clearEaten();   // grijs/blauw opeten-lijnen weg
             if (typeof hideNavElements === 'function') hideNavElements();
             
@@ -4605,7 +4612,8 @@
             document.getElementById('followerCodeBox').textContent = code;
             document.getElementById('masterMode').classList.add('hidden');
             document.getElementById('followerMode').classList.remove('hidden');
-            document.getElementById('trackBtn').textContent = 'VIEW TRACK';
+            trackState = 'none';
+            document.getElementById('trackBtn').textContent = 'GEEN';
 
             requestWakeLock();
             initDeviceCompass();
@@ -4668,6 +4676,7 @@
             hideNavElements();              // pijl + afstand + infoBar weg
             activeRoute = null;             // navigatie-state wissen
             detectedTurns = [];
+            if (typeof clearTurnDots === 'function') clearTurnDots();  // afslag-stippen weg
             beepedApproach = {}; beepedNow = {}; spokenFirst = {};
             const msw = document.getElementById('masterStaleWarn');
             if (msw) msw.style.display = 'none';
