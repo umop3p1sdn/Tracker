@@ -613,10 +613,11 @@
             <!-- MODE SELECT -->
             <div id="modeSelect" class="mode-select">
                 <p class="subtitle">Start tracking</p>
-                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v7.38 © Umop3p1sdn</div>
+                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v7.39 © Umop3p1sdn</div>
                 
                 <!-- Hidden file input for GPX loading -->
                 <input type="file" id="gpxInputLoad" accept=".gpx" style="display:none;" onchange="loadGPXviaPlanner(event)">
+                <input type="file" id="gpxInputPlain" accept=".gpx" style="display:none;" onchange="loadGPXplain(event)">
                 
                 <button class="button button-master" onclick="startMaster()">
                     START TRACKING
@@ -951,7 +952,7 @@
             </ul>
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                Live Tracker App v7.38 © Umop3p1sdn
+                Live Tracker App v7.39 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1986,7 +1987,7 @@
     </script>
 
     <script>
-        const APP_VERSION = "7.38";
+        const APP_VERSION = "7.39";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -2557,15 +2558,9 @@
             };
         }
 
-        async function loadGPXviaPlanner(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            const text = await file.text();
+        // GPX → losse tracks (per <trkseg>, en losse <rte>). Herbruikt door route- én plain-loader.
+        function parseGpxTracks(text) {
             const gpx = new DOMParser().parseFromString(text, 'application/xml');
-
-            // Splits op het KLEINSTE niveau: elk <trkseg> apart (en elke <rte>). Zo kun je altijd één
-            // klein stuk kiezen → nooit chaos. Naam = track-naam (+ deelnr bij meerdere segmenten),
-            // anders "Deel N". Km erbij in de kiezer.
             const tracks = [];
             const readPtsFrom = (el, sel) => {
                 const out = [];
@@ -2592,21 +2587,62 @@
                     tracks.push({ name: label, pts });
                 });
             });
-            // routes (<rte>) als losse delen
             gpx.querySelectorAll('rte').forEach((rte, i) => {
                 const pts = readPtsFrom(rte, 'rtept');
                 if (pts.length < 2) return;
                 const nm = rte.querySelector('name');
                 tracks.push({ name: nm ? nm.textContent.trim() : `Route ${i + 1}`, pts });
             });
-            if (!tracks.length) { alert('Geen bruikbare tracks in de GPX.'); return; }
+            return tracks;
+        }
 
+        async function loadGPXviaPlanner(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const text = await file.text();
+            const tracks = parseGpxTracks(text);
+            if (!tracks.length) { alert('Geen bruikbare tracks in de GPX.'); return; }
             // Eén deel → meteen laden. Meerdere → keuzelijst tonen.
             if (tracks.length === 1) {
                 processGpxRoute(tracks[0].pts);
             } else {
                 showTrackPicker(tracks);
             }
+        }
+
+        // Load route (no navi): GPX als KAAL touwtje (geen BRouter, geen afslagen) — voor offroad volgen.
+        async function loadGPXplain(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const text = await file.text();
+            const tracks = parseGpxTracks(text);
+            if (!tracks.length) { alert('Geen bruikbare tracks in de GPX.'); return; }
+            if (tracks.length === 1) {
+                processPlainTrack(tracks[0].pts);
+            } else {
+                showTrackPicker(tracks, processPlainTrack);
+            }
+        }
+
+        // Teken een kale GPX-lijn (paars), zonder BRouter/afslagen. Puur volgen. Deelt met de volger.
+        function processPlainTrack(raw) {
+            if (!raw || raw.length < 2) { alert('Geen bruikbare punten.'); return; }
+            if (gpxPolyline) { try { mapInstance.removeLayer(gpxPolyline); } catch(e){} }
+            gpxPolyline = L.polyline(raw, { color:'#9C27B0', weight: trackLineWidth, opacity:0.9 }).addTo(mapInstance);
+            try {
+                const grp = L.featureGroup(raw.map(([la,ln]) => L.circleMarker([la,ln],{radius:1})));
+                mapInstance.fitBounds(grp.getBounds(), { padding:[50,50] });
+            } catch(e){}
+            // Als route-lijn klaarzetten + delen met de volger (kaal, geen afslagen → geen navigatie).
+            gpxRoute = raw;
+            window._gpxLoaded = null;       // geen navi-data → GO ▶ doet niks zinnigs
+            activeRoute = null; detectedTurns = [];
+            if (typeof clearTurnDots === 'function') clearTurnDots();
+            if (currentMode === 'master' && typeof sendGPXToFirebase === 'function') {
+                sendGPXToFirebase(currentCode, raw, [], routeKm(raw), 0);
+            }
+            if (typeof showBufferToast === 'function')
+                showBufferToast(`Offroad-lijn geladen (${routeKm(raw).toFixed(1)} km) — volgen, geen navigatie`, '#9C27B0', 4000);
         }
 
         // Lengte van een puntenreeks in km (voor de keuzelijst).
@@ -2617,7 +2653,8 @@
         }
 
         // Keuzelijst met checkboxes: kies één of meer tracks → samen laden.
-        function showTrackPicker(tracks) {
+        function showTrackPicker(tracks, handler) {
+            const onPick = handler || processGpxRoute;
             const modal = document.createElement('div');
             modal.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.8); display:flex; align-items:center; justify-content:center; z-index:1002;';
             const box = document.createElement('div');
@@ -2642,7 +2679,7 @@
                 const combined = [];
                 checked.forEach(idx => tracks[idx].pts.forEach(p => combined.push(p)));
                 modal.remove();
-                processGpxRoute(combined);
+                onPick(combined);
             };
         }
 
@@ -2777,7 +2814,12 @@
                     <button onclick="document.getElementById('gpxInputLoad').click(); closeGPXModal();" 
                         style="width: 100%; padding: 12px; margin: 10px 0; background: #2196F3; 
                         color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 1em;">
-                        Load GPX
+                        Load route
+                    </button>
+                    <button onclick="document.getElementById('gpxInputPlain').click(); closeGPXModal();" 
+                        style="width: 100%; padding: 12px; margin: 10px 0; background: #9C27B0; 
+                        color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 1em;">
+                        Load route (no navi)
                     </button>
                 `;
             }
