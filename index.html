@@ -613,7 +613,7 @@
             <!-- MODE SELECT -->
             <div id="modeSelect" class="mode-select">
                 <p class="subtitle">Start tracking</p>
-                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v7.42 © Umop3p1sdn</div>
+                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v7.43 © Umop3p1sdn</div>
                 
                 <!-- Hidden file input for GPX loading -->
                 <input type="file" id="gpxInputLoad" accept=".gpx" style="display:none;" onchange="loadGPXviaPlanner(event)">
@@ -971,7 +971,7 @@
             </ul>
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                Live Tracker App v7.42 © Umop3p1sdn
+                Live Tracker App v7.43 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2006,7 +2006,7 @@
     </script>
 
     <script>
-        const APP_VERSION = "7.42";
+        const APP_VERSION = "7.43";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -2656,9 +2656,10 @@
                 const grp = L.featureGroup(raw.map(([la,ln]) => L.circleMarker([la,ln],{radius:1})));
                 mapInstance.fitBounds(grp.getBounds(), { padding:[50,50] });
             } catch(e){}
-            // apart delen met de volger (eigen veld, los van de navi-route)
-            if (currentMode === 'master' && typeof sendOffroadToFirebase === 'function') {
-                sendOffroadToFirebase(currentCode, raw);
+            // apart delen met de volger via het /gpx/ pad (offroad als extra veld). De huidige
+            // navi-route (gpxRoute) sturen we mee zodat die niet verloren gaat.
+            if (currentMode === 'master' && typeof sendGPXToFirebase === 'function') {
+                sendGPXToFirebase(currentCode, gpxRoute || [], detectedTurns || [], routeTotalKm || 0, routeTotalMin || 0, raw);
             }
             if (typeof showBufferToast === 'function')
                 showBufferToast(`Offroad-lijn geladen (${routeKm(raw).toFixed(1)} km) — volgen, geen navigatie`, '#9C27B0', 4000);
@@ -2909,12 +2910,9 @@
             if (typeof clearTurnDots === 'function') clearTurnDots();   // afslag-stippen weg
             if (typeof clearEaten === 'function') clearEaten();   // grijs/blauw opeten-lijnen weg
             if (typeof hideNavElements === 'function') hideNavElements();
-            // offroad-spoor (paars) ook weg + uit Firebase
+            // offroad-spoor (paars) ook weg (lokaal). Het /gpx/ bericht wordt elders gewist/herschreven.
             if (offroadPolyline) { try { mapInstance.removeLayer(offroadPolyline); } catch(e){} offroadPolyline = null; }
             offroadRoute = [];
-            if (currentMode === 'master' && currentCode) {
-                fetch(`${firebaseConfig.databaseURL}/offroad/${currentCode}.json`, { method: 'DELETE' }).catch(()=>{});
-            }
             
             // Close modal
             closeGPXModal();
@@ -3159,7 +3157,7 @@
             });
         }
 
-        async function sendGPXToFirebase(code, gpsRoute, turns, totalKm, totalMin) {
+        async function sendGPXToFirebase(code, gpsRoute, turns, totalKm, totalMin, offroad) {
             try {
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), 5000);
@@ -3171,6 +3169,9 @@
                 if (turns) payload.turns = turns;
                 if (totalKm) payload.totalKm = totalKm;
                 if (totalMin) payload.totalMin = totalMin;
+                // Offroad-spoor (kaal, paars) meesturen in HETZELFDE bericht (zelfde /gpx/ pad dat al
+                // werkt) — geen apart Firebase-pad nodig. Alleen meesturen als er een offroad-lijn is.
+                if (offroad && offroad.length) payload.offroad = offroad;
                 await fetch(url, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
@@ -3188,12 +3189,18 @@
         async function sendOffroadToFirebase(code, route) {
             try {
                 const url = `${firebaseConfig.databaseURL}/offroad/${code}.json`;
-                await fetch(url, {
+                const res = await fetch(url, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ route: route, timestamp: Date.now() })
                 });
-            } catch (e) { console.error('Offroad Firebase error:', e); }
+                if (typeof showBufferToast === 'function')
+                    showBufferToast(`Offroad gedeeld: ${route.length} punten (${res.status})`, '#9C27B0', 3000);
+            } catch (e) {
+                console.error('Offroad Firebase error:', e);
+                if (typeof showBufferToast === 'function')
+                    showBufferToast('Offroad delen MISLUKT: ' + e.message, '#FF1744', 4000);
+            }
         }
 
         async function fetchOffroadRoute(code) {
@@ -3550,6 +3557,8 @@
                 clearTimeout(timeoutId);
                 
                 const data = await response.json();
+                // offroad-veld (kaal spoor van de master) bewaren voor de volger-loop.
+                window._followerOffroad = (data && data.offroad && Array.isArray(data.offroad)) ? data.offroad : [];
                 if (data && data.route && Array.isArray(data.route)) {
                     // Deel 2: bewaar ook de afslagen + totalen die de master meestuurt (voor de volle
                     // rij-beleving bij de volger). Worden in de volger-GPS-loop gebruikt.
@@ -4479,9 +4488,9 @@
                                     }).addTo(mapInstance);
                                 }
 
-                                // PLUS het offroad-spoor van de master (paars, kaal) — continu verversen
-                                // zodat de volger 'm ook ziet als de master 'm láter laadt (mix-kaart).
-                                const offNow = await fetchOffroadRoute(code);
+                                // PLUS het offroad-spoor van de master (paars, kaal) — komt mee met de
+                                // /gpx/ fetch hierboven (window._followerOffroad). Geen apart pad nodig.
+                                const offNow = window._followerOffroad || [];
                                 if (offNow && offNow.length > 1) {
                                     offroadRoute = offNow;
                                     if (offroadPolyline) { try { mapInstance.removeLayer(offroadPolyline); } catch(e){} }
@@ -4558,7 +4567,8 @@
                 }
                 // PLUS het offroad-spoor van de master (paars, kaal) — mix-kaart bij de volger.
                 if (currentMode === 'follower') {
-                    const off = await fetchOffroadRoute(currentCode);
+                    await fetchGPXRoute(currentCode);                 // vult window._followerOffroad
+                    const off = window._followerOffroad || [];
                     if (off && off.length > 1) {
                         offroadRoute = off;
                         offroadPolyline = L.polyline(off, {
