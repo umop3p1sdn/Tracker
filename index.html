@@ -619,7 +619,7 @@
             <!-- MODE SELECT -->
             <div id="modeSelect" class="mode-select">
                 <p class="subtitle">Start tracking</p>
-                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v9.6 © Umop3p1sdn</div>
+                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v9.8 © Umop3p1sdn</div>
                 
                 <!-- Hidden file input for GPX loading -->
                 <input type="file" id="gpxInputLoad" accept=".gpx" style="display:none;" onchange="loadGPXviaPlanner(event)">
@@ -985,7 +985,7 @@
             </ul>
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                Live Tracker App v9.6 © Umop3p1sdn
+                Live Tracker App v9.8 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1238,6 +1238,8 @@
             document.getElementById('panelRoute').classList.remove('open');
             document.getElementById('panelExtra').classList.remove('open');
             document.getElementById('poiFocusBar').style.display = 'flex';
+            // STOP-knop weg zodat 'ie niet in de weg zit van het POI-paneel
+            document.querySelectorAll('.button-stop').forEach(b => b.style.display = 'none');
         }
         function closePoiFocus() {
             clearPOI();
@@ -1245,6 +1247,8 @@
             document.getElementById('poiFocusList').style.display = 'none';
             // alleen de menu-knoppen terug (panelen blijven dicht)
             document.getElementById('menuTabs').style.display = 'flex';
+            // STOP-knop weer terug
+            document.querySelectorAll('.button-stop').forEach(b => b.style.display = '');
         }
 
         function onMapTap(e) {
@@ -2075,7 +2079,7 @@
     </script>
 
     <script>
-        const APP_VERSION = "9.6";
+        const APP_VERSION = "9.8";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -4945,6 +4949,16 @@
             if (planGoBtn) planGoBtn.style.display = 'none'; // GO-knop ook weg op startscherm
             const planPanel = document.getElementById('plannerPanel');
             if (planPanel) planPanel.style.display = 'none'; // planner dicht als 'ie nog open was
+            // ALLE menu's/panelen sluiten zodat er na STOP niks open blijft staan.
+            ['appMenuModal','handleidingModal','gpxModal','poiFocusBar','poiFocusList'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) { el.style.display = 'none'; if (id === 'gpxModal') el.remove(); }
+            });
+            document.querySelectorAll('.panel.open').forEach(p => p.classList.remove('open'));   // Route/Extra dicht
+            // Offroad terug naar uit (schone start volgende keer)
+            offroadMode = false;
+            if (typeof syncOffroadUI === 'function') syncOffroadUI();
+            if (typeof applyOffroadVisibility === 'function') applyOffroadVisibility();
             hideNavElements();              // pijl + afstand + infoBar weg
             activeRoute = null;             // navigatie-state wissen
             detectedTurns = [];
