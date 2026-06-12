@@ -619,7 +619,7 @@
             <!-- MODE SELECT -->
             <div id="modeSelect" class="mode-select">
                 <p class="subtitle">Start tracking</p>
-                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v10.7 © Umop3p1sdn</div>
+                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v10.8 © Umop3p1sdn</div>
                 
                 <!-- Hidden file input for GPX loading -->
                 <input type="file" id="gpxInputLoad" accept=".gpx" style="display:none;" onchange="loadGPXviaPlanner(event)">
@@ -999,7 +999,7 @@
             </ul>
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                Live Tracker App v10.7 © Umop3p1sdn
+                Live Tracker App v10.8 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2114,7 +2114,7 @@
     </script>
 
     <script>
-        const APP_VERSION = "10.7";
+        const APP_VERSION = "10.8";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -2242,6 +2242,26 @@
         }
         function beepApproach() { playBeep(0); }                 // 1 beep
         function beepTurnNow() { playBeep(0); playBeep(0.25); }  // 2 beeps
+
+        // 3x beep wanneer er een nieuwe volger verbindt — altijd hoorbaar (los van spraak/pijlen-instelling).
+        // Werkt alleen als de audio-context al ontgrendeld is (na de eerste tik in de app; dat is bij de master
+        // het geval zodra 'ie rijdt).
+        function beepFollowerJoined() {
+            if (!audioCtx) return;
+            if (audioCtx.state === 'suspended') { try { audioCtx.resume(); } catch (e) {} }
+            [0, 0.3, 0.6].forEach(when => {
+                const t = audioCtx.currentTime + when;
+                const o = audioCtx.createOscillator();
+                const g = audioCtx.createGain();
+                o.type = 'sine';
+                o.frequency.value = 660;
+                g.gain.setValueAtTime(0.0001, t);
+                g.gain.exponentialRampToValueAtTime(0.4, t + 0.02);
+                g.gain.exponentialRampToValueAtTime(0.0001, t + 0.18);
+                o.connect(g); g.connect(audioCtx.destination);
+                o.start(t); o.stop(t + 0.2);
+            });
+        }
 
         // Distance in meters between two [lat,lng]
         // Afslag-types (BRouter cmd-codes) → spraaktekst. Twee vormen:
@@ -3508,6 +3528,7 @@
 
         // Master: fetch all followers and draw them as colored arrows
         let masterFollowersData = {}; // deviceId -> {lat,lng,heading}
+        let prevFollowerIds = null;   // vorige ronde: welke volger-id's actief waren (null = eerste ronde)
         async function updateFollowerMarkers(code) {
             const followers = await fetchFollowers(code);
             const now = Date.now();
@@ -3557,6 +3578,13 @@
                     delete followerMarkers[id];
                 }
             });
+
+            // Nieuwe volger erbij? → 3x beep. Eerste ronde NIET piepen (dan tel je bestaande volgers).
+            if (prevFollowerIds !== null) {
+                const isNew = Object.keys(seen).some(id => !prevFollowerIds[id]);
+                if (isNew && typeof beepFollowerJoined === 'function') beepFollowerJoined();
+            }
+            prevFollowerIds = seen;   // onthoud voor de volgende ronde
 
             applyFollowerVisibility();
             renderTagList();
