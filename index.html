@@ -620,7 +620,7 @@
             <!-- MODE SELECT -->
             <div id="modeSelect" class="mode-select">
                 <p class="subtitle">Start tracking</p>
-                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v9.3 © Umop3p1sdn</div>
+                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v9.4 © Umop3p1sdn</div>
                 
                 <!-- Hidden file input for GPX loading -->
                 <input type="file" id="gpxInputLoad" accept=".gpx" style="display:none;" onchange="loadGPXviaPlanner(event)">
@@ -986,7 +986,7 @@
             </ul>
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                Live Tracker App v9.3 © Umop3p1sdn
+                Live Tracker App v9.4 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1187,10 +1187,9 @@
         // Vertaal de UI-keuze naar de echte BRouter-parameters.
         function brouterParams() {
             if (offroadMode) {
-                // Offroad: trekking pakt zowel onverharde tracks als paden. In het buitenland (open zand)
-                // prima. offroadPaths bepaalt of we paden ruim meenemen of liever mijden.
-                // (Echte WR450F-fijnafstemming via eigen enduro-profiel komt later, met PC.)
-                return 'profile=trekking';
+                // Offroad: mtb-profiel verkiest onverhard (zandwegen/tracks) veel sterker dan trekking.
+                // Als brouter.de 'mtb' niet kent → foutmelding; dan terug naar trekking (of eigen profiel).
+                return 'profile=mtb';
             }
             if (selectedProfile === 'rustig') {
                 // car-vario met snelweg vermijden (echte autowegen, geen fietspad)
@@ -2093,7 +2092,7 @@
     </script>
 
     <script>
-        const APP_VERSION = "9.3";
+        const APP_VERSION = "9.4";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
