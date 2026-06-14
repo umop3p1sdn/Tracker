@@ -84,23 +84,6 @@ self.addEventListener('activate', (event) => {
 
 // PRE-CACHE MESSAGE HANDLER
 self.addEventListener('message', (event) => {
-  // Tel hoeveel tegels er IN TOTAAL in de offline-opslag zitten (voor de teller in het menu).
-  if (event.data && event.data.type === 'COUNT_TILES') {
-    openTileDB().then(db => {
-      const tx = db.transaction([TILE_STORE_NAME], 'readonly');
-      const store = tx.objectStore(TILE_STORE_NAME);
-      const req = store.count();
-      req.onsuccess = () => {
-        if (event.source) event.source.postMessage({ type: 'TILE_COUNT', count: req.result });
-      };
-      req.onerror = () => {
-        if (event.source) event.source.postMessage({ type: 'TILE_COUNT', count: null });
-      };
-    }).catch(() => {
-      if (event.source) event.source.postMessage({ type: 'TILE_COUNT', count: null });
-    });
-    return;
-  }
   if (event.data && event.data.type === 'PRECACHE_TILES') {
     const tiles = event.data.tiles;
     console.log(`📦 Pre-caching ${tiles.length} tiles (throttled, skip cached)...`);
