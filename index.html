@@ -621,7 +621,7 @@
             <!-- MODE SELECT -->
             <div id="modeSelect" class="mode-select">
                 <p class="subtitle">Start tracking</p>
-                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v12.4 © Umop3p1sdn</div>
+                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v12.5 © Umop3p1sdn</div>
                 
                 <!-- Hidden file input for GPX loading -->
                 <input type="file" id="gpxInputLoad" accept=".gpx" style="display:none;" onchange="loadGPXviaPlanner(event)">
@@ -949,13 +949,16 @@
             </ul>
 
             <h3 style="color: #00BCD4; margin-top: 25px;">Offline Map Buffer (OMB)</h3>
-            <p>Elk stukje kaart dat je bekijkt wordt automatisch opgeslagen. Zo bouw je vanzelf een offline-buffer op: gebieden waar je al gereden of gekeken hebt, blijven zichtbaar zonder verbinding.</p>
+            <p>Elk stukje kaart dat je bekijkt wordt automatisch opgeslagen. Zo bouw je vanzelf een offline-buffer op: gebieden waar je al gereden of gekeken hebt, blijven zichtbaar zonder verbinding. Tijdens het rijden laadt de app bovendien een smal stukje kaart vooruit, zodat de weg vóór je altijd klaarstaat.</p>
             <ul style="margin: 10px 0; padding-left: 20px;">
                 <li><strong>OMB</strong> (in het ☰ menu): automatisch bufferen aan/uit</li>
-                <li>Slaat elke 10 min ook de kaart rondom je op (zoom 15 ≈ 16 km)</li>
+                <li>Wat je op het scherm ziet (rondkijken, inzoomen) wordt bewaard</li>
+                <li>Onderweg <strong>mét route</strong>: smalle strook (±500m) ~15 km vooruit langs de route</li>
+                <li>Onderweg <strong>zonder route</strong>: een paar tegels vooruit in je rijrichting</li>
+                <li>Gebeurt volledig stil op de achtergrond — geen meldingen</li>
                 <li>Geen verbinding? Kaart binnen je buffer blijft zichtbaar</li>
-                <li>Data: ~13 MB de eerste keer, daarna alleen nieuwe stukken</li>
-                <li>OMB uit = zuiniger (alleen scherm-tegels laden nog, ~4 KB)</li>
+                <li>Verbruik bekijken: zie de data-teller in het ☰ menu (sessie + totaal)</li>
+                <li>OMB uit = zuinigst (alleen wat je op het scherm ziet laadt nog)</li>
             </ul>
 
             <h3 style="color: #00BCD4; margin-top: 25px;">Kaart vooraf offline zetten</h3>
@@ -1011,7 +1014,7 @@
             </ul>
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                Live Tracker App v12.4 © Umop3p1sdn
+                Live Tracker App v12.5 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2193,7 +2196,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "12.4";
+        const APP_VERSION = "12.5";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -4442,31 +4445,24 @@ assign initialcost =
         
         function startSmartPreCache() {
             if (!navigator.geolocation || !navigator.serviceWorker) return;
-            
-            // Listen ONCE for the Service Worker's confirmation that caching is done
+
+            // Luister naar de SW-bevestiging — ALLEEN nog om data te tellen (geen melding meer in beeld).
+            // De buffer draait nu stil op de achtergrond (kaart werkt zich de hele rit bij → een melding
+            // zou constant flikkeren en paniek geven over data). De MB-teller in het menu is de info-bron.
             navigator.serviceWorker.addEventListener('message', (event) => {
                 if (event.data && event.data.type === 'PRECACHE_COMPLETE') {
-                    console.log(`✅ ${event.data.tilesCount} tiles in buffer, ${event.data.downloaded} new downloaded`);
-                    showOfflineNotification(event.data.tilesCount, event.data.downloaded);
-                    // Kaart-data verbruik bijtellen: alleen ECHT gedownloade tegels × ~4 KB (cache-hits = 0).
                     const dl = event.data.downloaded || 0;
-                    if (dl > 0) addDataUsage(dl * BYTES_PER_TILE);
+                    if (dl > 0) addDataUsage(dl * BYTES_PER_TILE);   // alleen echt gedownloade tegels tellen
                 }
             });
-            
-            // Do the first cache as soon as a tracked position is available
-            let waited = 0;
-            const startWhenReady = setInterval(() => {
-                if (followerPos || masterPos) {
-                    clearInterval(startWhenReady);
-                    cacheCurrentLocation();
-                } else if ((waited += 2000) >= 60000) {
-                    clearInterval(startWhenReady); // stop waiting after 60s
-                }
-            }, 2000);
-            
-            // Then cache every 10 minutes
-            precacheTileTimer = setInterval(cacheCurrentLocation, 10 * 60 * 1000);
+
+            // Nieuw buffer-systeem (stil): elke ~30 sec een SMALLE strook VOORUIT laden.
+            //  • MÉT route  → 500m breed, ~15 km vooruit LANGS de route
+            //  • GEEN route → 7 tegels vooruit in de rijrichting (heading van het vliegtuigje)
+            // Pan-buffer (alles wat je op het scherm ziet) loopt al automatisch via de service worker.
+            if (precacheTileTimer) clearInterval(precacheTileTimer);
+            precacheTileTimer = setInterval(bufferAhead, 30 * 1000);
+            setTimeout(bufferAhead, 3000);   // eerste keer kort na start
         }
         
         function toggleAudio() {
@@ -4537,13 +4533,13 @@ assign initialcost =
             });
             
             if (ombEnabled) {
-                // Turned on: cache now + restart interval
-                cacheCurrentLocation();
+                // Aangezet: meteen vooruit-bufferen + de stille interval (her)starten
+                bufferAhead();
                 if (!precacheTileTimer) {
-                    precacheTileTimer = setInterval(cacheCurrentLocation, 10 * 60 * 1000);
+                    precacheTileTimer = setInterval(bufferAhead, 30 * 1000);
                 }
             } else {
-                // Turned off: stop the interval (saves data)
+                // Uitgezet: interval stoppen (bespaart data)
                 if (precacheTileTimer) {
                     clearInterval(precacheTileTimer);
                     precacheTileTimer = null;
@@ -4585,59 +4581,135 @@ assign initialcost =
             showBufferToast(text, '#4CAF50', 4000);
         }
         
-        function cacheCurrentLocation() {
-            if (!ombEnabled) return; // Offline Map Buffer is off
-            // Use the position the app already tracks. If there's no fix yet,
-            // skip quietly - tracking will provide one shortly (no false error).
+        // ═══════════════════════════════════════════════════════════════════════
+        //  BUFFER VOORUIT  (nieuw systeem — vervangt het oude vierkant-rondom)
+        //  ───────────────────────────────────────────────────────────────────────
+        //  Doel: niet meer "voor de zekerheid" rondom bufferen, maar een SMALLE strook
+        //  VOORUIT — precies waar je heen gaat. Veel zuiniger (zie offline-map-buffer-log.md).
+        //
+        //   • MÉT geplande route  → strook 500m breed, ~15 km vooruit LANGS de route (zoom 15+16)
+        //   • GEEN route          → 7 tegels vooruit in de rijrichting (heading), op de huidige zoom
+        //
+        //  De pan-buffer (alles wat je op het scherm ziet) loopt al automatisch in de service worker
+        //  (fetch-handler cachet elke getoonde OSM-tegel). Dit systeem buffert ALLEEN extra vooruit.
+        //  Alles gebeurt STIL (geen meldingen). Verbruik is zichtbaar via de MB-teller in het menu.
+        // ═══════════════════════════════════════════════════════════════════════
+
+        const FORWARD_KM = 15;        // mét route: hoe ver vooruit langs de route
+        const CORRIDOR_M = 250;       // mét route: halve breedte van de strook (250m = 500m totaal)
+        const NOROUTE_TILES = 7;      // geen route: aantal tegels vooruit in rijrichting
+
+        // lon/lat → tegel-X/Y op een zoomniveau
+        function lon2tileX(lng, z) { return Math.floor((lng + 180) / 360 * Math.pow(2, z)); }
+        function lat2tileY(lat, z) {
+            const r = lat * Math.PI / 180;
+            return Math.floor((1 - Math.log(Math.tan(r) + 1 / Math.cos(r)) / Math.PI) / 2 * Math.pow(2, z));
+        }
+        // verschuif een lat/lng over een afstand (meters) in een richting (graden, 0=noord, klok mee)
+        function movePoint(lat, lng, meters, bearingDeg) {
+            const R = 6371000;
+            const br = bearingDeg * Math.PI / 180;
+            const la1 = lat * Math.PI / 180, lo1 = lng * Math.PI / 180;
+            const la2 = Math.asin(Math.sin(la1) * Math.cos(meters / R) +
+                        Math.cos(la1) * Math.sin(meters / R) * Math.cos(br));
+            const lo2 = lo1 + Math.atan2(Math.sin(br) * Math.sin(meters / R) * Math.cos(la1),
+                        Math.cos(meters / R) - Math.sin(la1) * Math.sin(la2));
+            return { lat: la2 * 180 / Math.PI, lng: lo2 * 180 / Math.PI };
+        }
+
+        // Stuur een set tegel-URL's naar de service worker (stil, geen meldingen).
+        function sendTilesToSW(tileSet) {
+            if (!tileSet || tileSet.size === 0) return;
+            const tiles = Array.from(tileSet);
+            navigator.serviceWorker.ready.then((reg) => {
+                const sw = reg.active || navigator.serviceWorker.controller;
+                if (sw) sw.postMessage({ type: 'PRECACHE_TILES', tiles: tiles });
+            });
+        }
+
+        // Hoofdfunctie: bepaal of er een route is en buffer dienovereenkomstig vooruit.
+        function bufferAhead() {
+            if (!ombEnabled) return;                       // OMB uit → niks doen
             const pos = followerPos || masterPos;
-            if (pos) {
-                cacheTilesAround(pos.lat, pos.lng);
+            if (!pos) return;                              // nog geen GPS-fix
+
+            if (typeof activeRoute !== 'undefined' && activeRoute && activeRoute.length > 1) {
+                bufferAlongRoute(pos);                     // MÉT route
+            } else {
+                bufferAlongHeading(pos);                   // GEEN route
             }
         }
-        
-        function cacheTilesAround(lat, lng) {
-            const tilesToCache = [];
-                
-                // Fixed grid per zoom (offset = tiles each direction from center)
-                // 15:21x21(~15.8km nood-view), 16:13x13, 10-14:3x3
-                const zoomGrids = { 10: 1, 11: 1, 12: 1, 13: 1, 14: 1, 15: 10, 16: 6 };
-                
-                Object.keys(zoomGrids).forEach(zoomStr => {
-                    const zoom = parseInt(zoomStr);
-                    const offset = zoomGrids[zoom];
-                    const n = Math.pow(2, zoom);
-                    const centerX = Math.floor((lng + 180) / 360 * n);
-                    const centerY = Math.floor((1 - Math.log(Math.tan(lat * Math.PI / 180) + 1 / Math.cos(lat * Math.PI / 180)) / Math.PI) / 2 * n);
-                    
-                    for (let x = Math.max(0, centerX - offset); x <= Math.min(n - 1, centerX + offset); x++) {
-                        for (let y = Math.max(0, centerY - offset); y <= Math.min(n - 1, centerY + offset); y++) {
-                            tilesToCache.push(`https://tile.openstreetmap.org/${zoom}/${x}/${y}.png`);
-                        }
-                    }
+
+        // MÉT route: smalle strook (±250m) langs de route, vanaf het dichtstbijzijnde punt, ~15 km vooruit.
+        function bufferAlongRoute(pos) {
+            // vind dichtstbijzijnde route-index t.o.v. huidige positie
+            let nearIdx = 0, nearDist = Infinity;
+            for (let i = 0; i < activeRoute.length; i++) {
+                const p = activeRoute[i];
+                const d = distMeters(pos, { lat: p[0], lng: p[1] });
+                if (d < nearDist) { nearDist = d; nearIdx = i; }
+            }
+            // loop vooruit langs de route tot FORWARD_KM is bereikt
+            const tiles = new Set();
+            let accumM = 0;
+            for (let i = nearIdx; i < activeRoute.length - 1 && accumM < FORWARD_KM * 1000; i++) {
+                const a = { lat: activeRoute[i][0], lng: activeRoute[i][1] };
+                const b = { lat: activeRoute[i + 1][0], lng: activeRoute[i + 1][1] };
+                accumM += distMeters(a, b);
+                // tegels voor dit routepunt op zoom 15 + 16, met een marge van ±250m (corridor-breedte)
+                [15, 16].forEach(z => {
+                    addCorridorTiles(tiles, a.lat, a.lng, z);
                 });
-                
-                // Send to the ACTIVE Service Worker (works even on first load,
-                // when controller is still null)
-                navigator.serviceWorker.ready.then((reg) => {
-                    const sw = reg.active || navigator.serviceWorker.controller;
-                    if (sw) {
-                        sw.postMessage({
-                            type: 'PRECACHE_TILES',
-                            tiles: tilesToCache
-                        });
-                        console.log(`📤 Sent ${tilesToCache.length} tiles to Service Worker...`);
-                        // Visible loading status
-                        showBufferToast(`⏳ Offline buffer laden… (${tilesToCache.length} tegels)`, '#FF9800', null);
-                        // If no confirmation within 4 min, warn (throttled load can take ~2 min)
-                        if (bufferTimeoutTimer) clearTimeout(bufferTimeoutTimer);
-                        bufferTimeoutTimer = setTimeout(() => {
-                            showBufferToast('⚠️ Buffer reageert niet — nieuwe sw.js geüpload?', '#F44336', 7000);
-                        }, 240000);
-                    } else {
-                        console.log('⚠️ No active Service Worker yet');
-                        showBufferToast('⚠️ Service Worker nog niet actief', '#F44336', 5000);
+            }
+            sendTilesToSW(tiles);
+        }
+
+        // Voeg de tegel(s) rond een punt toe, met een marge zodat de strook ~500m breed wordt.
+        function addCorridorTiles(tileSet, lat, lng, z) {
+            // marge in tegels: hoeveel tegels beslaat 250m op dit zoomniveau?
+            // tegelbreedte (m) ≈ 40075016 * cos(lat) / 2^z ; marge = ceil(250 / tilewidth)
+            const tileW = 40075016 * Math.cos(lat * Math.PI / 180) / Math.pow(2, z);
+            const margin = Math.max(0, Math.ceil(CORRIDOR_M / tileW));
+            const cx = lon2tileX(lng, z), cy = lat2tileY(lat, z);
+            const n = Math.pow(2, z);
+            for (let dx = -margin; dx <= margin; dx++) {
+                for (let dy = -margin; dy <= margin; dy++) {
+                    const x = cx + dx, y = cy + dy;
+                    if (x >= 0 && y >= 0 && x < n && y < n) {
+                        tileSet.add(`https://tile.openstreetmap.org/${z}/${x}/${y}.png`);
                     }
-                });
+                }
+            }
+        }
+
+        // GEEN route: 7 tegels vooruit in de rijrichting, op het zoomniveau waarop je rijdt.
+        let bufferPrevPos = null;   // vorige positie, om de rijrichting uit GPS-beweging te bepalen
+        function bufferAlongHeading(pos) {
+            // rijrichting bepalen: bij voorkeur uit GPS-beweging (betrouwbaarder dan kompas).
+            // Alleen als je genoeg bewoog (>20m) is de richting zinvol — anders niks doen (stilstand).
+            let heading = null;
+            if (bufferPrevPos) {
+                const moved = distMeters(bufferPrevPos, pos);
+                if (moved > 20) heading = bearing([bufferPrevPos.lat, bufferPrevPos.lng], [pos.lat, pos.lng]);
+            }
+            bufferPrevPos = { lat: pos.lat, lng: pos.lng };
+            // terugval op kompas als er (nog) geen GPS-richting is
+            if (heading === null && typeof deviceHeading === 'number' && deviceHeading) heading = deviceHeading;
+            if (heading === null) return;   // echt geen richting → niks bufferen (je staat stil)
+
+            const z = (mapInstance && typeof mapInstance.getZoom === 'function')
+                ? Math.round(mapInstance.getZoom()) : 15;
+            const tileW = 40075016 * Math.cos(pos.lat * Math.PI / 180) / Math.pow(2, z);
+            const tiles = new Set();
+            for (let step = 0; step <= NOROUTE_TILES; step++) {
+                const ahead = movePoint(pos.lat, pos.lng, step * tileW, heading);
+                const x = lon2tileX(ahead.lng, z), y = lat2tileY(ahead.lat, z);
+                const n = Math.pow(2, z);
+                if (x >= 0 && y >= 0 && x < n && y < n) {
+                    tiles.add(`https://tile.openstreetmap.org/${z}/${x}/${y}.png`);
+                }
+            }
+            sendTilesToSW(tiles);
         }
 
         function initializeMap(isMaster, code) {
