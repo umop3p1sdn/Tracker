@@ -1,0 +1,387 @@
+#
+# enduro-motorcycle profile by zossebart (on suggestion by Giovanni)
+#
+# This profile tries to focus on "dirtroads", avoiding roads as well as spaths/footways.
+#
+
+---context:global   # following code refers to global config
+
+assign turnInstructionMode          = 1     # %turnInstructionMode% | Mode for the generated turn instructions | [0=none, 1=auto-choose, 2=locus-style, 3=osmand-style, 4=comment-style, 5=gpsies-style, 6=oruxmaps-style]
+assign turnInstructionRoundabouts   = true  # %turnInstructionRoundabouts% | Set to "false" to avoid generating special turning instructions for roundabouts | boolean
+assign turnInstructionCatchingRange = 4
+
+# generate a bike route
+assign validForBikes            = false
+assign validForCars             = true
+assign validForFoot             = false
+
+# Locus nav interface flags
+assign is_wet                   = false           # %is_wet% | Choose a safer route in wet conditions | boolean
+assign avoid_smallways          = true            # %avoid_smallways% | Avoid paths/footways | boolean
+
+# the global elevation parameters
+assign downhillcost             = 100
+assign downhillcutoff           = 25
+assign uphillcost               = 100
+assign uphillcutoff             = 25
+
+# elevation filtering parameters (tbd: optimized settings)
+assign elevationpenaltybuffer   = 10
+assign elevationmaxbuffer       = 10
+assign elevationbufferreduce    = 0
+
+# ++++++++++++++++++++++++++++++++++++++ some global defines for finetuning
+
+assign voiceprio                = 2                # 1: all ways have the same prio (max instructions)
+                                                   # 2: mtb prio, more instructions on different small way types
+assign mj_rd_penalty            = 5                # additional penalty for major roads for finetuning
+assign construction_penalty     = 9999             # penalty for roads in construction
+assign steps_penalty            = 9999             # avoid steps
+                                                   # penalty for steps
+assign ferry_penalty            = 5000             # penalty for ferries
+assign private_penalty          = 50               # penalty for private ways and nodes
+assign slippery_muddy_penalty   = if is_wet        # penalty for unpaved roads and tracks, which are tricky to ride when wet
+                                    then 2
+                                    else 0
+assign ford_penalty             = 0                # penalty for fords (you might not want to get your feet wet ;-) )
+
+# ------------------------------------------- global defines end
+
+---context:way   # following code refers to way-tags
+
+# classifier constants
+assign classifier_none  = 1
+assign classifier_ferry = 2
+assign classifier_steps = 3
+
+#
+# pre-calculate some logical expressions
+#
+
+#
+# is it a low-speed highway?
+#
+assign islowspeed               = if maxspeed=10|20|30 
+                                  then true
+                                  else false
+
+#
+# is it a high-speed highway?
+#
+assign ishighspeed              = if maxspeed=60|70|80|90|100|110|120|130|rural
+                                  then true
+                                  else false
+
+#
+# are there multiple lanes on the highway?
+#
+assign ismultilane              = if lanes=
+                                    then false
+                                    else if lanes=1|1.5|2
+                                      then false
+                                      else true
+
+#
+# is the road paved or unpaved?
+#
+assign ispaved                  = surface=paved|asphalt|concrete|paving_stones|grass_paver|metal|wood|compacted
+assign isunpaved                = not ( or surface= ispaved )
+
+#
+# is the surface potentially slippery or muddy when it's wet?
+#
+assign surfacebadwhenwet        = and isunpaved ( not surface=compacted|fine_gravel )
+assign highwaybadwhenwet        = or highway=path ( or tracktype=grade5|grade4 highway=bridleway )
+assign isbadwhenwet             = or surfacebadwhenwet highwaybadwhenwet
+
+#
+# base penalties for roadtypes
+#
+assign hw_penalty =
+  if      highway=motorway|motorway_link               then 9999
+  else if highway=proposed                             then 9999
+  else if highway=construction                         then construction_penalty
+                                                       else 0
+
+assign hw_major_penalty =
+  multiply  if islowspeed                                      # reduce the penalty if the speedlimit is low
+              then 0.75
+              else 1
+  multiply  max 1 ( multiply ishighspeed 1.2 )                 # rise the penalty if the speedlimit is high
+  multiply  max 1 ( multiply ismultilane 1.2 )                 # rise the penalty if there are more than 2 lanes  
+  if        highway=trunk|trunk_link                   then add mj_rd_penalty 10
+  else if   highway=primary|primary_link               then add mj_rd_penalty 6.0
+  else if   highway=secondary|secondary_link           then add mj_rd_penalty 2.6
+  else if   highway=tertiary|tertiary_link             then add mj_rd_penalty 2.3
+  else if   highway=unclassified                       then add mj_rd_penalty 2.2
+                                                       else 0
+
+assign hw_minor_penalty =
+  multiply  max 1 ( multiply ishighspeed 1.2 )                 # rise the penalty if the speedlimit is high
+  multiply  max 1 ( multiply ismultilane 1.2 )                 # rise the penalty if there are more than 2 lanes
+  if        highway=residential                         then 5
+  else if   highway=service                             then 1.1
+  else if   highway=living_street                       then 5
+                                                        else 0
+
+#
+# additional penalties for other road attributes
+#
+assign tracktype_penalty =
+    if tracktype=grade5                                 then 0.2
+                                                        else 0
+
+assign traffic_penalty =
+  multiply 
+  0.3
+  (
+    if estimated_traffic_class=2                         then 1
+    else if estimated_traffic_class=3                    then 2
+    else if estimated_traffic_class=4                    then 3
+    else if estimated_traffic_class=5                    then 4
+    else if estimated_traffic_class=6                    then 5
+    else if estimated_traffic_class=7                    then 6
+                                                         else 0
+  )
+
+#
+# implicit access here just from the motorroad tag
+# (implicit access rules from highway tag handled elsewhere)
+#
+assign defaultaccess =
+  if access=
+    then true
+    else 
+    (
+      if access=no
+        then false
+        else
+        (
+         if access=private
+          then false
+          else true
+        )
+    )
+
+#
+# calculate logical motorbike access
+#
+assign motorcycleaccess =
+    if motorcycle=
+      then 
+      (
+        if motor_vehicle=
+        then (
+          if vehicle=
+          then (
+            defaultaccess            
+            )
+          else (
+            if vehicle=private|no
+            then false
+            else true            
+          )
+          )
+        else (
+          if motor_vehicle=private|no
+            then false
+            else true
+        )
+      )
+      else 
+      (
+        if not motorcycle=private|no
+        then true
+        else false
+      )
+
+#
+# combine to penalty for access
+#
+assign access_penalty = 
+if motorcycleaccess 
+  then 0
+  else 9999
+
+#
+# combine additional penaltys which are common for flat, up and down ways
+#
+assign misc_penalty =
+  add access_penalty
+  add traffic_penalty
+  add if ( not ford= )                                   then ford_penalty
+                                                         else 0
+  add if trail_visibility=bad                            then 2
+        else 
+        (
+          if trail_visibility=horrible                   then 5
+            else
+            (
+              if trail_visibility=no                     then 15
+                                                         else 0
+            )
+        )
+  add if smoothness=impassable                           then 10
+                                                         else 0
+  add if surfacebadwhenwet                               then slippery_muddy_penalty
+                                                         else 0
+  add if highwaybadwhenwet                               then slippery_muddy_penalty
+                                                         else 0
+  if surface=sand|mud                                    then 3
+                                                         else 0
+
+assign onewaypenalty
+       switch switch reversedirection=yes
+                     switch oneway=
+                            junction=roundabout
+                            or oneway=yes or oneway=true oneway=1
+                     oneway=-1
+              9999
+              0.0
+
+#
+# now assign the parameters for the routing engine (initialcost, turncost and flat/up/down costfactors)
+#
+assign turncost = 
+  if highway=track                                      then 50
+                                                        else 150
+
+#
+# assign parameters for turn instruction generation
+#
+assign priorityclassifier =
+  if      equal voiceprio 1                             then 1
+  else if equal voiceprio 2
+  then if ( highway=motorway                  )         then  101
+  else if ( highway=motorway_link             )         then  100
+  else if ( highway=trunk                     )         then  91
+  else if ( highway=trunk_link                )         then  90
+  else if ( highway=primary                   )         then  88
+  else if ( highway=primary_link              )         then  87
+  else if ( highway=secondary                 )         then  86
+  else if ( highway=secondary_link            )         then  85
+  else if ( highway=tertiary                  )         then  84
+  else if ( highway=tertiary_link             )         then  83
+  else if ( highway=unclassified              )         then  82
+  else if ( highway=residential|living_street )         then  50
+  else if ( highway=service                   )         then  40
+  else if ( highway=road                      )         then  35  
+  else if ( highway=cycleway                  )         then  30
+  else if ( highway=bridleway|track           )         then  20
+  else if ( highway=footway|pedestrian        )         then  17
+  else if ( highway=steps                     )         then  15
+  else if ( highway=path                      )         then  10
+  else                                                        0
+  else                                                        0
+
+assign isroundabout             = junction=roundabout
+assign islinktype               = highway=motorway_link|trunk_link|primary_link|secondary_link|tertiary_link
+assign isgoodforcars            = 
+  if ( greater priorityclassifier 30 )
+   then true
+   else
+   (
+    if highway=residential|living_street|service 
+      then true
+      else 
+      (
+        if ( and highway=track tracktype=grade1 ) 
+          then true
+          else false
+      )
+    )
+
+# ... encoded into a bitmask
+
+assign classifiermask           = add multiply isroundabout   4
+                                  add multiply islinktype     8
+                                  multiply isgoodforcars 16
+
+#
+# for any change in initialclassifier, initialcost is added once
+#
+assign initialclassifier =
+     if route=ferry then classifier_ferry
+else if highway=steps then classifier_steps
+else classifier_none
+
+assign initialcost =
+     if ( equal initialclassifier classifier_ferry ) then ferry_penalty
+     else if ( equal initialclassifier classifier_steps ) then steps_penalty
+else 0
+
+#
+# costfactor for flat terrain
+#
+assign costfactor =
+  if and highway= not route=ferry                       then 100000
+    else
+    min 9999
+    add onewaypenalty
+    add misc_penalty
+    add tracktype_penalty
+    max 1
+    if hw_penalty                                       then hw_penalty
+    else if hw_major_penalty                            then hw_major_penalty
+    else if hw_minor_penalty                            then hw_minor_penalty
+
+    else if highway=path                                then max 1 ( multiply avoid_smallways 30 )
+    else if highway=track|bridleway                     then 1
+    else if highway=cycleway                            then 20
+                                                        else 40 # default for any other highway type not handled above
+
+---context:node  # following code refers to node tags
+
+assign defaultaccess =
+  if access=
+    then 
+    (
+      if barrier=gate|fence|door|wall                   then false 
+                                                        else true 
+    )
+    else
+    (
+      if access=private|no
+                                                        then false
+                                                        else true
+    )
+
+assign motorcycleaccess =
+    if motorcycle=
+      then 
+      (
+        if motor_vehicle=
+        then (
+          if vehicle=
+          then (
+            defaultaccess            
+            )
+          else (
+            if vehicle=private|no
+            then false
+            else true            
+          )
+          )
+        else (
+          if motor_vehicle=private|no
+            then false
+            else true
+        )
+      )
+      else 
+      (
+        if not motorcycle=private|no
+        then true
+        else false
+      )
+
+assign initialcost =
+  add  if highway=traffic_signals                       then 100  
+                                                        else 0
+  if ( and ( motorcycleaccess ) ( not highway=elevator ) )
+    then 
+    (
+      if ( or ( not ford= ) highway=ford )              then ( multiply 100 ford_penalty )
+                                                        else 0
+    )
+                                                        else 1000000
