@@ -625,7 +625,7 @@
             <!-- MODE SELECT -->
             <div id="modeSelect" class="mode-select">
                 <p class="subtitle">Start tracking</p>
-                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v12.6 © Umop3p1sdn</div>
+                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v13.1 © Umop3p1sdn</div>
                 
                 <!-- Hidden file input for GPX loading -->
                 <input type="file" id="gpxInputLoad" accept=".gpx" style="display:none;" onchange="loadGPXviaPlanner(event)">
@@ -797,24 +797,100 @@
             </div>
             
             <h2 style="color: #00BCD4; margin-top: 0;">Live Tracker App — Handleiding</h2>
-            
-            <h3 style="color: #00BCD4; margin-top: 25px;">Hoe te starten?</h3>
-            <p>— <strong>Optie 1: Master (Jij deelt je locatie)</strong></p>
+
+            <!-- ═══════════ HOE WERKT HET ═══════════ -->
+            <h3 style="color: #00BCD4; margin-top: 25px;">Hoe werkt het? (in het kort)</h3>
+            <p>De app draait om één <strong>Master</strong> en zijn <strong>Volgers</strong>:</p>
             <ul style="margin: 10px 0; padding-left: 20px;">
-                <li>Klik op de start-knop — je krijgt een 4-cijferige code</li>
-                <li>Deel de code met je vrienden</li>
-                <li>Je locatie wordt in real-time gedeeld</li>
+                <li>De <strong>Master</strong> zet de route uit, rijdt voorop en deelt een 4-cijferige code. Hij ziet al zijn volgers als vliegtuigje op de kaart, elk met een eigen <strong>tag</strong> (naam), en linksboven wie er verbonden is.</li>
+                <li>De <strong>Volgers</strong> typen de code in en volgen de Master: ze zien zijn positie en zijn <strong>werkelijke spoor</strong> (de rode lijn) — exact welke weg hij rijdt, inclusief afwijkingen. Volgers zien elkaar niet.</li>
             </ul>
-            <p style="background:#e3e7f5; padding:10px 14px; border-radius:8px;">Wil je een route maken of bewerken? Druk op <strong>Plan</strong> (linksboven). Daarmee open je de Route Planner — zie onderaan deze handleiding.</p>
-            
-            <p>— <strong>Optie 2: Follower (Volgen)</strong></p>
+            <p style="background:#e3e7f5; padding:10px 14px; border-radius:8px;">Hieronder eerst het deel <strong>voor de Master</strong>, dan <strong>voor de Volger</strong>, en daarna <strong>Algemeen</strong> (geldt voor allebei). De Route Planner staat onderaan.</p>
+
+            <!-- ═══════════ VOOR DE MASTER ═══════════ -->
+            <h2 style="color: #00BCD4; margin-top: 35px; border-top: 2px solid #00BCD4; padding-top: 22px;">Voor de Master</h2>
+
+            <h3 style="color: #00BCD4; margin-top: 20px;">Starten &amp; delen</h3>
             <ul style="margin: 10px 0; padding-left: 20px;">
-                <li>Ontvang de 4-cijfer code</li>
-                <li>Typ de code in het invoerveld</li>
+                <li>Klik op <strong>START TRACKING</strong> — je krijgt een 4-cijferige code.</li>
+                <li>Deel de code met je vrienden; jouw locatie wordt in real-time gedeeld.</li>
+                <li>Je gereden lijn (rood spoor) en je route worden met de volgers gedeeld.</li>
+            </ul>
+
+            <h3 style="color: #00BCD4; margin-top: 25px;">Je volgers zien</h3>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+                <li>Elke volger verschijnt als vliegtuigje op je kaart, met zijn <strong>tag</strong> (naam).</li>
+                <li>De teller in de rechter icoonbalk toont <strong>hoeveel</strong> volgers er verbonden zijn.</li>
+                <li>Zo weet je in één oogopslag wie achter je rijdt en wie nog stilstaat.</li>
+            </ul>
+
+            <h3 style="color: #00BCD4; margin-top: 25px;">Toon-knop (wie in beeld)</h3>
+            <p style="margin:4px 0 12px;">Rechts op de kaart. Tik om te wisselen wie er in beeld komt; het icoon toont de stand.</p>
+            <div style="display:flex; gap:14px; flex-wrap:wrap;">
+                <div style="text-align:center;">
+                    <div style="width:64px; height:64px; border-radius:6px; background:transparent; border:3px solid #000; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; margin:0 auto;"><svg width="34" height="34" viewBox="0 0 36 36" fill="#000"><path transform="translate(-4,-1) scale(0.9)" d="M12 2 L21 21 L12 16.5 L3 21 Z"/></svg><span style="font-size:0.5em; font-weight:bold;">IK</span></div>
+                    <div style="font-size:0.8em; margin-top:4px; max-width:90px;">Focus op jezelf. Zoom werkt.</div>
+                </div>
+                <div style="text-align:center;">
+                    <div style="width:64px; height:64px; border-radius:6px; background:transparent; border:3px solid #000; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; margin:0 auto;"><svg width="34" height="34" viewBox="0 0 36 36" fill="#000"><path transform="translate(11,11) scale(0.65)" d="M12 2 L21 21 L12 16.5 L3 21 Z"/><path transform="translate(19,15) scale(0.65)" d="M12 2 L21 21 L12 16.5 L3 21 Z"/></svg><span style="font-size:0.5em; font-weight:bold;">VOLGERS</span></div>
+                    <div style="font-size:0.8em; margin-top:4px; max-width:90px;">Focus op de volgers. Zoom werkt.</div>
+                </div>
+                <div style="text-align:center;">
+                    <div style="width:64px; height:64px; border-radius:6px; background:transparent; border:3px solid #000; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; margin:0 auto;"><svg width="34" height="34" viewBox="0 0 36 36" fill="#000"><path transform="translate(-4,-1) scale(0.9)" d="M12 2 L21 21 L12 16.5 L3 21 Z"/><path transform="translate(11,11) scale(0.65)" d="M12 2 L21 21 L12 16.5 L3 21 Z"/><path transform="translate(19,15) scale(0.65)" d="M12 2 L21 21 L12 16.5 L3 21 Z"/></svg><span style="font-size:0.5em; font-weight:bold;">BEIDE</span></div>
+                    <div style="font-size:0.8em; margin-top:4px; max-width:90px;">Iedereen in beeld. Auto-zoom, +/− werkt niet.</div>
+                </div>
+            </div>
+
+            <h3 style="color: #00BCD4; margin-top: 25px;">Route maken (Plan)</h3>
+            <p style="background:#e3e7f5; padding:10px 14px; border-radius:8px;">Wil je een route maken of bewerken? Druk op <strong>Plan</strong> (linksboven). Daarmee open je de Route Planner — zie helemaal onderaan deze handleiding.</p>
+
+            <!-- ═══════════ VOOR DE VOLGER ═══════════ -->
+            <h2 style="color: #00BCD4; margin-top: 35px; border-top: 2px solid #00BCD4; padding-top: 22px;">Voor de Volger</h2>
+
+            <h3 style="color: #00BCD4; margin-top: 20px;">Starten</h3>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+                <li>Ontvang de 4-cijfer code van de Master.</li>
+                <li>Typ de code in het <strong>"Enter code"</strong>-veld; bij 4 cijfers start het volgen vanzelf.</li>
                 <li>Je ziet de Master direct op de kaart!</li>
             </ul>
-            
-            <h3 style="color: #00BCD4; margin-top: 25px;">Knoppen op de kaart</h3>
+
+            <h3 style="color: #00BCD4; margin-top: 25px;">Track-knop</h3>
+            <p>Tik om te wisselen wat je van de Master op je kaart ziet:</p>
+            <ul style="margin: 5px 0; padding-left: 30px;">
+                <li><strong>GEEN</strong> — niets extra's op de kaart.</li>
+                <li><strong>M SPOOR</strong> — de rode gereden lijn van de Master (volgen).</li>
+                <li><strong>M NAVI</strong> — de route van de Master (navigeren). Je ziet hier <strong>beide</strong> lijnen: de navi-route én een eventueel offroad-spoor van de Master.</li>
+            </ul>
+            <p style="background:#e3e7f5; padding:10px 14px; border-radius:8px;">Je volgt de Master en laadt/maakt zelf geen routes — anders zou je "solo" gaan rijden. Wil je zelf een route plannen? Start dan als Master.</p>
+
+            <h3 style="color: #00BCD4; margin-top: 25px;">Toon-knop (wie in beeld)</h3>
+            <p style="margin:4px 0 12px;">Rechts op de kaart. Tik om te wisselen wie er in beeld komt; het icoon toont de stand.</p>
+            <div style="display:flex; gap:14px; flex-wrap:wrap;">
+                <div style="text-align:center;">
+                    <div style="width:64px; height:64px; border-radius:6px; background:transparent; border:3px solid #000; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; margin:0 auto;"><svg width="34" height="34" viewBox="0 0 36 36" fill="#000"><path transform="translate(-2,0) scale(0.8)" d="M12 2 L21 21 L12 16.5 L3 21 Z"/></svg><span style="font-size:0.5em; font-weight:bold;">MASTER</span></div>
+                    <div style="font-size:0.8em; margin-top:4px; max-width:90px;">Focus op de master. Zoom werkt.</div>
+                </div>
+                <div style="text-align:center;">
+                    <div style="width:64px; height:64px; border-radius:6px; background:transparent; border:3px solid #000; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; margin:0 auto;"><svg width="34" height="34" viewBox="0 0 36 36" fill="#000"><path transform="translate(-2,0) scale(0.8)" d="M12 2 L21 21 L12 16.5 L3 21 Z"/><path transform="translate(16,14) scale(0.8)" d="M12 2 L21 21 L12 16.5 L3 21 Z"/></svg><span style="font-size:0.5em; font-weight:bold;">BEIDE</span></div>
+                    <div style="font-size:0.8em; margin-top:4px; max-width:90px;">Master + jij in beeld. Auto-zoom, +/− werkt niet.</div>
+                </div>
+                <div style="text-align:center;">
+                    <div style="width:64px; height:64px; border-radius:6px; background:transparent; border:3px solid #000; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; margin:0 auto;"><svg width="34" height="34" viewBox="0 0 36 36" fill="#000"><path transform="translate(16,14) scale(0.8)" d="M12 2 L21 21 L12 16.5 L3 21 Z"/></svg><span style="font-size:0.5em; font-weight:bold;">IK</span></div>
+                    <div style="font-size:0.8em; margin-top:4px; max-width:90px;">Focus op jezelf. Zoom werkt.</div>
+                </div>
+            </div>
+
+            <div style="margin: 20px 0;">
+                <div style="width:64px; height:64px; border-radius:50%; background:rgba(33,150,243,0.55); border:3px solid #fff; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:bold; font-size:1.6em; margin-bottom:8px;">1</div>
+                <strong>Jouw kleur &amp; TAG</strong>
+                <p style="margin:4px 0 0;">Master = rode pijl. Elke volger krijgt een eigen kleur (vanaf blauw), bij meer dan 8 met een nummer. Het rondje rechts toont jouw kleur. Met de <strong>TAG</strong>-knop eronder zet je een korte naam (max 5 tekens) die de Master linksboven ziet. (De Master regelt in het menu hoe zichtbaar de tags zijn.)</p>
+            </div>
+
+            <!-- ═══════════ ALGEMEEN ═══════════ -->
+            <h2 style="color: #00BCD4; margin-top: 35px; border-top: 2px solid #00BCD4; padding-top: 22px;">Algemeen (Master &amp; Volger)</h2>
+            <p>Deze knoppen en functies werken hetzelfde voor allebei.</p>
+
+            <h3 style="color: #00BCD4; margin-top: 20px;">Knoppen op de kaart</h3>
 
             <div style="margin: 20px 0;">
                 <div style="display:flex; gap:6px; margin-bottom:8px;">
@@ -835,43 +911,6 @@
             </div>
 
             <div style="margin: 20px 0;">
-                <strong>Toon-knop</strong>
-                <p style="margin:4px 0 12px;">Rechts op de kaart. Tik om te wisselen wie er in beeld komt; het icoon toont de stand. Bij <strong>BEIDE</strong> bepaalt de kaart zelf de zoom (zodat iedereen in beeld blijft) — de +/− zoomknoppen werken dan niet.</p>
-
-                <p style="margin:14px 0 6px;"><strong>Als Master:</strong></p>
-                <div style="display:flex; gap:14px; flex-wrap:wrap;">
-                    <div style="text-align:center;">
-                        <div style="width:64px; height:64px; border-radius:6px; background:transparent; border:3px solid #000; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; margin:0 auto;"><svg width="34" height="34" viewBox="0 0 36 36" fill="#000"><path transform="translate(-4,-1) scale(0.9)" d="M12 2 L21 21 L12 16.5 L3 21 Z"/></svg><span style="font-size:0.5em; font-weight:bold;">IK</span></div>
-                        <div style="font-size:0.8em; margin-top:4px; max-width:90px;">Focus op jezelf. Zoom werkt.</div>
-                    </div>
-                    <div style="text-align:center;">
-                        <div style="width:64px; height:64px; border-radius:6px; background:transparent; border:3px solid #000; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; margin:0 auto;"><svg width="34" height="34" viewBox="0 0 36 36" fill="#000"><path transform="translate(11,11) scale(0.65)" d="M12 2 L21 21 L12 16.5 L3 21 Z"/><path transform="translate(19,15) scale(0.65)" d="M12 2 L21 21 L12 16.5 L3 21 Z"/></svg><span style="font-size:0.5em; font-weight:bold;">VOLGERS</span></div>
-                        <div style="font-size:0.8em; margin-top:4px; max-width:90px;">Focus op de volgers. Zoom werkt.</div>
-                    </div>
-                    <div style="text-align:center;">
-                        <div style="width:64px; height:64px; border-radius:6px; background:transparent; border:3px solid #000; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; margin:0 auto;"><svg width="34" height="34" viewBox="0 0 36 36" fill="#000"><path transform="translate(-4,-1) scale(0.9)" d="M12 2 L21 21 L12 16.5 L3 21 Z"/><path transform="translate(11,11) scale(0.65)" d="M12 2 L21 21 L12 16.5 L3 21 Z"/><path transform="translate(19,15) scale(0.65)" d="M12 2 L21 21 L12 16.5 L3 21 Z"/></svg><span style="font-size:0.5em; font-weight:bold;">BEIDE</span></div>
-                        <div style="font-size:0.8em; margin-top:4px; max-width:90px;">Iedereen in beeld. Auto-zoom, +/− werkt niet.</div>
-                    </div>
-                </div>
-
-                <p style="margin:18px 0 6px;"><strong>Als Follower:</strong></p>
-                <div style="display:flex; gap:14px; flex-wrap:wrap;">
-                    <div style="text-align:center;">
-                        <div style="width:64px; height:64px; border-radius:6px; background:transparent; border:3px solid #000; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; margin:0 auto;"><svg width="34" height="34" viewBox="0 0 36 36" fill="#000"><path transform="translate(-2,0) scale(0.8)" d="M12 2 L21 21 L12 16.5 L3 21 Z"/></svg><span style="font-size:0.5em; font-weight:bold;">MASTER</span></div>
-                        <div style="font-size:0.8em; margin-top:4px; max-width:90px;">Focus op de master. Zoom werkt.</div>
-                    </div>
-                    <div style="text-align:center;">
-                        <div style="width:64px; height:64px; border-radius:6px; background:transparent; border:3px solid #000; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; margin:0 auto;"><svg width="34" height="34" viewBox="0 0 36 36" fill="#000"><path transform="translate(-2,0) scale(0.8)" d="M12 2 L21 21 L12 16.5 L3 21 Z"/><path transform="translate(16,14) scale(0.8)" d="M12 2 L21 21 L12 16.5 L3 21 Z"/></svg><span style="font-size:0.5em; font-weight:bold;">BEIDE</span></div>
-                        <div style="font-size:0.8em; margin-top:4px; max-width:90px;">Master + jij in beeld. Auto-zoom, +/− werkt niet.</div>
-                    </div>
-                    <div style="text-align:center;">
-                        <div style="width:64px; height:64px; border-radius:6px; background:transparent; border:3px solid #000; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; margin:0 auto;"><svg width="34" height="34" viewBox="0 0 36 36" fill="#000"><path transform="translate(16,14) scale(0.8)" d="M12 2 L21 21 L12 16.5 L3 21 Z"/></svg><span style="font-size:0.5em; font-weight:bold;">IK</span></div>
-                        <div style="font-size:0.8em; margin-top:4px; max-width:90px;">Focus op jezelf. Zoom werkt.</div>
-                    </div>
-                </div>
-            </div>
-
-            <div style="margin: 20px 0;">
                 <div style="display:flex; gap:8px; align-items:center; margin-bottom:8px;">
                     <div style="width:64px; height:64px; border-radius:6px; background:transparent; border:3px solid #000; display:flex; align-items:center; justify-content:center; font-size:2em; font-weight:bold; color:#000;">−</div>
                     <span style="font-weight:bold; font-size:1.3em;">15</span>
@@ -887,89 +926,68 @@
                 <p style="margin:4px 0 0;">Rechtsboven. Houd 1 sec vast om het scherm te vergrendelen (handig in je zak — tracking loopt door, geen ongewenste tikken). Houd het gesloten slot 1 sec vast om te ontgrendelen.</p>
             </div>
 
-            <div style="margin: 20px 0;">
-                <div style="width:64px; height:64px; border-radius:50%; background:rgba(33,150,243,0.55); border:3px solid #fff; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:bold; font-size:1.6em; margin-bottom:8px;">1</div>
-                <strong>Kleur &amp; TAG (volger)</strong>
-                <p style="margin:4px 0 0;">Master = rode pijl. Elke volger krijgt een eigen kleur (vanaf blauw), bij meer dan 8 met een nummer. Het rondje rechts toont jouw kleur. Met de TAG-knop eronder zet je een korte naam (max 5 tekens) die de Master linksboven ziet. De Master regelt in het menu hoe zichtbaar de tags zijn.</p>
-            </div>
-
-            <h3 style="color: #00BCD4; margin-top: 25px;">Routes laden (GPX)</h3>
-            <p>Open het ☰ menu → <strong>GPX (routes)</strong>. Als Master heb je twee manieren om te laden:</p>
+            <h3 style="color: #00BCD4; margin-top: 25px;">GO-knop &amp; snelheid</h3>
             <ul style="margin: 10px 0; padding-left: 20px;">
-                <li><strong>Load route</strong> — voor een nette route. De app berekent er een rijdbare route van met <strong>gesproken navigatie</strong>: vóór elke afslag verschijnt een pijl (klein/blauw als 't nog ver is, groter/oranje/rood als je nadert) en je hoort de afslag ("over 300 meter rechtsaf"). De resterende afstand + tijd tellen af.</li>
-                <li><strong>Load route (no navi)</strong> — laadt de GPX als een <strong>kaal spoor</strong> (paarse lijn), precies zoals 't bestand is, zónder navigatie. <strong>Ideaal voor offroad:</strong> je volgt gewoon het "touwtje" op de kaart. Ook <strong>opgeslagen sporen laad je hiermee</strong> (zie hieronder waarom).</li>
+                <li><strong>GO</strong> (onderaan) — verbergt alle knoppen, alleen de kaart blijft over.</li>
+                <li><strong>Snelheid (km/u)</strong> — tijdens GO onderaan in beeld (staand scherm).</li>
             </ul>
-            <p style="background:#e3e7f5; padding:10px 14px; border-radius:8px;">Heeft je GPX meerdere delen (zoals een lange trail), dan kies je in een lijstje welke delen je laadt — handig om alleen het stuk van vandaag te tonen. Een <strong>zelf geladen GPX kun je niet bewerken</strong>; daarvoor maak je een route met <strong>Plan</strong> (zie Route Planner).</p>
-
-            <h3 style="color: #00BCD4; margin-top: 25px;">Spoor vs route — en de mix-kaart</h3>
-            <ul style="margin: 10px 0; padding-left: 20px;">
-                <li>Een <strong>route</strong> navigeer je (met afslagen). Een <strong>spoor</strong> volg je (een kale lijn).</li>
-                <li>Een opgeslagen <strong>spoor is vaak niet bruikbaar om mee te navigeren</strong> — het is je gereden GPS-lijn, geen nette route. Laad een spoor daarom met <strong>Load route (no navi)</strong>, dan zie je 'm netjes als touwtje (in plaats van een rommelige route vol punten).</li>
-                <li><strong>Mix-kaart:</strong> je kunt een <strong>offroad spoor (no navi)</strong> laden én tegelijk met <strong>Plan</strong> een navi-route maken. Zo navigeer je mét stem naar de offroad-plek, en volg je daar het paarse spoor verder. Beide lijnen staan samen op de kaart.</li>
-            </ul>
-
-            <h3 style="color: #00BCD4; margin-top: 25px;">Wissen vs Delete</h3>
-            <ul style="margin: 10px 0; padding-left: 20px;">
-                <li><strong>Wissen</strong> (knop in de Planner) — voldoende als je <strong>alleen een route hebt gemaakt</strong> met Plan. Dit haalt je geplande route weg.</li>
-                <li><strong>Delete Loaded Track</strong> (in het GPX-menu) — wist <strong>alles in één keer</strong>: de geladen route, het offroad-spoor (paars) én de navigatie. Gebruik dit als je een schone kaart wilt.</li>
-            </ul>
-
-            <p style="margin-top:20px;">— <strong>Snelheid (km/u)</strong> - Tijdens GO onderaan in beeld (staand).</p>
-
-
             <p style="background:#e3e7f5; padding:10px 14px; border-radius:8px;"><strong>Tip (liggend scherm):</strong> ligt je telefoon op z'n kant en staan <strong>CENTER én draaien aan</strong>, dan kun je het vliegtuigje (jezelf) mooi in beeld zetten door de kaart omhoog/omlaag te pannen — zo zie je meer van de weg vóór je.</p>
 
-            <p>— <strong>GO knop (onderaan)</strong> - Verbergt alle knoppen, alleen de kaart blijft over.</p>
+            <h3 style="color: #00BCD4; margin-top: 25px;">Privacy / STOP</h3>
+            <p>Bij <strong>STOP</strong> worden je gegevens uit de cloud gewist (geen sporen). Sluit je de app zonder STOP, dan ruimt de app het later vanzelf op (binnen ~10 min).</p>
 
-            <p>— <strong>Privacy / STOP</strong> - Bij STOP worden je gegevens uit de cloud gewist (geen sporen). Sluit je de app zonder STOP, dan ruimt de app het later vanzelf op (binnen ~10 min).</p>
-            
-            <h3 style="color: #00BCD4; margin-top: 25px;">Opslaan (☰ menu → GPX → Save)</h3>
-            <p>Bij opslaan vraagt de app een <strong>naam</strong> — die komt in het bestand én in de track-kiezer terug, zodat je 'm makkelijk herkent. Wat je kunt opslaan hangt af van je rol:</p>
-            <p style="margin:6px 0 2px;"><strong>Als Master:</strong></p>
-            <ul style="margin: 5px 0; padding-left: 20px;">
-                <li><strong>Save master spoor</strong> — je gereden (rode) lijn.</li>
-                <li><strong>Save master route</strong> — je actieve route (gemaakt óf geladen).</li>
-            </ul>
-            <p style="margin:6px 0 2px;"><strong>Als Volger:</strong></p>
-            <ul style="margin: 5px 0; padding-left: 20px;">
-                <li><strong>Save master spoor</strong> — het gereden spoor van de master.</li>
-                <li><strong>Save own spoor</strong> — je eigen gereden (blauwe) lijn.</li>
-                <li><strong>Save master route</strong> — de route die je van de master ontving.</li>
-            </ul>
-            
-            <h3 style="color: #00BCD4; margin-top: 25px;">Track-knop (onderaan)</h3>
-            <p>Tik om te wisselen wat er op de kaart staat:</p>
-            <ul style="margin: 5px 0; padding-left: 30px;">
-                <li><strong>GEEN</strong> — niets extra's op de kaart.</li>
-                <li><strong>M SPOOR</strong> — de rode gereden lijn van de master (volgen).</li>
-                <li><strong>M NAVI</strong> — de route van de master (navigeren). Als Volger zie je hier <strong>beide</strong> lijnen: de navi-route én een eventueel offroad-spoor van de master.</li>
-            </ul>
-            
             <h3 style="color: #00BCD4; margin-top: 25px;">Tips</h3>
             <ul style="margin: 10px 0; padding-left: 20px;">
-                <li>Houd je scherm OPEN - de app werkt niet op achtergrond</li>
-                <li>GPS werkt best buiten / in open ruimte</li>
-                <li>Langzaam internet? Tracking update elke 3 seconden</li>
+                <li>Houd je scherm OPEN — de app werkt niet op de achtergrond.</li>
+                <li>GPS werkt het best buiten / in open ruimte.</li>
+                <li>Langzaam internet? Tracking update elke 3 seconden.</li>
             </ul>
 
             <h3 style="color: #00BCD4; margin-top: 25px;">Offline Map Buffer (OMB)</h3>
             <p>Elk stukje kaart dat je bekijkt wordt automatisch opgeslagen. Zo bouw je vanzelf een offline-buffer op: gebieden waar je al gereden of gekeken hebt, blijven zichtbaar zonder verbinding. Tijdens het rijden laadt de app bovendien een smal stukje kaart vooruit, zodat de weg vóór je altijd klaarstaat.</p>
             <ul style="margin: 10px 0; padding-left: 20px;">
-                <li><strong>OMB</strong> (in het ☰ menu): automatisch bufferen aan/uit</li>
-                <li>Wat je op het scherm ziet (rondkijken, inzoomen) wordt bewaard</li>
-                <li>Onderweg <strong>mét route</strong>: smalle strook (±500m) ~15 km vooruit langs de route</li>
-                <li>Onderweg <strong>zonder route</strong>: een paar tegels vooruit in je rijrichting</li>
-                <li>Gebeurt volledig stil op de achtergrond — geen meldingen</li>
-                <li>Geen verbinding? Kaart binnen je buffer blijft zichtbaar</li>
-                <li>Verbruik bekijken: zie de data-teller in het ☰ menu (sessie + totaal)</li>
-                <li>OMB uit = zuinigst (alleen wat je op het scherm ziet laadt nog)</li>
+                <li><strong>OMB</strong> (in het ☰ menu): automatisch bufferen aan/uit.</li>
+                <li>Wat je op het scherm ziet (rondkijken, inzoomen) wordt bewaard.</li>
+                <li>Onderweg <strong>mét route</strong>: smalle strook (±500m) ~15 km vooruit langs de route.</li>
+                <li>Onderweg <strong>zonder route</strong>: een paar tegels vooruit in je rijrichting.</li>
+                <li>Gebeurt volledig stil op de achtergrond — geen meldingen.</li>
+                <li>Geen verbinding? Kaart binnen je buffer blijft zichtbaar.</li>
+                <li>Verbruik bekijken: zie de data-teller in het ☰ menu (sessie + totaal).</li>
+                <li>OMB uit = zuinigst (alleen wat je op het scherm ziet laadt nog).</li>
             </ul>
 
             <h3 style="color: #00BCD4; margin-top: 25px;">Kaart vooraf offline zetten</h3>
             <p>Pan over de regio waar je straks wilt rijden, op het zoomniveau waarop je navigeert (standaard 15), en je kaart is automatisch offline beschikbaar.</p>
-            
-            <h2 style="color: #00BCD4; margin-top: 40px; border-top: 2px solid #00BCD4; padding-top: 25px;">Route Planner — Handleiding</h2>
-            <p>Met de Route Planner bouw je vooraf je eigen motorrit op de kaart: zoeken, een route laten berekenen, omwegen toevoegen, gebieden vermijden en plekken onderweg (POI) opzoeken. Daarna rijd je 'm.</p>
+
+            <!-- ═══════════ GPX ═══════════ -->
+            <h3 style="color: #00BCD4; margin-top: 25px;">GPX — routes laden &amp; opslaan (☰ menu)</h3>
+            <p>In het ☰ menu → <strong>GPX (routes)</strong> kun je routes laden en opslaan. Welke knoppen je ziet hangt af van je rol; de app toont vanzelf wat voor jou klopt. Er zit verschil in <em>hóe</em> je laadt, en dat heeft een reden:</p>
+
+            <p style="margin:10px 0 4px;"><strong>Laden (alleen Master):</strong></p>
+            <ul style="margin: 5px 0; padding-left: 20px;">
+                <li><strong>Load route</strong> — voor een nette route. De app berekent er een rijdbare route van met <strong>gesproken navigatie</strong>: vóór elke afslag verschijnt een pijl (klein/blauw als 't nog ver is, groter/oranje/rood als je nadert) en je hoort de afslag ("over 300 meter rechtsaf"). De resterende afstand + tijd tellen af.</li>
+                <li><strong>Load route (no navi)</strong> — laadt de GPX als een <strong>kaal spoor</strong> (paarse lijn), precies zoals 't bestand is, zónder navigatie. <strong>Ideaal voor offroad:</strong> je volgt gewoon het "touwtje" op de kaart. Ook <strong>opgeslagen sporen laad je hiermee</strong>.</li>
+            </ul>
+            <p style="background:#e3e7f5; padding:10px 14px; border-radius:8px;">Heeft je GPX meerdere delen (zoals een lange trail), dan kies je in een lijstje welke delen je laadt — handig om alleen het stuk van vandaag te tonen. Een <strong>zelf geladen GPX kun je niet bewerken</strong>; daarvoor maak je een route met <strong>Plan</strong>. De Volger laadt zelf niets (die volgt de Master).</p>
+
+            <p style="margin:14px 0 4px;"><strong>Spoor vs route — en de mix-kaart:</strong></p>
+            <ul style="margin: 5px 0; padding-left: 20px;">
+                <li>Een <strong>route</strong> navigeer je (met afslagen). Een <strong>spoor</strong> volg je (een kale lijn).</li>
+                <li>Een opgeslagen <strong>spoor is vaak niet bruikbaar om mee te navigeren</strong> — het is je gereden GPS-lijn, geen nette route. Laad een spoor daarom met <strong>Load route (no navi)</strong>, dan zie je 'm netjes als touwtje (in plaats van een rommelige route vol punten).</li>
+                <li><strong>Mix-kaart:</strong> je kunt een <strong>offroad spoor (no navi)</strong> laden én tegelijk met <strong>Plan</strong> een navi-route maken. Zo navigeer je mét stem naar de offroad-plek, en volg je daar het paarse spoor verder. Beide lijnen staan samen op de kaart.</li>
+            </ul>
+
+            <p style="margin:14px 0 4px;"><strong>Opslaan (Save):</strong> bij opslaan vraagt de app een <strong>naam</strong> — die komt in het bestand én in de track-kiezer terug, zodat je 'm makkelijk herkent. De Master kan zijn spoor en route opslaan; de Volger kan daarnaast ook zijn <strong>eigen</strong> gereden spoor opslaan. De app toont de juiste knoppen vanzelf.</p>
+
+            <p style="margin:14px 0 4px;"><strong>Wissen vs Delete:</strong></p>
+            <ul style="margin: 5px 0; padding-left: 20px;">
+                <li><strong>Wissen</strong> (knop in de Planner) — voldoende als je <strong>alleen een route hebt gemaakt</strong> met Plan. Dit haalt je geplande route weg.</li>
+                <li><strong>Delete Loaded Track</strong> (in het GPX-menu) — wist <strong>alles in één keer</strong>: de geladen route, het offroad-spoor (paars) én de navigatie. Gebruik dit als je een schone kaart wilt.</li>
+            </ul>
+
+            <!-- ═══════════ ROUTE PLANNER ═══════════ -->
+            <h2 style="color: #00BCD4; margin-top: 40px; border-top: 2px solid #00BCD4; padding-top: 25px;">Route Planner — alleen voor de Master</h2>
+            <p>Met de Route Planner bouw je vooraf je eigen rit op de kaart: zoeken, een route laten berekenen, omwegen toevoegen, gebieden vermijden en plekken onderweg (POI) opzoeken. Daarna rijd je 'm. Druk op <strong>Plan</strong> (linksboven) om 'm te openen.</p>
 
             <h3 style="color: #00BCD4; margin-top: 25px;">De vier menu-knoppen</h3>
             <p>Bij het openen zie je vier tabs. Je klapt zelf uit wat je nodig hebt — zo blijft de kaart vrij.</p>
@@ -1017,8 +1035,9 @@
                 <li>Tik op een icoon → naam, details en openingstijden + <strong>Slim toevoegen aan route</strong>. De plek wordt dan een tussenpunt; de overige iconen verdwijnen.</li>
             </ul>
 
+
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                Live Tracker App v12.6 © Umop3p1sdn
+                Live Tracker App v13.1 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2200,7 +2219,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "12.6";
+        const APP_VERSION = "13.1";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
