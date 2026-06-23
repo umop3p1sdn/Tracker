@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Live Tracker</title>
+    <title>HO-ME — Live Tracking &amp; Route App</title>
     <link rel="manifest" href="/Tracker/manifest.json">
     <link rel="apple-touch-icon" href="/Tracker/icon-180.png">
     <link rel="icon" type="image/png" sizes="192x192" href="/Tracker/icon-192.png">
@@ -15,6 +15,40 @@
     <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/leaflet-rotatedmarker@0.2.3/leaflet.rotatedMarker.js"></script>
     <style>
+        /* ─── HO-ME startscherm sfeer ─── */
+        @keyframes planeFloat {
+            0%, 100% { transform: translateY(0); }
+            50%      { transform: translateY(-6px); }
+        }
+        @keyframes dashFlow {
+            to { stroke-dashoffset: -28; }
+        }
+        @keyframes glowPulse {
+            0%, 100% { opacity: 0.35; }
+            50%      { opacity: 0.6; }
+        }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .hero-wrap {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            margin: 4px auto 18px;
+        }
+        .hero-glow {
+            position: absolute;
+            width: 220px; height: 220px;
+            left: 50%; top: 50%;
+            transform: translate(-50%, -50%);
+            background: radial-gradient(circle, rgba(0,188,212,0.45) 0%, rgba(0,188,212,0) 70%);
+            animation: glowPulse 4s ease-in-out infinite;
+            pointer-events: none;
+        }
+        .hero-svg { position: relative; animation: planeFloat 4s ease-in-out infinite; }
+        .hero-dash { stroke-dasharray: 7 7; animation: dashFlow 1.6s linear infinite; }
+        .start-fade { animation: fadeUp 0.6s ease both; }
         * {
             margin: 0;
             padding: 0;
@@ -23,7 +57,12 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, sans-serif;
-            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+            background:
+                radial-gradient(circle at 50% 0%, rgba(0,188,212,0.12) 0%, rgba(0,188,212,0) 45%),
+                linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px),
+                linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+            background-size: 100% 100%, 28px 28px, 28px 28px, 100% 100%;
             color: #fff;
             min-height: 100vh;
             display: flex;
@@ -44,15 +83,17 @@
             text-align: center;
             margin-bottom: 20px;
             padding-bottom: 15px;
-            border-bottom: 2px solid #FF1744;
+            border-bottom: 2px solid rgba(0,188,212,0.4);
         }
 
         .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
+            font-size: 2.6em;
+            margin-bottom: 4px;
             font-weight: bold;
-            letter-spacing: 2px;
+            letter-spacing: 4px;
             text-transform: uppercase;
+            color: #fff;
+            text-shadow: 0 0 24px rgba(0,188,212,0.5);
         }
 
         .mode-indicator {
@@ -70,12 +111,15 @@
             text-align: center;
             max-width: 400px;
             width: 100%;
+            animation: fadeUp 0.6s ease both;
         }
 
         .subtitle {
-            font-size: 1.3em;
-            margin-bottom: 30px;
-            opacity: 0.9;
+            font-size: 1.15em;
+            margin-bottom: 34px;
+            opacity: 0.75;
+            font-style: italic;
+            font-weight: 300;
         }
 
         .button {
@@ -98,8 +142,9 @@
         }
 
         .button-master {
-            background: #FF1744;
+            background: linear-gradient(135deg, #00BCD4 0%, #0097A7 100%);
             color: #fff;
+            box-shadow: 0 4px 14px rgba(0,188,212,0.35);
         }
 
         .button-follow {
@@ -136,17 +181,29 @@
         }
 
         .button-small {
-            font-size: 0.7em;
-            opacity: 0.9;
+            font-size: 0.62em;
+            opacity: 0.8;
             display: block;
             margin-top: 5px;
+            text-transform: none;
+            letter-spacing: 0.5px;
             font-weight: normal;
         }
 
         .divider {
-            margin: 25px 0;
-            opacity: 0.5;
-            font-size: 0.9em;
+            margin: 22px 0;
+            opacity: 0.4;
+            font-size: 0.8em;
+            letter-spacing: 2px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: rgba(255,255,255,0.25);
         }
 
         .follow-section {
@@ -163,7 +220,7 @@
             font-weight: bold;
             text-align: center;
             background: #1a1f3a;
-            border: 2px solid #FF1744;
+            border: 2px solid rgba(0,188,212,0.5);
             color: #fff;
             border-radius: 8px;
             text-transform: uppercase;
@@ -612,7 +669,23 @@
         <!-- MAIN APP (hidden until install skipped/done) -->
         <div id="appContent" style="display: none;">
         <div class="header">
-            <h1>LIVE TRACKER</h1>
+            <div class="hero-wrap">
+                <div class="hero-glow"></div>
+                <svg class="hero-svg" width="180" height="96" viewBox="0 0 180 96" fill="none">
+                    <!-- stippellijn-route (animated flow) -->
+                    <path class="hero-dash" d="M14 78 Q55 86 78 56 T166 22" stroke="#7fdfeb" stroke-width="4" stroke-linecap="round" opacity="0.8"/>
+                    <!-- donker vliegtuigje (achter, links-midden) -->
+                    <g transform="translate(70 52) rotate(-32)">
+                        <path d="M0 -13 L11 13 L0 7 L-11 13 Z" fill="#1a5a68"/>
+                    </g>
+                    <!-- wit vliegtuigje (voor, rechtsboven) -->
+                    <g transform="translate(150 26) rotate(28)">
+                        <path d="M0 -15 L13 15 L0 8 L-13 15 Z" fill="#ffffff"/>
+                    </g>
+                </svg>
+            </div>
+            <h1>HO-ME</h1>
+            <div style="font-size: 0.7em; color: #00BCD4; letter-spacing: 2px; text-transform: uppercase; opacity: 0.8;">Live Tracking &amp; Route App</div>
             <div id="modeIndicator" class="mode-indicator hidden"></div>
         </div>
 
@@ -620,7 +693,6 @@
             <!-- MODE SELECT -->
             <div id="modeSelect" class="mode-select">
                 <p class="subtitle" id="subtitleText">Zullen we samen rijden?</p>
-                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v14.0 © Umop3p1sdn</div>
                 
                 <!-- Hidden file input for GPX loading -->
                 <input type="file" id="gpxInputLoad" accept=".gpx" style="display:none;" onchange="loadGPXviaPlanner(event)">
@@ -628,24 +700,24 @@
                 
                 <button class="button button-master" onclick="startMaster()">
                     <span id="startBtnText">Let's go!</span>
-                    <span class="button-small">Share your location</span>
+                    <span class="button-small">Deel je locatie · rijd voorop</span>
                 </button>
 
-                <div class="divider">OR</div>
+                <div class="divider">OF</div>
 
                 <div class="follow-section">
                     <input type="text" maxlength="4" placeholder="Enter code" id="inputCode" class="input" onkeyup="this.value = this.value.replace(/[^0-9]/g, ''); if(this.value.length === 4) { startFollowing(); }" style="text-align: center;">
                 </div>
 
                 <div id="error" class="error hidden"></div>
-                
-                <div style="margin-top: 30px; text-align: center;">
-                    <a onclick="toggleHandleiding()" style="color: #00BCD4; cursor: pointer; font-size: 0.9em; text-decoration: underline;">Handleiding</a>
+
+                <div style="margin-top: 34px; display: flex; gap: 12px; justify-content: center;">
+                    <button onclick="toggleHandleiding()" style="flex: 1; max-width: 150px; background: transparent; color: #00BCD4; border: 1.5px solid rgba(0,188,212,0.5); padding: 11px 0; border-radius: 10px; cursor: pointer; font-size: 0.9em; font-weight: bold; letter-spacing: 0.5px; transition: all 0.2s;" ontouchstart="" onmouseover="this.style.background='rgba(0,188,212,0.12)';" onmouseout="this.style.background='transparent';">Handleiding</button>
+                    <button onclick="shareApp()" style="flex: 1; max-width: 150px; background: transparent; color: #00BCD4; border: 1.5px solid rgba(0,188,212,0.5); padding: 11px 0; border-radius: 10px; cursor: pointer; font-size: 0.9em; font-weight: bold; letter-spacing: 0.5px; transition: all 0.2s;" ontouchstart="" onmouseover="this.style.background='rgba(0,188,212,0.12)';" onmouseout="this.style.background='transparent';">Share app</button>
                 </div>
 
-                <button onclick="shareApp()" style="margin: 22px auto 0; display: block; background: transparent; color: #00BCD4; border: 2px solid #00BCD4; padding: 12px 20px; border-radius: 10px; cursor: pointer; font-size: 0.95em; font-weight: bold; letter-spacing: 0.5px; width: 100%; max-width: 300px; transition: all 0.2s;" ontouchstart="" onmouseover="this.style.background='#00BCD4';this.style.color='#0a0e27';" onmouseout="this.style.background='transparent';this.style.color='#00BCD4';">
-                    Share app
-                </button>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v14.4 © Umop3p1sdn</div>
+
             </div>
 
             <!-- ACTIVE TRACKING -->
@@ -795,7 +867,7 @@
                 <button onclick="toggleHandleiding()" style="background: #FF1744; color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; font-size: 1em;">Sluiten</button>
             </div>
             
-            <h2 style="color: #00BCD4; margin-top: 0;">Live Tracker App — Handleiding</h2>
+            <h2 style="color: #00BCD4; margin-top: 0;">HO-ME — Handleiding</h2>
 
             <!-- ═══════════ HOE WERKT HET ═══════════ -->
             <h3 style="color: #00BCD4; margin-top: 25px;">Hoe werkt het? (in het kort)</h3>
@@ -1044,7 +1116,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                Live Tracker App v14.0 © Umop3p1sdn
+                HO-ME v14.4 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2227,7 +2299,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "14.0";
+        const APP_VERSION = "14.4";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -5529,9 +5601,9 @@ assign initialcost =
         // Deel de app-link. Opent het native deel-menu (telefoon); valt terug op klembord-kopiëren (desktop).
         function shareApp() {
             const url = 'https://umop3p1sdn.github.io/Tracker/';
-            const text = 'Probeer Live Tracker — samen op pad, zie elkaar live op de kaart:';
+            const text = 'Probeer HO-ME — samen op pad, zie elkaar live op de kaart:';
             if (navigator.share) {
-                navigator.share({ title: 'Live Tracker', text: text, url: url })
+                navigator.share({ title: 'HO-ME', text: text, url: url })
                     .catch(() => {});   // gebruiker annuleerde → stil
             } else if (navigator.clipboard) {
                 navigator.clipboard.writeText(text + ' ' + url)
