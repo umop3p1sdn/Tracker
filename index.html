@@ -512,20 +512,15 @@
         <div id="installScreen" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; text-align: center;">
             
             <div style="max-width: 300px;">
-                <div style="font-size: 80px; margin-bottom: 20px;">📱</div>
-                <h1 style="font-size: 2em; margin-bottom: 10px; color: #00BCD4;">GPX routes made easy</h1>
-                <p style="font-size: 1.1em; margin-bottom: 30px; color: #aaa;">In just one touch</p>
+                <svg width="110" height="110" viewBox="0 0 100 100" style="margin-bottom: 20px;">
+                    <path d="M50 8 L94 86 L6 86 Z" fill="#FFC107" stroke="#FFA000" stroke-width="3" stroke-linejoin="round"/>
+                    <rect x="45.5" y="34" width="9" height="28" rx="4" fill="#0a0e27"/>
+                    <circle cx="50" cy="73" r="5" fill="#0a0e27"/>
+                </svg>
+                <h1 style="font-size: 1.5em; margin-bottom: 30px; color: #fff; line-height: 1.4;">Voeg deze app toe aan beginscherm voor de beste ervaring!</h1>
 
-                <button onclick="showAndroidInstructions()" class="button button-master" style="margin-bottom: 10px;">
-                    Android
-                </button>
-                
-                <button onclick="showIosInstructions()" class="button button-master" style="margin-bottom: 10px;">
-                    iPhone
-                </button>
-                
                 <button onclick="skipInstall()" class="button button-master">
-                    Already installed
+                    Let's go!
                 </button>
 
                 <button onclick="shareApp()" style="margin-top: 22px; background: transparent; color: #00BCD4; border: 2px solid #00BCD4; padding: 13px 20px; border-radius: 10px; cursor: pointer; font-size: 1em; font-weight: bold; letter-spacing: 0.5px; width: 100%; transition: all 0.2s;" ontouchstart="" onmouseover="this.style.background='#00BCD4';this.style.color='#0a0e27';" onmouseout="this.style.background='transparent';this.style.color='#00BCD4';">
@@ -625,7 +620,7 @@
             <!-- MODE SELECT -->
             <div id="modeSelect" class="mode-select">
                 <p class="subtitle">Start tracking</p>
-                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v13.5 © Umop3p1sdn</div>
+                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v13.8 © Umop3p1sdn</div>
                 
                 <!-- Hidden file input for GPX loading -->
                 <input type="file" id="gpxInputLoad" accept=".gpx" style="display:none;" onchange="loadGPXviaPlanner(event)">
@@ -647,6 +642,10 @@
                 <div style="margin-top: 30px; text-align: center;">
                     <a onclick="toggleHandleiding()" style="color: #00BCD4; cursor: pointer; font-size: 0.9em; text-decoration: underline;">Handleiding</a>
                 </div>
+
+                <button onclick="shareApp()" style="margin: 22px auto 0; display: block; background: transparent; color: #00BCD4; border: 2px solid #00BCD4; padding: 12px 20px; border-radius: 10px; cursor: pointer; font-size: 0.95em; font-weight: bold; letter-spacing: 0.5px; width: 100%; max-width: 300px; transition: all 0.2s;" ontouchstart="" onmouseover="this.style.background='#00BCD4';this.style.color='#0a0e27';" onmouseout="this.style.background='transparent';this.style.color='#00BCD4';">
+                    Share app
+                </button>
             </div>
 
             <!-- ACTIVE TRACKING -->
@@ -1045,7 +1044,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                Live Tracker App v13.5 © Umop3p1sdn
+                Live Tracker App v13.8 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2228,7 +2227,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "13.5";
+        const APP_VERSION = "13.8";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -3445,9 +3444,27 @@ assign initialcost =
             // Clean up my own leftover master data (e.g. after a crash / hard close)
             cleanupMyOldMasterData();
 
-            // Na het opstarten checken of er een nieuwe versie op de server staat (stil; toont alleen een
-            // wegklikbare balk als er écht een nieuwere is). Kleine vertraging zodat de app eerst rustig laadt.
-            setTimeout(() => { if (typeof checkForUpdate === 'function') checkForUpdate(); }, 2000);
+            // Draait de app als geïnstalleerde app (via icoon op beginscherm)? Dan het installatie-
+            // scherm (met de "voeg toe aan beginscherm"-driehoek) meteen overslaan — die tip is dan
+            // overbodig. Via de browser-URL → scherm wél tonen. Werkt op Android (display-mode) + iOS.
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+                || window.navigator.standalone === true;
+            if (isStandalone && typeof hideInstallScreen === 'function') {
+                hideInstallScreen();
+            }
+
+            // Na het opstarten checken of er een nieuwe versie op de server staat. Niet één keer maar
+            // 5× (elke 2 sec, dus 10 sec lang) — geeft de server tijd om de nieuwe versie te tonen en
+            // vergroot de kans dat je de update-melding ziet. Stopt zodra er een update gevonden is.
+            let updateChecks = 0;
+            const updateCheckLoop = setInterval(() => {
+                updateChecks++;
+                if (typeof checkForUpdate === 'function') checkForUpdate();
+                // gevonden? (de banner staat er dan) → stoppen. Ook na 5 pogingen stoppen.
+                if (document.getElementById('updateBanner') || updateChecks >= 5) {
+                    clearInterval(updateCheckLoop);
+                }
+            }, 2000);
 
             // GLOBAL: Disable double-click zoom everywhere
             document.addEventListener('dblclick', (e) => {
