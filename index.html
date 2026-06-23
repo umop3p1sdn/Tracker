@@ -625,7 +625,7 @@
             <!-- MODE SELECT -->
             <div id="modeSelect" class="mode-select">
                 <p class="subtitle">Start tracking</p>
-                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v13.1 © Umop3p1sdn</div>
+                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v13.2 © Umop3p1sdn</div>
                 
                 <!-- Hidden file input for GPX loading -->
                 <input type="file" id="gpxInputLoad" accept=".gpx" style="display:none;" onchange="loadGPXviaPlanner(event)">
@@ -911,13 +911,21 @@
             </div>
 
             <div style="margin: 20px 0;">
-                <div style="display:flex; gap:8px; align-items:center; margin-bottom:8px;">
+                <div style="display:flex; gap:8px; align-items:center; margin-bottom:6px;">
                     <div style="width:64px; height:64px; border-radius:6px; background:transparent; border:3px solid #000; display:flex; align-items:center; justify-content:center; font-size:2em; font-weight:bold; color:#000;">−</div>
                     <span style="font-weight:bold; font-size:1.3em;">15</span>
                     <div style="width:64px; height:64px; border-radius:6px; background:transparent; border:3px solid #000; display:flex; align-items:center; justify-content:center; font-size:2em; font-weight:bold; color:#000;">+</div>
                 </div>
-                <strong>Zoom (boven) &amp; Lijndikte (onder)</strong>
-                <p style="margin:4px 0 0;">Bovenaan op de kaart: zoomniveau (10-20). Onderaan op de kaart: dikte van de route-lijn (3-15px).</p>
+                <strong>Zoom (bovenaan de kaart)</strong>
+                <p style="margin:4px 0 0;">Het getal in het midden is je zoomniveau (10-20). Tik − of + om uit/in te zoomen.</p>
+
+                <div style="display:flex; gap:8px; align-items:center; margin:16px 0 6px;">
+                    <div style="width:64px; height:64px; border-radius:6px; background:transparent; border:3px solid #000; display:flex; align-items:center; justify-content:center; font-size:2em; font-weight:bold; color:#000;">−</div>
+                    <span style="font-weight:bold; font-size:1.3em;">3</span>
+                    <div style="width:64px; height:64px; border-radius:6px; background:transparent; border:3px solid #000; display:flex; align-items:center; justify-content:center; font-size:2em; font-weight:bold; color:#000;">+</div>
+                </div>
+                <strong>Lijndikte (onderaan de kaart)</strong>
+                <p style="margin:4px 0 0;">Het getal in het midden is de dikte van de route-lijn (3-15px). Tik − of + om de lijn dunner of dikker te maken.</p>
             </div>
 
             <div style="margin: 20px 0;">
@@ -1037,7 +1045,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                Live Tracker App v13.1 © Umop3p1sdn
+                Live Tracker App v13.2 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2219,7 +2227,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "13.1";
+        const APP_VERSION = "13.2";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
