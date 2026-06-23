@@ -625,7 +625,7 @@
             <!-- MODE SELECT -->
             <div id="modeSelect" class="mode-select">
                 <p class="subtitle">Start tracking</p>
-                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v13.3 © Umop3p1sdn</div>
+                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v13.4 © Umop3p1sdn</div>
                 
                 <!-- Hidden file input for GPX loading -->
                 <input type="file" id="gpxInputLoad" accept=".gpx" style="display:none;" onchange="loadGPXviaPlanner(event)">
@@ -1045,7 +1045,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                Live Tracker App v13.3 © Umop3p1sdn
+                Live Tracker App v13.4 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1968,7 +1968,7 @@ assign initialcost =
         function drawRoute(geojson) {
             if (routeLine) map.removeLayer(routeLine);
             routeLine = L.geoJSON(geojson, {
-                style: { color: '#00BCD4', weight: 6, opacity: 0.9 },
+                style: { color: '#00BCD4', weight: trackLineWidth, opacity: 0.9 },
                 interactive: false   // lijn vangt geen kliks → via's blijven aantikbaar
             }).addTo(map);
             // bewaar de route-coördinaten zodat eigen via's hierop kunnen 'snappen'
@@ -2227,7 +2227,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "13.3";
+        const APP_VERSION = "13.4";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -2712,10 +2712,10 @@ assign initialcost =
             if (eatenGrey) { mapInstance.removeLayer(eatenGrey); eatenGrey = null; }
             if (eatenBlue) { mapInstance.removeLayer(eatenBlue); eatenBlue = null; }
             if (gehad.length > 1) {
-                eatenGrey = L.polyline(gehad, { color: '#888', weight: 5, opacity: 0.5 }).addTo(mapInstance);
+                eatenGrey = L.polyline(gehad, { color: '#888', weight: trackLineWidth, opacity: 0.5 }).addTo(mapInstance);
             }
             if (teGaan.length > 1) {
-                eatenBlue = L.polyline(teGaan, { color: '#00BCD4', weight: 6, opacity: 0.9 }).addTo(mapInstance);
+                eatenBlue = L.polyline(teGaan, { color: '#00BCD4', weight: trackLineWidth, opacity: 0.9 }).addTo(mapInstance);
             }
             // de originele planner-route-lijn eronder verbergen tijdens rijden
             if (routeLine) routeLine.setStyle({ opacity: 0 });
@@ -5620,6 +5620,18 @@ assign initialcost =
                     opacity: 0.8,
                     dashArray: '5, 5'
                 }).addTo(mapInstance);
+            }
+
+            // Navigatie-route tijdens het rijden: gehad (grijs) + te-gaan (blauw)
+            if (mapInstance && eatenGrey) {
+                const egLatlngs = eatenGrey.getLatLngs();
+                mapInstance.removeLayer(eatenGrey);
+                eatenGrey = L.polyline(egLatlngs, { color: '#888', weight: trackLineWidth, opacity: 0.5 }).addTo(mapInstance);
+            }
+            if (mapInstance && eatenBlue) {
+                const ebLatlngs = eatenBlue.getLatLngs();
+                mapInstance.removeLayer(eatenBlue);
+                eatenBlue = L.polyline(ebLatlngs, { color: '#00BCD4', weight: trackLineWidth, opacity: 0.9 }).addTo(mapInstance);
             }
 
             // Re-disable double-click zoom after redraw
