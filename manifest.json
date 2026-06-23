@@ -1,6 +1,6 @@
 {
-  "name": "Live Tracker App",
-  "short_name": "Tracker",
+  "name": "HO-ME — Live Tracking & Route App",
+  "short_name": "HO-ME",
   "description": "Real-time motorcycle group location tracking with GPS and Firebase sync",
   "start_url": "/Tracker/",
   "scope": "/Tracker/",
