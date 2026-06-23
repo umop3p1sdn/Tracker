@@ -620,7 +620,7 @@
             <!-- MODE SELECT -->
             <div id="modeSelect" class="mode-select">
                 <p class="subtitle" id="subtitleText">Zullen we samen rijden?</p>
-                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v13.9 © Umop3p1sdn</div>
+                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v14.0 © Umop3p1sdn</div>
                 
                 <!-- Hidden file input for GPX loading -->
                 <input type="file" id="gpxInputLoad" accept=".gpx" style="display:none;" onchange="loadGPXviaPlanner(event)">
@@ -1044,7 +1044,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                Live Tracker App v13.9 © Umop3p1sdn
+                Live Tracker App v14.0 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2227,7 +2227,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "13.9";
+        const APP_VERSION = "14.0";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -3466,10 +3466,13 @@ assign initialcost =
                 'Hit the road!', 'Erop uit!', 'Vrooom!', 'Start je motor!', 'We gaan!', 'Onderweg!',
                 'Avontuur tegemoet!', 'Roll out!'
             ];
-            const subEl = document.getElementById('subtitleText');
-            if (subEl) subEl.textContent = subtitles[Math.floor(Math.random() * subtitles.length)];
-            const btnEl = document.getElementById('startBtnText');
-            if (btnEl) btnEl.textContent = startWords[Math.floor(Math.random() * startWords.length)];
+            window.pickRandomTexts = function() {
+                const subEl = document.getElementById('subtitleText');
+                if (subEl) subEl.textContent = subtitles[Math.floor(Math.random() * subtitles.length)];
+                const btnEl = document.getElementById('startBtnText');
+                if (btnEl) btnEl.textContent = startWords[Math.floor(Math.random() * startWords.length)];
+            };
+            pickRandomTexts();   // meteen bij opstarten een frisse combi
 
             // Draait de app als geïnstalleerde app (via icoon op beginscherm)? Dan het installatie-
             // scherm (met de "voeg toe aan beginscherm"-driehoek) meteen overslaan — die tip is dan
@@ -5472,6 +5475,7 @@ assign initialcost =
 
             document.getElementById('activeTracking').classList.add('hidden');
             document.getElementById('modeSelect').classList.remove('hidden');
+            if (typeof pickRandomTexts === 'function') pickRandomTexts();   // verse tekst bij terugkomst
             document.querySelector('.header').classList.remove('hidden');
             document.getElementById('inputCode').value = '';
             document.getElementById('error').classList.add('hidden');
