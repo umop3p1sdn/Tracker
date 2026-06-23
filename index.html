@@ -503,6 +503,18 @@
         }
         .prof-btn.active { background: #00BCD4; color: #0a0e27; border-color: #00BCD4; }
 
+        /* Mode-keuze knoppen (Road/Offroad/Bike/Race bike/Walk) — één actief tegelijk */
+        .mode-choice {
+            flex: 1 1 auto; padding: 9px 10px; border-radius: 8px; border: 2px solid #555;
+            background: #e8e8ea; color: #1a1a2e; font-weight: bold; font-size: 0.8em;
+            cursor: pointer; white-space: nowrap;
+        }
+        .mode-choice.active                 { background: #607D8B; color: #fff; border-color: #607D8B; } /* Road = grijsblauw */
+        .mode-choice.active#mcOffroad       { background: #9C27B0; border-color: #9C27B0; }            /* Offroad = paars */
+        .mode-choice.active#mcBike          { background: #2196F3; border-color: #2196F3; }            /* Bike = blauw */
+        .mode-choice.active#mcRacebike      { background: #FF9800; border-color: #FF9800; }            /* Race bike = oranje */
+        .mode-choice.active#mcWalk          { background: #4CAF50; border-color: #4CAF50; }            /* Walk = groen */
+
         /* Info bar bottom */
         #infoBar {
             position: absolute; bottom: 0; left: 0; right: 0; z-index: 1000;
@@ -716,7 +728,7 @@
                     <button onclick="shareApp()" style="flex: 1; max-width: 150px; background: transparent; color: #00BCD4; border: 1.5px solid rgba(0,188,212,0.5); padding: 11px 0; border-radius: 10px; cursor: pointer; font-size: 0.9em; font-weight: bold; letter-spacing: 0.5px; transition: all 0.2s;" ontouchstart="" onmouseover="this.style.background='rgba(0,188,212,0.12)';" onmouseout="this.style.background='transparent';">Share app</button>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v14.4 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v14.6 © Umop3p1sdn</div>
 
             </div>
 
@@ -1068,13 +1080,13 @@
             <h2 style="color: #00BCD4; margin-top: 40px; border-top: 2px solid #00BCD4; padding-top: 25px;">Route Planner — alleen voor de Master</h2>
             <p>Met de Route Planner bouw je vooraf je eigen rit op de kaart: zoeken, een route laten berekenen, omwegen toevoegen, gebieden vermijden en plekken onderweg (POI) opzoeken. Daarna rijd je 'm. Druk op <strong>Plan</strong> (linksboven) om 'm te openen.</p>
 
-            <h3 style="color: #00BCD4; margin-top: 25px;">De vier menu-knoppen</h3>
-            <p>Bij het openen zie je vier tabs. Je klapt zelf uit wat je nodig hebt — zo blijft de kaart vrij.</p>
+            <h3 style="color: #00BCD4; margin-top: 25px;">De menu-knoppen</h3>
+            <p>Bij het openen zie je de tabs. Je klapt zelf uit wat je nodig hebt — zo blijft de kaart vrij.</p>
             <ul style="margin: 10px 0; padding-left: 20px;">
                 <li><strong>Route</strong> — zoekbalk + Start/Tussen/Finish/📍 + de profielen. <em>Route en Extra mogen samen open staan.</em></li>
                 <li><strong>Extra</strong> — omweg-generator (km + punten) + Lock.</li>
                 <li><strong>POI</strong> — opent de focus-modus: alle andere menu's verdwijnen voor maximaal zicht op de kaart. Knoppen onderin, lijst linksboven. Sluiten met de rode ✕.</li>
-                <li><strong>OR</strong> — Offroad aan/uit (wordt paars als 't aan staat). Zie de sectie <em>Offroad (OR)</em> hieronder.</li>
+                <li><strong>Mode</strong> — kies hoe je reist: Road, Offroad, Bike, Race bike of Walk. Zie de sectie <em>Mode</em> hieronder.</li>
             </ul>
 
             <h3 style="color: #00BCD4; margin-top: 25px;">Een route maken</h3>
@@ -1092,10 +1104,17 @@
                 <li><strong>Neutraal</strong> — geen beperkingen, vaak de kortere weg (maar daardoor soms iets minder snel). Mag snelweg én eronder; jouw tussenpunten sturen de route. Handig om ná een Rustig-route via de snelweg naar huis te bouwen.</li>
             </ul>
 
-            <h3 style="color: #00BCD4; margin-top: 25px;">Offroad (OR)</h3>
-            <p>De <strong>OR</strong>-tab (naast Route/Extra/POI) zet de <strong>offroad-modus</strong> aan. De tab wordt paars en de planner zoekt dan zoveel mogelijk <strong>onverharde wegen</strong> (zandwegen, tracks) op in plaats van asfalt — ideaal voor open terrein zoals in het buitenland. Snel/Rustig/Neutraal vervalt zolang offroad aanstaat (je rijdt offroad, geen wegprofiel-keuze).</p>
-            <p style="background:#e3e7f5; padding:10px 14px; border-radius:8px;">Een hard verbodsbord blijft altijd dicht; de rest beoordeel je zelf op de motor (een hek? dan keer je om). Tik OR nog eens om weer normaal te rijden. <strong>Wis route</strong> zet offroad ook weer uit.</p>
-            <p><strong>Offroad navigeren:</strong> als je OR aanzet, gaan <strong>geluid en navigatie-pijlen automatisch uit</strong> — offroad volg je het spoor op de kaart, je hebt geen afslag-aanwijzingen nodig. Wil je ze toch, zet ze dan in het ☰ menu weer aan (<em>Audio</em> en <em>Navigatie pijlen</em>). De groene <strong>GO ▶</strong> blijft werken: die geeft je de resterende afstand + tijd, ook handig op een lange zandweg.</p>
+            <h3 style="color: #00BCD4; margin-top: 25px;">Mode — hoe je reist</h3>
+            <p>De <strong>Mode</strong>-tab opent een keuzemenu. Er kan er steeds maar één aan staan; de knop kleurt mee met je keuze:</p>
+            <ul style="margin: 8px 0; padding-left: 20px;">
+                <li><strong>Road</strong> — normaal over de weg. Hier zie je de keuze Snel / Rustig / Neutraal.</li>
+                <li><strong>Offroad</strong> — zoekt onverharde wegen (zandwegen, tracks) op, asfalt wordt gemeden. Ideaal voor open terrein.</li>
+                <li><strong>Bike</strong> — een gewone fietsroute over de weg.</li>
+                <li><strong>Race bike</strong> — een snelle racefiets-route, mijdt onverhard.</li>
+                <li><strong>Walk</strong> — zoekt voetpaden en wandelpaden op, om te voet een route uit te zetten.</li>
+            </ul>
+            <p style="background:#e3e7f5; padding:10px 14px; border-radius:8px;">Bij elke mode maak je gewoon een <strong>Start</strong> en <strong>Finish</strong> (en eventueel tussenpunten), en je kunt net als anders een <strong>pin zetten om iets te ontwijken</strong>. Snel/Rustig/Neutraal is alleen zichtbaar bij <strong>Road</strong>. Kies <strong>Road</strong> (of <strong>Wis route</strong>) om terug te gaan naar normaal.</p>
+            <p><strong>Geluid &amp; pijlen:</strong> bij <strong>Offroad</strong> gaan geluid en navigatie-pijlen automatisch uit — daar volg je het spoor ("touwtje") op de kaart. Bij Road, Bike, Race bike en Walk staan de aanwijzingen gewoon aan (duidelijke afslagen). In het ☰ menu kun je ze altijd zelf aan- of uitzetten. De groene <strong>GO ▶</strong> blijft overal de resterende afstand + tijd geven.</p>
 
             <h3 style="color: #00BCD4; margin-top: 25px;">Omweg-generator</h3>
             <p>Vul een gewenste <strong>afstand</strong> (km) en het aantal <strong>punten</strong> in en druk op <strong>Genereer omweg</strong>. De planner maakt een slingerroute die rond je doelafstand uitkomt. De omweg-punten (oranje) liggen op de route; je eigen punten (paars) blijven staan. Nog eens drukken = een nieuwe variant.</p>
@@ -1116,7 +1135,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v14.4 © Umop3p1sdn
+                HO-ME v14.6 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1138,7 +1157,16 @@
                 <button class="tab-btn" id="tabRoute" onclick="toggleTab('route')">Route</button>
                 <button class="tab-btn" id="tabExtra" onclick="toggleTab('extra')">Extra</button>
                 <button class="tab-btn" id="tabPoi" onclick="openPoiFocus()">POI</button>
-                <button class="tab-btn" id="tabOffroad" onclick="toggleOffroad()" title="Offroad aan/uit">OR</button>
+                <button class="tab-btn" id="tabMode" onclick="toggleModeMenu()" title="Kies mode">Mode</button>
+            </div>
+            <div id="panelMode" class="panel">
+                <div id="modeChoiceRow" style="display:flex; gap:6px; flex-wrap:wrap;">
+                    <button class="mode-choice active" id="mcRoad"     onclick="setMode('road')">Road</button>
+                    <button class="mode-choice"        id="mcOffroad"  onclick="setMode('offroad')">Offroad</button>
+                    <button class="mode-choice"        id="mcBike"     onclick="setMode('bike')">Bike</button>
+                    <button class="mode-choice"        id="mcRacebike" onclick="setMode('racebike')">Race bike</button>
+                    <button class="mode-choice"        id="mcWalk"     onclick="setMode('walk')">Walk</button>
+                </div>
             </div>
             <div id="panelRoute" class="panel">
                 <div style="display:flex; gap:6px; align-items:stretch;">
@@ -1307,6 +1335,7 @@
         let searchTimer = null;
         let selectedProfile = 'car-fast';   // UI-keuze: car-fast | rustig | bochtig
         let offroadMode = false;            // Offroad aan/uit. Aan = mtb-profiel (verkiest onverhard).
+        let walkMode = false;               // Wandelen aan/uit. Aan = hiking-mountain-profiel (voetpaden).
 
         // Vertaal de UI-keuze naar de echte BRouter-parameters.
         // ═══════════════════════════════════════════════════════════════════════
@@ -1376,11 +1405,11 @@ assign initialcost =
         }
 
         function brouterParams() {
-            if (offroadMode) {
-                // Offroad: mtb-profiel verkiest onverhard (zandwegen/tracks) veel sterker dan trekking.
-                // Als brouter.de 'mtb' niet kent → foutmelding; dan terug naar trekking (of eigen profiel).
-                return 'profile=mtb';
+            // Speciale modi (Offroad/Bike/Race bike/Walk) → vast profiel uit MODE_PROFILE.
+            if (typeof planMode !== 'undefined' && planMode !== 'road' && MODE_PROFILE[planMode]) {
+                return 'profile=' + MODE_PROFILE[planMode];
             }
+            // Road → de gewone Snel/Rustig/Neutraal keuze.
             if (selectedProfile === 'rustig') {
                 // car-vario met snelweg vermijden (echte autowegen, geen fietspad)
                 return 'profile=car-vario&profile:avoid_motorways=1';
@@ -1481,38 +1510,73 @@ assign initialcost =
             if (startPoint && destPoint) maybeRoute();
         }
 
-        // --- Offroad-modus (OR-tab in de planner) ---
-        function toggleOffroad() {
-            offroadMode = !offroadMode;
-            if (offroadMode) {
-                // AAN: onthoud de "zonder OR"-stand van audio+pijlen, dan beide UIT (offroad volgt het
-                // spoor, geen afslag-navigatie). Je mag ze tijdens OR handmatig weer aanzetten.
-                toggleTab('route', true);
+        // ─── MODE-MENU: Road / Offroad / Bike / Race bike / Walk (één tegelijk) ───
+        // planMode is de bron van waarheid. offroadMode/walkMode blijven als afgeleiden bestaan
+        // omdat andere code (lijn-tekening, opruim) ze nog gebruikt.
+        let planMode = 'road';   // 'road' | 'offroad' | 'bike' | 'racebike' | 'walk'
+
+        const MODE_PROFILE = {
+            road:     null,               // Road = gebruik selectedProfile (Snel/Rustig/Neutraal)
+            offroad:  'mtb',
+            bike:     'trekking',
+            racebike: 'fastbike',
+            walk:     'hiking-mountain'
+        };
+        // Bij welke modi gaan geluid + pijlen UIT? (alleen offroad — daar volg je het spoor)
+        const MODE_SILENT = { offroad: true, road: false, bike: false, racebike: false, walk: false };
+
+        function toggleModeMenu() {
+            const panel = document.getElementById('panelMode');
+            const tab = document.getElementById('tabMode');
+            const open = panel.classList.toggle('open');
+            tab.classList.toggle('active', open);
+        }
+
+        function setMode(mode) {
+            const prev = planMode;
+            planMode = mode;
+            // afgeleiden bijwerken (andere code leunt hierop)
+            offroadMode = (mode === 'offroad');
+            walkMode    = (mode === 'walk');
+
+            // knoppen: alleen de gekozen actief
+            document.querySelectorAll('.mode-choice').forEach(b => b.classList.remove('active'));
+            const map = { road:'mcRoad', offroad:'mcOffroad', bike:'mcBike', racebike:'mcRacebike', walk:'mcWalk' };
+            const btn = document.getElementById(map[mode]);
+            if (btn) btn.classList.add('active');
+
+            // Mode-tab kleurt mee met de actieve modus (grijsblauw bij Road)
+            const tabColor = { road:'', offroad:'#9C27B0', bike:'#2196F3', racebike:'#FF9800', walk:'#4CAF50' };
+            const tab = document.getElementById('tabMode');
+            if (tab) {
+                tab.style.background = tabColor[mode] || '';
+                tab.style.color = mode === 'road' ? '' : '#fff';
+                tab.style.borderColor = tabColor[mode] || '';
+            }
+
+            // Snel/Rustig/Neutraal alleen zichtbaar bij Road
+            const prof = document.getElementById('profileRow');
+            if (prof) prof.style.display = (mode === 'road') ? '' : 'none';
+
+            // Geluid + pijlen: uit bij stille modi, anders herstellen naar normale stand
+            if (MODE_SILENT[mode]) {
                 if (typeof rememberAndSilence === 'function') rememberAndSilence();
             } else {
-                // UIT: herstel audio+pijlen naar hoe ze "zonder OR" stonden vóór je OR aanzette.
                 if (typeof restoreAudioArrows === 'function') restoreAudioArrows();
             }
-            syncOffroadUI();
-            applyOffroadVisibility();
+
             if (startPoint && destPoint) maybeRoute();   // route meteen herberekenen met nieuw profiel
         }
 
-        // OR-tab paars maken als offroad aanstaat
-        function syncOffroadUI() {
-            const tab = document.getElementById('tabOffroad');
-            if (tab) {
-                tab.style.background = offroadMode ? '#9C27B0' : '';
-                tab.style.color = offroadMode ? '#fff' : '';
-                tab.style.borderColor = offroadMode ? '#9C27B0' : '';
-            }
-        }
-
-        // Offroad AAN → Snel/Rustig/Neutraal verbergen (je rijdt offroad, geen wegprofiel-keuze)
-        function applyOffroadVisibility() {
+        // Snel/Rustig/Neutraal verbergen tenzij Road — gedeeld, ook door clearAll aangeroepen
+        function applyProfileVisibility() {
             const prof = document.getElementById('profileRow');
-            if (prof) prof.style.display = offroadMode ? 'none' : '';
+            if (prof) prof.style.display = (planMode === 'road') ? '' : 'none';
         }
+        // oude namen blijven werken (elders aangeroepen)
+        function applyOffroadVisibility() { applyProfileVisibility(); }
+        function syncOffroadUI() { /* vervangen door setMode; bewust leeg */ }
+        function syncWalkUI() { /* vervangen door setMode; bewust leeg */ }
 
         function setSearchMode(mode) {
             searchMode = mode;
@@ -2282,13 +2346,9 @@ assign initialcost =
             if (typeof activeRoute !== 'undefined') activeRoute = null;
             if (typeof detectedTurns !== 'undefined') detectedTurns = [];
             if (typeof window !== 'undefined') window._gpxLoaded = null;
-            // Offroad ook uit → terug naar normaal (Snel/Rustig/Neutraal komt terug).
-            // Eerst audio+pijlen herstellen naar de zonder-OR stand (afspraak: OR uit = jouw fase terug).
-            if (offroadMode) {
-                if (typeof restoreAudioArrows === 'function') restoreAudioArrows();
-                offroadMode = false;
-                if (typeof syncOffroadUI === 'function') syncOffroadUI();
-                if (typeof applyOffroadVisibility === 'function') applyOffroadVisibility();
+            // Terug naar Road → normaal (Snel/Rustig/Neutraal komt terug, audio/pijlen hersteld).
+            if (typeof planMode !== 'undefined' && planMode !== 'road') {
+                if (typeof setMode === 'function') setMode('road');
             }
             if (searchInput) searchInput.value = '';
             if (resultsEl) resultsEl.style.display = 'none';
@@ -2299,7 +2359,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "14.4";
+        const APP_VERSION = "14.6";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
