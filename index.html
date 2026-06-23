@@ -619,15 +619,15 @@
         <div class="content">
             <!-- MODE SELECT -->
             <div id="modeSelect" class="mode-select">
-                <p class="subtitle">Start tracking</p>
-                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v13.8 © Umop3p1sdn</div>
+                <p class="subtitle" id="subtitleText">Zullen we samen rijden?</p>
+                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v13.9 © Umop3p1sdn</div>
                 
                 <!-- Hidden file input for GPX loading -->
                 <input type="file" id="gpxInputLoad" accept=".gpx" style="display:none;" onchange="loadGPXviaPlanner(event)">
                 <input type="file" id="gpxInputPlain" accept=".gpx" style="display:none;" onchange="loadGPXplain(event)">
                 
                 <button class="button button-master" onclick="startMaster()">
-                    START TRACKING
+                    <span id="startBtnText">Let's go!</span>
                     <span class="button-small">Share your location</span>
                 </button>
 
@@ -1044,7 +1044,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                Live Tracker App v13.8 © Umop3p1sdn
+                Live Tracker App v13.9 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2227,7 +2227,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "13.8";
+        const APP_VERSION = "13.9";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -3443,6 +3443,33 @@ assign initialcost =
         document.addEventListener('DOMContentLoaded', () => {
             // Clean up my own leftover master data (e.g. after a crash / hard close)
             cleanupMyOldMasterData();
+
+            // Random gezellige reis-zin (subtitle) + start-kreet (knop) bij elke keer openen.
+            const subtitles = [
+                'Zullen we samen rijden?', 'Volg je mij? Of zal ik jou volgen?', 'Head for adventure!',
+                'Klaar voor de rit?', 'Waar gaan we heen?', 'Samen op pad!', 'Let the journey begin',
+                'Pak je helm, we gaan!', 'Avontuur wacht op je', 'Ready to roll?', 'Op naar het onbekende',
+                'Wie rijdt er voorop?', 'Tijd voor een tochtje', 'Adventure is calling', 'Samen is leuker',
+                'Waar brengt de weg ons?', 'Laten we de wereld zien', 'Klaar voor vertrek?', 'Road trip time!',
+                'Volg het spoor', 'Niemand raakt elkaar kwijt', 'Onderweg naar avontuur', 'Let\'s explore!',
+                'Blijf bij de groep', 'De weg roept', 'Samen sterker onderweg', 'Buckle up, here we go',
+                'Een nieuwe route wacht', 'Wie gaat er mee?', 'Volg je vrienden, vind je weg',
+                'Tijd om te toeren', 'Houd elkaar in beeld', 'Op avontuur, samen', 'Where to today?',
+                'De horizon lonkt', 'Klaar om te vertrekken?', 'Laat het avontuur beginnen',
+                'Eropuit met z\'n allen', 'Volg de leider', 'Nooit meer iemand kwijt',
+                'Maak er een mooie rit van', 'Samen de bocht door', 'Het pad ligt voor je',
+                'Gas erop, we gaan!', 'Ride together, stay together'
+            ];
+            const startWords = [
+                'Let\'s go!', 'Let\'s rock!', 'Brrrroem', 'Vroem vroem', 'GoGoGo', 'Ready, set, go!',
+                'Daar gaan we!', 'Vol gas!', 'Op pad!', 'Wheels up!', 'Geef gas!', 'Let\'s ride!',
+                'Hit the road!', 'Erop uit!', 'Vrooom!', 'Start je motor!', 'We gaan!', 'Onderweg!',
+                'Avontuur tegemoet!', 'Roll out!'
+            ];
+            const subEl = document.getElementById('subtitleText');
+            if (subEl) subEl.textContent = subtitles[Math.floor(Math.random() * subtitles.length)];
+            const btnEl = document.getElementById('startBtnText');
+            if (btnEl) btnEl.textContent = startWords[Math.floor(Math.random() * startWords.length)];
 
             // Draait de app als geïnstalleerde app (via icoon op beginscherm)? Dan het installatie-
             // scherm (met de "voeg toe aan beginscherm"-driehoek) meteen overslaan — die tip is dan
