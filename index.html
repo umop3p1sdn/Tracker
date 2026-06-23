@@ -625,7 +625,7 @@
             <!-- MODE SELECT -->
             <div id="modeSelect" class="mode-select">
                 <p class="subtitle">Start tracking</p>
-                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v13.2 © Umop3p1sdn</div>
+                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v13.3 © Umop3p1sdn</div>
                 
                 <!-- Hidden file input for GPX loading -->
                 <input type="file" id="gpxInputLoad" accept=".gpx" style="display:none;" onchange="loadGPXviaPlanner(event)">
@@ -1045,7 +1045,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                Live Tracker App v13.2 © Umop3p1sdn
+                Live Tracker App v13.3 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2227,7 +2227,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "13.2";
+        const APP_VERSION = "13.3";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -5593,7 +5593,35 @@ assign initialcost =
                     dashArray: '2, 5'
                 }).addTo(mapInstance);
             }
-            
+
+            // Geplande navi-route (geoJSON) → dikte via setStyle (geen hertekenen nodig)
+            if (mapInstance && routeLine && typeof routeLine.setStyle === 'function') {
+                routeLine.setStyle({ weight: trackLineWidth });
+            }
+
+            // Offroad-spoor (paars)
+            if (mapInstance && offroadPolyline) {
+                const offLatlngs = offroadPolyline.getLatLngs();
+                mapInstance.removeLayer(offroadPolyline);
+                offroadPolyline = L.polyline(offLatlngs, {
+                    color: '#9C27B0',
+                    weight: trackLineWidth,
+                    opacity: 0.9
+                }).addTo(mapInstance);
+            }
+
+            // Master-spoor zoals de volger het ziet (donkerblauw, gestreept)
+            if (mapInstance && followerTrackingPolyline) {
+                const ftLatlngs = followerTrackingPolyline.getLatLngs();
+                mapInstance.removeLayer(followerTrackingPolyline);
+                followerTrackingPolyline = L.polyline(ftLatlngs, {
+                    color: '#0D47A1',
+                    weight: trackLineWidth,
+                    opacity: 0.8,
+                    dashArray: '5, 5'
+                }).addTo(mapInstance);
+            }
+
             // Re-disable double-click zoom after redraw
             if (mapInstance) {
                 mapInstance.doubleClickZoom.disable();
