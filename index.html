@@ -625,7 +625,7 @@
             <!-- MODE SELECT -->
             <div id="modeSelect" class="mode-select">
                 <p class="subtitle">Start tracking</p>
-                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v13.4 © Umop3p1sdn</div>
+                <div style="position: absolute; top: 5px; right: 5px; font-size: 0.65em; opacity: 0.5;">Users: <span id="userCount">0</span> | v13.5 © Umop3p1sdn</div>
                 
                 <!-- Hidden file input for GPX loading -->
                 <input type="file" id="gpxInputLoad" accept=".gpx" style="display:none;" onchange="loadGPXviaPlanner(event)">
@@ -1045,7 +1045,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                Live Tracker App v13.4 © Umop3p1sdn
+                Live Tracker App v13.5 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2204,6 +2204,7 @@ assign initialcost =
             diagMarkers.forEach(m => map.removeLayer(m));
             diagMarkers = [];
             if (typeof clearTurnDots === 'function') clearTurnDots();  // navigatie afslag-stippen ook weg
+            if (typeof clearEaten === 'function') clearEaten();        // grijs/blauw opeten-lijnen ook weg (bug-fix v13.5)
             // Ook de berekende route-geometrie + navi-state wissen, anders bouwt GO de route weer op.
             lastRouteGeo = null;
             if (typeof gpxRoute !== 'undefined') gpxRoute = [];
@@ -2227,7 +2228,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "13.4";
+        const APP_VERSION = "13.5";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
