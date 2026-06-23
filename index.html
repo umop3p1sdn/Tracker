@@ -509,11 +509,12 @@
             background: #e8e8ea; color: #1a1a2e; font-weight: bold; font-size: 0.8em;
             cursor: pointer; white-space: nowrap;
         }
-        .mode-choice.active                 { background: #607D8B; color: #fff; border-color: #607D8B; } /* Road = grijsblauw */
-        .mode-choice.active#mcOffroad       { background: #9C27B0; border-color: #9C27B0; }            /* Offroad = paars */
-        .mode-choice.active#mcBike          { background: #2196F3; border-color: #2196F3; }            /* Bike = blauw */
-        .mode-choice.active#mcRacebike      { background: #FF9800; border-color: #FF9800; }            /* Race bike = oranje */
-        .mode-choice.active#mcWalk          { background: #4CAF50; border-color: #4CAF50; }            /* Walk = groen */
+        .mode-choice.active                 { background: #607D8B; color: #fff; border-color: #607D8B; } /* fallback actief */
+        .mode-choice.active#mcRoad          { background: rgba(10,14,39,0.55); color: #fff; border-color: rgba(0,188,212,0.6); } /* Road = transparant (origineel) */
+        .mode-choice.active#mcOffroad       { background: #9C27B0; color: #fff; border-color: #9C27B0; } /* Offroad = paars */
+        .mode-choice.active#mcBike          { background: #2196F3; color: #fff; border-color: #2196F3; } /* Bike = blauw */
+        .mode-choice.active#mcRacebike      { background: #FF9800; color: #fff; border-color: #FF9800; } /* Race bike = oranje */
+        .mode-choice.active#mcWalk          { background: #4CAF50; color: #fff; border-color: #4CAF50; } /* Walk = groen */
 
         /* Info bar bottom */
         #infoBar {
@@ -728,7 +729,7 @@
                     <button onclick="shareApp()" style="flex: 1; max-width: 150px; background: transparent; color: #00BCD4; border: 1.5px solid rgba(0,188,212,0.5); padding: 11px 0; border-radius: 10px; cursor: pointer; font-size: 0.9em; font-weight: bold; letter-spacing: 0.5px; transition: all 0.2s;" ontouchstart="" onmouseover="this.style.background='rgba(0,188,212,0.12)';" onmouseout="this.style.background='transparent';">Share app</button>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v14.6 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v14.8 © Umop3p1sdn</div>
 
             </div>
 
@@ -1135,7 +1136,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v14.6 © Umop3p1sdn
+                HO-ME v14.8 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2359,7 +2360,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "14.6";
+        const APP_VERSION = "14.8";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
