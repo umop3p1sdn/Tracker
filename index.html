@@ -729,7 +729,7 @@
                     <button onclick="shareApp()" style="flex: 1; max-width: 150px; background: transparent; color: #00BCD4; border: 1.5px solid rgba(0,188,212,0.5); padding: 11px 0; border-radius: 10px; cursor: pointer; font-size: 0.9em; font-weight: bold; letter-spacing: 0.5px; transition: all 0.2s;" ontouchstart="" onmouseover="this.style.background='rgba(0,188,212,0.12)';" onmouseout="this.style.background='transparent';">Share app</button>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v15.2 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v15.4 © Umop3p1sdn</div>
 
             </div>
 
@@ -751,6 +751,10 @@
                             <button onclick="toggleFollow()" id="followBtnMaster" title="Center" style="width: 64px; height: 64px; border-radius: 6px; background: #555; color: #fff; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;"><svg width="34" height="34" viewBox="0 0 24 24" fill="currentColor"><path d="M12 8a4 4 0 100 8 4 4 0 000-8zm8.94 3A8.994 8.994 0 0013 3.06V1h-2v2.06A8.994 8.994 0 003.06 11H1v2h2.06A8.994 8.994 0 0011 20.94V23h2v-2.06A8.994 8.994 0 0020.94 13H23v-2h-2.06zM12 19a7 7 0 110-14 7 7 0 010 14z"/></svg></button>
                             <button id="zoomIconMaster" title="Toon: alleen ik / volgers / beide" style="padding: 8px; width: 64px; height: 64px; border-radius: 6px; background: transparent; color: #000; border: 3px solid #000; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;" onclick="toggleZoom()"><svg id="zoomSvgMaster" width="40" height="40" viewBox="0 0 36 36" fill="currentColor"></svg><span id="zoomIconLabelMaster" style="font-size: 0.5em; font-weight: bold; line-height: 1;">IK</span></button>
                             <div id="followerCount" title="Aantal volgers" style="font-size: 1.8em; font-weight: bold; color: #000; text-align: center; line-height: 1.2;">0</div>
+                            <button id="folLinesBtn" title="Volger-lijnen tonen/verbergen" onclick="toggleFollowerLines()" style="padding: 8px; width: 64px; height: 64px; border-radius: 6px; background: transparent; color: #000; border: 3px solid #000; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;">
+                                <svg width="34" height="34" viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 26 Q12 10 20 18 T32 10"/><circle cx="4" cy="26" r="3" fill="currentColor" stroke="none"/><circle cx="32" cy="10" r="3" fill="currentColor" stroke="none"/></svg>
+                                <span id="folLinesLabel" style="font-size: 0.5em; font-weight: bold; line-height: 1;">LIJN</span>
+                            </button>
                         </div>
                         
                         <div id="mapMaster" class="map"></div>
@@ -905,6 +909,7 @@
             <ul style="margin: 10px 0; padding-left: 20px;">
                 <li>Elke volger verschijnt als vliegtuigje op je kaart, met zijn <strong>tag</strong> (naam).</li>
                 <li>De teller in de rechter icoonbalk toont <strong>hoeveel</strong> volgers er verbonden zijn.</li>
+                <li>Onder de teller zit de <strong>LIJN</strong>-knop: tik 'm aan om de <strong>gereden sporen van je volgers</strong> te zien (elk in zijn eigen kleur). Handig als een volger een leuke weg weet en even voorrijdt — dan volg je gewoon zijn lijn. Standaard uit, zodat je kaart rustig blijft.</li>
                 <li>Zo weet je in één oogopslag wie achter je rijdt en wie nog stilstaat.</li>
             </ul>
 
@@ -1136,7 +1141,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v15.2 © Umop3p1sdn
+                HO-ME v15.4 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2360,7 +2365,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "15.2";
+        const APP_VERSION = "15.4";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -2425,6 +2430,8 @@ assign initialcost =
         let masterMarker = null;
         let followerMarker = null;
         let followerMarkers = {}; // master's view of followers: deviceId -> marker
+        let followerLinePolylines = {};   // master's view of follower TRACKS: deviceId -> polyline
+        let showFollowerLines = false;    // master: toon volger-lijnen? (LIJN-knop)
         let masterDirection = null;
         let followerDirection = null;
         let polyline = null;
@@ -4011,6 +4018,30 @@ assign initialcost =
                     setMarkerHeading(followerMarkers[id], f.heading || 0);
                     followerMarkers[id]._idx = idx;
                 }
+
+                // Volger-spoor tekenen (alleen als de master de LIJN-knop aan heeft).
+                // f.line is een object { startIdx: "lat,lng;lat,lng", ... } — append-chunks die we
+                // op volgorde van hun nummerieke key aan elkaar plakken tot één lijn.
+                if (showFollowerLines && f.line && typeof f.line === 'object') {
+                    const keys = Object.keys(f.line).map(Number).sort((a, b) => a - b);
+                    const pts = [];
+                    keys.forEach(k => {
+                        const chunk = f.line[k];
+                        if (typeof chunk === 'string') {
+                            chunk.split(';').forEach(s => {
+                                const a = s.split(',');
+                                const la = parseFloat(a[0]), ln = parseFloat(a[1]);
+                                if (!isNaN(la) && !isNaN(ln)) pts.push([la, ln]);
+                            });
+                        }
+                    });
+                    if (pts.length > 1) {
+                        if (followerLinePolylines[id]) mapInstance.removeLayer(followerLinePolylines[id]);
+                        followerLinePolylines[id] = L.polyline(pts, {
+                            pane: 'hmBluePane', color: color, weight: trackLineWidth, opacity: 0.85
+                        }).addTo(mapInstance);
+                    }
+                }
             }
 
             // Remove markers for followers that are gone/stale
@@ -4018,6 +4049,7 @@ assign initialcost =
                 if (!seen[id]) {
                     mapInstance.removeLayer(followerMarkers[id]);
                     delete followerMarkers[id];
+                    if (followerLinePolylines[id]) { mapInstance.removeLayer(followerLinePolylines[id]); delete followerLinePolylines[id]; }
                 }
             });
 
@@ -4042,6 +4074,26 @@ assign initialcost =
         // Vliegtuig-stapelvolgorde (binnen de marker-laag, dus boven alle lijnen).
         // Normaal (IK/BEIDE): jij → master → andere volgers.
         // Bij MASTER kiezen (volger): master → jij → andere volgers.
+        // Master: volger-lijnen tonen/verbergen (LIJN-knop onder het aantal volgers).
+        function toggleFollowerLines() {
+            showFollowerLines = !showFollowerLines;
+            const btn = document.getElementById('folLinesBtn');
+            if (btn) {
+                // oplichten als aan (gevuld), anders transparant met zwarte rand (zoals de andere knoppen)
+                btn.style.background = showFollowerLines ? '#2196F3' : 'transparent';
+                btn.style.color = showFollowerLines ? '#fff' : '#000';
+                btn.style.borderColor = showFollowerLines ? '#2196F3' : '#000';
+            }
+            if (!showFollowerLines) {
+                // direct alle volger-lijnen van de kaart halen
+                Object.keys(followerLinePolylines).forEach(id => {
+                    if (mapInstance) mapInstance.removeLayer(followerLinePolylines[id]);
+                    delete followerLinePolylines[id];
+                });
+            }
+            // bij aanzetten verschijnen ze vanzelf bij de volgende updateFollowerMarkers-ronde
+        }
+
         function applyPlaneZOrder() {
             const SELF = 1000, MASTER = 900, OTHER = 500;
             try {
@@ -4071,17 +4123,38 @@ assign initialcost =
             });
         }
 
+        // Houdt bij welk deel van followerLinetrack al naar Firebase is gestuurd (append-index).
+        let folLineSentIdx = 0;
+        let folLineTrack = [];   // eigen lijn-spoor, 1 punt per ~35m (apart van rauwe GPS-punten)
+
         async function sendFollowerToFirebase(code, lat, lng, heading) {
             try {
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), 5000);
-                const url = `${firebaseConfig.databaseURL}/tracking/${code}/followers/${deviceId}.json`;
-                await fetch(url, {
+                const base = `${firebaseConfig.databaseURL}/tracking/${code}/followers/${deviceId}`;
+
+                // 1) Positie/heading (klein, elke ronde) — PATCH op de follower-node.
+                await fetch(base + '.json', {
                     method: 'PATCH',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ latitude: lat, longitude: lng, heading: heading, timestamp: Date.now() }),
                     signal: controller.signal
                 });
+
+                // 2) Lijn-spoor APPEND: alleen de nieuwe punten sinds vorige keer wegschrijven.
+                //    Zo groeit de data niet kwadratisch (geen 6000× het hele spoor opnieuw).
+                if (folLineTrack.length > folLineSentIdx) {
+                    const nieuwe = folLineTrack.slice(folLineSentIdx);
+                    const chunkStr = nieuwe.map(p => `${p[0].toFixed(5)},${p[1].toFixed(5)}`).join(';');
+                    // key = volgnummer van het eerste nieuwe punt → master plakt op volgorde aan elkaar.
+                    await fetch(`${base}/line/${folLineSentIdx}.json`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(chunkStr),
+                        signal: controller.signal
+                    });
+                    folLineSentIdx = folLineTrack.length;
+                }
                 clearTimeout(timeoutId);
             } catch (err) {
                 console.error('Follower Firebase error:', err);
@@ -5105,6 +5178,17 @@ assign initialcost =
                             
                             // Add to follower's track
                             followerLocations.push([latitude, longitude]);
+
+                            // Lijn-spoor voor de master: 1 punt per ~35m (vloeiende lijn, weinig data).
+                            if (folLineTrack.length === 0) {
+                                folLineTrack.push([latitude, longitude]);
+                            } else {
+                                const last = folLineTrack[folLineTrack.length - 1];
+                                if (distMeters([last[0], last[1]], [latitude, longitude]) >= 35) {
+                                    folLineTrack.push([latitude, longitude]);
+                                }
+                            }
+
                             sendFollowerToFirebase(code, latitude, longitude, deviceHeading);
                             
                             // Update follower's blue tracking polyline
@@ -5112,7 +5196,7 @@ assign initialcost =
                                 if (followerTrackingPolyline) {
                                     mapInstance.removeLayer(followerTrackingPolyline);
                                 }
-                                followerTrackingPolyline = L.polyline(followerLocations, { pane: 'hmRedPane',
+                                followerTrackingPolyline = L.polyline(followerLocations, { pane: 'hmBluePane',
                                     color: '#0D47A1',
                                     weight: trackLineWidth,
                                     opacity: 0.8,
@@ -5664,6 +5748,8 @@ assign initialcost =
             currentCode = '';
             masterLocations = [];
             followerLocations = [];
+            folLineTrack = [];
+            folLineSentIdx = 0;
             masterMarker = null;
             followerMarker = null;
             masterDirection = null;
@@ -5885,7 +5971,7 @@ assign initialcost =
             if (mapInstance && followerTrackingPolyline) {
                 const ftLatlngs = followerTrackingPolyline.getLatLngs();
                 mapInstance.removeLayer(followerTrackingPolyline);
-                followerTrackingPolyline = L.polyline(ftLatlngs, { pane: 'hmRedPane',
+                followerTrackingPolyline = L.polyline(ftLatlngs, { pane: 'hmBluePane',
                     color: '#0D47A1',
                     weight: trackLineWidth,
                     opacity: 0.8,
