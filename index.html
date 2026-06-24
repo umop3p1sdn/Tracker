@@ -729,7 +729,7 @@
                     <button onclick="shareApp()" style="flex: 1; max-width: 150px; background: transparent; color: #00BCD4; border: 1.5px solid rgba(0,188,212,0.5); padding: 11px 0; border-radius: 10px; cursor: pointer; font-size: 0.9em; font-weight: bold; letter-spacing: 0.5px; transition: all 0.2s;" ontouchstart="" onmouseover="this.style.background='rgba(0,188,212,0.12)';" onmouseout="this.style.background='transparent';">Share app</button>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v14.8 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v14.9 © Umop3p1sdn</div>
 
             </div>
 
@@ -748,7 +748,7 @@
                         <!-- SIDE ICON BAR (right) -->
                         <div style="position: absolute; top: 120px; right: 10px; z-index: 1001; display: flex; flex-direction: column; gap: 8px; background: rgba(0,0,0,0.15); padding: 8px; border-radius: 8px;">
                             <button id="rotBtnMaster" title="Kaart meedraaien" style="padding: 10px; width: 64px; height: 64px; border-radius: 6px; background: transparent; color: #000; border: 3px solid #000; cursor: pointer; display: flex; align-items: center; justify-content: center;" onclick="toggleMapRotation()"><svg width="36" height="36" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm2.19 12.19L6 18l3.81-8.19L18 6l-3.81 8.19z"/></svg></button>
-                            <button onclick="toggleFollow()" id="followBtnMaster" title="Center" style="width: 64px; height: 64px; border-radius: 6px; background: #00BCD4; color: #fff; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;"><svg width="34" height="34" viewBox="0 0 24 24" fill="currentColor"><path d="M12 8a4 4 0 100 8 4 4 0 000-8zm8.94 3A8.994 8.994 0 0013 3.06V1h-2v2.06A8.994 8.994 0 003.06 11H1v2h2.06A8.994 8.994 0 0011 20.94V23h2v-2.06A8.994 8.994 0 0020.94 13H23v-2h-2.06zM12 19a7 7 0 110-14 7 7 0 010 14z"/></svg></button>
+                            <button onclick="toggleFollow()" id="followBtnMaster" title="Center" style="width: 64px; height: 64px; border-radius: 6px; background: #555; color: #fff; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;"><svg width="34" height="34" viewBox="0 0 24 24" fill="currentColor"><path d="M12 8a4 4 0 100 8 4 4 0 000-8zm8.94 3A8.994 8.994 0 0013 3.06V1h-2v2.06A8.994 8.994 0 003.06 11H1v2h2.06A8.994 8.994 0 0011 20.94V23h2v-2.06A8.994 8.994 0 0020.94 13H23v-2h-2.06zM12 19a7 7 0 110-14 7 7 0 010 14z"/></svg></button>
                             <button id="zoomIconMaster" title="Toon: alleen ik / volgers / beide" style="padding: 8px; width: 64px; height: 64px; border-radius: 6px; background: transparent; color: #000; border: 3px solid #000; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;" onclick="toggleZoom()"><svg id="zoomSvgMaster" width="40" height="40" viewBox="0 0 36 36" fill="currentColor"></svg><span id="zoomIconLabelMaster" style="font-size: 0.5em; font-weight: bold; line-height: 1;">IK</span></button>
                             <div id="followerCount" title="Aantal volgers" style="font-size: 1.8em; font-weight: bold; color: #000; text-align: center; line-height: 1.2;">0</div>
                         </div>
@@ -789,7 +789,7 @@
                         <!-- SIDE ICON BAR (right) -->
                         <div style="position: absolute; top: 120px; right: 10px; z-index: 1001; display: flex; flex-direction: column; gap: 8px; background: rgba(0,0,0,0.15); padding: 8px; border-radius: 8px;">
                             <button id="rotBtnFollower" title="Kaart meedraaien" style="padding: 10px; width: 64px; height: 64px; border-radius: 6px; background: transparent; color: #000; border: 3px solid #000; cursor: pointer; display: flex; align-items: center; justify-content: center;" onclick="toggleMapRotation()"><svg width="36" height="36" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm2.19 12.19L6 18l3.81-8.19L18 6l-3.81 8.19z"/></svg></button>
-                            <button onclick="toggleFollow()" id="followBtnFollower" title="Center" style="width: 64px; height: 64px; border-radius: 6px; background: #00BCD4; color: #fff; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;"><svg width="34" height="34" viewBox="0 0 24 24" fill="currentColor"><path d="M12 8a4 4 0 100 8 4 4 0 000-8zm8.94 3A8.994 8.994 0 0013 3.06V1h-2v2.06A8.994 8.994 0 003.06 11H1v2h2.06A8.994 8.994 0 0011 20.94V23h2v-2.06A8.994 8.994 0 0020.94 13H23v-2h-2.06zM12 19a7 7 0 110-14 7 7 0 010 14z"/></svg></button>
+                            <button onclick="toggleFollow()" id="followBtnFollower" title="Center" style="width: 64px; height: 64px; border-radius: 6px; background: #555; color: #fff; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;"><svg width="34" height="34" viewBox="0 0 24 24" fill="currentColor"><path d="M12 8a4 4 0 100 8 4 4 0 000-8zm8.94 3A8.994 8.994 0 0013 3.06V1h-2v2.06A8.994 8.994 0 003.06 11H1v2h2.06A8.994 8.994 0 0011 20.94V23h2v-2.06A8.994 8.994 0 0020.94 13H23v-2h-2.06zM12 19a7 7 0 110-14 7 7 0 010 14z"/></svg></button>
                             <button id="zoomIconFollower" title="Toon: master / beide / alleen ik" style="padding: 8px; width: 64px; height: 64px; border-radius: 6px; background: transparent; color: #000; border: 3px solid #000; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;" onclick="toggleZoom()"><svg id="zoomSvgFollower" width="40" height="40" viewBox="0 0 36 36" fill="currentColor"></svg><span id="zoomIconLabelFollower" style="font-size: 0.5em; font-weight: bold; line-height: 1;">IK</span></button>
                             <div id="myColorBadge" title="Jouw kleur" style="display:none; width: 64px; height: 64px; border-radius: 50%; align-items: center; justify-content: center; color: #fff; font-weight: bold; font-size: 1.6em; border: 3px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.4);"></div>
                             <button id="tagBtn" onclick="openTagInput()" title="Jouw tag" style="display:none; width: 64px; min-height: 36px; border-radius: 8px; background: rgba(0,0,0,0.4); color: #fff; border: 2px solid #fff; cursor: pointer; font-weight: bold; font-size: 0.8em; word-break: break-word; padding: 4px;">TAG</button>
@@ -1136,7 +1136,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v14.8 © Umop3p1sdn
+                HO-ME v14.9 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2360,7 +2360,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "14.8";
+        const APP_VERSION = "14.9";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -5459,6 +5459,10 @@ assign initialcost =
             currentMode = 'master';
             masterLocations = [];
             isAutoFollowActive = true;
+            // knop-kleur meteen gelijktrekken met de aan-stand (anders blijft 'ie grijs hangen)
+            [document.getElementById('followBtnMaster'), document.getElementById('followBtnFollower')].forEach(b => {
+                if (b) b.style.background = '#00BCD4';
+            });
 
             document.getElementById('modeSelect').classList.add('hidden');
             document.getElementById('activeTracking').classList.remove('hidden');
@@ -5487,6 +5491,10 @@ assign initialcost =
             zoomMode = 'master';
             compassMode = 'device';
             isAutoFollowActive = true;
+            // knop-kleur meteen gelijktrekken met de aan-stand (anders blijft 'ie grijs hangen)
+            [document.getElementById('followBtnMaster'), document.getElementById('followBtnFollower')].forEach(b => {
+                if (b) b.style.background = '#00BCD4';
+            });
 
             document.getElementById('modeSelect').classList.add('hidden');
             document.getElementById('activeTracking').classList.remove('hidden');
