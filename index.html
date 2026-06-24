@@ -729,7 +729,7 @@
                     <button onclick="shareApp()" style="flex: 1; max-width: 150px; background: transparent; color: #00BCD4; border: 1.5px solid rgba(0,188,212,0.5); padding: 11px 0; border-radius: 10px; cursor: pointer; font-size: 0.9em; font-weight: bold; letter-spacing: 0.5px; transition: all 0.2s;" ontouchstart="" onmouseover="this.style.background='rgba(0,188,212,0.12)';" onmouseout="this.style.background='transparent';">Share app</button>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v15.8 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v16.0 © Umop3p1sdn</div>
 
             </div>
 
@@ -772,7 +772,7 @@
                     <div class="info-bottom">
                         <div class="info-label">Your Tracking Code</div>
                         <div style="display: flex; align-items: stretch; gap: 10px;">
-                            <div class="code-box" id="codeBox" style="flex: 1; margin: 0;">----</div>
+                            <div class="code-box" id="codeBox" onclick="shareCode()" title="Tik om te delen" style="flex: 1; margin: 0; cursor: pointer;">----</div>
                             <button onclick="toggleAppMenu()" id="menuBtnMaster" title="Menu" style="width: 64px; border-radius: 8px; background: #1a2148; color: #fff; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;"><svg width="30" height="30" viewBox="0 0 24 24" fill="currentColor"><path d="M3 6h18v2H3V6zm0 5h18v2H3v-2zm0 5h18v2H3v-2z"/></svg></button>
                         </div>
                     </div>
@@ -1141,7 +1141,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v15.8 © Umop3p1sdn
+                HO-ME v16.0 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2365,7 +2365,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "15.8";
+        const APP_VERSION = "16.0";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -5843,6 +5843,22 @@ assign initialcost =
         }
 
         // Deel de app-link. Opent het native deel-menu (telefoon); valt terug op klembord-kopiëren (desktop).
+        // Tik op de code (master) → deel-scherm met code + app-link (WhatsApp etc.).
+        function shareCode() {
+            if (!currentCode || currentCode === '----') return;   // nog geen code
+            const url = 'https://umop3p1sdn.github.io/Tracker/';
+            const text = `Volg me live op HO-ME! Mijn code: ${currentCode}\nOpen: ${url}`;
+            if (navigator.share) {
+                navigator.share({ title: 'HO-ME', text: text }).catch(() => {});   // annuleren → stil
+            } else if (navigator.clipboard) {
+                navigator.clipboard.writeText(text)
+                    .then(() => showBufferToast('Code gekopieerd', '#00BCD4', 2000))
+                    .catch(() => showBufferToast('Code: ' + currentCode, '#00BCD4', 4000));
+            } else {
+                showBufferToast('Code: ' + currentCode, '#00BCD4', 4000);
+            }
+        }
+
         function shareApp() {
             const url = 'https://umop3p1sdn.github.io/Tracker/';
             const text = 'Probeer HO-ME — samen op pad, zie elkaar live op de kaart:';
