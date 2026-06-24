@@ -729,7 +729,7 @@
                     <button onclick="shareApp()" style="flex: 1; max-width: 150px; background: transparent; color: #00BCD4; border: 1.5px solid rgba(0,188,212,0.5); padding: 11px 0; border-radius: 10px; cursor: pointer; font-size: 0.9em; font-weight: bold; letter-spacing: 0.5px; transition: all 0.2s;" ontouchstart="" onmouseover="this.style.background='rgba(0,188,212,0.12)';" onmouseout="this.style.background='transparent';">Share app</button>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v15.0 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v15.1 © Umop3p1sdn</div>
 
             </div>
 
@@ -1136,7 +1136,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v15.0 © Umop3p1sdn
+                HO-ME v15.1 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2360,7 +2360,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "15.0";
+        const APP_VERSION = "15.1";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -4495,6 +4495,16 @@ assign initialcost =
         window.addEventListener('resize', handleViewportChange);
         window.addEventListener('orientationchange', handleViewportChange);
 
+        // Vliegtuig-grootte schaalt mee met de lijndikte voor slechtzienden:
+        // dikte 3-7 = normaal (baseSize), dikte 8-15 = groeit lineair tot ~60px.
+        function planeSize(baseSize) {
+            const w = (typeof trackLineWidth === 'number') ? trackLineWidth : 3;
+            if (w <= 7) return baseSize;
+            const maxSize = 60;
+            const t = (w - 7) / (15 - 7);          // 0 bij dikte 8-grens, 1 bij dikte 15
+            return Math.round(baseSize + (maxSize - baseSize) * t);
+        }
+
         function createPlaneMarker(lat, lng, color, size) {
             const s = size || 30;
             const icon = L.divIcon({
@@ -4997,7 +5007,7 @@ assign initialcost =
                                 masterMarker.setLatLng([latitude, longitude]);
                                 updateSelfMarkerRotation();
                             } else {
-                                masterMarker = createColoredMarker(latitude, longitude, '#FF1744', 32, null)
+                                masterMarker = createColoredMarker(latitude, longitude, '#FF1744', planeSize(32), null)
                                     .addTo(mapInstance).bindPopup('YOU');
                                 updateSelfMarkerRotation();
                             }
@@ -5044,8 +5054,9 @@ assign initialcost =
                                 updateSelfMarkerRotation();
                             } else {
                                 const myColor = (typeof myFollowerIdx === 'number') ? colorForIndex(myFollowerIdx) : '#2196F3';
-                                followerMarker = createColoredMarker(latitude, longitude, myColor, 28, null)
+                                followerMarker = createColoredMarker(latitude, longitude, myColor, planeSize(28), null)
                                     .addTo(mapInstance).bindPopup('YOU');
+                                followerMarker._planeColor = myColor;
                                 updateSelfMarkerRotation();
                             }
                             
@@ -5116,7 +5127,7 @@ assign initialcost =
                                 }
                             } else {
                                 const heading = location.heading || 0;
-                                masterMarker = createPlaneMarker(location.lat, location.lng, '#FF1744', 32)
+                                masterMarker = createPlaneMarker(location.lat, location.lng, '#FF1744', planeSize(32))
                                     .addTo(mapInstance).bindPopup('TARGET');
                                 setMarkerHeading(masterMarker, heading);
                             }
@@ -5759,6 +5770,21 @@ assign initialcost =
         }
         
         function redrawAllTracks() {
+            // Vliegtuig-markers mee laten groeien/krimpen met de lijndikte (voor slechtzienden).
+            try {
+                if (masterMarker && masterMarker.setIcon) {
+                    const ll = masterMarker.getLatLng();
+                    const fresh = createColoredMarker(ll.lat, ll.lng, '#FF1744', planeSize(32), null);
+                    masterMarker.setIcon(fresh.options.icon);
+                }
+                if (followerMarker && followerMarker.setIcon) {
+                    const ll = followerMarker.getLatLng();
+                    const col = followerMarker._planeColor || '#2196F3';
+                    const fresh = createColoredMarker(ll.lat, ll.lng, col, planeSize(28), null);
+                    followerMarker.setIcon(fresh.options.icon);
+                }
+            } catch (e) { /* marker resize niet kritisch */ }
+
             // Redraw Master tracking polyline
             if (mapInstance && trackingPolyline) {
                 const latlngs = trackingPolyline.getLatLngs();
