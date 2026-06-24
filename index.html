@@ -729,7 +729,7 @@
                     <button onclick="shareApp()" style="flex: 1; max-width: 150px; background: transparent; color: #00BCD4; border: 1.5px solid rgba(0,188,212,0.5); padding: 11px 0; border-radius: 10px; cursor: pointer; font-size: 0.9em; font-weight: bold; letter-spacing: 0.5px; transition: all 0.2s;" ontouchstart="" onmouseover="this.style.background='rgba(0,188,212,0.12)';" onmouseout="this.style.background='transparent';">Share app</button>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v15.5 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v15.6 © Umop3p1sdn</div>
 
             </div>
 
@@ -751,7 +751,7 @@
                             <button onclick="toggleFollow()" id="followBtnMaster" title="Center" style="width: 64px; height: 64px; border-radius: 6px; background: #555; color: #fff; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;"><svg width="34" height="34" viewBox="0 0 24 24" fill="currentColor"><path d="M12 8a4 4 0 100 8 4 4 0 000-8zm8.94 3A8.994 8.994 0 0013 3.06V1h-2v2.06A8.994 8.994 0 003.06 11H1v2h2.06A8.994 8.994 0 0011 20.94V23h2v-2.06A8.994 8.994 0 0020.94 13H23v-2h-2.06zM12 19a7 7 0 110-14 7 7 0 010 14z"/></svg></button>
                             <button id="zoomIconMaster" title="Toon: alleen ik / volgers / beide" style="padding: 8px; width: 64px; height: 64px; border-radius: 6px; background: transparent; color: #000; border: 3px solid #000; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;" onclick="toggleZoom()"><svg id="zoomSvgMaster" width="40" height="40" viewBox="0 0 36 36" fill="currentColor"></svg><span id="zoomIconLabelMaster" style="font-size: 0.5em; font-weight: bold; line-height: 1;">IK</span></button>
                             <div id="followerCount" title="Aantal volgers" style="font-size: 1.8em; font-weight: bold; color: #000; text-align: center; line-height: 1.2;">0</div>
-                            <button id="folLinesBtn" title="Volger-lijnen tonen/verbergen" onclick="toggleFollowerLines()" style="padding: 8px; width: 64px; height: 64px; border-radius: 6px; background: transparent; color: #000; border: 3px solid #000; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;">
+                            <button id="folLinesBtn" title="Volger-lijnen tonen/verbergen" onclick="toggleFollowerLines()" style="display:none; padding: 8px; width: 64px; height: 64px; border-radius: 6px; background: transparent; color: #000; border: 3px solid #000; cursor: pointer; flex-direction: column; align-items: center; justify-content: center; gap: 2px;">
                                 <svg width="34" height="34" viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 26 Q12 10 20 18 T32 10"/><circle cx="4" cy="26" r="3" fill="currentColor" stroke="none"/><circle cx="32" cy="10" r="3" fill="currentColor" stroke="none"/></svg>
                                 <span id="folLinesLabel" style="font-size: 0.5em; font-weight: bold; line-height: 1;">LIJN</span>
                             </button>
@@ -1141,7 +1141,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v15.5 © Umop3p1sdn
+                HO-ME v15.6 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2365,7 +2365,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "15.5";
+        const APP_VERSION = "15.6";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -4074,6 +4074,9 @@ assign initialcost =
             renderTagList();
             const countEl = document.getElementById('followerCount');
             if (countEl) countEl.textContent = followerCountNow;
+            // LIJN-knop alleen tonen als er volgers zijn (anders nutteloos).
+            const folBtn = document.getElementById('folLinesBtn');
+            if (folBtn) folBtn.style.display = (followerCountNow > 0) ? 'flex' : 'none';
             if (isAutoFollowActive) updateMapView();
         }
 
