@@ -729,7 +729,7 @@
                     <button onclick="shareApp()" style="flex: 1; max-width: 150px; background: transparent; color: #00BCD4; border: 1.5px solid rgba(0,188,212,0.5); padding: 11px 0; border-radius: 10px; cursor: pointer; font-size: 0.9em; font-weight: bold; letter-spacing: 0.5px; transition: all 0.2s;" ontouchstart="" onmouseover="this.style.background='rgba(0,188,212,0.12)';" onmouseout="this.style.background='transparent';">Share app</button>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v15.4 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v15.5 © Umop3p1sdn</div>
 
             </div>
 
@@ -1141,7 +1141,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v15.4 © Umop3p1sdn
+                HO-ME v15.5 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2365,7 +2365,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "15.4";
+        const APP_VERSION = "15.5";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -3635,17 +3635,24 @@ assign initialcost =
             }
 
             // Na het opstarten checken of er een nieuwe versie op de server staat. Niet één keer maar
-            // 5× (elke 2 sec, dus 10 sec lang) — geeft de server tijd om de nieuwe versie te tonen en
-            // vergroot de kans dat je de update-melding ziet. Stopt zodra er een update gevonden is.
-            let updateChecks = 0;
-            const updateCheckLoop = setInterval(() => {
-                updateChecks++;
-                if (typeof checkForUpdate === 'function') checkForUpdate();
-                // gevonden? (de banner staat er dan) → stoppen. Ook na 5 pogingen stoppen.
-                if (document.getElementById('updateBanner') || updateChecks >= 5) {
-                    clearInterval(updateCheckLoop);
-                }
-            }, 2000);
+            // Blijf checken voor updates zolang je op het hoofdscherm (GoGoGo + code) bent.
+            // Elke 2 sec; stopt zodra de update-banner verschijnt of zodra je een rit start (GoGoGo).
+            window.startHomeUpdateChecks = function() {
+                if (window._homeUpdateLoop) return;   // niet dubbel starten
+                window._homeUpdateLoop = setInterval(() => {
+                    if (typeof checkForUpdate === 'function') checkForUpdate();
+                    if (document.getElementById('updateBanner')) {
+                        clearInterval(window._homeUpdateLoop);
+                        window._homeUpdateLoop = null;
+                    }
+                }, 2000);
+            };
+            window.stopHomeUpdateChecks = function() {
+                if (window._homeUpdateLoop) { clearInterval(window._homeUpdateLoop); window._homeUpdateLoop = null; }
+            };
+            // meteen één keer checken bij opstarten, dan de doorlopende check starten
+            if (typeof checkForUpdate === 'function') checkForUpdate();
+            startHomeUpdateChecks();
 
             // GLOBAL: Disable double-click zoom everywhere
             document.addEventListener('dblclick', (e) => {
@@ -5615,6 +5622,7 @@ assign initialcost =
             });
 
             document.getElementById('modeSelect').classList.add('hidden');
+            if (typeof stopHomeUpdateChecks === 'function') stopHomeUpdateChecks();
             document.getElementById('activeTracking').classList.remove('hidden');
             document.querySelector('.header').classList.add('hidden');
             document.getElementById('codeBox').textContent = code;
@@ -5647,6 +5655,7 @@ assign initialcost =
             });
 
             document.getElementById('modeSelect').classList.add('hidden');
+            if (typeof stopHomeUpdateChecks === 'function') stopHomeUpdateChecks();
             document.getElementById('activeTracking').classList.remove('hidden');
             document.querySelector('.header').classList.add('hidden');
             document.getElementById('followerCodeBox').textContent = code;
@@ -5768,6 +5777,7 @@ assign initialcost =
 
             document.getElementById('activeTracking').classList.add('hidden');
             document.getElementById('modeSelect').classList.remove('hidden');
+            if (typeof startHomeUpdateChecks === 'function') startHomeUpdateChecks();
             if (typeof pickRandomTexts === 'function') pickRandomTexts();   // verse tekst bij terugkomst
             document.querySelector('.header').classList.remove('hidden');
             document.getElementById('inputCode').value = '';
