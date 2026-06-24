@@ -729,7 +729,7 @@
                     <button onclick="shareApp()" style="flex: 1; max-width: 150px; background: transparent; color: #00BCD4; border: 1.5px solid rgba(0,188,212,0.5); padding: 11px 0; border-radius: 10px; cursor: pointer; font-size: 0.9em; font-weight: bold; letter-spacing: 0.5px; transition: all 0.2s;" ontouchstart="" onmouseover="this.style.background='rgba(0,188,212,0.12)';" onmouseout="this.style.background='transparent';">Share app</button>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v14.9 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v15.0 © Umop3p1sdn</div>
 
             </div>
 
@@ -1136,7 +1136,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v14.9 © Umop3p1sdn
+                HO-ME v15.0 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2360,7 +2360,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "14.9";
+        const APP_VERSION = "15.0";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -3044,9 +3044,10 @@ assign initialcost =
         }
 
         // ─── GPX laden VIA BRouter (echte afslagen) ───
-        // Dunt de GPX uit tot 1 stuurpunt per ~250m, knipt in stukken van ~40, haalt elk stuk
-        // door BRouter, plakt route + afslagen aan elkaar. Schaalt mee met lengte (ook 350km bochtig).
-        const GPX_STEER_M = 250;     // afstand tussen stuurpunten
+        // Dunt de GPX uit tot 1 stuurpunt per ~40m, knipt in stukken van ~40, haalt elk stuk
+        // door BRouter, plakt route + afslagen aan elkaar. Fijn genoeg dat BRouter exact het
+        // originele pad volgt (geen afgesneden bochten) — een planner-route komt zo 1-op-1 terug.
+        const GPX_STEER_M = 40;      // afstand tussen stuurpunten (fijn = trouw aan origineel)
         const GPX_CHUNK   = 40;      // stuurpunten per BRouter-aanroep
 
         // Dun een puntenlijst uit: hou een punt elke ~minMeters, plus altijd start+eind.
@@ -3066,8 +3067,15 @@ assign initialcost =
         // Haal één stuk stuurpunten door BRouter → {coords:[[lat,lng]...], hints:[[idx,cmd,...]]}
         async function brouterChunk(steerPts) {
             const lonlats = steerPts.map(p => `${p[1]},${p[0]}`).join('|');
-            // trekking-profiel: pakt zowel verharde wegen als onverharde paden/tracks (TET/offroad).
-            const url = `https://brouter.de/brouter?lonlats=${lonlats}&profile=trekking&alternativeidx=0&format=geojson&turnInstructionMode=2`;
+            // Profiel volgt de actieve mode (Road/Offroad/Bike/Race bike/Walk). Zo wordt een geladen
+            // route met hetzelfde profiel her-routed als waarmee 'ie gemaakt is. Road → trekking
+            // (pakt zowel verharde als onverharde wegen, veilig algemeen voor een opgeslagen lijn).
+            let prof = 'trekking';
+            if (typeof planMode !== 'undefined' && planMode !== 'road'
+                && typeof MODE_PROFILE !== 'undefined' && MODE_PROFILE[planMode]) {
+                prof = MODE_PROFILE[planMode];
+            }
+            const url = `https://brouter.de/brouter?lonlats=${lonlats}&profile=${prof}&alternativeidx=0&format=geojson&turnInstructionMode=2`;
             const res = await fetch(url);
             if (!res.ok) throw new Error('BRouter ' + res.status);
             const data = await res.json();
@@ -3250,6 +3258,9 @@ assign initialcost =
                     for (let k = 1; k < seg.length; k++) totalLenM += distMeters(seg[k - 1], seg[k]);
                 }
                 showBufferToast(`GPX laden… ${c + 1}/${chunks.length}`, '#00BCD4', 2000);
+                // Kleine pauze tussen aanroepen: met fijne stuurpunten zijn er veel chunks; zo
+                // overbelasten we brouter.de niet (anders gaat 'ie weigeren → rechte-lijn-terugval).
+                if (c < chunks.length - 1) await new Promise(r => setTimeout(r, 150));
             }
 
             if (fullRoute.length < 2) { alert('Kon geen route maken via BRouter (geen internet of route onrijdbaar).'); return; }
