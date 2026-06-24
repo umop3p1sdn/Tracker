@@ -729,7 +729,7 @@
                     <button onclick="shareApp()" style="flex: 1; max-width: 150px; background: transparent; color: #00BCD4; border: 1.5px solid rgba(0,188,212,0.5); padding: 11px 0; border-radius: 10px; cursor: pointer; font-size: 0.9em; font-weight: bold; letter-spacing: 0.5px; transition: all 0.2s;" ontouchstart="" onmouseover="this.style.background='rgba(0,188,212,0.12)';" onmouseout="this.style.background='transparent';">Share app</button>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v15.6 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v15.8 © Umop3p1sdn</div>
 
             </div>
 
@@ -1014,7 +1014,7 @@
                     <div style="width:64px; height:64px; border-radius:6px; background:transparent; border:3px solid #000; display:flex; align-items:center; justify-content:center; font-size:2em; font-weight:bold; color:#000;">+</div>
                 </div>
                 <strong>Lijndikte (onderaan de kaart)</strong>
-                <p style="margin:4px 0 0;">Het getal in het midden is de dikte van de route-lijn (3-15px). Tik − of + om de lijn dunner of dikker te maken.</p>
+                <p style="margin:4px 0 0;">Het getal in het midden is de dikte van de route-lijn (3-15px). Tik − of + om de lijn dunner of dikker te maken. Vanaf dikte 8 groeien ook de vliegtuigjes mee — handig als je wat groter wilt zien.</p>
             </div>
 
             <div style="margin: 20px 0;">
@@ -1141,7 +1141,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v15.6 © Umop3p1sdn
+                HO-ME v15.8 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1297,7 +1297,7 @@
                 // 3. in de tracker-navigatie zetten (i.p.v. detectTurns-schatting)
                 activeRoute = route;
                 detectedTurns = turns;
-                beepedApproach = {}; beepedNow = {}; spokenFirst = {};   // nieuwe route → flags schoon
+                beepedApproach = {}; beepedNow = {}; spokenFirst = {}; spokenAt = {};   // nieuwe route → flags schoon
                 // totale route-stats bewaren voor de aftelling (resterende afstand/tijd)
                 try {
                     routeTotalKm = feat.properties['track-length'] / 1000;
@@ -2365,7 +2365,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "15.6";
+        const APP_VERSION = "15.8";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -2491,6 +2491,7 @@ assign initialcost =
         let beepedApproach = {};        // turn.index -> true (1 beep done)
         let beepedNow = {};             // turn.index -> true (2 beeps done)
         let spokenFirst = {};           // turn.index -> true (vroege gesproken aankondiging gedaan)
+        let spokenAt = {};              // turn.index -> { drempel: true } (welke afstand-drempels al uitgesproken)
 
         // Unlock audio after a user gesture (browser requirement). Called from GO.
         function unlockAudio(thenBeep) {
@@ -2912,7 +2913,7 @@ assign initialcost =
             }
             if (!best) { hideAll(); return; }
 
-            const SPEAK_AT = 1200;   // vanaf hier praat 'ie ("over X ..."); daarboven stil (alleen pijl + afstand)
+            const SPEAK_AT = 1200;   // grens voor pijl-uiterlijk: boven = klein/blauw, eronder groter/gekleurd
             const NOW_AT   = 40;     // vlak voor de bocht: "nu ..."
 
             // Links/rechts: ECHTE richting van de planner (best.dir uit BRouter voicehints).
@@ -2935,13 +2936,20 @@ assign initialcost =
             // ─── SPRAAK (geen piep meer) — gebruikt het ECHTE afslag-type ───
             const ti = best.index;
             const dir = goRight ? 'rechtsaf' : 'linksaf';   // voor de pijl (links/rechts)
-            // Vroege aankondiging: 1x, zodra je binnen 1200m van de afslag bent (niet daarboven = stil).
-            if (!spokenFirst[ti] && bestDist <= SPEAK_AT && bestDist > NOW_AT) {
-                const m = bestDist >= 1000
-                    ? (bestDist / 1000).toFixed(1).replace('.', ',') + ' kilometer'
-                    : (Math.round(bestDist / 50) * 50) + ' meter';
-                speak('Over ' + m + ' ' + turnText(best, 'dir'));
-                spokenFirst[ti] = true;
+            // Aankondigen op meerdere afstanden (elk 1×): 1500 / 600 / 300 / 150 m.
+            // We onthouden per afslag welke drempels al uitgesproken zijn.
+            const SPEAK_THRESHOLDS = [1500, 600, 300, 150];
+            if (!spokenAt[ti]) spokenAt[ti] = {};
+            for (const thr of SPEAK_THRESHOLDS) {
+                // spreek zodra je BINNEN deze drempel komt (en nog niet bij de "nu"-zone), 1× per drempel
+                if (bestDist <= thr && bestDist > NOW_AT && !spokenAt[ti][thr]) {
+                    const m = bestDist > 1000
+                        ? (bestDist / 1000).toFixed(1).replace('.', ',') + ' kilometer'
+                        : (Math.round(bestDist / 50) * 50) + ' meter';
+                    speak('Over ' + m + ' ' + turnText(best, 'dir'));
+                    spokenAt[ti][thr] = true;
+                    break;   // niet meerdere drempels tegelijk uitspreken in één update
+                }
             }
             // Vlak voor de bocht: "nu ..."
             if (bestDist <= NOW_AT && !beepedNow[ti]) {
@@ -2958,7 +2966,9 @@ assign initialcost =
 
             // Grootte/kleur: ver weg = klein/blauw (stille heads-up), dichtbij = groot/oranje/rood.
             let size, bg, label;
-            const roundDist = (d) => d >= 1000
+            // Afstand-weergave: boven 1000m in km met 1 decimaal (20,3 km / 1,9 km),
+            // onder 1000m in stappen van 50m (950 m / 300 m).
+            const roundDist = (d) => d > 1000
                 ? (d / 1000).toFixed(1).replace('.', ',') + ' km'
                 : (Math.round(d / 50) * 50) + ' m';
             if (bestDist > SPEAK_AT) {
@@ -3300,7 +3310,7 @@ assign initialcost =
             if (!L_ || !L_.route || L_.route.length < 2) { showError('Geen geladen route'); return; }
             activeRoute = L_.route;
             detectedTurns = L_.turns || [];
-            beepedApproach = {}; beepedNow = {}; spokenFirst = {};   // nieuwe route → flags schoon
+            beepedApproach = {}; beepedNow = {}; spokenFirst = {}; spokenAt = {};   // nieuwe route → flags schoon
             routeTotalKm = L_.km || 0;
             routeTotalMin = L_.min || 0;
             if (typeof drawTurnDots === 'function') drawTurnDots();
@@ -5304,7 +5314,7 @@ assign initialcost =
                                             routeTotalMin = followerNavTotalMin;
                                             if (!followerNavActive) {
                                                 followerNavActive = true;
-                                                spokenFirst = {}; beepedNow = {};   // schone aankondigingen
+                                                spokenFirst = {}; spokenAt = {}; beepedNow = {};   // schone aankondigingen
                                             }
                                         }
                                     } else {
@@ -5746,7 +5756,7 @@ assign initialcost =
             activeRoute = null;             // navigatie-state wissen
             detectedTurns = [];
             if (typeof clearTurnDots === 'function') clearTurnDots();  // afslag-stippen weg
-            beepedApproach = {}; beepedNow = {}; spokenFirst = {};
+            beepedApproach = {}; beepedNow = {}; spokenFirst = {}; spokenAt = {};
             const msw = document.getElementById('masterStaleWarn');
             if (msw) msw.style.display = 'none';
             masterFollowersData = {};
