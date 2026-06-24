@@ -729,7 +729,7 @@
                     <button onclick="shareApp()" style="flex: 1; max-width: 150px; background: transparent; color: #00BCD4; border: 1.5px solid rgba(0,188,212,0.5); padding: 11px 0; border-radius: 10px; cursor: pointer; font-size: 0.9em; font-weight: bold; letter-spacing: 0.5px; transition: all 0.2s;" ontouchstart="" onmouseover="this.style.background='rgba(0,188,212,0.12)';" onmouseout="this.style.background='transparent';">Share app</button>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v15.1 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v15.2 © Umop3p1sdn</div>
 
             </div>
 
@@ -1136,7 +1136,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v15.1 © Umop3p1sdn
+                HO-ME v15.2 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2103,7 +2103,7 @@ assign initialcost =
 
         function drawRoute(geojson) {
             if (routeLine) map.removeLayer(routeLine);
-            routeLine = L.geoJSON(geojson, {
+            routeLine = L.geoJSON(geojson, { pane: 'hmNaviPane',
                 style: { color: '#00BCD4', weight: trackLineWidth, opacity: 0.9 },
                 interactive: false   // lijn vangt geen kliks → via's blijven aantikbaar
             }).addTo(map);
@@ -2360,7 +2360,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "15.1";
+        const APP_VERSION = "15.2";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -2845,10 +2845,10 @@ assign initialcost =
             if (eatenGrey) { mapInstance.removeLayer(eatenGrey); eatenGrey = null; }
             if (eatenBlue) { mapInstance.removeLayer(eatenBlue); eatenBlue = null; }
             if (gehad.length > 1) {
-                eatenGrey = L.polyline(gehad, { color: '#888', weight: trackLineWidth, opacity: 0.5 }).addTo(mapInstance);
+                eatenGrey = L.polyline(gehad, { pane: 'hmNaviPane', color: '#888', weight: trackLineWidth, opacity: 0.5 }).addTo(mapInstance);
             }
             if (teGaan.length > 1) {
-                eatenBlue = L.polyline(teGaan, { color: '#00BCD4', weight: trackLineWidth, opacity: 0.9 }).addTo(mapInstance);
+                eatenBlue = L.polyline(teGaan, { pane: 'hmNaviPane', color: '#00BCD4', weight: trackLineWidth, opacity: 0.9 }).addTo(mapInstance);
             }
             // de originele planner-route-lijn eronder verbergen tijdens rijden
             if (routeLine) routeLine.setStyle({ opacity: 0 });
@@ -3011,7 +3011,7 @@ assign initialcost =
                     if (gpxPolyline) {
                         mapInstance.removeLayer(gpxPolyline);
                     }
-                    gpxPolyline = L.polyline(gpsRoute, {
+                    gpxPolyline = L.polyline(gpsRoute, { pane: 'hmNaviPane',
                         color: '#00BCD4',
                         weight: trackLineWidth,
                         opacity: 0.8,
@@ -3027,7 +3027,7 @@ assign initialcost =
                     if (followerLoadedGpxPolyline) {
                         mapInstance.removeLayer(followerLoadedGpxPolyline);
                     }
-                    followerLoadedGpxPolyline = L.polyline(gpsRoute, {
+                    followerLoadedGpxPolyline = L.polyline(gpsRoute, { pane: 'hmBluePane',
                         color: '#00BCD4',
                         weight: trackLineWidth,
                         opacity: 0.8,
@@ -3160,7 +3160,7 @@ assign initialcost =
             if (!raw || raw.length < 2) { alert('Geen bruikbare punten.'); return; }
             offroadRoute = raw;
             if (offroadPolyline) { try { mapInstance.removeLayer(offroadPolyline); } catch(e){} }
-            offroadPolyline = L.polyline(raw, { color:'#9C27B0', weight: trackLineWidth, opacity:0.9 }).addTo(mapInstance);
+            offroadPolyline = L.polyline(raw, { pane: 'hmNaviPane', color:'#9C27B0', weight: trackLineWidth, opacity:0.9 }).addTo(mapInstance);
             try {
                 const grp = L.featureGroup(raw.map(([la,ln]) => L.circleMarker([la,ln],{radius:1})));
                 mapInstance.fitBounds(grp.getBounds(), { padding:[50,50] });
@@ -3267,7 +3267,7 @@ assign initialcost =
 
             // 4. tonen + klaarzetten (Deel 2 koppelt GO; voor nu in de planner-route-variabelen)
             if (gpxPolyline) { try { mapInstance.removeLayer(gpxPolyline); } catch(e){} }
-            gpxPolyline = L.polyline(fullRoute, { color:'#00BCD4', weight: trackLineWidth, opacity:0.85, dashArray:'2,5' }).addTo(mapInstance);
+            gpxPolyline = L.polyline(fullRoute, { pane: 'hmNaviPane', color:'#00BCD4', weight: trackLineWidth, opacity:0.85, dashArray:'2,5' }).addTo(mapInstance);
             const grp = L.featureGroup(fullRoute.map(([la,ln]) => L.circleMarker([la,ln],{radius:1})));
             mapInstance.fitBounds(grp.getBounds(), { padding:[50,50] });
 
@@ -4031,6 +4031,7 @@ assign initialcost =
             prevFollowerCount = followerCountNow;   // onthoud voor de volgende ronde
 
             applyFollowerVisibility();
+            if (typeof applyPlaneZOrder === 'function') applyPlaneZOrder();
             renderTagList();
             const countEl = document.getElementById('followerCount');
             if (countEl) countEl.textContent = followerCountNow;
@@ -4038,6 +4039,29 @@ assign initialcost =
         }
 
         // Master: hide follower arrows when ZOOM=SELF (alleen ik), show otherwise
+        // Vliegtuig-stapelvolgorde (binnen de marker-laag, dus boven alle lijnen).
+        // Normaal (IK/BEIDE): jij → master → andere volgers.
+        // Bij MASTER kiezen (volger): master → jij → andere volgers.
+        function applyPlaneZOrder() {
+            const SELF = 1000, MASTER = 900, OTHER = 500;
+            try {
+                if (currentMode === 'follower') {
+                    const masterTop = (typeof zoomMode !== 'undefined' && zoomMode === 'master');
+                    if (followerMarker && followerMarker.setZIndexOffset)
+                        followerMarker.setZIndexOffset(masterTop ? MASTER : SELF);
+                    if (masterMarker && masterMarker.setZIndexOffset)
+                        masterMarker.setZIndexOffset(masterTop ? SELF : MASTER);
+                } else if (currentMode === 'master') {
+                    // Master ziet zichzelf (masterMarker) bovenop, volgers eronder.
+                    if (masterMarker && masterMarker.setZIndexOffset)
+                        masterMarker.setZIndexOffset(SELF);
+                    Object.values(followerMarkers).forEach(m => {
+                        if (m && m.setZIndexOffset) m.setZIndexOffset(OTHER);
+                    });
+                }
+            } catch (e) { /* z-order niet kritisch */ }
+        }
+
         function applyFollowerVisibility() {
             if (currentMode !== 'master') return;
             const show = (zoomMode !== 'self');
@@ -4425,6 +4449,7 @@ assign initialcost =
             updateZoomIcons();
             // NOTE: Do NOT turn on CENTER here - just cycle zoom mode
             applyFollowerVisibility();
+            if (typeof applyPlaneZOrder === 'function') applyPlaneZOrder();   // master bovenop bij MASTER-keuze
             if (isAutoFollowActive) {
                 updateMapView();
             }
@@ -4969,6 +4994,24 @@ assign initialcost =
 
                 mapInstance = L.map(mapDiv).setView([52.04, 5.67], 13);
                 mapInstance.doubleClickZoom.disable();
+
+                // ── Vaste laag-volgorde via panes (verschuift nooit, ook niet bij GPS-updates) ──
+                // Hoger z-index = hoger in de stapel. Rol bepaalt of rood of blauw bovenaan de
+                // spoor-lijnen ligt; de navi-lijn zit er altijd tussenin.
+                //   MASTER-view (boven→onder):  rood  → navi → blauw
+                //   VOLGER-view (boven→onder):  blauw → navi → rood
+                // Vliegtuigen (markerPane ~600) liggen sowieso boven al deze lijn-panes.
+                const paneZ = isMaster
+                    ? { red: 445, navi: 430, blue: 415 }    // master: rood boven, blauw onder
+                    : { blue: 445, navi: 430, red: 415 };   // volger: blauw boven, rood onder
+                [['hmRedPane', paneZ.red], ['hmNaviPane', paneZ.navi], ['hmBluePane', paneZ.blue]]
+                    .forEach(([name, z]) => {
+                        if (!mapInstance.getPane(name)) {
+                            mapInstance.createPane(name);
+                            mapInstance.getPane(name).style.zIndex = z;
+                        }
+                    });
+
                 if (isMaster && typeof plannerShowToggle === 'function') plannerShowToggle();   // PLANNER alleen voor master
                 
                 // Prevent double-click zoom on map
@@ -5019,7 +5062,7 @@ assign initialcost =
                                 if (trackingPolyline) {
                                     mapInstance.removeLayer(trackingPolyline);
                                 }
-                                trackingPolyline = L.polyline(masterLocations, {
+                                trackingPolyline = L.polyline(masterLocations, { pane: 'hmRedPane',
                                     color: '#FF1744',
                                     weight: trackLineWidth,
                                     opacity: 0.8,
@@ -5069,7 +5112,7 @@ assign initialcost =
                                 if (followerTrackingPolyline) {
                                     mapInstance.removeLayer(followerTrackingPolyline);
                                 }
-                                followerTrackingPolyline = L.polyline(followerLocations, {
+                                followerTrackingPolyline = L.polyline(followerLocations, { pane: 'hmRedPane',
                                     color: '#0D47A1',
                                     weight: trackLineWidth,
                                     opacity: 0.8,
@@ -5131,6 +5174,7 @@ assign initialcost =
                                     .addTo(mapInstance).bindPopup('TARGET');
                                 setMarkerHeading(masterMarker, heading);
                             }
+                            if (typeof applyPlaneZOrder === 'function') applyPlaneZOrder();   // jij/master juiste stapel
 
                             // createDirectionMarker(location.lat, location.lng, location.heading, false);
                             
@@ -5143,7 +5187,7 @@ assign initialcost =
                                 if (trackingPolyline) {
                                     mapInstance.removeLayer(trackingPolyline);
                                 }
-                                trackingPolyline = L.polyline(masterLocations, {
+                                trackingPolyline = L.polyline(masterLocations, { pane: 'hmRedPane',
                                     color: '#FF1744',
                                     weight: trackLineWidth,
                                     opacity: 0.8
@@ -5179,7 +5223,7 @@ assign initialcost =
                                     if (gpxPolyline) {
                                         mapInstance.removeLayer(gpxPolyline);
                                     }
-                                    gpxPolyline = L.polyline(gpxRoute, {
+                                    gpxPolyline = L.polyline(gpxRoute, { pane: 'hmNaviPane',
                                         color: '#00BCD4',
                                         weight: trackLineWidth,
                                         opacity: 0.8,
@@ -5193,7 +5237,7 @@ assign initialcost =
                                 if (offNow && offNow.length > 1) {
                                     offroadRoute = offNow;
                                     if (offroadPolyline) { try { mapInstance.removeLayer(offroadPolyline); } catch(e){} }
-                                    offroadPolyline = L.polyline(offNow, {
+                                    offroadPolyline = L.polyline(offNow, { pane: 'hmNaviPane',
                                         color: '#9C27B0', weight: trackLineWidth, opacity: 0.9
                                     }).addTo(mapInstance);
                                 } else if (offroadPolyline) {
@@ -5249,7 +5293,7 @@ assign initialcost =
             if (trackState === 'view') {
                 // M SPOOR: alleen de rode gereden lijn van de master
                 if (masterLocations.length > 1) {
-                    trackingPolyline = L.polyline(masterLocations, {
+                    trackingPolyline = L.polyline(masterLocations, { pane: 'hmRedPane',
                         color: '#FF1744', weight: trackLineWidth, opacity: 0.8
                     }).addTo(mapInstance);
                 }
@@ -5260,7 +5304,7 @@ assign initialcost =
                     gpxRoute = (fetchedGpxRoute && fetchedGpxRoute.length > 0) ? fetchedGpxRoute : [];
                 }
                 if (gpxRoute && gpxRoute.length > 0) {
-                    gpxPolyline = L.polyline(gpxRoute, {
+                    gpxPolyline = L.polyline(gpxRoute, { pane: 'hmNaviPane',
                         color: '#00BCD4', weight: trackLineWidth, opacity: 0.8, dashArray: '2, 5'
                     }).addTo(mapInstance);
                 }
@@ -5270,13 +5314,13 @@ assign initialcost =
                     const off = window._followerOffroad || [];
                     if (off && off.length > 1) {
                         offroadRoute = off;
-                        offroadPolyline = L.polyline(off, {
+                        offroadPolyline = L.polyline(off, { pane: 'hmNaviPane',
                             color: '#9C27B0', weight: trackLineWidth, opacity: 0.9
                         }).addTo(mapInstance);
                     }
                 } else if (offroadRoute && offroadRoute.length > 1) {
                     // master: eigen offroad-lijn opnieuw tonen
-                    offroadPolyline = L.polyline(offroadRoute, {
+                    offroadPolyline = L.polyline(offroadRoute, { pane: 'hmNaviPane',
                         color: '#9C27B0', weight: trackLineWidth, opacity: 0.9
                     }).addTo(mapInstance);
                 }
@@ -5789,7 +5833,7 @@ assign initialcost =
             if (mapInstance && trackingPolyline) {
                 const latlngs = trackingPolyline.getLatLngs();
                 mapInstance.removeLayer(trackingPolyline);
-                trackingPolyline = L.polyline(latlngs, {
+                trackingPolyline = L.polyline(latlngs, { pane: 'hmRedPane',
                     color: '#FF1744',
                     weight: trackLineWidth,
                     opacity: 0.8,
@@ -5801,7 +5845,7 @@ assign initialcost =
             if (mapInstance && gpxPolyline) {
                 const gpxLatlngs = gpxPolyline.getLatLngs();
                 mapInstance.removeLayer(gpxPolyline);
-                gpxPolyline = L.polyline(gpxLatlngs, {
+                gpxPolyline = L.polyline(gpxLatlngs, { pane: 'hmNaviPane',
                     color: '#00BCD4',
                     weight: trackLineWidth,
                     opacity: 0.8,
@@ -5813,7 +5857,7 @@ assign initialcost =
             if (mapInstance && followerLoadedGpxPolyline) {
                 const followerGpxLatlngs = followerLoadedGpxPolyline.getLatLngs();
                 mapInstance.removeLayer(followerLoadedGpxPolyline);
-                followerLoadedGpxPolyline = L.polyline(followerGpxLatlngs, {
+                followerLoadedGpxPolyline = L.polyline(followerGpxLatlngs, { pane: 'hmBluePane',
                     color: '#00BCD4',
                     weight: trackLineWidth,
                     opacity: 0.8,
@@ -5830,7 +5874,7 @@ assign initialcost =
             if (mapInstance && offroadPolyline) {
                 const offLatlngs = offroadPolyline.getLatLngs();
                 mapInstance.removeLayer(offroadPolyline);
-                offroadPolyline = L.polyline(offLatlngs, {
+                offroadPolyline = L.polyline(offLatlngs, { pane: 'hmNaviPane',
                     color: '#9C27B0',
                     weight: trackLineWidth,
                     opacity: 0.9
@@ -5841,7 +5885,7 @@ assign initialcost =
             if (mapInstance && followerTrackingPolyline) {
                 const ftLatlngs = followerTrackingPolyline.getLatLngs();
                 mapInstance.removeLayer(followerTrackingPolyline);
-                followerTrackingPolyline = L.polyline(ftLatlngs, {
+                followerTrackingPolyline = L.polyline(ftLatlngs, { pane: 'hmRedPane',
                     color: '#0D47A1',
                     weight: trackLineWidth,
                     opacity: 0.8,
@@ -5853,12 +5897,12 @@ assign initialcost =
             if (mapInstance && eatenGrey) {
                 const egLatlngs = eatenGrey.getLatLngs();
                 mapInstance.removeLayer(eatenGrey);
-                eatenGrey = L.polyline(egLatlngs, { color: '#888', weight: trackLineWidth, opacity: 0.5 }).addTo(mapInstance);
+                eatenGrey = L.polyline(egLatlngs, { pane: 'hmNaviPane', color: '#888', weight: trackLineWidth, opacity: 0.5 }).addTo(mapInstance);
             }
             if (mapInstance && eatenBlue) {
                 const ebLatlngs = eatenBlue.getLatLngs();
                 mapInstance.removeLayer(eatenBlue);
-                eatenBlue = L.polyline(ebLatlngs, { color: '#00BCD4', weight: trackLineWidth, opacity: 0.9 }).addTo(mapInstance);
+                eatenBlue = L.polyline(ebLatlngs, { pane: 'hmNaviPane', color: '#00BCD4', weight: trackLineWidth, opacity: 0.9 }).addTo(mapInstance);
             }
 
             // Re-disable double-click zoom after redraw
