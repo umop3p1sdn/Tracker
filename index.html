@@ -736,7 +736,7 @@
                     <button onclick="shareApp()" style="flex: 1; max-width: 150px; background: transparent; color: #00BCD4; border: 1.5px solid rgba(0,188,212,0.5); padding: 11px 0; border-radius: 10px; cursor: pointer; font-size: 0.9em; font-weight: bold; letter-spacing: 0.5px; transition: all 0.2s;" ontouchstart="" onmouseover="this.style.background='rgba(0,188,212,0.12)';" onmouseout="this.style.background='transparent';">Share app</button>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v18.5 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v18.6 © Umop3p1sdn</div>
 
             </div>
 
@@ -1156,7 +1156,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v18.5 © Umop3p1sdn
+                HO-ME v18.6 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2557,7 +2557,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "18.5";
+        const APP_VERSION = "18.6";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -2951,19 +2951,46 @@ assign initialcost =
         }
         const FLITSER_DB = () => `${firebaseConfig.databaseURL}/flitsers.json`;
         const checkedAreas = [];   // gebieden die deze sessie al uit OSM gecheckt zijn (1× per gebied)
+        const FLITSER_LS_KEY = 'home_flitsers_v1';   // lokale (offline) kopie op de telefoon
 
-        // Lees ALLE flitsers uit Firebase (gedeeld, samen opgebouwd) → toon op de kaart.
+        // Lokale kopie lezen/schrijven (localStorage) — zodat flitsers OFFLINE beschikbaar zijn,
+        // zonder internet (Firebase heeft internet nodig, deze kopie niet).
+        function loadFlitsersFromLocal() {
+            try {
+                const raw = localStorage.getItem(FLITSER_LS_KEY);
+                if (!raw) return false;
+                const arr = JSON.parse(raw);
+                if (!Array.isArray(arr) || !arr.length) return false;
+                flitsers = arr.filter(f => typeof f.lat === 'number' && typeof f.lng === 'number');
+                drawFlitserMarkers();
+                console.log(`📷 ${flitsers.length} flitsers uit lokale opslag (offline)`);
+                return true;
+            } catch (e) { return false; }
+        }
+        function saveFlitsersToLocal() {
+            try { localStorage.setItem(FLITSER_LS_KEY, JSON.stringify(flitsers)); } catch (e) {}
+        }
+
+        // Lees ALLE flitsers uit Firebase (gedeeld) en VOEG SAMEN met de lokale kopie (ontdubbeld
+        // op locatie-sleutel) → toon op de kaart. Zo raak je lokale flitsers nooit kwijt.
         async function loadFlitsersFromFirebase() {
             try {
                 const res = await fetch(FLITSER_DB());
                 if (!res.ok) return;
                 const data = await res.json();
-                if (!data) { flitsers = []; drawFlitserMarkers(); return; }
-                flitsers = Object.values(data).map(f => ({
-                    lat: f.lat, lng: f.lng, maxspeed: f.maxspeed || null
-                })).filter(f => typeof f.lat === 'number' && typeof f.lng === 'number');
+                if (!data) return;   // niks in Firebase → lokale kopie behouden
+                // samenvoegen: bestaande (lokaal) + Firebase, ontdubbeld op sleutel
+                const byKey = {};
+                flitsers.forEach(f => { byKey[flitserKey(f.lat, f.lng)] = f; });
+                Object.values(data).forEach(f => {
+                    if (typeof f.lat === 'number' && typeof f.lng === 'number') {
+                        byKey[flitserKey(f.lat, f.lng)] = { lat: f.lat, lng: f.lng, maxspeed: f.maxspeed || null };
+                    }
+                });
+                flitsers = Object.values(byKey);
                 drawFlitserMarkers();
-                console.log(`📷 ${flitsers.length} flitsers uit Firebase`);
+                saveFlitsersToLocal();   // lokale offline-kopie bijwerken
+                console.log(`📷 ${flitsers.length} flitsers (Firebase + lokaal samengevoegd)`);
             } catch (e) { console.warn('flitsers (firebase) lezen mislukt', e); }
         }
 
@@ -3004,7 +3031,7 @@ assign initialcost =
                     have.add(key);
                     added++;
                 }
-                if (added) { drawFlitserMarkers(); console.log(`📷 ${added} nieuwe flitsers → Firebase`); }
+                if (added) { drawFlitserMarkers(); saveFlitsersToLocal(); console.log(`📷 ${added} nieuwe flitsers → Firebase + lokaal`); }
             } catch (e) { console.warn('flitsers (osm-check) mislukt', e); }
         }
 
@@ -5658,13 +5685,14 @@ assign initialcost =
                 });
 
                 // FLITSERS: bij elke pan/zoom-stop checken op nieuwe flitsers in beeld (zoom ≥ 8).
-                // Eenmalig de bestaande Firebase-flitsers tonen zodra de kaart er is.
+                // Eerst de LOKALE kopie tonen (offline, meteen), dan Firebase (als er internet is).
                 let _flitserMoveTimer = null;
                 mapInstance.on('moveend', () => {
                     clearTimeout(_flitserMoveTimer);
                     _flitserMoveTimer = setTimeout(() => { checkFlitsersInView(); }, 500);
                 });
-                loadFlitsersFromFirebase();
+                loadFlitsersFromLocal();          // offline kopie eerst (geen internet nodig)
+                loadFlitsersFromFirebase();        // internet? → bijwerken + lokaal opslaan
                 setTimeout(() => { checkFlitsersInView(); }, 800);
 
                 // Start background pre-caching of offline tiles
