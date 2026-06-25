@@ -749,7 +749,7 @@
                     <button onclick="shareApp()" style="flex: 1; max-width: 150px; background: transparent; color: #00BCD4; border: 1.5px solid rgba(0,188,212,0.5); padding: 11px 0; border-radius: 10px; cursor: pointer; font-size: 0.9em; font-weight: bold; letter-spacing: 0.5px; transition: all 0.2s;" ontouchstart="" onmouseover="this.style.background='rgba(0,188,212,0.12)';" onmouseout="this.style.background='transparent';">Share app</button>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v20.5 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v20.6 © Umop3p1sdn</div>
 
             </div>
 
@@ -1169,7 +1169,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v20.5 © Umop3p1sdn
+                HO-ME v20.6 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2570,7 +2570,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "20.5";
+        const APP_VERSION = "20.6";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -3116,11 +3116,15 @@ assign initialcost =
         //              mag een flitser-aanduiding zelfs niet passief zichtbaar zijn
         //  ZONES (1) → transparante rode cirkels (1km straal), GEEN exacte bordjes (Frankrijk-legaal)
         //  ACTIEF (2)→ witte snelheidsbordjes op de exacte locatie (NL/BE)
+        const FLITSER_DRAW_ZOOM = 11;   // onder dit zoom-niveau (ver uit) → geen flitsers tekenen
         function drawFlitserMarkers() {
             flitserMarkers.forEach(m => { try { mapInstance.removeLayer(m); } catch (e) {} });
             flitserMarkers = [];
             if (!mapInstance || flitserMode === 0) return;   // UIT = niks tonen
+            if (mapInstance.getZoom() < FLITSER_DRAW_ZOOM) return;   // te ver uitgezoomd → niks tonen
+            const bounds = mapInstance.getBounds().pad(0.2);   // alleen wat in beeld is (+ kleine marge)
             flitsers.forEach(f => {
+                if (!bounds.contains([f.lat, f.lng])) return;   // buiten beeld → niet tekenen
                 let mk;
                 if (flitserMode === 1) {
                     // gevarenzone: rode cirkel, 1km straal (2km diameter)
@@ -5762,7 +5766,7 @@ assign initialcost =
                 followerLoadedGpxPolyline = null;
                 trackingPolyline = null;
 
-                mapInstance = L.map(mapDiv).setView([51.98, 5.91], 13);
+                mapInstance = L.map(mapDiv).setView([52.04, 5.67], 13);
                 mapInstance.doubleClickZoom.disable();
 
                 // ── Vaste laag-volgorde via panes (verschuift nooit, ook niet bij GPS-updates) ──
@@ -5808,6 +5812,7 @@ assign initialcost =
                 // nog niks staat (Overpass kan traag/eerst-mislukt zijn).
                 let _flitserMoveTimer = null;
                 mapInstance.on('moveend', () => {
+                    drawFlitserMarkers();   // meteen alleen wat in beeld is (her)tekenen
                     clearTimeout(_flitserMoveTimer);
                     _flitserMoveTimer = setTimeout(() => { checkFlitsersInView(); }, 600);
                 });
