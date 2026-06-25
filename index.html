@@ -736,7 +736,7 @@
                     <button onclick="shareApp()" style="flex: 1; max-width: 150px; background: transparent; color: #00BCD4; border: 1.5px solid rgba(0,188,212,0.5); padding: 11px 0; border-radius: 10px; cursor: pointer; font-size: 0.9em; font-weight: bold; letter-spacing: 0.5px; transition: all 0.2s;" ontouchstart="" onmouseover="this.style.background='rgba(0,188,212,0.12)';" onmouseout="this.style.background='transparent';">Share app</button>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v18.4 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v18.5 © Umop3p1sdn</div>
 
             </div>
 
@@ -1039,7 +1039,7 @@
             <p style="background:#e3e7f5; padding:10px 14px; border-radius:8px;"><strong>Tip (liggend scherm):</strong> ligt je telefoon op z'n kant en staan <strong>CENTER én draaien aan</strong>, dan kun je het vliegtuigje (jezelf) mooi in beeld zetten door de kaart omhoog/omlaag te pannen — zo zie je meer van de weg vóór je.</p>
 
             <h3 style="color: #00BCD4; margin-top: 25px;">Flitsers 📷</h3>
-            <p>De app haalt vaste flitsers uit <strong>OpenStreetMap</strong> (gratis &amp; open) en zet ze langs je route. Bij het naderen verschijnt linksboven een <strong>wit snelheidsbord</strong> (de gehandhaafde snelheid) met daaronder een <strong>aftelling van 10 naar 1</strong> (10 = 1000 m, 1 = 100 m). Je hoort een <strong>dubbele piep</strong> binnen 500 m, en je <strong>snelheidsteller kleurt rood</strong> als je harder gaat dan de limiet. Tik op het vlak om het in <strong>3 groottes</strong> te zetten.</p>
+            <p>De app haalt vaste flitsers uit <strong>OpenStreetMap</strong> (gratis &amp; open) en bewaart ze gedeeld in de cloud, zodat ze <strong>altijd op de kaart staan</strong> — ook tijdens het plannen, zodat je je route er bewust omheen kunt trekken. Terwijl je rondkijkt of een route maakt, vult de app vanzelf nieuwe flitsers aan (alleen als je voldoende ingezoomd bent). Bij het naderen verschijnt linksboven een <strong>wit snelheidsbord</strong> (de gehandhaafde snelheid) met daaronder een <strong>aftelling van 10 naar 1</strong> (10 = 1000 m, 1 = 100 m). Je hoort een <strong>dubbele piep</strong> binnen 500 m, en je <strong>snelheidsteller kleurt rood</strong> als je harder gaat dan de limiet. Tik op het vlak om het in <strong>3 groottes</strong> te zetten.</p>
             <p>In het <strong>☰ menu</strong> staat de knop <strong>Flitsmelding</strong> met 3 standen (doortikken):</p>
             <ul style="margin: 10px 0; padding-left: 20px;">
                 <li><strong>ACTIEF</strong> — alles aan: bord, aftellen, piep, rode snelheid. Voor <strong>Nederland &amp; België</strong>.</li>
@@ -1156,7 +1156,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v18.4 © Umop3p1sdn
+                HO-ME v18.5 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2557,7 +2557,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "18.4";
+        const APP_VERSION = "18.5";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -2943,30 +2943,75 @@ assign initialcost =
 
         // Haal vaste flitsers (highway=speed_camera) uit OpenStreetMap via Overpass, rond een
         // bounding box om de route. 1× bij GO. Gratis & legaal (OSM, met bronvermelding op de kaart).
-        async function loadFlitsers() {
+        // ─── FLITSER-DATA: Firebase (gedeeld, blijft bewaard) + OSM-aanvulling bij pannen ───
+        // Sleutel per flitser = afgeronde lat/lng (5 decimalen ≈ 1m) zodat dezelfde flitser niet
+        // dubbel in Firebase komt, ook als twee mensen 'm tegenkomen.
+        function flitserKey(lat, lng) {
+            return lat.toFixed(5).replace('.', '_') + 'x' + lng.toFixed(5).replace('.', '_');
+        }
+        const FLITSER_DB = () => `${firebaseConfig.databaseURL}/flitsers.json`;
+        const checkedAreas = [];   // gebieden die deze sessie al uit OSM gecheckt zijn (1× per gebied)
+
+        // Lees ALLE flitsers uit Firebase (gedeeld, samen opgebouwd) → toon op de kaart.
+        async function loadFlitsersFromFirebase() {
             try {
-                if (!activeRoute || activeRoute.length < 2) return;
-                // bounding box van de route (+ marge)
-                let minLat = 90, maxLat = -90, minLng = 180, maxLng = -180;
-                activeRoute.forEach(p => {
-                    if (p[0] < minLat) minLat = p[0]; if (p[0] > maxLat) maxLat = p[0];
-                    if (p[1] < minLng) minLng = p[1]; if (p[1] > maxLng) maxLng = p[1];
-                });
-                const m = 0.05;   // ~5km marge
-                const bbox = `${minLat-m},${minLng-m},${maxLat+m},${maxLng+m}`;
+                const res = await fetch(FLITSER_DB());
+                if (!res.ok) return;
+                const data = await res.json();
+                if (!data) { flitsers = []; drawFlitserMarkers(); return; }
+                flitsers = Object.values(data).map(f => ({
+                    lat: f.lat, lng: f.lng, maxspeed: f.maxspeed || null
+                })).filter(f => typeof f.lat === 'number' && typeof f.lng === 'number');
+                drawFlitserMarkers();
+                console.log(`📷 ${flitsers.length} flitsers uit Firebase`);
+            } catch (e) { console.warn('flitsers (firebase) lezen mislukt', e); }
+        }
+
+        // Check OSM voor het zichtbare kaartgebied (alleen bij voldoende inzoom, zoom ≥ 8) en voeg
+        // NIEUWE flitsers toe aan Firebase. Eenmaal geladen is dit een kleine correctie (alleen wat
+        // erbij komt). Draait bij pan-stop (moveend) en bij route maken.
+        const FLITSER_MIN_ZOOM = 8;   // verder uitgezoomd (Europa/wereld) → niet checken
+        async function checkFlitsersInView() {
+            try {
+                if (!mapInstance || mapInstance.getZoom() < FLITSER_MIN_ZOOM) return;
+                const b = mapInstance.getBounds();
+                const s = b.getSouth().toFixed(2), w = b.getWest().toFixed(2),
+                      n = b.getNorth().toFixed(2), e = b.getEast().toFixed(2);
+                const areaKey = `${s},${w},${n},${e}`;
+                if (checkedAreas.includes(areaKey)) return;   // dit gebied deze sessie al gehad
+                checkedAreas.push(areaKey);
+                // OSM ophalen voor het zichtbare gebied
+                const bbox = `${b.getSouth()},${b.getWest()},${b.getNorth()},${b.getEast()}`;
                 const q = `[out:json][timeout:25];node["highway"="speed_camera"](${bbox});out body;`;
                 const url = 'https://overpass-api.de/api/interpreter?data=' + encodeURIComponent(q);
                 const res = await fetch(url);
                 if (!res.ok) return;
                 const data = await res.json();
-                flitsers = (data.elements || []).map(el => ({
-                    lat: el.lat, lng: el.lon,
-                    maxspeed: el.tags && el.tags.maxspeed ? parseInt(el.tags.maxspeed) : null
-                })).filter(f => !isNaN(f.lat) && !isNaN(f.lng));
-                flitserBeeped = {};
-                drawFlitserMarkers();
-                console.log(`📷 ${flitsers.length} flitsers geladen uit OSM`);
-            } catch (e) { console.warn('flitsers laden mislukt', e); }
+                const osm = (data.elements || []).filter(el => typeof el.lat === 'number');
+                if (!osm.length) return;
+                // wat hebben we al? (sleutels van huidige flitsers)
+                const have = new Set(flitsers.map(f => flitserKey(f.lat, f.lng)));
+                let added = 0;
+                for (const el of osm) {
+                    const key = flitserKey(el.lat, el.lon);
+                    if (have.has(key)) continue;   // al bekend → kleine correctie, overslaan
+                    const rec = { lat: el.lat, lng: el.lon, maxspeed: (el.tags && el.tags.maxspeed) ? parseInt(el.tags.maxspeed) : null };
+                    // toevoegen aan Firebase onder z'n locatie-sleutel (PUT = idempotent, geen dubbelen)
+                    fetch(`${firebaseConfig.databaseURL}/flitsers/${key}.json`, {
+                        method: 'PUT', body: JSON.stringify(rec)
+                    }).catch(() => {});
+                    flitsers.push(rec);
+                    have.add(key);
+                    added++;
+                }
+                if (added) { drawFlitserMarkers(); console.log(`📷 ${added} nieuwe flitsers → Firebase`); }
+            } catch (e) { console.warn('flitsers (osm-check) mislukt', e); }
+        }
+
+        // Eén aanroep die beide doet: tonen wat er is (Firebase) + checken op nieuwe (OSM).
+        async function loadFlitsers() {
+            await loadFlitsersFromFirebase();
+            checkFlitsersInView();
         }
 
         // Zet de flitsers op de kaart, afhankelijk van de stand:
@@ -5611,6 +5656,16 @@ assign initialcost =
                         toggleMapOnly(isMaster ? 'master' : 'follower');
                     }
                 });
+
+                // FLITSERS: bij elke pan/zoom-stop checken op nieuwe flitsers in beeld (zoom ≥ 8).
+                // Eenmalig de bestaande Firebase-flitsers tonen zodra de kaart er is.
+                let _flitserMoveTimer = null;
+                mapInstance.on('moveend', () => {
+                    clearTimeout(_flitserMoveTimer);
+                    _flitserMoveTimer = setTimeout(() => { checkFlitsersInView(); }, 500);
+                });
+                loadFlitsersFromFirebase();
+                setTimeout(() => { checkFlitsersInView(); }, 800);
 
                 // Start background pre-caching of offline tiles
                 startSmartPreCache();
