@@ -400,6 +400,9 @@
         .map-only .button-stop {
             display: none !important;
         }
+        /* Schoon scherm (rode GO): Plan-knop weg + graden lager (alles komt erboven). */
+        .map-only #plannerToggleBtn { display: none !important; }
+        .map-only #headingReadout { top: 60px !important; z-index: 1100 !important; }
 
         .map-only .active-tracking {
             padding: 0 !important;
@@ -745,7 +748,7 @@
                     <button onclick="shareApp()" style="flex: 1; max-width: 150px; background: transparent; color: #00BCD4; border: 1.5px solid rgba(0,188,212,0.5); padding: 11px 0; border-radius: 10px; cursor: pointer; font-size: 0.9em; font-weight: bold; letter-spacing: 0.5px; transition: all 0.2s;" ontouchstart="" onmouseover="this.style.background='rgba(0,188,212,0.12)';" onmouseout="this.style.background='transparent';">Share app</button>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v19.9 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v20.0 © Umop3p1sdn</div>
 
             </div>
 
@@ -1165,7 +1168,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v19.9 © Umop3p1sdn
+                HO-ME v20.0 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2566,7 +2569,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "19.9";
+        const APP_VERSION = "20.0";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -3114,6 +3117,8 @@ assign initialcost =
             if (isLandscape && fbox && gbox) {
                 const gw = gbox.offsetWidth || 120;
                 fbox.style.left = (12 + gw + 10) + 'px';   // 12 (marge snelheid) + breedte + 10 gat
+            } else if (fbox) {
+                fbox.style.left = '';   // STAAND: inline-left weg → terug naar CSS (linksonder, 12px)
             }
         }
 
@@ -5227,6 +5232,7 @@ assign initialcost =
                     mapInstance.invalidateSize({ animate: false });
                     updateMapView();
                 }
+                if (typeof applyFlitserSize === 'function') applyFlitserSize();   // flitser-positie herzetten (staand↔liggend)
             }, 250); // wait for the orientation animation to settle
         }
         window.addEventListener('resize', handleViewportChange);
