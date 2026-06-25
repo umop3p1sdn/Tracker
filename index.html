@@ -736,7 +736,7 @@
                     <button onclick="shareApp()" style="flex: 1; max-width: 150px; background: transparent; color: #00BCD4; border: 1.5px solid rgba(0,188,212,0.5); padding: 11px 0; border-radius: 10px; cursor: pointer; font-size: 0.9em; font-weight: bold; letter-spacing: 0.5px; transition: all 0.2s;" ontouchstart="" onmouseover="this.style.background='rgba(0,188,212,0.12)';" onmouseout="this.style.background='transparent';">Share app</button>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v18.6 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v18.7 © Umop3p1sdn</div>
 
             </div>
 
@@ -1156,7 +1156,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v18.6 © Umop3p1sdn
+                HO-ME v18.7 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2557,7 +2557,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "18.6";
+        const APP_VERSION = "18.7";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -2907,6 +2907,8 @@ assign initialcost =
         let flitserMode = 2;             // 0=UIT  1=ZONES (FR-legaal, geen exacte meters)  2=ACTIEF (NL/BE)
         let flitserBeeped = {};          // per flitser: al gepiept (1× dubbele piep)
         let lastFlitserKey = null;       // welke flitser nu actief in het vlak
+        let flitserRijden = false;       // true na rode GO (rijden) — vlak alleen dan tonen
+        let flitserPrevDist = {};        // vorige afstand per flitser (richting bepalen: nader ik 'm?)
         let routeTotalMin = 0;  // totale route-tijd (min) — voor aftelling
         let currentSpeedKmh = 0;       // estimated speed
         let lastSpeedSample = null;    // {lat, lng, t}
@@ -3089,28 +3091,37 @@ assign initialcost =
             count.style.fontSize = (isWord ? Math.round(S.count * 0.5) : S.count) + 'px';
         }
 
-        // Hoofdcheck: roept tijdens het rijden bij elke positie. Vindt de eerstvolgende flitser
-        // vóór je (binnen 1km), toont het vlak met afstand-aftelling (10→1) + snelheid, en piept
-        // 1× dubbel bij naderen. Met meldingen uit (buitenland) blijft alles stil (iconen blijven).
+        // Hoofdcheck: roept tijdens het rijden bij elke positie. Toont het vlak ALLEEN als je rijdt
+        // (na rode GO) ÉN je rijdt richting de flitser (afstand wordt kleiner — niet erlangs/eraf).
+        // Vlak: bord + aftelling (10→1) + snelheid; piept 1× dubbel bij naderen. ZONES = "ZONE".
         const FLITSER_WARN_M = 1000;   // eerste melding op 1 km (ACTIEF) / zone-straal (ZONES)
         const FLITSER_BEEP_M = 500;    // dubbele piep zodra je binnen 500m komt (alleen ACTIEF)
         function checkFlitsers(lat, lng) {
             const box = document.getElementById('flitserBox');
             if (!box) return;
-            if (flitserMode === 0 || !flitsers.length) { box.style.display = 'none'; lastFlitserKey = null; lastFlitserSpeed = null; return; }
-            // dichtstbijzijnde flitser
+            // alleen tonen tijdens het rijden (na rode GO) en met meldingen aan
+            if (!flitserRijden || flitserMode === 0 || !flitsers.length) {
+                box.style.display = 'none'; lastFlitserKey = null; lastFlitserSpeed = null; return;
+            }
+            // dichtstbijzijnde flitser + richting-check (nader ik 'm? afstand kleiner dan vorige keer)
             let best = null, bestD = Infinity;
             for (const f of flitsers) {
                 const d = distMeters([lat, lng], [f.lat, f.lng]);
                 if (d < bestD) { bestD = d; best = f; }
             }
             if (!best || bestD > FLITSER_WARN_M) { box.style.display = 'none'; lastFlitserKey = null; lastFlitserSpeed = null; return; }
-            // vlak tonen + bord (snelheid) vullen — in beide standen
+            const key = best.lat.toFixed(5) + ',' + best.lng.toFixed(5);
+            // richting: vergelijk met vorige afstand tot DEZE flitser. Rij ik weg (afstand groter)
+            // of er recht langs? → niet waarschuwen. Alleen tonen als ik nader (afstand kleiner).
+            const prev = flitserPrevDist[key];
+            flitserPrevDist[key] = bestD;
+            const naderend = (prev === undefined) ? true : (bestD < prev + 5);  // +5m speling tegen GPS-ruis
+            if (!naderend) { box.style.display = 'none'; lastFlitserKey = null; lastFlitserSpeed = null; return; }
+            // vlak tonen + bord (snelheid) vullen
             box.style.display = 'block';
             const speedEl = document.getElementById('flitserSpeed');
             const countEl = document.getElementById('flitserCount');
             speedEl.textContent = best.maxspeed ? best.maxspeed : '·';
-            const key = best.lat.toFixed(5) + ',' + best.lng.toFixed(5);
 
             if (flitserMode === 1) {
                 // ZONES (FR-legaal): geen exacte meters/aftelling, alleen "ZONE" binnen 1km cirkel.
@@ -6262,6 +6273,7 @@ assign initialcost =
 
             requestWakeLock();
             initDeviceCompass();
+            flitserRijden = true;   // rijden begint → flitser-vlak mag verschijnen
             initializeMap(true, code);
         }
 
@@ -6297,6 +6309,7 @@ assign initialcost =
 
             requestWakeLock();
             initDeviceCompass();
+            flitserRijden = true;   // rijden begint → flitser-vlak mag verschijnen
             initializeMap(false, code);
         }
 
