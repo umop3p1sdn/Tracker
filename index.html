@@ -729,7 +729,7 @@
                     <button onclick="shareApp()" style="flex: 1; max-width: 150px; background: transparent; color: #00BCD4; border: 1.5px solid rgba(0,188,212,0.5); padding: 11px 0; border-radius: 10px; cursor: pointer; font-size: 0.9em; font-weight: bold; letter-spacing: 0.5px; transition: all 0.2s;" ontouchstart="" onmouseover="this.style.background='rgba(0,188,212,0.12)';" onmouseout="this.style.background='transparent';">Share app</button>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v17.2 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v17.3 © Umop3p1sdn</div>
 
             </div>
 
@@ -1141,7 +1141,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v17.2 © Umop3p1sdn
+                HO-ME v17.3 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2455,7 +2455,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "17.2";
+        const APP_VERSION = "17.3";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -3837,10 +3837,13 @@ assign initialcost =
                 if (typeof requestWakeLock === 'function') requestWakeLock();   // scherm wakker op hoofdscherm
                 if (window._homeUpdateLoop) return;   // niet dubbel starten
                 window._homeUpdateLoop = setInterval(() => {
-                    if (typeof checkForUpdate === 'function') checkForUpdate();
-                    if (document.getElementById('updateBanner')) {
-                        clearInterval(window._homeUpdateLoop);
-                        window._homeUpdateLoop = null;
+                    // Wake lock telkens opnieuw aanvragen: de eerste aanvraag kan falen (pagina nog niet
+                    // "zichtbaar" bij opstart) en een lock laat los zodra het scherm even uit gaat. Zolang
+                    // je op het hoofdscherm wacht houden we 'm zo wakker — óók als de update-banner er al staat.
+                    if (!wakeLock && typeof requestWakeLock === 'function') requestWakeLock();
+                    // update blijven checken tot de banner er is (daarna alleen nog wakker houden)
+                    if (!document.getElementById('updateBanner') && typeof checkForUpdate === 'function') {
+                        checkForUpdate();
                     }
                 }, 2000);
             };
@@ -3910,8 +3913,12 @@ assign initialcost =
             try {
                 if ('wakeLock' in navigator) {
                     wakeLock = await navigator.wakeLock.request('screen');
+                    // Browser kan de lock zelf loslaten (scherm uit / weggeschakeld). Dan wakeLock op null
+                    // zetten zodat de loop 'm opnieuw aanvraagt zodra je weer op het scherm bent.
+                    wakeLock.addEventListener('release', () => { wakeLock = null; });
                 }
             } catch (err) {
+                wakeLock = null;
                 console.error('Wake Lock error:', err);
             }
         }
