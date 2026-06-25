@@ -736,7 +736,7 @@
                     <button onclick="shareApp()" style="flex: 1; max-width: 150px; background: transparent; color: #00BCD4; border: 1.5px solid rgba(0,188,212,0.5); padding: 11px 0; border-radius: 10px; cursor: pointer; font-size: 0.9em; font-weight: bold; letter-spacing: 0.5px; transition: all 0.2s;" ontouchstart="" onmouseover="this.style.background='rgba(0,188,212,0.12)';" onmouseout="this.style.background='transparent';">Share app</button>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v18.7 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v18.8 © Umop3p1sdn</div>
 
             </div>
 
@@ -1156,7 +1156,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v18.7 © Umop3p1sdn
+                HO-ME v18.8 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2557,7 +2557,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "18.7";
+        const APP_VERSION = "18.8";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -3008,13 +3008,13 @@ assign initialcost =
                       n = b.getNorth().toFixed(2), e = b.getEast().toFixed(2);
                 const areaKey = `${s},${w},${n},${e}`;
                 if (checkedAreas.includes(areaKey)) return;   // dit gebied deze sessie al gehad
-                checkedAreas.push(areaKey);
                 // OSM ophalen voor het zichtbare gebied
                 const bbox = `${b.getSouth()},${b.getWest()},${b.getNorth()},${b.getEast()}`;
                 const q = `[out:json][timeout:25];node["highway"="speed_camera"](${bbox});out body;`;
                 const url = 'https://overpass-api.de/api/interpreter?data=' + encodeURIComponent(q);
                 const res = await fetch(url);
-                if (!res.ok) return;
+                if (!res.ok) return;   // mislukt → areaKey NIET markeren, volgende keer opnieuw proberen
+                checkedAreas.push(areaKey);   // pas markeren als de call gelukt is
                 const data = await res.json();
                 const osm = (data.elements || []).filter(el => typeof el.lat === 'number');
                 if (!osm.length) return;
@@ -3033,7 +3033,8 @@ assign initialcost =
                     have.add(key);
                     added++;
                 }
-                if (added) { drawFlitserMarkers(); saveFlitsersToLocal(); console.log(`📷 ${added} nieuwe flitsers → Firebase + lokaal`); }
+                drawFlitserMarkers();   // altijd opnieuw tekenen (ook als 0 nieuw: zeker zichtbaar)
+                if (added) { saveFlitsersToLocal(); console.log(`📷 ${added} nieuwe flitsers → Firebase + lokaal`); }
             } catch (e) { console.warn('flitsers (osm-check) mislukt', e); }
         }
 
@@ -5695,16 +5696,21 @@ assign initialcost =
                     }
                 });
 
-                // FLITSERS: bij elke pan/zoom-stop checken op nieuwe flitsers in beeld (zoom ≥ 8).
-                // Eerst de LOKALE kopie tonen (offline, meteen), dan Firebase (als er internet is).
+                // FLITSERS: altijd zichtbaar op de kaart. Eerst de LOKALE kopie (offline, meteen),
+                // dan Firebase (internet), en haal OSM voor het zichtbare gebied. Bij elke pan/zoom-stop
+                // opnieuw checken op nieuwe flitsers (zoom ≥ 8). Vangnet: na 2s nogmaals proberen als er
+                // nog niks staat (Overpass kan traag/eerst-mislukt zijn).
                 let _flitserMoveTimer = null;
                 mapInstance.on('moveend', () => {
                     clearTimeout(_flitserMoveTimer);
-                    _flitserMoveTimer = setTimeout(() => { checkFlitsersInView(); }, 500);
+                    _flitserMoveTimer = setTimeout(() => { checkFlitsersInView(); }, 600);
                 });
-                loadFlitsersFromLocal();          // offline kopie eerst (geen internet nodig)
-                loadFlitsersFromFirebase();        // internet? → bijwerken + lokaal opslaan
-                setTimeout(() => { checkFlitsersInView(); }, 800);
+                mapInstance.whenReady(() => {
+                    loadFlitsersFromLocal();           // offline kopie eerst (geen internet nodig)
+                    loadFlitsersFromFirebase();         // internet? → bijwerken + lokaal opslaan
+                    setTimeout(() => { checkFlitsersInView(); }, 600);
+                    setTimeout(() => { checkFlitsersInView(); }, 2500);   // vangnet als eerste poging niks gaf
+                });
 
                 // Start background pre-caching of offline tiles
                 startSmartPreCache();
