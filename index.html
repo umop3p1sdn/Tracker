@@ -729,7 +729,7 @@
                     <button onclick="shareApp()" style="flex: 1; max-width: 150px; background: transparent; color: #00BCD4; border: 1.5px solid rgba(0,188,212,0.5); padding: 11px 0; border-radius: 10px; cursor: pointer; font-size: 0.9em; font-weight: bold; letter-spacing: 0.5px; transition: all 0.2s;" ontouchstart="" onmouseover="this.style.background='rgba(0,188,212,0.12)';" onmouseout="this.style.background='transparent';">Share app</button>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v16.0 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v16.1 © Umop3p1sdn</div>
 
             </div>
 
@@ -1141,7 +1141,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v16.0 © Umop3p1sdn
+                HO-ME v16.1 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1616,8 +1616,41 @@ assign initialcost =
 
         async function doSearch(q) {
             showStatus('Zoeken...');
+            // Bias naar waar je kijkt (kaartmidden) zodat dichtbij voorrang krijgt.
+            let biasLat = null, biasLon = null;
             try {
-                // Nominatim free-form search. countrycodes biases to NL/BE/DE (motor-regio); remove for wereldwijd.
+                if (typeof map !== 'undefined' && map && map.getCenter) {
+                    const c = map.getCenter(); biasLat = c.lat; biasLon = c.lng;
+                }
+            } catch (e) {}
+
+            // 1) PHOTON eerst — veel beter in namen/POI's ("Koning David school", cafés, etc.).
+            try {
+                let url = `https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=8&lang=nl`;
+                if (biasLat !== null) url += `&lat=${biasLat}&lon=${biasLon}`;
+                const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+                if (res.ok) {
+                    const gj = await res.json();
+                    const items = (gj.features || []).map(f => {
+                        const p = f.properties || {};
+                        const c = (f.geometry && f.geometry.coordinates) || [];
+                        // mooi kort label: naam + plaats + land (alleen wat bestaat)
+                        const naam = p.name || '';
+                        const plaats = p.city || p.town || p.village || p.county || '';
+                        const straat = p.street ? (p.street + (p.housenumber ? ' ' + p.housenumber : '')) : '';
+                        const land = p.country || '';
+                        const deel = [naam, straat, plaats, land].filter(Boolean);
+                        return {
+                            lat: c[1], lon: c[0],
+                            label: deel.length ? Array.from(new Set(deel)).join(', ') : (p.name || 'Onbekend')
+                        };
+                    }).filter(it => typeof it.lat === 'number' && typeof it.lon === 'number');
+                    if (items.length) { showResults(items); return; }
+                }
+            } catch (e) { console.warn('Photon faalde, terugval Nominatim', e); }
+
+            // 2) NOMINATIM als vangnet (sterk in adressen/plaatsnamen).
+            try {
                 const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&addressdetails=1&limit=6&accept-language=nl`;
                 const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
                 if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -1626,11 +1659,27 @@ assign initialcost =
                     showStatus('Geen resultaten voor "' + q + '"');
                     return;
                 }
-                showResults(data);
+                // herverpak naar hetzelfde nette formaat
+                const items = data.map(d => ({
+                    lat: parseFloat(d.lat), lon: parseFloat(d.lon),
+                    label: shortLabel(d)
+                }));
+                showResults(items);
             } catch (e) {
                 console.error('search failed', e);
                 showStatus('Zoeken mislukt: ' + (e.message || 'verbinding?') + ' — probeer opnieuw.');
             }
+        }
+
+        // Kort, leesbaar label uit een Nominatim-resultaat (i.p.v. de lange display_name).
+        function shortLabel(d) {
+            const a = d.address || {};
+            const naam = a.amenity || a.shop || a.tourism || a.building || a.road || '';
+            const huisnr = a.house_number ? ' ' + a.house_number : '';
+            const plaats = a.city || a.town || a.village || a.municipality || a.county || '';
+            const land = a.country || '';
+            const deel = [(naam ? naam + huisnr : ''), plaats, land].filter(Boolean);
+            return deel.length ? Array.from(new Set(deel)).join(', ') : (d.display_name || 'Onbekend');
         }
 
         function showStatus(msg) {
@@ -1642,9 +1691,9 @@ assign initialcost =
             if (!items.length) { resultsEl.style.display = 'none'; return; }
             resultsEl.innerHTML = '';
             items.forEach(item => {
-                const lat = parseFloat(item.lat);
-                const lng = parseFloat(item.lon);
-                const label = item.display_name || 'Onbekend';
+                const lat = item.lat;
+                const lng = item.lon;
+                const label = item.label || 'Onbekend';
                 const div = document.createElement('div');
                 div.className = 'result-item';
                 div.textContent = label;
@@ -2365,7 +2414,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "16.0";
+        const APP_VERSION = "16.1";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
