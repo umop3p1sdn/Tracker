@@ -729,7 +729,7 @@
                     <button onclick="shareApp()" style="flex: 1; max-width: 150px; background: transparent; color: #00BCD4; border: 1.5px solid rgba(0,188,212,0.5); padding: 11px 0; border-radius: 10px; cursor: pointer; font-size: 0.9em; font-weight: bold; letter-spacing: 0.5px; transition: all 0.2s;" ontouchstart="" onmouseover="this.style.background='rgba(0,188,212,0.12)';" onmouseout="this.style.background='transparent';">Share app</button>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v16.1 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v16.2 © Umop3p1sdn</div>
 
             </div>
 
@@ -1141,7 +1141,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v16.1 © Umop3p1sdn
+                HO-ME v16.2 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1609,9 +1609,28 @@ assign initialcost =
                 const q = searchInput.value.trim();
                 clearTimeout(searchTimer);
                 if (q.length < 3) { resultsEl.style.display = 'none'; return; }
+                // Coördinaten geplakt? (bv. "52.04, 5.67" of "52.04 5.67") → meteen tonen als resultaat.
+                const coord = parseCoords(q);
+                if (coord) {
+                    showResults([{ lat: coord.lat, lon: coord.lon, label: `📍 ${coord.lat.toFixed(5)}, ${coord.lon.toFixed(5)}` }]);
+                    return;
+                }
                 searchTimer = setTimeout(() => doSearch(q), 800);
             });
             plannerWired = true;
+        }
+
+        // Herkent geplakte coördinaten: "52.04, 5.67" / "52.04 5.67" / "52,04 5,67".
+        // Geeft {lat, lon} terug of null. Lat moet -90..90, lon -180..180.
+        function parseCoords(s) {
+            // vervang NL-komma-decimalen alleen als er duidelijk 2 getallen met scheiding zijn
+            const m = s.match(/^\s*(-?\d{1,3}[.,]\d+)\s*[,;\s]\s*(-?\d{1,3}[.,]\d+)\s*$/);
+            if (!m) return null;
+            const lat = parseFloat(m[1].replace(',', '.'));
+            const lon = parseFloat(m[2].replace(',', '.'));
+            if (isNaN(lat) || isNaN(lon)) return null;
+            if (lat < -90 || lat > 90 || lon < -180 || lon > 180) return null;
+            return { lat, lon };
         }
 
         async function doSearch(q) {
@@ -1656,7 +1675,7 @@ assign initialcost =
                 if (!res.ok) throw new Error('HTTP ' + res.status);
                 const data = await res.json();
                 if (!Array.isArray(data) || !data.length) {
-                    showStatus('Geen resultaten voor "' + q + '"');
+                    showNoResults(q);
                     return;
                 }
                 // herverpak naar hetzelfde nette formaat
@@ -1684,6 +1703,18 @@ assign initialcost =
 
         function showStatus(msg) {
             resultsEl.innerHTML = '<div class="result-item" style="opacity:0.8;">' + msg + '</div>';
+            resultsEl.style.display = 'block';
+        }
+
+        // Niets gevonden in de gratis zoekers → knop om in Google Maps te zoeken (jij mag dat als mens),
+        // plus een hint dat je de coördinaten daarna kunt plakken.
+        function showNoResults(q) {
+            const gmUrl = 'https://www.google.com/maps/search/' + encodeURIComponent(q);
+            resultsEl.innerHTML =
+                '<div class="result-item" style="opacity:0.85;">Niets gevonden voor "' + q + '"</div>' +
+                '<div class="result-item" onclick="window.open(\'' + gmUrl + '\',\'_blank\')" ' +
+                'style="cursor:pointer; color:#00BCD4; font-weight:bold;">🔎 Zoek in Google Maps →</div>' +
+                '<div class="result-item" style="opacity:0.7; font-size:0.85em;">Houd in Google Maps je vinger op de plek → coördinaten kopiëren → hier plakken (bv. 52.04, 5.67)</div>';
             resultsEl.style.display = 'block';
         }
 
@@ -2414,7 +2445,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "16.1";
+        const APP_VERSION = "16.2";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
