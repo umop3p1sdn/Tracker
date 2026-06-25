@@ -736,7 +736,7 @@
                     <button onclick="shareApp()" style="flex: 1; max-width: 150px; background: transparent; color: #00BCD4; border: 1.5px solid rgba(0,188,212,0.5); padding: 11px 0; border-radius: 10px; cursor: pointer; font-size: 0.9em; font-weight: bold; letter-spacing: 0.5px; transition: all 0.2s;" ontouchstart="" onmouseover="this.style.background='rgba(0,188,212,0.12)';" onmouseout="this.style.background='transparent';">Share app</button>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v18.0 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v18.1 © Umop3p1sdn</div>
 
             </div>
 
@@ -871,7 +871,7 @@
                 </div>
                 <button class="button-secondary" onclick="toggleNavArrows()" id="navBtnMenu" style="width: 100%;">Navigatie pijlen: AAN</button>
                 <button class="button-secondary" onclick="toggleSpeech()" id="speechBtnMenu" style="width: 100%;">Spraak: AAN</button>
-                <button class="button-secondary" onclick="toggleFlitserWarn()" id="flitserBtnMenu" style="width: 100%;">Flitsmelding: AAN</button>
+                <button class="button-secondary" onclick="toggleFlitserWarn()" id="flitserBtnMenu" style="width: 100%;">Flitsmelding: ACTIEF</button>
                 <div id="tagOpacityRow" style="display:flex; align-items:center; justify-content:space-between; gap:8px; background:#1a2148; padding:8px 12px; border-radius:8px;">
                     <span style="font-size:0.9em;">Tags zichtbaar</span>
                     <div style="display:flex; align-items:center; gap:10px;">
@@ -1146,7 +1146,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v18.0 © Umop3p1sdn
+                HO-ME v18.1 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2547,7 +2547,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "18.0";
+        const APP_VERSION = "18.1";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -2894,7 +2894,7 @@ assign initialcost =
         let flitsers = [];               // [{lat,lng,maxspeed}] uit OpenStreetMap (Overpass)
         let flitserMarkers = [];         // kaart-bordjes
         let flitserSize = 1;             // 0=klein 1=middel 2=groot (tik op vlak)
-        let flitserWarnOff = false;      // true = meldingen uit (buitenland FR/ZW/DE) — iconen blijven
+        let flitserMode = 2;             // 0=UIT  1=ZONES (FR-legaal, geen exacte meters)  2=ACTIEF (NL/BE)
         let flitserBeeped = {};          // per flitser: al gepiept (1× dubbele piep)
         let lastFlitserKey = null;       // welke flitser nu actief in het vlak
         let routeTotalMin = 0;  // totale route-tijd (min) — voor aftelling
@@ -2986,42 +2986,51 @@ assign initialcost =
             sign.style.height = S.sign + 'px';
             sign.style.fontSize = S.speed + 'px';
             speed.style.fontSize = S.speed + 'px';
-            count.style.fontSize = S.count + 'px';
+            // "ZONE" is een woord → kleinere font dan een los cijfer
+            const isWord = (count.textContent || '').length > 2;
+            count.style.fontSize = (isWord ? Math.round(S.count * 0.5) : S.count) + 'px';
         }
 
         // Hoofdcheck: roept tijdens het rijden bij elke positie. Vindt de eerstvolgende flitser
         // vóór je (binnen 1km), toont het vlak met afstand-aftelling (10→1) + snelheid, en piept
         // 1× dubbel bij naderen. Met meldingen uit (buitenland) blijft alles stil (iconen blijven).
-        const FLITSER_WARN_M = 1000;   // eerste melding op 1 km
-        const FLITSER_BEEP_M = 500;    // dubbele piep zodra je binnen 500m komt
+        const FLITSER_WARN_M = 1000;   // eerste melding op 1 km (ACTIEF) / zone-straal (ZONES)
+        const FLITSER_BEEP_M = 500;    // dubbele piep zodra je binnen 500m komt (alleen ACTIEF)
         function checkFlitsers(lat, lng) {
             const box = document.getElementById('flitserBox');
             if (!box) return;
-            if (flitserWarnOff || !flitsers.length) { box.style.display = 'none'; lastFlitserKey = null; return; }
-            // dichtstbijzijnde flitser binnen bereik (recht-toe afstand; flitsers staan langs de weg)
+            if (flitserMode === 0 || !flitsers.length) { box.style.display = 'none'; lastFlitserKey = null; lastFlitserSpeed = null; return; }
+            // dichtstbijzijnde flitser
             let best = null, bestD = Infinity;
             for (const f of flitsers) {
                 const d = distMeters([lat, lng], [f.lat, f.lng]);
                 if (d < bestD) { bestD = d; best = f; }
             }
-            if (!best || bestD > FLITSER_WARN_M) { box.style.display = 'none'; lastFlitserKey = null; return; }
-            // vlak tonen + vullen
+            if (!best || bestD > FLITSER_WARN_M) { box.style.display = 'none'; lastFlitserKey = null; lastFlitserSpeed = null; return; }
+            // vlak tonen + bord (snelheid) vullen — in beide standen
             box.style.display = 'block';
             const speedEl = document.getElementById('flitserSpeed');
             const countEl = document.getElementById('flitserCount');
             speedEl.textContent = best.maxspeed ? best.maxspeed : '·';
-            // afstand → honderdtallen 10..1 (1000m=10, 100m=1)
-            const n = Math.max(1, Math.min(10, Math.ceil(bestD / 100)));
-            countEl.textContent = n;
-            applyFlitserSize();
-            // dubbele piep 1× zodra je binnen FLITSER_BEEP_M komt
             const key = best.lat.toFixed(5) + ',' + best.lng.toFixed(5);
-            if (bestD <= FLITSER_BEEP_M && !flitserBeeped[key]) {
-                flitserBeeped[key] = true;
-                doubleBeep();
+
+            if (flitserMode === 1) {
+                // ZONES (FR-legaal): geen exacte meters/aftelling, alleen "ZONE" binnen 1km cirkel.
+                countEl.textContent = 'ZONE';
+                applyFlitserSize();
+                lastFlitserSpeed = null;        // geen km-kleuring in zone-modus
+            } else {
+                // ACTIEF (NL/BE): exact aftellen 10→1 + dubbele piep + km-kleuring
+                const n = Math.max(1, Math.min(10, Math.ceil(bestD / 100)));
+                countEl.textContent = n;
+                applyFlitserSize();
+                if (bestD <= FLITSER_BEEP_M && !flitserBeeped[key]) {
+                    flitserBeeped[key] = true;
+                    doubleBeep();
+                }
+                lastFlitserSpeed = best.maxspeed || null;
             }
             lastFlitserKey = key;
-            lastFlitserSpeed = best.maxspeed || null;
         }
 
         // Dubbele piep (biep-biep) via Web Audio — hergebruikt de bestaande audioCtx.
@@ -3045,7 +3054,7 @@ assign initialcost =
         // Snelheidsteller rood kleuren als je harder gaat dan de limiet van de naderende flitser.
         let lastFlitserSpeed = null;
         function colorSpeedIfOverLimit() {
-            const over = (!flitserWarnOff && lastFlitserSpeed && currentSpeedKmh > lastFlitserSpeed + 2);
+            const over = (flitserMode === 2 && lastFlitserSpeed && currentSpeedKmh > lastFlitserSpeed + 2);
             document.querySelectorAll('.speedoValue').forEach(el => {
                 el.style.color = over ? '#FF1744' : '';
             });
@@ -3053,17 +3062,21 @@ assign initialcost =
             if (sv) sv.style.color = over ? '#FF1744' : '';
         }
 
-        // Schakelaar (menu): meldingen uit voor buitenland (FR/ZW/DE). Iconen op de kaart blijven
-        // altijd zichtbaar (passief tonen mag overal); alleen het vlak + piep + km-kleuring gaan uit.
+        // 3-standen schakelaar (menu): UIT → ZONES → ACTIEF → UIT...
+        //  UIT    = niks (iconen op de kaart blijven altijd)
+        //  ZONES  = brede "ZONE"-melding binnen 1km, geen exacte meters (Frankrijk-legaal)
+        //  ACTIEF = vol: aftellen 10→1 + dubbele piep + km-kleuring (NL/BE)
+        const FLITSER_MODE_LABEL = ['UIT', 'ZONES', 'ACTIEF'];
         function toggleFlitserWarn() {
-            flitserWarnOff = !flitserWarnOff;
+            flitserMode = (flitserMode + 1) % 3;
             const b = document.getElementById('flitserBtnMenu');
-            if (b) b.textContent = 'Flitsmelding: ' + (flitserWarnOff ? 'UIT' : 'AAN');
-            if (flitserWarnOff) {
+            if (b) b.textContent = 'Flitsmelding: ' + FLITSER_MODE_LABEL[flitserMode];
+            if (flitserMode === 0) {
                 const box = document.getElementById('flitserBox');
                 if (box) box.style.display = 'none';
-                colorSpeedIfOverLimit();   // kleur terug naar normaal
             }
+            lastFlitserSpeed = null;
+            colorSpeedIfOverLimit();   // kleur terug naar normaal indien nodig
         }
 
         // Verberg ALLE navigatie-overlays (pijl, afstand, infoBar). Centraal zodat stop/GO/timer
