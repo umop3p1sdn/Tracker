@@ -736,7 +736,7 @@
                     <button onclick="shareApp()" style="flex: 1; max-width: 150px; background: transparent; color: #00BCD4; border: 1.5px solid rgba(0,188,212,0.5); padding: 11px 0; border-radius: 10px; cursor: pointer; font-size: 0.9em; font-weight: bold; letter-spacing: 0.5px; transition: all 0.2s;" ontouchstart="" onmouseover="this.style.background='rgba(0,188,212,0.12)';" onmouseout="this.style.background='transparent';">Share app</button>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v18.1 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v18.3 © Umop3p1sdn</div>
 
             </div>
 
@@ -1146,7 +1146,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v18.1 © Umop3p1sdn
+                HO-ME v18.3 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2547,7 +2547,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "18.1";
+        const APP_VERSION = "18.3";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -2959,14 +2959,30 @@ assign initialcost =
             } catch (e) { console.warn('flitsers laden mislukt', e); }
         }
 
-        // Zet de bordjes op de kaart (altijd zichtbaar, ook met meldingen uit).
+        // Zet de flitsers op de kaart, afhankelijk van de stand:
+        //  UIT (0)   → NIKS op de kaart (geen bordjes, geen cirkels) — Zwitserland-veilig, daar
+        //              mag een flitser-aanduiding zelfs niet passief zichtbaar zijn
+        //  ZONES (1) → transparante rode cirkels (1km straal), GEEN exacte bordjes (Frankrijk-legaal)
+        //  ACTIEF (2)→ witte snelheidsbordjes op de exacte locatie (NL/BE)
         function drawFlitserMarkers() {
             flitserMarkers.forEach(m => { try { mapInstance.removeLayer(m); } catch (e) {} });
             flitserMarkers = [];
-            if (!mapInstance) return;
+            if (!mapInstance || flitserMode === 0) return;   // UIT = niks tonen
             flitsers.forEach(f => {
-                const mk = L.marker([f.lat, f.lng], { icon: flitserSignIcon(f.maxspeed, 30), interactive: false })
-                    .addTo(mapInstance);
+                let mk;
+                if (flitserMode === 1) {
+                    // gevarenzone: rode cirkel, 1km straal (2km diameter)
+                    mk = L.circle([f.lat, f.lng], {
+                        radius: 1000,
+                        color: '#d32f2f', weight: 2, opacity: 0.8,
+                        fillColor: '#d32f2f', fillOpacity: 0.12,
+                        interactive: false
+                    }).addTo(mapInstance);
+                } else {
+                    // ACTIEF: exact snelheidsbord
+                    mk = L.marker([f.lat, f.lng], { icon: flitserSignIcon(f.maxspeed, 30), interactive: false })
+                        .addTo(mapInstance);
+                }
                 flitserMarkers.push(mk);
             });
         }
@@ -3077,6 +3093,7 @@ assign initialcost =
             }
             lastFlitserSpeed = null;
             colorSpeedIfOverLimit();   // kleur terug naar normaal indien nodig
+            drawFlitserMarkers();      // bordjes ↔ cirkels omwisselen voor de nieuwe stand
         }
 
         // Verberg ALLE navigatie-overlays (pijl, afstand, infoBar). Centraal zodat stop/GO/timer
