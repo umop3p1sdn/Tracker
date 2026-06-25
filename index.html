@@ -729,7 +729,7 @@
                     <button onclick="shareApp()" style="flex: 1; max-width: 150px; background: transparent; color: #00BCD4; border: 1.5px solid rgba(0,188,212,0.5); padding: 11px 0; border-radius: 10px; cursor: pointer; font-size: 0.9em; font-weight: bold; letter-spacing: 0.5px; transition: all 0.2s;" ontouchstart="" onmouseover="this.style.background='rgba(0,188,212,0.12)';" onmouseout="this.style.background='transparent';">Share app</button>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v16.9 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v17.1 © Umop3p1sdn</div>
 
             </div>
 
@@ -1141,7 +1141,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v16.9 © Umop3p1sdn
+                HO-ME v17.1 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1826,7 +1826,7 @@ assign initialcost =
         }
 
         // Vermijd-zone: rode pin + zichtbare cirkel met radius (km). Tik om aan te passen/verwijderen.
-        function addNogo(lat, lng, km) {
+        function addNogo(lat, lng, km, skipRecalc) {
             const radiusM = km * 1000;
             const zone = { lat, lng, radius: radiusM };
             zone.circle = L.circle([lat, lng], {
@@ -1836,7 +1836,7 @@ assign initialcost =
             zone.marker = L.marker([lat, lng], { icon: nogoIcon() }).addTo(map);
             zone.marker.on('click', () => editNogo(zone));
             nogoZones.push(zone);
-            maybeRoute();   // route meteen herberekenen zodat de vermijd-zone direct effect heeft
+            if (!skipRecalc) maybeRoute();   // bij laden: 1× herberekenen aan 't eind, niet per zone
         }
 
         function editNogo(zone) {
@@ -2455,7 +2455,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "16.9";
+        const APP_VERSION = "17.1";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -3209,6 +3209,10 @@ assign initialcost =
             let profile = 'road';
             const profEl = rte.getElementsByTagName('home:profile')[0] || rte.querySelector('profile');
             if (profEl) profile = profEl.textContent.trim() || 'road';
+            // snel/rustig/neutraal-voorkeur (home:pref)
+            let pref = 'car-fast';
+            const prefEl = rte.getElementsByTagName('home:pref')[0];
+            if (prefEl) pref = prefEl.textContent.trim() || 'car-fast';
             const points = [];
             rtepts.forEach(pt => {
                 const lat = parseFloat(pt.getAttribute('lat'));
@@ -3223,7 +3227,17 @@ assign initialcost =
                 });
             });
             if (points.length < 2) return null;
-            return { profile, points };
+            // Vermijd-zones (nogo) uit de <wpt>'s met home:nogo-extensie.
+            const nogos = [];
+            gpx.querySelectorAll('wpt').forEach(w => {
+                const ng = w.getElementsByTagName('home:nogo')[0];
+                if (!ng) return;
+                const lat = parseFloat(w.getAttribute('lat'));
+                const lng = parseFloat(w.getAttribute('lon'));
+                const radiusM = parseFloat(ng.textContent.trim());
+                if (!isNaN(lat) && !isNaN(lng) && !isNaN(radiusM)) nogos.push({ lat, lng, radiusM });
+            });
+            return { profile, pref, points, nogos };
         }
 
         // Zet een HO-ME-route terug in PLAN MODE: start/via/finish op hun plek, juiste profiel,
@@ -3235,6 +3249,15 @@ assign initialcost =
             // 2) profiel (mode) zetten
             if (home.profile && typeof setMode === 'function') {
                 try { setMode(home.profile); } catch (e) {}
+            }
+            // 2b) snel/rustig/neutraal-voorkeur terugzetten (anders kiest BRouter een andere route!)
+            if (home.pref) {
+                selectedProfile = home.pref;
+                try {
+                    document.querySelectorAll('.prof-btn').forEach(b => {
+                        b.classList.toggle('active', b.dataset.profile === home.pref);
+                    });
+                } catch (e) {}
             }
             // 3) punten terugzetten: eerste = start, laatste = finish, rest = via's (in volgorde)
             const pts = home.points;
@@ -3249,6 +3272,13 @@ assign initialcost =
                     addVia(p.lat, p.lng, p.label || ('Via ' + i), false, k);   // false = behoud volgorde
                 }
             });
+            // 3b) vermijd-zones (nogo) terugzetten — addNogo neemt km, opgeslagen in meters.
+            //     We roepen addNogo aan met een vlag zodat 'ie niet per zone herberekent (1× aan 't eind).
+            if (Array.isArray(home.nogos)) {
+                home.nogos.forEach(n => {
+                    if (typeof addNogo === 'function') addNogo(n.lat, n.lng, n.radiusM / 1000, true);
+                });
+            }
             // 4) BRouter de route laten bouwen (zelfde punten + profiel = zelfde route)
             if (typeof maybeRoute === 'function') await maybeRoute();
             if (typeof showBufferToast === 'function')
@@ -5686,7 +5716,7 @@ assign initialcost =
             let rte = `
   <rte>
     <name>HO-ME route</name>
-    <extensions><home:profile>${esc(typeof planMode !== 'undefined' ? planMode : 'road')}</home:profile></extensions>`;
+    <extensions><home:profile>${esc(typeof planMode !== 'undefined' ? planMode : 'road')}</home:profile><home:pref>${esc(typeof selectedProfile !== 'undefined' ? selectedProfile : 'car-fast')}</home:pref></extensions>`;
             pts.forEach(p => {
                 rte += `
     <rtept lat="${p.lat}" lon="${p.lng}">
@@ -5696,6 +5726,15 @@ assign initialcost =
             });
             rte += `
   </rte>`;
+            // Vermijd-zones (nogo) als <wpt> met HO-ME-extensie (lat/lng + straal in meters).
+            // Geen routepunten, dus los als waypoint; andere apps tonen ze hooguit als markertje.
+            nogoZones.forEach((z, i) => {
+                rte += `
+  <wpt lat="${z.lat}" lon="${z.lng}">
+    <name>Vermijd ${i + 1}</name>
+    <extensions><home:nogo>${Math.round(z.radius)}</home:nogo></extensions>
+  </wpt>`;
+            });
             return rte;
         }
 
