@@ -736,7 +736,7 @@
                     <button onclick="shareApp()" style="flex: 1; max-width: 150px; background: transparent; color: #00BCD4; border: 1.5px solid rgba(0,188,212,0.5); padding: 11px 0; border-radius: 10px; cursor: pointer; font-size: 0.9em; font-weight: bold; letter-spacing: 0.5px; transition: all 0.2s;" ontouchstart="" onmouseover="this.style.background='rgba(0,188,212,0.12)';" onmouseout="this.style.background='transparent';">Share app</button>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v19.1 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v19.2 © Umop3p1sdn</div>
 
             </div>
 
@@ -1156,7 +1156,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v19.1 © Umop3p1sdn
+                HO-ME v19.2 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2557,7 +2557,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "19.1";
+        const APP_VERSION = "19.2";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -3113,15 +3113,13 @@ assign initialcost =
             }
             if (!best || bestD > FLITSER_WARN_M) { box.style.display = 'none'; lastFlitserKey = null; lastFlitserSpeed = null; return; }
             const key = best.lat.toFixed(5) + ',' + best.lng.toFixed(5);
-            // NEUS NAAR VOREN (zoals de pro-apps): gebruik de ECHTE rijrichting van de GPS-chip
-            // (coords.heading) — niet zelf uit ruizige puntjes berekenen. Ligt de flitser binnen een
-            // hoek vóór je? Zo niet (opzij/achter/overkant) → niet melden. Bij stilstand (geen heading)
-            // → terugval op naderen (afstand wordt kleiner).
-            if (gpsHeading !== null) {
-                const toFlitser = bearing([lat, lng], [best.lat, best.lng]);
-                const diff = Math.abs(((toFlitser - gpsHeading + 540) % 360) - 180);
-                if (diff > 50) { box.style.display = 'none'; lastFlitserKey = null; lastFlitserSpeed = null; return; }
-            }
+            // NEUS NAAR VOREN (zoals de pro-apps): we MOETEN een echte rijrichting hebben (GPS-chip).
+            // Geen heading = je staat stil of beweegt niet → NIETS tonen (anders meldt 'ie elke flitser
+            // binnen 1km terwijl je er niet naartoe rijdt). Ligt de flitser binnen ±50° vóór je → melden.
+            if (gpsHeading === null) { box.style.display = 'none'; lastFlitserKey = null; lastFlitserSpeed = null; return; }
+            const toFlitser = bearing([lat, lng], [best.lat, best.lng]);
+            const diff = Math.abs(((toFlitser - gpsHeading + 540) % 360) - 180);
+            if (diff > 50) { box.style.display = 'none'; lastFlitserKey = null; lastFlitserSpeed = null; return; }
             // naderen: afstand moet kleiner worden (anders rij je weg / sta je voorbij)
             const prev = flitserPrevDist[key];
             flitserPrevDist[key] = bestD;
@@ -5730,7 +5728,7 @@ assign initialcost =
                     watchId = navigator.geolocation.watchPosition(
                         (position) => {
                             const { latitude, longitude } = position.coords;
-                            if (position.coords.heading !== null && !isNaN(position.coords.heading) && position.coords.speed > 0.5) gpsHeading = position.coords.heading;
+                            if (position.coords.heading !== null && !isNaN(position.coords.heading) && position.coords.speed > 0.5) gpsHeading = position.coords.heading; else gpsHeading = null;
                             masterPos = { lat: latitude, lng: longitude };
                             updateSpeed(latitude, longitude);
                             checkUpcomingTurn(latitude, longitude);
@@ -5778,7 +5776,7 @@ assign initialcost =
                     watchId = navigator.geolocation.watchPosition(
                         (position) => {
                             const { latitude, longitude } = position.coords;
-                            if (position.coords.heading !== null && !isNaN(position.coords.heading) && position.coords.speed > 0.5) gpsHeading = position.coords.heading;
+                            if (position.coords.heading !== null && !isNaN(position.coords.heading) && position.coords.speed > 0.5) gpsHeading = position.coords.heading; else gpsHeading = null;
                             followerPos = { lat: latitude, lng: longitude };
                             updateSpeed(latitude, longitude);
                             checkUpcomingTurn(latitude, longitude);
