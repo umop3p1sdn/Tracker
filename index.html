@@ -736,7 +736,7 @@
                     <button onclick="shareApp()" style="flex: 1; max-width: 150px; background: transparent; color: #00BCD4; border: 1.5px solid rgba(0,188,212,0.5); padding: 11px 0; border-radius: 10px; cursor: pointer; font-size: 0.9em; font-weight: bold; letter-spacing: 0.5px; transition: all 0.2s;" ontouchstart="" onmouseover="this.style.background='rgba(0,188,212,0.12)';" onmouseout="this.style.background='transparent';">Share app</button>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v19.3 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v19.6 © Umop3p1sdn</div>
 
             </div>
 
@@ -1156,7 +1156,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v19.3 © Umop3p1sdn
+                HO-ME v19.6 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2557,7 +2557,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "19.3";
+        const APP_VERSION = "19.6";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -3083,14 +3083,14 @@ assign initialcost =
             const speed = document.getElementById('flitserSpeed');
             const count = document.getElementById('flitserCount');
             if (!sign) return;
-            const S = [ {sign:46, speed:20, count:24}, {sign:62, speed:27, count:32}, {sign:84, speed:37, count:44} ][flitserSize];
+            const S = [ {sign:46, speed:20, count:38}, {sign:62, speed:27, count:52}, {sign:84, speed:37, count:72} ][flitserSize];
             sign.style.width = S.sign + 'px';
             sign.style.height = S.sign + 'px';
             sign.style.fontSize = S.speed + 'px';
             speed.style.fontSize = S.speed + 'px';
-            // "ZONE" is een woord → kleinere font dan een los cijfer
+            // "ZONE" is een woord → kleinere font dan het losse aftel-cijfer (dat mag groot)
             const isWord = (count.textContent || '').length > 2;
-            count.style.fontSize = (isWord ? Math.round(S.count * 0.5) : S.count) + 'px';
+            count.style.fontSize = (isWord ? Math.round(S.count * 0.32) : S.count) + 'px';
         }
 
         // Hoofdcheck: roept tijdens het rijden bij elke positie. Toont het vlak ALLEEN als je rijdt
@@ -3113,15 +3113,27 @@ assign initialcost =
             }
             if (!best || bestD > FLITSER_WARN_M) { box.style.display = 'none'; lastFlitserKey = null; lastFlitserSpeed = null; return; }
             const key = best.lat.toFixed(5) + ',' + best.lng.toFixed(5);
-            // LIGT DE FLITSER OP MIJN ROUTE? (Sjoerd's idee) — je rijdt meestal met route, dus een
-            // flitser waar je echt langs komt RAAKT je routelijn. Ligt 'ie >30m van de lijn → andere
-            // weg (parallelweg/overkant/kruising) → niet melden. Geen route actief → terugval op afstand.
-            if (activeRoute && activeRoute.length > 1) {
-                let onRoute = false;
-                for (let i = 0; i < activeRoute.length; i++) {
-                    if (distMeters([best.lat, best.lng], activeRoute[i]) <= 30) { onRoute = true; break; }
+            // LIGT DE FLITSER OP MIJN BAAN? (Sjoerd's idee). Met route: raakt 'ie de routelijn?
+            // Vrij rijden (geen route): trek een FICTIEVE route recht vooruit (rijrichting) en check
+            // of de flitser die lijn raakt. Zo telt alleen een flitser op je baan, niet opzij/parallel.
+            let baan = (activeRoute && activeRoute.length > 1) ? activeRoute : null;
+            if (!baan && gpsHeading !== null) {
+                // fictieve route: ~1km recht vooruit vanaf hier, in je rijrichting (punt per 50m)
+                baan = [];
+                const R = 6371000, hd = gpsHeading * Math.PI / 180;
+                const lat1 = lat * Math.PI / 180;
+                for (let m = 0; m <= 1000; m += 50) {
+                    const dLat = (m * Math.cos(hd)) / R;
+                    const dLng = (m * Math.sin(hd)) / (R * Math.cos(lat1));
+                    baan.push([lat + dLat * 180 / Math.PI, lng + dLng * 180 / Math.PI]);
                 }
-                if (!onRoute) { box.style.display = 'none'; lastFlitserKey = null; lastFlitserSpeed = null; return; }
+            }
+            if (baan) {
+                let opBaan = false;
+                for (let i = 0; i < baan.length; i++) {
+                    if (distMeters([best.lat, best.lng], baan[i]) <= 30) { opBaan = true; break; }
+                }
+                if (!opBaan) { box.style.display = 'none'; lastFlitserKey = null; lastFlitserSpeed = null; return; }
             }
             // naderen: afstand moet kleiner worden (anders rij je weg / sta je voorbij)
             const prev = flitserPrevDist[key];
@@ -3141,7 +3153,7 @@ assign initialcost =
                 lastFlitserSpeed = null;        // geen km-kleuring in zone-modus
             } else {
                 // ACTIEF (NL/BE): exact aftellen 10→1 + dubbele piep + km-kleuring
-                const n = Math.max(1, Math.min(10, Math.ceil(bestD / 100)));
+                const n = Math.max(1, Math.min(9, Math.ceil(bestD / 100)));
                 countEl.textContent = n;
                 applyFlitserSize();
                 if (bestD <= FLITSER_BEEP_M && !flitserBeeped[key]) {
