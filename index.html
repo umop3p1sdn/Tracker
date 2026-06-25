@@ -729,7 +729,7 @@
                     <button onclick="shareApp()" style="flex: 1; max-width: 150px; background: transparent; color: #00BCD4; border: 1.5px solid rgba(0,188,212,0.5); padding: 11px 0; border-radius: 10px; cursor: pointer; font-size: 0.9em; font-weight: bold; letter-spacing: 0.5px; transition: all 0.2s;" ontouchstart="" onmouseover="this.style.background='rgba(0,188,212,0.12)';" onmouseout="this.style.background='transparent';">Share app</button>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v16.5 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v16.6 © Umop3p1sdn</div>
 
             </div>
 
@@ -1141,7 +1141,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v16.5 © Umop3p1sdn
+                HO-ME v16.6 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2455,7 +2455,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "16.5";
+        const APP_VERSION = "16.6";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -4113,18 +4113,20 @@ assign initialcost =
                     followerMarkers[id].setLatLng([f.latitude, f.longitude]);
                     setMarkerHeading(followerMarkers[id], f.heading || 0);
                 } else {
-                    followerMarkers[id] = createColoredMarker(f.latitude, f.longitude, color, 28, null)
+                    followerMarkers[id] = createColoredMarker(f.latitude, f.longitude, color, planeSize(28), null)
                         .addTo(mapInstance).bindPopup('FOLLOWER ' + (idx + 1));
                     setMarkerHeading(followerMarkers[id], f.heading || 0);
                     followerMarkers[id]._idx = idx;
+                    followerMarkers[id]._planeColor = color;
                 }
                 // recolor if index changed
                 if (followerMarkers[id]._idx !== idx) {
                     mapInstance.removeLayer(followerMarkers[id]);
-                    followerMarkers[id] = createColoredMarker(f.latitude, f.longitude, color, 28, null)
+                    followerMarkers[id] = createColoredMarker(f.latitude, f.longitude, color, planeSize(28), null)
                         .addTo(mapInstance).bindPopup('FOLLOWER ' + (idx + 1));
                     setMarkerHeading(followerMarkers[id], f.heading || 0);
                     followerMarkers[id]._idx = idx;
+                    followerMarkers[id]._planeColor = color;
                 }
 
                 // Volger-spoor tekenen (alleen als de master de LIJN-knop aan heeft).
@@ -6042,6 +6044,17 @@ assign initialcost =
                     const col = followerMarker._planeColor || '#2196F3';
                     const fresh = createColoredMarker(ll.lat, ll.lng, col, planeSize(28), null);
                     followerMarker.setIcon(fresh.options.icon);
+                }
+                // De volgers die de MASTER ziet (followerMarkers) ook mee laten groeien.
+                if (typeof followerMarkers === 'object') {
+                    Object.values(followerMarkers).forEach(m => {
+                        if (m && m.setIcon && m.getLatLng) {
+                            const ll = m.getLatLng();
+                            const col = m._planeColor || '#2196F3';
+                            const fresh = createColoredMarker(ll.lat, ll.lng, col, planeSize(28), null);
+                            m.setIcon(fresh.options.icon);
+                        }
+                    });
                 }
             } catch (e) { /* marker resize niet kritisch */ }
 
