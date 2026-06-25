@@ -729,7 +729,7 @@
                     <button onclick="shareApp()" style="flex: 1; max-width: 150px; background: transparent; color: #00BCD4; border: 1.5px solid rgba(0,188,212,0.5); padding: 11px 0; border-radius: 10px; cursor: pointer; font-size: 0.9em; font-weight: bold; letter-spacing: 0.5px; transition: all 0.2s;" ontouchstart="" onmouseover="this.style.background='rgba(0,188,212,0.12)';" onmouseout="this.style.background='transparent';">Share app</button>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v17.3 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v17.4 © Umop3p1sdn</div>
 
             </div>
 
@@ -1141,7 +1141,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v17.3 © Umop3p1sdn
+                HO-ME v17.4 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1297,7 +1297,7 @@
                 // 3. in de tracker-navigatie zetten (i.p.v. detectTurns-schatting)
                 activeRoute = route;
                 detectedTurns = turns;
-                beepedApproach = {}; beepedNow = {}; spokenFirst = {}; spokenAt = {};   // nieuwe route → flags schoon
+                beepedApproach = {}; beepedNow = {}; spokenFirst = {}; spokenAt = {}; spokenAtPrev = {};   // nieuwe route → flags schoon
                 // totale route-stats bewaren voor de aftelling (resterende afstand/tijd)
                 try {
                     routeTotalKm = feat.properties['track-length'] / 1000;
@@ -2455,7 +2455,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "17.3";
+        const APP_VERSION = "17.4";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -2582,6 +2582,7 @@ assign initialcost =
         let beepedNow = {};             // turn.index -> true (2 beeps done)
         let spokenFirst = {};           // turn.index -> true (vroege gesproken aankondiging gedaan)
         let spokenAt = {};              // turn.index -> { drempel: true } (welke afstand-drempels al uitgesproken)
+        let spokenAtPrev = {};          // turn.index -> vorige afstand (voor passage-detectie)
 
         // Unlock audio after a user gesture (browser requirement). Called from GO.
         function unlockAudio(thenBeep) {
@@ -3027,20 +3028,24 @@ assign initialcost =
             const ti = best.index;
             const dir = goRight ? 'rechtsaf' : 'linksaf';   // voor de pijl (links/rechts)
             // Aankondigen op meerdere afstanden (elk 1×): 1500 / 600 / 300 / 150 m.
-            // We onthouden per afslag welke drempels al uitgesproken zijn.
+            // Kern: spreek een drempel alleen uit als je 'm NET PASSEERT (van boven de drempel
+            // naar eronder) sinds de vorige meting. Kom je halverwege binnen (al onder de drempel),
+            // dan is er geen passage → geen inhaalrace. spokenAtPrev onthoudt de vorige afstand.
             const SPEAK_THRESHOLDS = [1500, 600, 300, 150];
             if (!spokenAt[ti]) spokenAt[ti] = {};
+            const prev = (typeof spokenAtPrev[ti] === 'number') ? spokenAtPrev[ti] : Infinity;
             for (const thr of SPEAK_THRESHOLDS) {
-                // spreek zodra je BINNEN deze drempel komt (en nog niet bij de "nu"-zone), 1× per drempel
-                if (bestDist <= thr && bestDist > NOW_AT && !spokenAt[ti][thr]) {
+                // passage = vorige meting was BOVEN de drempel, nu eronder (en nog niet gezegd)
+                if (prev > thr && bestDist <= thr && bestDist > NOW_AT && !spokenAt[ti][thr]) {
                     const m = bestDist > 1000
                         ? (bestDist / 1000).toFixed(1).replace('.', ',') + ' kilometer'
                         : (Math.round(bestDist / 50) * 50) + ' meter';
                     speak('Over ' + m + ' ' + turnText(best, 'dir'));
                     spokenAt[ti][thr] = true;
-                    break;   // niet meerdere drempels tegelijk uitspreken in één update
+                    break;
                 }
             }
+            spokenAtPrev[ti] = bestDist;   // onthoud voor de volgende meting
             // Vlak voor de bocht: "nu ..."
             if (bestDist <= NOW_AT && !beepedNow[ti]) {
                 speak('Nu ' + turnText(best, 'now'));
@@ -3496,7 +3501,7 @@ assign initialcost =
             if (!L_ || !L_.route || L_.route.length < 2) { showError('Geen geladen route'); return; }
             activeRoute = L_.route;
             detectedTurns = L_.turns || [];
-            beepedApproach = {}; beepedNow = {}; spokenFirst = {}; spokenAt = {};   // nieuwe route → flags schoon
+            beepedApproach = {}; beepedNow = {}; spokenFirst = {}; spokenAt = {}; spokenAtPrev = {};   // nieuwe route → flags schoon
             routeTotalKm = L_.km || 0;
             routeTotalMin = L_.min || 0;
             if (typeof drawTurnDots === 'function') drawTurnDots();
@@ -5510,7 +5515,7 @@ assign initialcost =
                                             routeTotalMin = followerNavTotalMin;
                                             if (!followerNavActive) {
                                                 followerNavActive = true;
-                                                spokenFirst = {}; spokenAt = {}; beepedNow = {};   // schone aankondigingen
+                                                spokenFirst = {}; spokenAt = {}; spokenAtPrev = {}; beepedNow = {};   // schone aankondigingen
                                             }
                                         }
                                     } else {
@@ -6000,7 +6005,7 @@ assign initialcost =
             activeRoute = null;             // navigatie-state wissen
             detectedTurns = [];
             if (typeof clearTurnDots === 'function') clearTurnDots();  // afslag-stippen weg
-            beepedApproach = {}; beepedNow = {}; spokenFirst = {}; spokenAt = {};
+            beepedApproach = {}; beepedNow = {}; spokenFirst = {}; spokenAt = {}; spokenAtPrev = {};
             const msw = document.getElementById('masterStaleWarn');
             if (msw) msw.style.display = 'none';
             masterFollowersData = {};
