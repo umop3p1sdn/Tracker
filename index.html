@@ -542,6 +542,10 @@
             #turnDist       { bottom: 30px !important; }
             #turnArrowLeft  { left: calc(50% - 130px) !important; right: auto !important; bottom: 26px !important; }
             #turnArrowRight { left: calc(50% + 75px)  !important; right: auto !important; bottom: 26px !important; }
+            /* Liggend: GPS-snelheid altijd zichtbaar linksboven (flex). Flitser-melding komt LINKS ervan,
+               in dezelfde hoogte. De snelheid staat vast op left:12px; de flitser schuift ernaast. */
+            body.map-only #gpsSpeedBox { display: flex !important; }
+            #flitserBox { top: 12px !important; bottom: auto !important; }
         }
         /* In portrait nooit het landscape-paneel tonen. */
         @media (orientation: portrait) {
@@ -565,11 +569,16 @@
     <div id="turnArrowRight" style="display:none; position: fixed; bottom: 113px; right: 16px; z-index: 2000; width: 24px; height: 24px; border-radius: 6px; align-items: center; justify-content: center; box-shadow: 0 2px 10px rgba(0,0,0,0.5);"><svg width="17" height="17" viewBox="0 0 24 24" fill="#fff"><path d="M4 11h12.17l-5.59-5.59L12 4l8 8-8 8-1.41-1.41L16.17 13H4z"/></svg></div>
     <div id="turnDist" style="display:none; position: fixed; bottom: 118px; left: 50%; transform: translateX(-50%); z-index: 2000; color: #fff; font-weight: bold; font-size: 1.8em; padding: 8px 22px; border-radius: 8px; background: rgba(0,0,0,0.7); font-family: sans-serif;"></div>
     <!-- FLITSER: vlak linksboven tijdens rijden. Wit snelheidsbord + aftel-cijfer (10→1). Tik = 3 groottes. -->
-    <div id="flitserBox" onclick="cycleFlitserSize()" style="display:none; position: fixed; top: 120px; left: 12px; z-index: 2050; cursor: pointer; background: rgba(10,14,39,0.78); border-radius: 14px; padding: 10px 8px; box-shadow: 0 3px 14px rgba(0,0,0,0.5); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); text-align: center; font-family: sans-serif;">
+    <div id="flitserBox" onclick="cycleFlitserSize()" style="display:none; position: fixed; bottom: 175px; left: 12px; z-index: 2050; cursor: pointer; background: rgba(10,14,39,0.78); border-radius: 14px; padding: 10px 8px; box-shadow: 0 3px 14px rgba(0,0,0,0.5); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); text-align: center; font-family: sans-serif;">
         <div id="flitserSign" style="margin: 0 auto; border-radius: 50%; background: #fff; border: 6px solid #d32f2f; box-sizing: border-box; display: flex; align-items: center; justify-content: center; font-weight: 900; color: #111;">
             <span id="flitserSpeed">50</span>
         </div>
         <div id="flitserCount" style="color: #fff; font-weight: 900; margin-top: 4px; line-height: 1;">10</div>
+    </div>
+    <!-- GPS-snelheid (alleen LIGGEND, altijd zichtbaar in schoon scherm). Klik = grootte. Flitser komt rechts ervan. -->
+    <div id="gpsSpeedBox" onclick="cycleFlitserSize()" style="display:none; position: fixed; top: 12px; left: 12px; z-index: 2050; cursor: pointer; background: rgba(10,14,39,0.78); border-radius: 14px; padding: 10px 14px; box-shadow: 0 3px 14px rgba(0,0,0,0.5); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); text-align: center; font-family: sans-serif; align-items: center;">
+        <span id="gpsSpeedVal" style="color: #fff; font-weight: 900; line-height: 1;">0</span>
+        <span id="gpsSpeedUnit" style="color: #889; font-weight: 600; margin-left: 4px;">km/u</span>
     </div>
     <!-- SCREEN LOCK: open lock icon (top-right) + full overlay when locked -->
     <div id="lockIcon" style="display:none; position: fixed; top: 20px; right: 20px; z-index: 1600; width: 40px; height: 40px; cursor: pointer; align-items: center; justify-content: center;">
@@ -736,7 +745,7 @@
                     <button onclick="shareApp()" style="flex: 1; max-width: 150px; background: transparent; color: #00BCD4; border: 1.5px solid rgba(0,188,212,0.5); padding: 11px 0; border-radius: 10px; cursor: pointer; font-size: 0.9em; font-weight: bold; letter-spacing: 0.5px; transition: all 0.2s;" ontouchstart="" onmouseover="this.style.background='rgba(0,188,212,0.12)';" onmouseout="this.style.background='transparent';">Share app</button>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v19.6 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v19.9 © Umop3p1sdn</div>
 
             </div>
 
@@ -1156,7 +1165,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v19.6 © Umop3p1sdn
+                HO-ME v19.9 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2557,7 +2566,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "19.6";
+        const APP_VERSION = "19.9";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -2927,6 +2936,8 @@ assign initialcost =
                     document.querySelectorAll('.speedoValue').forEach(el => el.textContent = Math.round(currentSpeedKmh));
                     const sv = document.getElementById('speedValue');
                     if (sv) sv.textContent = Math.round(currentSpeedKmh);
+                    const gsv = document.getElementById('gpsSpeedVal');
+                    if (gsv) gsv.textContent = Math.round(currentSpeedKmh);   // GPS-snelheid in liggend-vlak
                 }
             } else {
                 lastSpeedSample = { lat, lng, t: now };
@@ -3088,9 +3099,22 @@ assign initialcost =
             sign.style.height = S.sign + 'px';
             sign.style.fontSize = S.speed + 'px';
             speed.style.fontSize = S.speed + 'px';
+            const gsv = document.getElementById('gpsSpeedVal');
+            const gsu = document.getElementById('gpsSpeedUnit');
+            if (gsv) gsv.style.fontSize = S.count + 'px';                    // GPS-snelheid groot (zelfde als aftel-cijfer)
+            if (gsu) gsu.style.fontSize = Math.round(S.count * 0.3) + 'px';  // eenheid km/u kleiner
             // "ZONE" is een woord → kleinere font dan het losse aftel-cijfer (dat mag groot)
             const isWord = (count.textContent || '').length > 2;
             count.style.fontSize = (isWord ? Math.round(S.count * 0.32) : S.count) + 'px';
+            // LIGGEND: flitser-box netjes RECHTS van de snelheid-box zetten (meet de echte breedte,
+            // zodat 'ie nooit overlapt, ongeacht grootte). Alleen in landscape + schoon scherm.
+            const isLandscape = window.matchMedia('(orientation: landscape)').matches;
+            const fbox = document.getElementById('flitserBox');
+            const gbox = document.getElementById('gpsSpeedBox');
+            if (isLandscape && fbox && gbox) {
+                const gw = gbox.offsetWidth || 120;
+                fbox.style.left = (12 + gw + 10) + 'px';   // 12 (marge snelheid) + breedte + 10 gat
+            }
         }
 
         // Hoofdcheck: roept tijdens het rijden bij elke positie. Toont het vlak ALLEEN als je rijdt
@@ -5161,9 +5185,11 @@ assign initialcost =
 
             // Entering fullscreen (GO): audio ontgrendelen (voor spraak) — geen piep meer
             const inFull = container.classList.contains('map-only');
+            flitserRijden = inFull;   // rode GO = schoon scherm → flits-info aan; eruit → uit
             if (inFull) {
                 unlockAudio(false);
                 if (typeof ensureBeepAudio === 'function') ensureBeepAudio();  // volger-beep ontgrendelen (backup; primair via Start tracking)
+                if (typeof applyFlitserSize === 'function') applyFlitserSize();  // grootte GPS-snelheid + flitser zetten
             }
             const spd = document.getElementById('speedometer');
             if (spd) spd.style.display = inFull ? 'block' : 'none';
@@ -6303,7 +6329,6 @@ assign initialcost =
 
             requestWakeLock();
             initDeviceCompass();
-            flitserRijden = true;   // rijden begint → flitser-vlak mag verschijnen
             initializeMap(true, code);
         }
 
@@ -6339,7 +6364,6 @@ assign initialcost =
 
             requestWakeLock();
             initDeviceCompass();
-            flitserRijden = true;   // rijden begint → flitser-vlak mag verschijnen
             initializeMap(false, code);
         }
 
