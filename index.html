@@ -729,7 +729,7 @@
                     <button onclick="shareApp()" style="flex: 1; max-width: 150px; background: transparent; color: #00BCD4; border: 1.5px solid rgba(0,188,212,0.5); padding: 11px 0; border-radius: 10px; cursor: pointer; font-size: 0.9em; font-weight: bold; letter-spacing: 0.5px; transition: all 0.2s;" ontouchstart="" onmouseover="this.style.background='rgba(0,188,212,0.12)';" onmouseout="this.style.background='transparent';">Share app</button>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v16.2 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v16.3 © Umop3p1sdn</div>
 
             </div>
 
@@ -1141,7 +1141,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v16.2 © Umop3p1sdn
+                HO-ME v16.3 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1664,7 +1664,7 @@ assign initialcost =
                             label: deel.length ? Array.from(new Set(deel)).join(', ') : (p.name || 'Onbekend')
                         };
                     }).filter(it => typeof it.lat === 'number' && typeof it.lon === 'number');
-                    if (items.length) { showResults(items); return; }
+                    if (items.length) { showResults(items, q); return; }
                 }
             } catch (e) { console.warn('Photon faalde, terugval Nominatim', e); }
 
@@ -1683,7 +1683,7 @@ assign initialcost =
                     lat: parseFloat(d.lat), lon: parseFloat(d.lon),
                     label: shortLabel(d)
                 }));
-                showResults(items);
+                showResults(items, q);
             } catch (e) {
                 console.error('search failed', e);
                 showStatus('Zoeken mislukt: ' + (e.message || 'verbinding?') + ' — probeer opnieuw.');
@@ -1718,7 +1718,7 @@ assign initialcost =
             resultsEl.style.display = 'block';
         }
 
-        function showResults(items) {
+        function showResults(items, q) {
             if (!items.length) { resultsEl.style.display = 'none'; return; }
             resultsEl.innerHTML = '';
             items.forEach(item => {
@@ -1731,6 +1731,16 @@ assign initialcost =
                 div.onclick = () => pickResult(lat, lng, label);
                 resultsEl.appendChild(div);
             });
+            // Altijd onderaan een Google Maps-knop: soms vindt de gratis zoeker iets, maar het verkeerde.
+            if (q) {
+                const gmUrl = 'https://www.google.com/maps/search/' + encodeURIComponent(q);
+                const g = document.createElement('div');
+                g.className = 'result-item';
+                g.style.cssText = 'cursor:pointer; color:#00BCD4; font-weight:bold; border-top:1px solid rgba(255,255,255,0.15);';
+                g.textContent = '🔎 Zoek in Google Maps →';
+                g.onclick = () => window.open(gmUrl, '_blank');
+                resultsEl.appendChild(g);
+            }
             resultsEl.style.display = 'block';
         }
 
@@ -2445,7 +2455,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "16.2";
+        const APP_VERSION = "16.3";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
