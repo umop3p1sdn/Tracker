@@ -729,7 +729,7 @@
                     <button onclick="shareApp()" style="flex: 1; max-width: 150px; background: transparent; color: #00BCD4; border: 1.5px solid rgba(0,188,212,0.5); padding: 11px 0; border-radius: 10px; cursor: pointer; font-size: 0.9em; font-weight: bold; letter-spacing: 0.5px; transition: all 0.2s;" ontouchstart="" onmouseover="this.style.background='rgba(0,188,212,0.12)';" onmouseout="this.style.background='transparent';">Share app</button>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v17.1 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v17.2 © Umop3p1sdn</div>
 
             </div>
 
@@ -1141,7 +1141,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v17.1 © Umop3p1sdn
+                HO-ME v17.2 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2455,7 +2455,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "17.1";
+        const APP_VERSION = "17.2";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -5924,25 +5924,27 @@ assign initialcost =
             lastRemMin = null;
 
             // Leave no trace: clean up own Firebase data on stop.
+            // keepalive:true → de delete-requests gaan door, óók terwijl de pagina herlaadt.
             if (currentCode) {
                 if (currentMode === 'master') {
-                    // master clears the whole tracking node for this code
-                    fetch(`${firebaseConfig.databaseURL}/tracking/${currentCode}.json`, { method: 'DELETE' }).catch(() => {});
-                    fetch(`${firebaseConfig.databaseURL}/gpx/${currentCode}.json`, { method: 'DELETE' }).catch(() => {});
+                    fetch(`${firebaseConfig.databaseURL}/tracking/${currentCode}.json`, { method: 'DELETE', keepalive: true }).catch(() => {});
+                    fetch(`${firebaseConfig.databaseURL}/gpx/${currentCode}.json`, { method: 'DELETE', keepalive: true }).catch(() => {});
                 } else if (currentMode === 'follower') {
-                    // follower removes only its own node
-                    fetch(`${firebaseConfig.databaseURL}/tracking/${currentCode}/followers/${deviceId}.json`, { method: 'DELETE' }).catch(() => {});
+                    fetch(`${firebaseConfig.databaseURL}/tracking/${currentCode}/followers/${deviceId}.json`, { method: 'DELETE', keepalive: true }).catch(() => {});
                 }
             }
-            
-            if (watchId) {
-                navigator.geolocation.clearWatch(watchId);
-                watchId = null;
-            }
-            if (followInterval) {
-                clearInterval(followInterval);
-                followInterval = null;
-            }
+
+            // Stop de GPS-watch meteen (anders blijft 'ie heel even doortikken vóór de reload).
+            if (watchId) { try { navigator.geolocation.clearWatch(watchId); } catch (e) {} watchId = null; }
+
+            // STOP = harde reset: de browser ruimt ALLE state/markers/menu's/intervals op.
+            // Scheelt een berg foutgevoelige opruim-code (en lost o.a. het blijvende plan-menu op).
+            // Korte pauze zodat de Firebase-deletes verstuurd zijn, dán vers herladen.
+            setTimeout(() => { location.reload(); }, 250);
+        }
+
+        // (oude handmatige opruiming hieronder is vervangen door de reload hierboven)
+        function _stopTracking_oud_ongebruikt() {
             if (masterFollowersTimer) {
                 clearInterval(masterFollowersTimer);
                 masterFollowersTimer = null;
