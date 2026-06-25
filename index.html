@@ -749,7 +749,7 @@
                     <button onclick="shareApp()" style="flex: 1; max-width: 150px; background: transparent; color: #00BCD4; border: 1.5px solid rgba(0,188,212,0.5); padding: 11px 0; border-radius: 10px; cursor: pointer; font-size: 0.9em; font-weight: bold; letter-spacing: 0.5px; transition: all 0.2s;" ontouchstart="" onmouseover="this.style.background='rgba(0,188,212,0.12)';" onmouseout="this.style.background='transparent';">Share app</button>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v20.1 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v20.3 © Umop3p1sdn</div>
 
             </div>
 
@@ -1169,7 +1169,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v20.1 © Umop3p1sdn
+                HO-ME v20.3 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2570,7 +2570,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "20.1";
+        const APP_VERSION = "20.3";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -3058,6 +3058,57 @@ assign initialcost =
         async function loadFlitsers() {
             await loadFlitsersFromFirebase();
             checkFlitsersInView();
+        }
+
+        // Laad flitsers per LAND zodra je erin rijdt. Ruwe bbox per land; bij je positie kijken we in
+        // welk land je zit en laden dat 1× (lokaal opgeslagen). Klein land = kleine download.
+        const FLITSER_LANDEN = {
+            NL: { bbox: '50.7,3.3,53.6,7.3', naam: 'Nederland' },
+            BE: { bbox: '49.5,2.5,51.5,6.4', naam: 'België' },
+            DE: { bbox: '47.2,5.8,55.1,15.1', naam: 'Duitsland' },
+            LU: { bbox: '49.4,5.7,50.2,6.6', naam: 'Luxemburg' },
+            FR: { bbox: '42.3,-4.8,51.1,8.3', naam: 'Frankrijk' }
+        };
+        const flitserLandGeladen = {};   // landcode → true zodra geladen
+
+        async function loadFlitsersLand(code) {
+            if (flitserLandGeladen[code]) return;
+            const land = FLITSER_LANDEN[code];
+            if (!land) return;
+            try {
+                const q = `[out:json][timeout:60];node["highway"="speed_camera"](${land.bbox});out body;`;
+                const url = 'https://overpass-api.de/api/interpreter?data=' + encodeURIComponent(q);
+                const res = await fetch(url);
+                if (!res.ok) return;   // mislukt → vlag blijft false, later opnieuw
+                const data = await res.json();
+                const osm = (data.elements || []).filter(el => typeof el.lat === 'number');
+                flitserLandGeladen[code] = true;
+                if (!osm.length) return;
+                const have = new Set(flitsers.map(f => flitserKey(f.lat, f.lng)));
+                let added = 0;
+                for (const el of osm) {
+                    const key = flitserKey(el.lat, el.lon);
+                    if (have.has(key)) continue;
+                    const rec = { lat: el.lat, lng: el.lon, maxspeed: (el.tags && el.tags.maxspeed) ? parseInt(el.tags.maxspeed) : null };
+                    fetch(`${firebaseConfig.databaseURL}/flitsers/${key}.json`, { method: 'PUT', body: JSON.stringify(rec) }).catch(() => {});
+                    flitsers.push(rec);
+                    have.add(key);
+                    added++;
+                }
+                drawFlitserMarkers();
+                saveFlitsersToLocal();
+                console.log(`📷 ${land.naam}: ${added} flitsers geladen (totaal ${flitsers.length})`);
+            } catch (e) { console.warn(`flitsers ${code} laden mislukt`, e); }
+        }
+
+        // In welk land ligt deze positie? (eerste bbox die past) — laadt dat land als nog niet gehad.
+        function checkFlitserLand(lat, lng) {
+            for (const code in FLITSER_LANDEN) {
+                const [s, w, n, e] = FLITSER_LANDEN[code].bbox.split(',').map(Number);
+                if (lat >= s && lat <= n && lng >= w && lng <= e) {
+                    if (!flitserLandGeladen[code]) loadFlitsersLand(code);
+                }
+            }
         }
 
         // Zet de flitsers op de kaart, afhankelijk van de stand:
@@ -5755,16 +5806,11 @@ assign initialcost =
                 // dan Firebase (internet), en haal OSM voor het zichtbare gebied. Bij elke pan/zoom-stop
                 // opnieuw checken op nieuwe flitsers (zoom ≥ 8). Vangnet: na 2s nogmaals proberen als er
                 // nog niks staat (Overpass kan traag/eerst-mislukt zijn).
-                let _flitserMoveTimer = null;
-                mapInstance.on('moveend', () => {
-                    clearTimeout(_flitserMoveTimer);
-                    _flitserMoveTimer = setTimeout(() => { checkFlitsersInView(); }, 600);
-                });
                 mapInstance.whenReady(() => {
-                    loadFlitsersFromLocal();           // offline kopie eerst (geen internet nodig)
-                    loadFlitsersFromFirebase();         // internet? → bijwerken + lokaal opslaan
-                    setTimeout(() => { checkFlitsersInView(); }, 600);
-                    setTimeout(() => { checkFlitsersInView(); }, 2500);   // vangnet als eerste poging niks gaf
+                    loadFlitsersFromLocal();           // offline kopie eerst (meteen zichtbaar, geen internet nodig)
+                    loadFlitsersFromFirebase();         // gedeelde Firebase-aanvulling
+                    loadFlitsersLand('NL');             // start altijd met NL; ander land laadt zodra je erin rijdt
+                    setTimeout(() => { loadFlitsersLand('NL'); }, 3000);   // vangnet als eerste poging traag/mislukt was
                 });
 
                 // Start background pre-caching of offline tiles
@@ -5782,6 +5828,7 @@ assign initialcost =
                             checkUpcomingTurn(latitude, longitude);
                             updateRemaining(latitude, longitude);
                             checkFlitsers(latitude, longitude);
+                            checkFlitserLand(latitude, longitude);
 
                             if (masterMarker) {
                                 masterMarker.setLatLng([latitude, longitude]);
@@ -5830,6 +5877,7 @@ assign initialcost =
                             checkUpcomingTurn(latitude, longitude);
                             updateRemaining(latitude, longitude);
                             checkFlitsers(latitude, longitude);
+                            checkFlitserLand(latitude, longitude);
                             
                             if (followerMarker) {
                                 followerMarker.setLatLng([latitude, longitude]);
