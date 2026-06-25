@@ -749,7 +749,7 @@
                     <button onclick="shareApp()" style="flex: 1; max-width: 150px; background: transparent; color: #00BCD4; border: 1.5px solid rgba(0,188,212,0.5); padding: 11px 0; border-radius: 10px; cursor: pointer; font-size: 0.9em; font-weight: bold; letter-spacing: 0.5px; transition: all 0.2s;" ontouchstart="" onmouseover="this.style.background='rgba(0,188,212,0.12)';" onmouseout="this.style.background='transparent';">Share app</button>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v20.3 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v20.4 © Umop3p1sdn</div>
 
             </div>
 
@@ -1169,7 +1169,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v20.3 © Umop3p1sdn
+                HO-ME v20.4 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2570,7 +2570,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "20.3";
+        const APP_VERSION = "20.4";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -5806,11 +5806,17 @@ assign initialcost =
                 // dan Firebase (internet), en haal OSM voor het zichtbare gebied. Bij elke pan/zoom-stop
                 // opnieuw checken op nieuwe flitsers (zoom ≥ 8). Vangnet: na 2s nogmaals proberen als er
                 // nog niks staat (Overpass kan traag/eerst-mislukt zijn).
+                let _flitserMoveTimer = null;
+                mapInstance.on('moveend', () => {
+                    clearTimeout(_flitserMoveTimer);
+                    _flitserMoveTimer = setTimeout(() => { checkFlitsersInView(); }, 600);
+                });
                 mapInstance.whenReady(() => {
                     loadFlitsersFromLocal();           // offline kopie eerst (meteen zichtbaar, geen internet nodig)
                     loadFlitsersFromFirebase();         // gedeelde Firebase-aanvulling
-                    loadFlitsersLand('NL');             // start altijd met NL; ander land laadt zodra je erin rijdt
-                    setTimeout(() => { loadFlitsersLand('NL'); }, 3000);   // vangnet als eerste poging traag/mislukt was
+                    checkFlitsersInView();              // zichtbaar gebied meteen (klein + snel, bewezen werkend)
+                    setTimeout(() => { checkFlitsersInView(); }, 1500);   // vangnet
+                    loadFlitsersLand('NL');             // + heel NL op de achtergrond (bonus, mag traag/falen)
                 });
 
                 // Start background pre-caching of offline tiles
