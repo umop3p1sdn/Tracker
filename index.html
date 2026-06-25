@@ -729,7 +729,7 @@
                     <button onclick="shareApp()" style="flex: 1; max-width: 150px; background: transparent; color: #00BCD4; border: 1.5px solid rgba(0,188,212,0.5); padding: 11px 0; border-radius: 10px; cursor: pointer; font-size: 0.9em; font-weight: bold; letter-spacing: 0.5px; transition: all 0.2s;" ontouchstart="" onmouseover="this.style.background='rgba(0,188,212,0.12)';" onmouseout="this.style.background='transparent';">Share app</button>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v16.6 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v16.9 © Umop3p1sdn</div>
 
             </div>
 
@@ -1141,7 +1141,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v16.6 © Umop3p1sdn
+                HO-ME v16.9 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2455,7 +2455,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "16.6";
+        const APP_VERSION = "16.9";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -3145,8 +3145,10 @@ assign initialcost =
                 const group = L.featureGroup(gpsRoute.map(([lat, lng]) => L.circleMarker([lat, lng], {radius: 1})));
                 mapInstance.fitBounds(group.getBounds(), {padding: [50, 50]});
 
-                // Detect & draw turns
-                analyzeAndDrawTurns(gpsRoute);
+                // GEEN geschatte bochten meer (detectTurns gaf rommelige afslagen uit de lijnvorm).
+                // Afslagen komen voortaan ALLEEN van BRouter (echte voicehints). Plain-laad = kaal
+                // spoor zonder afslag-navigatie; wil je afslagen, gebruik "Load route" (via BRouter).
+                detectedTurns = [];
             }
         }
 
@@ -3195,6 +3197,64 @@ assign initialcost =
             };
         }
 
+        // Leest de BOUWPUNTEN uit een <rte> met HO-ME-extensies (start/via/finish + kind + profiel).
+        // Geeft {profile, points:[{lat,lng,label,kind}]} terug, of null als 't geen HO-ME-route is.
+        function parseHomeRoute(text) {
+            const gpx = new DOMParser().parseFromString(text, 'application/xml');
+            const rte = gpx.querySelector('rte');
+            if (!rte) return null;
+            const rtepts = rte.querySelectorAll('rtept');
+            if (rtepts.length < 2) return null;
+            // profiel uit route-extensie (home:profile of gewoon 'profile')
+            let profile = 'road';
+            const profEl = rte.getElementsByTagName('home:profile')[0] || rte.querySelector('profile');
+            if (profEl) profile = profEl.textContent.trim() || 'road';
+            const points = [];
+            rtepts.forEach(pt => {
+                const lat = parseFloat(pt.getAttribute('lat'));
+                const lng = parseFloat(pt.getAttribute('lon'));
+                if (isNaN(lat) || isNaN(lng)) return;
+                const nmEl = pt.querySelector('name');
+                const kindEl = pt.getElementsByTagName('home:kind')[0];
+                points.push({
+                    lat, lng,
+                    label: nmEl ? nmEl.textContent.trim() : '',
+                    kind: kindEl ? kindEl.textContent.trim() : ''
+                });
+            });
+            if (points.length < 2) return null;
+            return { profile, points };
+        }
+
+        // Zet een HO-ME-route terug in PLAN MODE: start/via/finish op hun plek, juiste profiel,
+        // daarna BRouter de route laten (her)bouwen — exact zoals 'ie gemaakt is. Bewerkbaar!
+        async function loadRouteIntoPlanner(home) {
+            // 1) planner openen + schoonvegen
+            if (typeof plannerOpen === 'function') plannerOpen();
+            if (typeof clearAll === 'function') clearAll();
+            // 2) profiel (mode) zetten
+            if (home.profile && typeof setMode === 'function') {
+                try { setMode(home.profile); } catch (e) {}
+            }
+            // 3) punten terugzetten: eerste = start, laatste = finish, rest = via's (in volgorde)
+            const pts = home.points;
+            pts.forEach((p, i) => {
+                if (i === 0) {
+                    setStart(p.lat, p.lng, p.label || 'Start', false);
+                } else if (i === pts.length - 1) {
+                    setDest(p.lat, p.lng, p.label || 'Finish');
+                } else {
+                    // kind: 'own' (HO-ME) → 'eigen' (planner), 'omweg' blijft 'omweg'
+                    const k = (p.kind === 'omweg') ? 'omweg' : 'eigen';
+                    addVia(p.lat, p.lng, p.label || ('Via ' + i), false, k);   // false = behoud volgorde
+                }
+            });
+            // 4) BRouter de route laten bouwen (zelfde punten + profiel = zelfde route)
+            if (typeof maybeRoute === 'function') await maybeRoute();
+            if (typeof showBufferToast === 'function')
+                showBufferToast('Route geladen in Plan — bewerk of druk GO', '#4CAF50', 3000);
+        }
+
         // GPX → losse tracks (per <trkseg>, en losse <rte>). Herbruikt door route- én plain-loader.
         function parseGpxTracks(text) {
             const gpx = new DOMParser().parseFromString(text, 'application/xml');
@@ -3237,6 +3297,12 @@ assign initialcost =
             const file = event.target.files[0];
             if (!file) return;
             const text = await file.text();
+            // Eigen HO-ME-route met bouwpunten (<rte> + <home:kind>)? → terug in Plan mode (bewerkbaar).
+            const home = parseHomeRoute(text);
+            if (home && home.points.some(p => p.kind)) {   // alleen als 't echt HO-ME-bouwpunten zijn
+                await loadRouteIntoPlanner(home);
+                return;
+            }
             const tracks = parseGpxTracks(text);
             if (!tracks.length) { alert('Geen bruikbare tracks in de GPX.'); return; }
             // Eén deel → meteen laden. Meerdere → keuzelijst tonen.
@@ -5600,6 +5666,39 @@ assign initialcost =
             saveGPXFile(gpx, meta.file);
         }
 
+        // Bouwt het <rte>-blok met de BOUWPUNTEN (start/via/finish) volgens GPX-standaard.
+        // Hiermee kan de route later teruggeladen worden in Plan mode (zelfde punten → BRouter
+        // herbouwt 'm exact). Andere apps (Garmin/OsmAnd/MRA) lezen <rtept> ook gewoon.
+        // HO-ME-extensie per punt: <home:kind> (own/omweg) — andere apps negeren dit.
+        // Eén <home:profile> in de route-extensie bewaart het mode-profiel.
+        function buildRteXml() {
+            if (!startPoint || !destPoint) return '';   // geen volledige route → geen rte
+            const esc = s => String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+            const pts = [];
+            pts.push({ lat: startPoint.lat, lng: startPoint.lng, name: startPoint.label || 'Start', kind: 'start' });
+            viaPoints.forEach((v, i) => pts.push({
+                lat: v.lat, lng: v.lng,
+                name: v.label || ('Via ' + (i + 1)),
+                kind: (v.kind === 'omweg') ? 'omweg' : 'own'
+            }));
+            pts.push({ lat: destPoint.lat, lng: destPoint.lng, name: destPoint.label || 'Finish', kind: 'finish' });
+
+            let rte = `
+  <rte>
+    <name>HO-ME route</name>
+    <extensions><home:profile>${esc(typeof planMode !== 'undefined' ? planMode : 'road')}</home:profile></extensions>`;
+            pts.forEach(p => {
+                rte += `
+    <rtept lat="${p.lat}" lon="${p.lng}">
+      <name>${esc(p.name)}</name>
+      <extensions><home:kind>${p.kind}</home:kind></extensions>
+    </rtept>`;
+            });
+            rte += `
+  </rte>`;
+            return rte;
+        }
+
         // Save master route = de actieve route van de master (gpxRoute) — geladen óf gecreëerd.
         function downloadMasterRoute() {
             if (!gpxRoute || gpxRoute.length < 2) {
@@ -5608,7 +5707,9 @@ assign initialcost =
             }
             const meta = askRouteName(`master-route-${currentCode}`);
             let gpx = `<?xml version="1.0" encoding="UTF-8"?>
-<gpx version="1.1" creator="LiveTracker">
+<gpx version="1.1" creator="HO-ME" xmlns:home="https://umop3p1sdn.github.io/Tracker/home-ext">`;
+            gpx += buildRteXml();   // bouwpunten (start/via/finish) → herlaadbaar in Plan mode
+            gpx += `
   <trk>
     <name>${meta.name}</name>
     <trkseg>`;
@@ -5630,7 +5731,9 @@ assign initialcost =
                 return;
             }
             let gpx = `<?xml version="1.0" encoding="UTF-8"?>
-<gpx version="1.1" creator="LiveTracker">
+<gpx version="1.1" creator="HO-ME" xmlns:home="https://umop3p1sdn.github.io/Tracker/home-ext">`;
+            gpx += buildRteXml();   // bouwpunten (start/via/finish) → herlaadbaar in Plan mode
+            gpx += `
   <trk>
     <name>Created Track ${currentCode}</name>
     <trkseg>`;
