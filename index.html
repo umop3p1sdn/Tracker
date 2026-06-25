@@ -729,7 +729,7 @@
                     <button onclick="shareApp()" style="flex: 1; max-width: 150px; background: transparent; color: #00BCD4; border: 1.5px solid rgba(0,188,212,0.5); padding: 11px 0; border-radius: 10px; cursor: pointer; font-size: 0.9em; font-weight: bold; letter-spacing: 0.5px; transition: all 0.2s;" ontouchstart="" onmouseover="this.style.background='rgba(0,188,212,0.12)';" onmouseout="this.style.background='transparent';">Share app</button>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v16.4 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v16.5 © Umop3p1sdn</div>
 
             </div>
 
@@ -1141,7 +1141,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v16.4 © Umop3p1sdn
+                HO-ME v16.5 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2455,7 +2455,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "16.4";
+        const APP_VERSION = "16.5";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -3738,6 +3738,7 @@ assign initialcost =
             // Blijf checken voor updates zolang je op het hoofdscherm (GoGoGo + code) bent.
             // Elke 2 sec; stopt zodra de update-banner verschijnt of zodra je een rit start (GoGoGo).
             window.startHomeUpdateChecks = function() {
+                if (typeof requestWakeLock === 'function') requestWakeLock();   // scherm wakker op hoofdscherm
                 if (window._homeUpdateLoop) return;   // niet dubbel starten
                 window._homeUpdateLoop = setInterval(() => {
                     if (typeof checkForUpdate === 'function') checkForUpdate();
@@ -6128,7 +6129,11 @@ assign initialcost =
 
         // Wake Lock refresh on visibility change
         document.addEventListener('visibilitychange', () => {
-            if (!document.hidden && currentMode) {
+            if (document.hidden) return;
+            // Wake lock herstellen na terugkomen: tijdens een rit (currentMode) OF op het hoofdscherm.
+            const ms = document.getElementById('modeSelect');
+            const opHoofdscherm = ms && !ms.classList.contains('hidden');
+            if (currentMode || opHoofdscherm) {
                 requestWakeLock();
             }
         });
