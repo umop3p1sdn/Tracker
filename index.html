@@ -729,7 +729,7 @@
                     <button onclick="shareApp()" style="flex: 1; max-width: 150px; background: transparent; color: #00BCD4; border: 1.5px solid rgba(0,188,212,0.5); padding: 11px 0; border-radius: 10px; cursor: pointer; font-size: 0.9em; font-weight: bold; letter-spacing: 0.5px; transition: all 0.2s;" ontouchstart="" onmouseover="this.style.background='rgba(0,188,212,0.12)';" onmouseout="this.style.background='transparent';">Share app</button>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v17.4 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v17.8 © Umop3p1sdn</div>
 
             </div>
 
@@ -1141,7 +1141,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v17.4 © Umop3p1sdn
+                HO-ME v17.8 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1769,13 +1769,13 @@ assign initialcost =
             if (startMarker) map.removeLayer(startMarker);
             const color = isGps ? '#E91E63' : '#9E9E9E';   // rood = eigen locatie, grijs = gekozen
             startMarker = L.marker([lat, lng], { icon: pinIcon(color) }).addTo(map);
-            startMarker.on('click', () => confirmDelete('start'));
+            startMarker.on('click', (e) => { if (e) L.DomEvent.stopPropagation(e); confirmDelete('start'); });
         }
         function setDest(lat, lng, label) {
             destPoint = { lat, lng, label };
             if (destMarker) map.removeLayer(destMarker);
             destMarker = L.marker([lat, lng], { icon: flagIcon() }).addTo(map);
-            destMarker.on('click', () => confirmDelete('dest'));
+            destMarker.on('click', (e) => { if (e) L.DomEvent.stopPropagation(e); confirmDelete('dest'); });
         }
 
         // Add a via point. slim=true → insert into closest leg; slim=false → append.
@@ -1786,7 +1786,7 @@ assign initialcost =
             via.marker = L.circleMarker([lat, lng], {
                 radius: 14, color: '#fff', weight: 2, fillColor: fill, fillOpacity: 0.85
             }).addTo(map);
-            via.marker.on('click', () => confirmDelete('via', via));
+            via.marker.on('click', (e) => { if (e) L.DomEvent.stopPropagation(e); confirmDelete('via', via); });
 
             if (!slim) {
                 viaPoints.push(via);   // achteraan
@@ -1834,7 +1834,7 @@ assign initialcost =
                 fillColor: '#FF1744', fillOpacity: 0.15, interactive: false
             }).addTo(map);
             zone.marker = L.marker([lat, lng], { icon: nogoIcon() }).addTo(map);
-            zone.marker.on('click', () => editNogo(zone));
+            zone.marker.on('click', (e) => { if (e) L.DomEvent.stopPropagation(e); editNogo(zone); });
             nogoZones.push(zone);
             if (!skipRecalc) maybeRoute();   // bij laden: 1× herberekenen aan 't eind, niet per zone
         }
@@ -1926,6 +1926,90 @@ assign initialcost =
                 console.error('lock failed', e);
                 showInfo('Vastleggen mislukt — probeer opnieuw.');
             }
+        }
+
+        // DUBBEL-STUK CORRECTIE (Sjoerd's systeem, zuiver):
+        // VOLGORDE: eerst de dubbele stukken in de ROUTE zelf vinden (heen-lijn ≈ terug-lijn),
+        // DAARNA kijken of er een omweg-via TUSSEN L en H ligt. Zo vangt 'ie ook het geval waar de
+        // via op een rotonde zit en de AANLOOPWEG dubbel is (de via ligt dan qua volgnummer middenin,
+        // niet op het keerpunt). Een dubbel stuk = punt L (laag volgnr) en H (hoog volgnr) die fysiek
+        // <15m liggen, met een omkeer ertussen.
+        //   - alleen fixen als er een omweg-via tussen L en H ligt (= door generator veroorzaakt)
+        //   - smart via op H (trekt de route over het dubbele stuk heen), via('s) ertussen weg
+        // Echte doorgaande rotonde/hairpin zonder via ertussen → met rust. Draait ná de generatie.
+        function fixDeadEndsByUturn() {
+            if (!lastRouteGeo || !lastRouteGeo.features || !lastRouteGeo.features[0]) return false;
+            const feat = lastRouteGeo.features[0];
+            const coords = feat.geometry.coordinates;           // [ [lng,lat,ele], ... ]
+            if (!coords || coords.length < 10) return false;
+
+            const SAME_M = 15;        // <15m = "zelfde weg" (heen op terug)
+            const MIN_GAP = 8;        // L en H ≥8 punten uit elkaar
+            const MIN_LEN_M = 60;     // dubbel stuk ≥60m (anders bocht/ruis)
+
+            // route-index per omweg-via (1× vooraf bepalen)
+            const omwegVias = viaPoints.filter(v => v.kind === 'omweg').map(v => {
+                let bi = 0, bd = Infinity;
+                for (let i = 0; i < coords.length; i++) {
+                    const d = distM4(v.lat, v.lng, coords[i][1], coords[i][0]);
+                    if (d < bd) { bd = d; bi = i; }
+                }
+                return { via: v, idx: bi };
+            });
+            if (!omwegVias.length) return false;
+
+            // 1) DUBBELE STUKKEN ZOEKEN in de route zelf.
+            //    Voor punt L: zoek het VERSTE latere punt H (≥MIN_GAP verder) dat nog <SAME_M dichtbij
+            //    ligt. Is dat zo over een stuk ≥MIN_LEN_M, dan is L→...→H een heen-en-terug.
+            const found = [];   // {L, H}
+            let i = 0;
+            while (i < coords.length - MIN_GAP) {
+                let matchH = -1;
+                // zoek vanaf het verste punt terug naar L toe (zo pakken we 't hele dubbele stuk)
+                for (let j = coords.length - 1; j >= i + MIN_GAP; j--) {
+                    const d = distM4(coords[i][1], coords[i][0], coords[j][1], coords[j][0]);
+                    if (d <= SAME_M) { matchH = j; break; }
+                }
+                if (matchH > 0) {
+                    // L = i. Bepaal hoe ver het dubbele stuk loopt (langs de ingaande helft).
+                    const L = i, H = matchH;
+                    let segLen = 0;
+                    const mid = Math.floor((L + H) / 2);
+                    for (let k = L; k < mid && k < coords.length - 1; k++) {
+                        segLen += distM4(coords[k][1], coords[k][0], coords[k + 1][1], coords[k + 1][0]);
+                    }
+                    if (segLen >= MIN_LEN_M) {
+                        found.push({ L, H });
+                        i = H + 1;   // voorbij dit dubbele stuk verder zoeken
+                        continue;
+                    }
+                }
+                i++;
+            }
+            if (!found.length) return false;
+
+            // 2) per dubbel stuk: ligt er een omweg-via tussen L en H? Zo ja → fixen.
+            let changed = false;
+            const teVerwijderen = [];
+            for (const seg of found) {
+                const viasInside = omwegVias.filter(ov => ov.idx > seg.L && ov.idx < seg.H && !teVerwijderen.includes(ov.via));
+                if (!viasInside.length) continue;   // geen generator-via tussen → met rust (rotonde/hairpin)
+                // smart via op H (uit-punt)
+                const hPt = coords[seg.H];
+                addVia(hPt[1], hPt[0], 'omweg', true, 'omweg');
+                // de via's ertussen markeren voor verwijdering
+                viasInside.forEach(ov => teVerwijderen.push(ov.via));
+                changed = true;
+            }
+            if (!changed) return false;
+
+            // 3) verwijder de gemarkeerde via's
+            viaPoints = viaPoints.filter(v => {
+                if (!teVerwijderen.includes(v)) return true;
+                if (v.marker) { try { map.removeLayer(v.marker); } catch (e) {} }
+                return false;
+            });
+            return true;
         }
 
         // Doodloper-correctie via T-splitsing-detectie.
@@ -2091,6 +2175,11 @@ assign initialcost =
                 // 4. weef de nieuwe omweg-via's ertussen (slim invoegen op geografische plek, oranje)
                 best.pts.forEach(p => addVia(p.lat, p.lng, 'omweg', true, 'omweg'));
                 await maybeRoute();
+                // NIEUW: dood-eind-correctie via BRouter's "keer om" (TU). Als er iets gefixt is,
+                // nog één keer herberekenen zodat de route over de dode stukken heen getrokken wordt.
+                if (typeof fixDeadEndsByUturn === 'function' && fixDeadEndsByUturn()) {
+                    await maybeRoute();
+                }
                 showInfo(document.getElementById('infoBar').innerHTML + ` &nbsp;(doel ${target} km)`);
                 drawDiagnosis();
 
@@ -2455,7 +2544,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "17.4";
+        const APP_VERSION = "17.8";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
