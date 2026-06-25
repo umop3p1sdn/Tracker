@@ -736,7 +736,7 @@
                     <button onclick="shareApp()" style="flex: 1; max-width: 150px; background: transparent; color: #00BCD4; border: 1.5px solid rgba(0,188,212,0.5); padding: 11px 0; border-radius: 10px; cursor: pointer; font-size: 0.9em; font-weight: bold; letter-spacing: 0.5px; transition: all 0.2s;" ontouchstart="" onmouseover="this.style.background='rgba(0,188,212,0.12)';" onmouseout="this.style.background='transparent';">Share app</button>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v18.9 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v19.0 © Umop3p1sdn</div>
 
             </div>
 
@@ -1156,7 +1156,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v18.9 © Umop3p1sdn
+                HO-ME v19.0 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2557,7 +2557,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "18.9";
+        const APP_VERSION = "19.0";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -2973,6 +2973,47 @@ assign initialcost =
             try { localStorage.setItem(FLITSER_LS_KEY, JSON.stringify(flitsers)); } catch (e) {}
         }
 
+        // ─── STRAAT-CHECK (binnen de cirkel): zit ik op DEZELFDE weg als de flitser? ───
+        // Haalt via OSM (Overpass) de weg-ID('s) bij een coördinaat op. We doen dit alleen binnen
+        // de cirkel (niet constant): 1× de weg van de flitser (gecachet) + af en toe die van jou.
+        const flitserWayCache = {};      // flitserKey → [way-id,...] (1× ophalen, onthouden)
+        let myWayIds = [];               // mijn huidige weg-id('s)
+        let myWayCheckedAt = 0;          // laatste keer mijn weg opgehaald (throttle)
+
+        async function osmWaysAt(lat, lng) {
+            // wegen binnen ~25m rond een punt (way met highway-tag)
+            const q = `[out:json][timeout:15];way(around:25,${lat},${lng})["highway"];out ids;`;
+            const url = 'https://overpass-api.de/api/interpreter?data=' + encodeURIComponent(q);
+            const res = await fetch(url);
+            if (!res.ok) return null;
+            const data = await res.json();
+            return (data.elements || []).map(e => e.id);
+        }
+
+        // Bepaal of ik op dezelfde weg zit als de flitser. Geeft terug:
+        //  true  = zelfde weg (melden)
+        //  false = andere weg (niet melden)
+        //  null  = onbekend (OSM gaf niks) → terugval op richting+naderen
+        async function sameStreetAsFlitser(best, key, lat, lng) {
+            try {
+                // weg(en) van de flitser — 1× ophalen, daarna uit cache
+                if (!flitserWayCache[key]) {
+                    const w = await osmWaysAt(best.lat, best.lng);
+                    if (w && w.length) flitserWayCache[key] = w; else return null;
+                }
+                // mijn weg — hooguit elke 5 sec verversen (throttle, spaart Overpass)
+                const now = Date.now();
+                if (now - myWayCheckedAt > 5000) {
+                    myWayCheckedAt = now;
+                    const mine = await osmWaysAt(lat, lng);
+                    if (mine && mine.length) myWayIds = mine;
+                }
+                if (!myWayIds.length) return null;
+                // overlap? zelfde weg-id in beide → ja
+                return myWayIds.some(id => flitserWayCache[key].includes(id));
+            } catch (e) { return null; }
+        }
+
         // Lees ALLE flitsers uit Firebase (gedeeld) en VOEG SAMEN met de lokale kopie (ontdubbeld
         // op locatie-sleutel) → toon op de kaart. Zo raak je lokale flitsers nooit kwijt.
         async function loadFlitsersFromFirebase() {
@@ -3112,21 +3153,22 @@ assign initialcost =
             }
             if (!best || bestD > FLITSER_WARN_M) { box.style.display = 'none'; lastFlitserKey = null; lastFlitserSpeed = null; return; }
             const key = best.lat.toFixed(5) + ',' + best.lng.toFixed(5);
-            // KIJKRICHTING: ligt de flitser VÓÓR je (in je rijrichting)? Zo niet (opzij/achter/overkant)
-            // → niet melden, ook al ben je dichtbij. Beweegrichting uit vorige→huidige GPS-positie
-            // (betrouwbaarder dan kompas). Alleen melden binnen ±55° recht vooruit.
-            if (lastSpeedSample && (lastSpeedSample.lat !== lat || lastSpeedSample.lng !== lng)) {
-                const moveDir = bearing([lastSpeedSample.lat, lastSpeedSample.lng], [lat, lng]);
-                const toFlitser = bearing([lat, lng], [best.lat, best.lng]);
-                const diff = Math.abs(((toFlitser - moveDir + 540) % 360) - 180);
-                if (diff > 55) { box.style.display = 'none'; lastFlitserKey = null; lastFlitserSpeed = null; return; }
-            }
-            // richting: vergelijk met vorige afstand tot DEZE flitser. Rij ik weg (afstand groter)
-            // of er recht langs? → niet waarschuwen. Alleen tonen als ik nader (afstand kleiner).
+            const fKey = flitserKey(best.lat, best.lng);
+            // NEUS NAAR VOREN: rij ik er ook echt naartoe? (afstand wordt kleiner dan vorige meting)
             const prev = flitserPrevDist[key];
             flitserPrevDist[key] = bestD;
             const naderend = (prev === undefined) ? true : (bestD < prev + 5);  // +5m speling tegen GPS-ruis
             if (!naderend) { box.style.display = 'none'; lastFlitserKey = null; lastFlitserSpeed = null; return; }
+            // STRAAT-CHECK (binnen de cirkel): zit ik op DEZELFDE weg als de flitser? Async — we
+            // gebruiken het resultaat zodra het binnen is. Zelfde weg → melden; andere weg → verbergen;
+            // onbekend (OSM gaf niks) → terugval: gewoon tonen (we naderen al + zijn binnen de cirkel).
+            sameStreetAsFlitser(best, fKey, lat, lng).then(same => {
+                if (same === false) {
+                    // andere weg (parallelweg/overkant) → niet melden
+                    const box2 = document.getElementById('flitserBox');
+                    if (box2 && lastFlitserKey === key) { box2.style.display = 'none'; lastFlitserKey = null; lastFlitserSpeed = null; }
+                }
+            }).catch(() => {});
             // vlak tonen + bord (snelheid) vullen
             box.style.display = 'block';
             const speedEl = document.getElementById('flitserSpeed');
