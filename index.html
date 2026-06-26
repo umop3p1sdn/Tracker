@@ -762,7 +762,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v25.0 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v25.1 © Umop3p1sdn</div>
 
             </div>
 
@@ -1200,7 +1200,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v25.0 © Umop3p1sdn
+                HO-ME v25.1 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1475,7 +1475,7 @@
             </ul>
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v25.0 © Umop3p1sdn
+                HO-ME v25.1 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2876,7 +2876,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "25.0";
+        const APP_VERSION = "25.1";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -5851,6 +5851,15 @@ assign initialcost =
             } else {
                 startListening();
             }
+            // Deze knop regelt meteen ook de MIC-toestemming (zelfde tik), zodat de praat-knop later
+            // direct opneemt zonder aparte toestemmingspopup die de eerste opname onderbreekt.
+            try {
+                if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                    navigator.mediaDevices.getUserMedia({ audio: true })
+                        .then(stream => { stream.getTracks().forEach(t => t.stop()); })
+                        .catch(() => {});
+                }
+            } catch (e) {}
         }
 
         // Composite icon for the show-mode button: a plane (= me, top-left) and
@@ -5947,6 +5956,15 @@ assign initialcost =
                 unlockAudio(false);
                 if (typeof primeSpeech === 'function') primeSpeech();           // stem ontgrendelen (GO = echte tik)
                 if (typeof startSpeechKeepAlive === 'function') startSpeechKeepAlive();  // en warm houden
+                // mic-toestemming meteen hier regelen (GO = aanraking), zodat de praat-knop later direct opneemt
+                // zonder dat de iOS-toestemmingspopup de eerste opname onderbreekt.
+                try {
+                    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                        navigator.mediaDevices.getUserMedia({ audio: true })
+                            .then(stream => { stream.getTracks().forEach(t => t.stop()); })
+                            .catch(() => {});
+                    }
+                } catch (e) {}
                 if (typeof ensureBeepAudio === 'function') ensureBeepAudio();  // volger-beep ontgrendelen (backup; primair via Start tracking)
                 if (typeof applyFlitserSize === 'function') applyFlitserSize();  // grootte GPS-snelheid + flitser zetten
             }
