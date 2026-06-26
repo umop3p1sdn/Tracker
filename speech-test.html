@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Speech-to-text test</title>
+<style>
+  body { margin:0; font-family:sans-serif; background:#0a0e27; color:#fff; display:flex; flex-direction:column; align-items:center; padding:24px; gap:18px; }
+  h1 { font-size:1.3em; color:#00BCD4; text-align:center; margin:8px 0; }
+  .info { font-size:0.9em; opacity:0.8; text-align:center; line-height:1.5; max-width:340px; }
+  #micBtn { width:140px; height:140px; border-radius:50%; border:5px solid #000; background:rgba(255,255,255,0.12); display:flex; align-items:center; justify-content:center; cursor:pointer; -webkit-user-select:none; user-select:none; touch-action:none; }
+  #micBtn.rec { background:rgba(255,23,68,0.55); }
+  #micBtn svg { filter:drop-shadow(0 0 3px rgba(255,255,255,0.9)); }
+  #status { font-size:0.95em; font-weight:bold; min-height:1.4em; text-align:center; }
+  #result { background:#1a2148; border-radius:12px; padding:16px; min-height:60px; width:100%; max-width:360px; font-size:1.15em; line-height:1.4; box-sizing:border-box; }
+  #log { font-size:0.75em; opacity:0.6; white-space:pre-wrap; width:100%; max-width:360px; word-break:break-word; }
+  .hint { font-size:0.8em; color:#00BCD4; }
+</style>
+</head>
+<body>
+  <h1>🎙️ Spraak → tekst test</h1>
+  <div class="info">Houd de knop vast en zeg iets (bv. "stoppen bij het tankstation"). Laat los als je klaar bent. De herkende tekst verschijnt hieronder.</div>
+
+  <div id="micBtn">
+    <svg width="60" height="60" viewBox="0 0 24 24" fill="#000"><path d="M12 14a3 3 0 003-3V5a3 3 0 00-6 0v6a3 3 0 003 3zm5-3a5 5 0 01-10 0H5a7 7 0 006 6.92V21h2v-3.08A7 7 0 0019 11h-2z"/></svg>
+  </div>
+
+  <div id="status">Klaar om te testen</div>
+  <div id="result">…</div>
+  <div class="hint" id="hint"></div>
+  <div id="log"></div>
+
+<script>
+  const btn = document.getElementById('micBtn');
+  const statusEl = document.getElementById('status');
+  const resultEl = document.getElementById('result');
+  const hintEl = document.getElementById('hint');
+  const logEl = document.getElementById('log');
+
+  function log(msg) { logEl.textContent += msg + '\n'; }
+
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  if (!SR) {
+    statusEl.textContent = '❌ Niet ondersteund';
+    resultEl.textContent = 'Deze browser/telefoon ondersteunt spraakherkenning niet.';
+    hintEl.textContent = 'Dan werkt de tekst-route niet op dit toestel.';
+    log('SpeechRecognition API ontbreekt (window.SpeechRecognition / webkitSpeechRecognition).');
+  } else {
+    log('✅ SpeechRecognition API gevonden.');
+    let recog = null;
+    let recording = false;
+
+    function makeRecog() {
+      const r = new SR();
+      r.lang = 'nl-NL';
+      r.interimResults = true;   // toon tussentijdse resultaten
+      r.continuous = false;
+      r.onresult = (e) => {
+        let txt = '';
+        for (let i = 0; i < e.results.length; i++) txt += e.results[i][0].transcript;
+        resultEl.textContent = txt || '…';
+      };
+      r.onerror = (e) => { statusEl.textContent = '⚠️ Fout: ' + e.error; log('onerror: ' + e.error); };
+      r.onend = () => { recording = false; btn.classList.remove('rec'); statusEl.textContent = 'Klaar — laat los gedaan'; log('onend'); };
+      r.onstart = () => { statusEl.textContent = '🔴 Luisteren… spreek nu'; log('onstart'); };
+      return r;
+    }
+
+    function start(ev) {
+      if (ev) { ev.preventDefault(); }
+      if (recording) return;
+      recording = true;
+      btn.classList.add('rec');
+      resultEl.textContent = '…';
+      statusEl.textContent = 'Mic starten…';
+      try { recog = makeRecog(); recog.start(); }
+      catch (e) { statusEl.textContent = '⚠️ Kon niet starten'; log('start-fout: ' + e.message); recording = false; btn.classList.remove('rec'); }
+    }
+
+    function stop(ev) {
+      if (ev) { ev.preventDefault(); }
+      if (!recording || !recog) return;
+      try { recog.stop(); } catch (e) { log('stop-fout: ' + e.message); }
+    }
+
+    btn.addEventListener('touchstart', start, { passive:false });
+    btn.addEventListener('touchend', stop, { passive:false });
+    btn.addEventListener('touchcancel', stop, { passive:false });
+    btn.addEventListener('mousedown', start);
+    btn.addEventListener('mouseup', stop);
+  }
+</script>
+</body>
+</html>
