@@ -758,7 +758,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v21.5 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v21.7 © Umop3p1sdn</div>
 
             </div>
 
@@ -1077,6 +1077,16 @@
             </ul>
             <p style="background:#e3e7f5; padding:10px 14px; border-radius:8px;"><strong>Let op:</strong> de regels verschillen per land. Zet de stand vóór vertrek goed: <strong>ACTIEF</strong> in NL/BE, <strong>ZONES</strong> in Frankrijk, <strong>UIT</strong> in Duitsland/Zwitserland. De flitser-dekking komt van OpenStreetMap-vrijwilligers en is niet overal compleet (alleen vaste flitsers, geen mobiele).</p>
 
+            <h3 style="color: #00BCD4; margin-top: 25px;">Praten 🎙️ (spraakberichten)</h3>
+            <p>Voor groepen <strong>zonder intercom</strong>: met de ronde <strong>mic-knop</strong> (links op het rij-scherm) stuur je korte spraakberichten naar iedereen in de groep. Het <strong>hele vlak</strong> (rand + mic) is de knop, lekker groot om te raken.</p>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+                <li><strong>Vasthouden</strong> = opnemen (de knop wordt rood), <strong>loslaten</strong> = versturen.</li>
+                <li>Max <strong>5 seconden</strong> per bericht — stopt vanzelf.</li>
+                <li>Iedereen in de groep <strong>hoort het automatisch</strong>.</li>
+                <li>Eerste keer vraagt je telefoon om <strong>microfoon-toegang</strong> — toestaan.</li>
+            </ul>
+            <p style="background:#e3e7f5; padding:10px 14px; border-radius:8px;"><strong>Werkt het? Test 'm zelf:</strong> zet in het ☰ menu <strong>Voice check</strong> op <strong>AAN</strong>. Houd de mic-knop vast, spreek iets in, en laat los. <strong>Hoor je jezelf terug? Dan werkt het.</strong> Zet Voice check daarna weer uit voor normaal gebruik.</p>
+
             <h3 style="color: #00BCD4; margin-top: 25px;">Privacy / STOP</h3>
             <p>Bij <strong>STOP</strong> worden je gegevens uit de cloud gewist (geen sporen). Sluit je de app zonder STOP, dan ruimt de app het later vanzelf op (binnen ~10 min).</p>
 
@@ -1185,7 +1195,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v21.5 © Umop3p1sdn
+                HO-ME v21.7 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1349,6 +1359,16 @@
             </ul>
             <p style="background:#e3e7f5; padding:10px 14px; border-radius:8px;"><strong>Note:</strong> rules differ per country. Set the mode before departure: <strong>ACTIVE</strong> in NL/BE, <strong>ZONES</strong> in France, <strong>OFF</strong> in Germany/Switzerland. Camera coverage comes from OpenStreetMap volunteers and isn't complete everywhere (fixed cameras only, no mobile). Cameras load per country as you cross a border.</p>
 
+            <h3 style="color: #00BCD4; margin-top: 25px;">Talk 🎙️ (voice messages)</h3>
+            <p>For groups <strong>without an intercom</strong>: with the round <strong>mic button</strong> (left on the riding screen) you send short voice messages to everyone in the group. The <strong>whole area</strong> (rim + mic) is the button — nice and big to hit.</p>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+                <li><strong>Hold</strong> = record (the button turns red), <strong>release</strong> = send.</li>
+                <li>Max <strong>5 seconds</strong> per message — stops by itself.</li>
+                <li>Everyone in the group <strong>hears it automatically</strong>.</li>
+                <li>First time your phone asks for <strong>microphone access</strong> — allow it.</li>
+            </ul>
+            <p style="background:#e3e7f5; padding:10px 14px; border-radius:8px;"><strong>Does it work? Test it yourself:</strong> in the ☰ menu set <strong>Voice check</strong> to <strong>ON</strong>. Hold the mic button, say something, and release. <strong>Do you hear yourself back? Then it works.</strong> Turn Voice check off again for normal use.</p>
+
             <h3 style="color: #00BCD4; margin-top: 25px;">Privacy / STOP</h3>
             <p>On <strong>STOP</strong> your data is wiped from the cloud (no traces). If you close the app without STOP, the app cleans it up later automatically (within ~10 min).</p>
 
@@ -1450,7 +1470,7 @@
             </ul>
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v21.5 © Umop3p1sdn
+                HO-ME v21.7 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2851,7 +2871,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "21.5";
+        const APP_VERSION = "21.7";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -3216,7 +3236,33 @@ assign initialcost =
         let talkMaxTimer = null, talkBusy = false;
         let talkEchoSelf = false;        // eigen bericht terughoren (standaard uit)
         let lastTalkTs = 0;              // laatst afgespeelde bericht (voorkomt dubbel)
+        let talkMime = '';               // gekozen audioformaat (iOS = mp4, rest = webm)
         const TALK_MAX_MS = 5000;        // max 5 seconden
+
+        // kies een audioformaat dat deze telefoon ondersteunt (iPhone/Safari = mp4, geen webm!)
+        function pickTalkMime() {
+            if (talkMime) return talkMime;
+            const opts = ['audio/mp4', 'audio/webm;codecs=opus', 'audio/webm', 'audio/aac', 'audio/ogg'];
+            for (const m of opts) {
+                if (window.MediaRecorder && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(m)) { talkMime = m; break; }
+            }
+            return talkMime;   // leeg = laat browser zelf kiezen
+        }
+
+        // korte beep (start-seintje + bevestiging) via Web Audio
+        function talkBeep(freq) {
+            try {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const t = audioCtx.currentTime;
+                const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+                o.frequency.value = freq || 880; o.type = 'sine';
+                g.gain.setValueAtTime(0.0001, t);
+                g.gain.exponentialRampToValueAtTime(0.3, t + 0.01);
+                g.gain.exponentialRampToValueAtTime(0.0001, t + 0.15);
+                o.connect(g); g.connect(audioCtx.destination);
+                o.start(t); o.stop(t + 0.16);
+            } catch (e) {}
+        }
 
         async function startTalk(ev) {
             if (ev) { ev.preventDefault(); ev.stopPropagation(); }
@@ -3227,9 +3273,11 @@ assign initialcost =
             try {
                 talkStream = await navigator.mediaDevices.getUserMedia({ audio: true });
                 talkChunks = [];
-                mediaRecorder = new MediaRecorder(talkStream);
+                const mime = pickTalkMime();
+                mediaRecorder = mime ? new MediaRecorder(talkStream, { mimeType: mime }) : new MediaRecorder(talkStream);
                 mediaRecorder.ondataavailable = e => { if (e.data.size > 0) talkChunks.push(e.data); };
                 mediaRecorder.onstop = () => finishTalk();
+                mediaRecorder.onstart = () => { talkBeep(950); };   // beep zodra opnemen ECHT begint (na mic-delay)
                 mediaRecorder.start();
                 talkMaxTimer = setTimeout(() => stopTalk(), TALK_MAX_MS);   // auto-stop na 5s
             } catch (e) {
@@ -3245,17 +3293,21 @@ assign initialcost =
             const btn = document.getElementById('talkBtn');
             if (btn) btn.style.background = 'rgba(255,255,255,0.12)';
             try {
-                if (mediaRecorder && mediaRecorder.state === 'recording') mediaRecorder.stop();
+                if (mediaRecorder && mediaRecorder.state === 'recording') {
+                    talkBeep(550);   // eind-beep (lagere toon dan start) — opname klaar
+                    mediaRecorder.stop();
+                }
             } catch (e) {}
         }
 
         function finishTalk() {
             try { if (talkStream) talkStream.getTracks().forEach(t => t.stop()); } catch (e) {}
-            const blob = new Blob(talkChunks, { type: 'audio/webm' });
+            const type = (mediaRecorder && mediaRecorder.mimeType) || talkMime || 'audio/mp4';
+            const blob = new Blob(talkChunks, { type });
             if (blob.size < 600) { talkBusy = false; return; }   // te kort/leeg → niks sturen
             const reader = new FileReader();
             reader.onloadend = () => {
-                const b64 = reader.result;   // data:audio/webm;base64,...
+                const b64 = reader.result;   // data:audio/...;base64,...
                 const ts = Date.now();
                 // naar Firebase (alleen laatste bericht onder /voice/) — overschrijft het vorige
                 fetch(`${firebaseConfig.databaseURL}/voice/${currentCode}.json`, {
@@ -3270,7 +3322,7 @@ assign initialcost =
         }
 
         function playVoice(dataUrl) {
-            try { const a = new Audio(dataUrl); a.play().catch(() => {}); } catch (e) {}
+            try { const a = new Audio(dataUrl); a.play().catch(err => { console.warn('voice play faalde', err); }); } catch (e) {}
         }
 
         // Poll Firebase op nieuwe spraakberichten (naast de locatie-updates) en speel automatisch af.
