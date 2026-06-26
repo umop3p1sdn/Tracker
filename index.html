@@ -749,7 +749,11 @@
                     <button onclick="shareApp()" style="flex: 1; max-width: 150px; background: transparent; color: #00BCD4; border: 1.5px solid rgba(0,188,212,0.5); padding: 11px 0; border-radius: 10px; cursor: pointer; font-size: 0.9em; font-weight: bold; letter-spacing: 0.5px; transition: all 0.2s;" ontouchstart="" onmouseover="this.style.background='rgba(0,188,212,0.12)';" onmouseout="this.style.background='transparent';">Share app</button>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v21.0 © Umop3p1sdn</div>
+                <div style="margin-top: 14px; text-align: center;">
+                    <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
+                </div>
+
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v21.2 © Umop3p1sdn</div>
 
             </div>
 
@@ -900,6 +904,7 @@
                 </div>
                 <button class="button-secondary" onclick="toggleAppMenu(); toggleGPXMenu();" style="width: 100%;">GPX (routes)</button>
                 <button class="button-secondary" onclick="toggleAppMenu(); toggleHandleiding();" style="width: 100%;">Handleiding</button>
+                <button class="button-secondary" onclick="toggleAppMenu(); toggleHandleidingEN();" style="width: 100%;">Manual (English)</button>
             </div>
         </div>
     </div>
@@ -1174,7 +1179,272 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v21.0 © Umop3p1sdn
+                HO-ME v21.2 © Umop3p1sdn
+            </p>
+        </div>
+    </div>
+
+    <!-- ════════ ENGLISH MANUAL ════════ -->
+    <div id="handleidingModalEN" class="hidden" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); display: none; z-index: 1300; overflow-y: auto; padding: 20px;">
+        <div style="background: #f5f5f7; color: #1a1a2e; border-radius: 10px; max-width: 600px; margin: 0 auto; padding: 30px; font-family: sans-serif; line-height: 1.6;">
+            <div style="text-align: right; margin-bottom: 20px;">
+                <button onclick="toggleHandleidingEN()" style="background: #FF1744; color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; font-size: 1em;">Close</button>
+            </div>
+
+            <h2 style="color: #00BCD4; margin-top: 0;">HO-ME — Manual</h2>
+
+            <h3 style="color: #00BCD4; margin-top: 25px;">How does it work? (in short)</h3>
+            <p>The app revolves around one <strong>Master</strong> and their <strong>Followers</strong>:</p>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+                <li>The <strong>Master</strong> sets out the route, rides up front and shares a 4-digit code. They see all followers as a plane on the map, each with its own <strong>tag</strong> (name), and who's connected in the top left.</li>
+                <li>The <strong>Followers</strong> type in the code and follow the Master: they see the Master's position and <strong>actual track</strong> (the red line) — exactly which road is ridden, including detours. Followers don't see each other.</li>
+            </ul>
+            <p style="background:#e3e7f5; padding:10px 14px; border-radius:8px;">Below: first the part <strong>for the Master</strong>, then <strong>for the Follower</strong>, then <strong>General</strong> (applies to both). The Route Planner is at the bottom.</p>
+
+            <h2 style="color: #00BCD4; margin-top: 35px; border-top: 2px solid #00BCD4; padding-top: 22px;">For the Master</h2>
+
+            <h3 style="color: #00BCD4; margin-top: 20px;">Starting &amp; sharing</h3>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+                <li>Tap <strong>START TRACKING</strong> — you get a 4-digit code.</li>
+                <li>Share the code with your friends; your location is shared in real time.</li>
+                <li>Your ridden line (red track) and your route are shared with the followers.</li>
+            </ul>
+
+            <h3 style="color: #00BCD4; margin-top: 25px;">Seeing your followers</h3>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+                <li>Each follower appears as a plane on your map, with their <strong>tag</strong> (name).</li>
+                <li>The counter in the right icon bar shows <strong>how many</strong> followers are connected.</li>
+                <li>Below the counter is the <strong>LINE</strong> button: tap it to see the <strong>ridden tracks of your followers</strong> (each in its own colour). Handy when a follower knows a nice road and rides ahead — just follow their line. Off by default, to keep your map calm.</li>
+                <li>So at a glance you know who's riding behind you and who's still stopped.</li>
+            </ul>
+
+            <h3 style="color: #00BCD4; margin-top: 25px;">Show button (who's in view)</h3>
+            <p style="margin:4px 0 12px;">On the right of the map. Tap to switch who comes into view; the icon shows the mode.</p>
+            <div style="display:flex; gap:14px; flex-wrap:wrap;">
+                <div style="text-align:center;">
+                    <div style="width:64px; height:64px; border-radius:6px; background:transparent; border:3px solid #000; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; margin:0 auto;"><svg width="34" height="34" viewBox="0 0 36 36" fill="#000"><path transform="translate(-4,-1) scale(0.9)" d="M12 2 L21 21 L12 16.5 L3 21 Z"/></svg><span style="font-size:0.5em; font-weight:bold;">ME</span></div>
+                    <div style="font-size:0.8em; margin-top:4px; max-width:90px;">Focus on yourself. Zoom works.</div>
+                </div>
+                <div style="text-align:center;">
+                    <div style="width:64px; height:64px; border-radius:6px; background:transparent; border:3px solid #000; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; margin:0 auto;"><svg width="34" height="34" viewBox="0 0 36 36" fill="#000"><path transform="translate(11,11) scale(0.65)" d="M12 2 L21 21 L12 16.5 L3 21 Z"/><path transform="translate(19,15) scale(0.65)" d="M12 2 L21 21 L12 16.5 L3 21 Z"/></svg><span style="font-size:0.5em; font-weight:bold;">FOLLOWERS</span></div>
+                    <div style="font-size:0.8em; margin-top:4px; max-width:90px;">Focus on the followers. Zoom works.</div>
+                </div>
+                <div style="text-align:center;">
+                    <div style="width:64px; height:64px; border-radius:6px; background:transparent; border:3px solid #000; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; margin:0 auto;"><svg width="34" height="34" viewBox="0 0 36 36" fill="#000"><path transform="translate(-4,-1) scale(0.9)" d="M12 2 L21 21 L12 16.5 L3 21 Z"/><path transform="translate(11,11) scale(0.65)" d="M12 2 L21 21 L12 16.5 L3 21 Z"/><path transform="translate(19,15) scale(0.65)" d="M12 2 L21 21 L12 16.5 L3 21 Z"/></svg><span style="font-size:0.5em; font-weight:bold;">BOTH</span></div>
+                    <div style="font-size:0.8em; margin-top:4px; max-width:90px;">Everyone in view. Auto-zoom, +/− doesn't work.</div>
+                </div>
+            </div>
+
+            <h3 style="color: #00BCD4; margin-top: 25px;">Making a route (Plan)</h3>
+            <p style="background:#e3e7f5; padding:10px 14px; border-radius:8px;">Want to make or edit a route? Tap <strong>Plan</strong> (top left). This opens the Route Planner — see the very bottom of this manual.</p>
+
+            <h2 style="color: #00BCD4; margin-top: 35px; border-top: 2px solid #00BCD4; padding-top: 22px;">For the Follower</h2>
+
+            <h3 style="color: #00BCD4; margin-top: 20px;">Starting</h3>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+                <li>Get the 4-digit code from the Master.</li>
+                <li>Type the code into the <strong>"Enter code"</strong> field; at 4 digits following starts automatically.</li>
+                <li>You see the Master on the map right away! Your view starts ready to ride: centred on yourself (ME), the Master's route shown (M NAVI), and the map turns with your heading (nose up).</li>
+            </ul>
+
+            <h3 style="color: #00BCD4; margin-top: 25px;">Track button</h3>
+            <p>Tap to switch what you see of the Master on your map:</p>
+            <ul style="margin: 5px 0; padding-left: 30px;">
+                <li><strong>NONE</strong> — nothing extra on the map.</li>
+                <li><strong>M TRACK</strong> — the Master's red ridden line (following).</li>
+                <li><strong>M NAVI</strong> — the Master's route (navigating). You see <strong>both</strong> lines here: the navi route and any offroad track of the Master.</li>
+            </ul>
+            <p style="background:#e3e7f5; padding:10px 14px; border-radius:8px;">You follow the Master and don't load/make routes yourself — otherwise you'd ride "solo". Want to plan your own route? Then start as Master.</p>
+
+            <h3 style="color: #00BCD4; margin-top: 25px;">Show button (who's in view)</h3>
+            <p style="margin:4px 0 12px;">On the right of the map. Tap to switch who comes into view; the icon shows the mode.</p>
+            <div style="display:flex; gap:14px; flex-wrap:wrap;">
+                <div style="text-align:center;">
+                    <div style="width:64px; height:64px; border-radius:6px; background:transparent; border:3px solid #000; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; margin:0 auto;"><svg width="34" height="34" viewBox="0 0 36 36" fill="#000"><path transform="translate(-2,0) scale(0.8)" d="M12 2 L21 21 L12 16.5 L3 21 Z"/></svg><span style="font-size:0.5em; font-weight:bold;">MASTER</span></div>
+                    <div style="font-size:0.8em; margin-top:4px; max-width:90px;">Focus on the master. Zoom works.</div>
+                </div>
+                <div style="text-align:center;">
+                    <div style="width:64px; height:64px; border-radius:6px; background:transparent; border:3px solid #000; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; margin:0 auto;"><svg width="34" height="34" viewBox="0 0 36 36" fill="#000"><path transform="translate(-2,0) scale(0.8)" d="M12 2 L21 21 L12 16.5 L3 21 Z"/><path transform="translate(16,14) scale(0.8)" d="M12 2 L21 21 L12 16.5 L3 21 Z"/></svg><span style="font-size:0.5em; font-weight:bold;">BOTH</span></div>
+                    <div style="font-size:0.8em; margin-top:4px; max-width:90px;">Master + you in view. Auto-zoom, +/− doesn't work.</div>
+                </div>
+                <div style="text-align:center;">
+                    <div style="width:64px; height:64px; border-radius:6px; background:transparent; border:3px solid #000; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; margin:0 auto;"><svg width="34" height="34" viewBox="0 0 36 36" fill="#000"><path transform="translate(16,14) scale(0.8)" d="M12 2 L21 21 L12 16.5 L3 21 Z"/></svg><span style="font-size:0.5em; font-weight:bold;">ME</span></div>
+                    <div style="font-size:0.8em; margin-top:4px; max-width:90px;">Focus on yourself. Zoom works.</div>
+                </div>
+            </div>
+
+            <div style="margin: 20px 0;">
+                <div style="width:64px; height:64px; border-radius:50%; background:rgba(33,150,243,0.55); border:3px solid #fff; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:bold; font-size:1.6em; margin-bottom:8px;">1</div>
+                <strong>Your colour &amp; TAG</strong>
+                <p style="margin:4px 0 0;">Master = red arrow. Each follower gets its own colour (from blue), with a number beyond 8. The dot on the right shows your colour. With the <strong>TAG</strong> button below it you set a short name (max 5 characters) that the Master sees top left. (The Master controls how visible the tags are in the menu.)</p>
+            </div>
+
+            <h2 style="color: #00BCD4; margin-top: 35px; border-top: 2px solid #00BCD4; padding-top: 22px;">General (Master &amp; Follower)</h2>
+            <p>These buttons and functions work the same for both.</p>
+
+            <h3 style="color: #00BCD4; margin-top: 20px;">Buttons on the map</h3>
+
+            <div style="margin: 20px 0;">
+                <div style="display:flex; gap:6px; margin-bottom:8px;">
+                    <div style="width:64px; height:64px; border-radius:6px; background:transparent; border:3px solid #000; display:flex; align-items:center; justify-content:center;"><svg width="40" height="40" viewBox="0 0 36 36"><circle cx="18" cy="18" r="14" fill="none" stroke="#000" stroke-width="2.5"/><polygon points="18,8 22,18 18,16 14,18" fill="#000"/><polygon points="18,28 14,18 18,20 22,18" fill="#000"/></svg></div>
+                    <div style="width:64px; height:64px; border-radius:6px; background:#00BCD4; display:flex; align-items:center; justify-content:center;"><svg width="40" height="40" viewBox="0 0 36 36"><circle cx="18" cy="18" r="14" fill="none" stroke="#fff" stroke-width="2.5"/><polygon points="18,8 22,18 18,16 14,18" fill="#fff"/><polygon points="18,28 14,18 18,20 22,18" fill="#fff"/></svg></div>
+                </div>
+                <strong>Compass</strong>
+                <p style="margin:4px 0 0;">Top right of the map. OFF (black) = north up, free panning. ON (cyan) = map turns with your heading, your arrow points up and the map follows your GPS.</p>
+            </div>
+
+            <div style="margin: 20px 0;">
+                <div style="display:flex; gap:6px; margin-bottom:8px;">
+                    <div style="width:64px; height:64px; border-radius:6px; background:#555; display:flex; align-items:center; justify-content:center;"><svg width="40" height="40" viewBox="0 0 36 36"><circle cx="18" cy="18" r="9" fill="none" stroke="#fff" stroke-width="2.5"/><circle cx="18" cy="18" r="2.5" fill="#fff"/><line x1="18" y1="3" x2="18" y2="9" stroke="#fff" stroke-width="2.5"/><line x1="18" y1="27" x2="18" y2="33" stroke="#fff" stroke-width="2.5"/><line x1="3" y1="18" x2="9" y2="18" stroke="#fff" stroke-width="2.5"/><line x1="27" y1="18" x2="33" y2="18" stroke="#fff" stroke-width="2.5"/></svg></div>
+                    <div style="width:64px; height:64px; border-radius:6px; background:#00BCD4; display:flex; align-items:center; justify-content:center;"><svg width="40" height="40" viewBox="0 0 36 36"><circle cx="18" cy="18" r="9" fill="none" stroke="#fff" stroke-width="2.5"/><circle cx="18" cy="18" r="2.5" fill="#fff"/><line x1="18" y1="3" x2="18" y2="9" stroke="#fff" stroke-width="2.5"/><line x1="18" y1="27" x2="18" y2="33" stroke="#fff" stroke-width="2.5"/><line x1="3" y1="18" x2="9" y2="18" stroke="#fff" stroke-width="2.5"/><line x1="27" y1="18" x2="33" y2="18" stroke="#fff" stroke-width="2.5"/></svg></div>
+                </div>
+                <strong>Center</strong>
+                <p style="margin:4px 0 0;">Just below the compass. Makes the map follow your location automatically. OFF (grey) = look/pan around freely. ON (cyan) = map stays centred on you. After making a route the app turns Center off automatically, so you can view the whole route; tap it on again to follow yourself.</p>
+            </div>
+
+            <div style="margin: 20px 0;">
+                <div style="display:flex; gap:8px; align-items:center; margin-bottom:6px;">
+                    <div style="width:64px; height:64px; border-radius:6px; background:transparent; border:3px solid #000; display:flex; align-items:center; justify-content:center; font-size:2em; font-weight:bold; color:#000;">−</div>
+                    <span style="font-weight:bold; font-size:1.3em;">17</span>
+                    <div style="width:64px; height:64px; border-radius:6px; background:transparent; border:3px solid #000; display:flex; align-items:center; justify-content:center; font-size:2em; font-weight:bold; color:#000;">+</div>
+                </div>
+                <strong>Zoom (top of the map)</strong>
+                <p style="margin:4px 0 0;">The number in the middle is your zoom level (10-20). Tap − or + to zoom out/in.</p>
+
+                <div style="display:flex; gap:8px; align-items:center; margin:16px 0 6px;">
+                    <div style="width:64px; height:64px; border-radius:6px; background:transparent; border:3px solid #000; display:flex; align-items:center; justify-content:center; font-size:2em; font-weight:bold; color:#000;">−</div>
+                    <span style="font-weight:bold; font-size:1.3em;">12</span>
+                    <div style="width:64px; height:64px; border-radius:6px; background:transparent; border:3px solid #000; display:flex; align-items:center; justify-content:center; font-size:2em; font-weight:bold; color:#000;">+</div>
+                </div>
+                <strong>Line thickness (bottom of the map)</strong>
+                <p style="margin:4px 0 0;">The number in the middle is the route line thickness (3-15px). Tap − or + to make the line thinner or thicker. From thickness 8 the planes grow along too — handy if you want to see it a bit bigger.</p>
+            </div>
+
+            <div style="margin: 20px 0;">
+                <div style="width:48px; height:48px; display:flex; align-items:center; justify-content:center; margin-bottom:8px;"><svg width="40" height="40" viewBox="0 0 24 24" fill="#000"><path d="M12 1a5 5 0 00-5 5v2H6a2 2 0 00-2 2v9a2 2 0 002 2h12a2 2 0 002-2v-9a2 2 0 00-2-2h-7V6a3 3 0 016 0h2a5 5 0 00-5-5zm0 11a2 2 0 011 3.73V18a1 1 0 01-2 0v-2.27A2 2 0 0112 12z"/></svg></div>
+                <strong>Lock</strong>
+                <p style="margin:4px 0 0;">Top right. Hold 1 sec to lock the screen (handy in your pocket — tracking continues, no unwanted taps). Hold the closed lock 1 sec to unlock.</p>
+            </div>
+
+            <h3 style="color: #00BCD4; margin-top: 25px;">GO button &amp; speed</h3>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+                <li><strong>GO</strong> (bottom) — hides all buttons, only the map remains.</li>
+                <li><strong>Speed (km/h)</strong> — shown at the bottom during GO (portrait). In landscape the speed sits top left, always visible.</li>
+            </ul>
+            <p style="background:#e3e7f5; padding:10px 14px; border-radius:8px;"><strong>Tip (landscape):</strong> with your phone on its side and <strong>CENTER and rotate on</strong>, you can place the plane (yourself) nicely in view by panning the map up/down — so you see more of the road ahead.</p>
+
+            <h3 style="color: #00BCD4; margin-top: 25px;">Speed cameras 📷</h3>
+            <p>The app pulls fixed speed cameras from <strong>OpenStreetMap</strong> (free &amp; open) and stores them shared in the cloud, so they're <strong>always on the map</strong> — also while planning, so you can route around them on purpose. While you look around or make a route, the app tops up new cameras automatically (only when zoomed in enough). When approaching, a <strong>white speed sign</strong> appears (the enforced speed) with a <strong>countdown from 9 to 1</strong> below it (9 = ~900 m, 1 = 100 m). You hear a <strong>single beep at ~900 m</strong>, a <strong>double beep</strong> within 500 m, and the spoken word <strong>"Flitser"</strong> at ~100 m. Your <strong>speed counter turns red</strong> if you go faster than the limit. Tap the panel to set it to <strong>3 sizes</strong>.</p>
+            <p>In the <strong>☰ menu</strong> there's the <strong>Speed camera</strong> button with 3 modes (tap through), plus a <strong>volume slider</strong> for the camera sounds:</p>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+                <li><strong>ACTIVE</strong> — everything on: sign, countdown, beep, red speed. For <strong>Netherlands &amp; Belgium</strong>.</li>
+                <li><strong>ZONES</strong> — shows a wide <strong>red danger-zone circle</strong> (2 km) on the map instead of the exact spot; the panel shows the sign with <strong>"ZONE"</strong> instead of metres. For <strong>France</strong>, where only a broad zone (no exact location) is allowed.</li>
+                <li><strong>OFF</strong> — everything gone, also from the map. For countries like <strong>Germany &amp; Switzerland</strong>, where warning during the ride is not allowed.</li>
+            </ul>
+            <p style="background:#e3e7f5; padding:10px 14px; border-radius:8px;"><strong>Note:</strong> rules differ per country. Set the mode before departure: <strong>ACTIVE</strong> in NL/BE, <strong>ZONES</strong> in France, <strong>OFF</strong> in Germany/Switzerland. Camera coverage comes from OpenStreetMap volunteers and isn't complete everywhere (fixed cameras only, no mobile). Cameras load per country as you cross a border.</p>
+
+            <h3 style="color: #00BCD4; margin-top: 25px;">Privacy / STOP</h3>
+            <p>On <strong>STOP</strong> your data is wiped from the cloud (no traces). If you close the app without STOP, the app cleans it up later automatically (within ~10 min).</p>
+
+            <h3 style="color: #00BCD4; margin-top: 25px;">Tips</h3>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+                <li>Keep your screen ON — the app doesn't work in the background.</li>
+                <li>GPS works best outside / in open space.</li>
+                <li>Slow internet? Tracking updates every 3 seconds.</li>
+            </ul>
+
+            <h3 style="color: #00BCD4; margin-top: 25px;">Offline Map Buffer (OMB)</h3>
+            <p>Every piece of map you view is saved automatically. This builds an offline buffer: areas you've ridden or looked at stay visible without a connection. While riding the app also loads a thin strip of map ahead, so the road in front of you is always ready.</p>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+                <li><strong>OMB</strong> (in the ☰ menu): automatic buffering on/off.</li>
+                <li>What you see on screen (looking around, zooming in) is kept.</li>
+                <li>On the road <strong>with a route</strong>: a narrow strip (±500m) ~15 km ahead along the route.</li>
+                <li>On the road <strong>without a route</strong>: a few tiles ahead in your heading.</li>
+                <li>Happens silently in the background — no notifications.</li>
+                <li>No connection? Map within your buffer stays visible.</li>
+                <li>Check usage: see the data counter in the ☰ menu (session + total).</li>
+                <li>OMB off = most economical (only what you see on screen still loads).</li>
+            </ul>
+
+            <h3 style="color: #00BCD4; margin-top: 25px;">Pre-loading the map offline</h3>
+            <p>Pan over the region where you'll ride later, at the zoom level you navigate at (default 15), and your map is automatically available offline.</p>
+
+            <h3 style="color: #00BCD4; margin-top: 25px;">GPX — loading &amp; saving routes (☰ menu)</h3>
+            <p>In the ☰ menu → <strong>GPX (routes)</strong> you can load and save routes. Which buttons you see depends on your role; the app shows what fits you. There's a difference in <em>how</em> you load, and that has a reason:</p>
+            <p style="margin:10px 0 4px;"><strong>Loading (Master only):</strong></p>
+            <ul style="margin: 5px 0; padding-left: 20px;">
+                <li><strong>Load route</strong> — for a clean route. The app computes a rideable route with <strong>spoken navigation</strong>: before each turn an arrow appears (small/blue when far, larger/orange/red as you approach) and you hear the turn ("in 300 metres turn right"). The remaining distance + time count down.</li>
+                <li><strong>Load route (no navi)</strong> — loads the GPX as a <strong>bare track</strong> (purple line), exactly as the file is, without navigation. <strong>Ideal for offroad:</strong> you just follow the "string" on the map. You also <strong>load saved tracks this way</strong>.</li>
+            </ul>
+            <p style="background:#e3e7f5; padding:10px 14px; border-radius:8px;">If your GPX has several parts (like a long trail), you choose from a list which parts to load — handy to show only today's section. A <strong>GPX you loaded yourself can't be edited</strong>; for that you make a route with <strong>Plan</strong>. The Follower loads nothing (they follow the Master).</p>
+            <p style="margin:14px 0 4px;"><strong>Track vs route — and the mix map:</strong></p>
+            <ul style="margin: 5px 0; padding-left: 20px;">
+                <li>A <strong>route</strong> you navigate (with turns). A <strong>track</strong> you follow (a bare line).</li>
+                <li>A saved <strong>track often isn't usable to navigate with</strong> — it's your ridden GPS line, not a clean route. So load a track with <strong>Load route (no navi)</strong>, then you see it neatly as a string (instead of a messy route full of points).</li>
+                <li><strong>Mix map:</strong> you can load an <strong>offroad track (no navi)</strong> and at the same time make a navi route with <strong>Plan</strong>. So you navigate with voice to the offroad spot, then follow the purple track from there. Both lines sit together on the map.</li>
+            </ul>
+            <p style="margin:14px 0 4px;"><strong>Saving (Save):</strong> on saving the app asks for a <strong>name</strong> — it appears in the file and in the track picker, so you recognise it easily. The Master can save their track and route; the Follower can also save their <strong>own</strong> ridden track. The app shows the right buttons.</p>
+            <p style="margin:14px 0 4px;"><strong>Clear vs Delete:</strong></p>
+            <ul style="margin: 5px 0; padding-left: 20px;">
+                <li><strong>Clear</strong> (button in the Planner) — enough if you <strong>only made a route</strong> with Plan. This removes your planned route.</li>
+                <li><strong>Delete Loaded Track</strong> (in the GPX menu) — wipes <strong>everything at once</strong>: the loaded route, the offroad track (purple) and the navigation. Use this for a clean map.</li>
+            </ul>
+
+            <h2 style="color: #00BCD4; margin-top: 40px; border-top: 2px solid #00BCD4; padding-top: 25px;">Route Planner — Master only</h2>
+            <p>With the Route Planner you build your own ride on the map in advance: search, compute a route, add detours, avoid areas and find places along the way (POI). Then you ride it. Tap <strong>Plan</strong> (top left) to open it.</p>
+
+            <h3 style="color: #00BCD4; margin-top: 25px;">The menu buttons</h3>
+            <p>On opening you see the tabs. You expand what you need yourself — so the map stays free.</p>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+                <li><strong>Route</strong> — search bar + Start/Via/Finish/📍 + the profiles. <em>Route and Extra may be open together.</em></li>
+                <li><strong>Extra</strong> — detour generator (km + points).</li>
+                <li><strong>POI</strong> — opens focus mode: all other menus disappear for maximum view of the map. Buttons at the bottom, list top left. Close with the red ✕.</li>
+                <li><strong>Mode</strong> — choose how you travel: Road, Offroad, Bike, Race bike or Walk. See the <em>Mode</em> section below.</li>
+            </ul>
+
+            <h3 style="color: #00BCD4; margin-top: 25px;">Making a route</h3>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+                <li><strong>Search:</strong> type an address or place. First choose whether it's your <strong>Start</strong>, a <strong>Via</strong> point or the <strong>Finish</strong>.</li>
+                <li><strong>📍 button:</strong> uses your current GPS location as the start point.</li>
+                <li><strong>Tapping the map:</strong> opens a menu — choose Start, Via (smartly inserted), End, Finish or Avoid.</li>
+                <li><strong>Remove/move a point:</strong> tap a point on the map.</li>
+            </ul>
+
+            <h3 style="color: #00BCD4; margin-top: 25px;">Profiles</h3>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+                <li><strong>Fast</strong> — the fastest time. Happily takes the motorway if it saves time.</li>
+                <li><strong>Quiet</strong> — actively avoids the motorway, nice touring on smaller roads.</li>
+                <li><strong>Neutral</strong> — no restrictions, often the shorter way (so sometimes a bit slower). Allows motorway and below; your via points steer the route. Handy to build a motorway route home after a Quiet route.</li>
+            </ul>
+
+            <h3 style="color: #00BCD4; margin-top: 25px;">Mode — how you travel</h3>
+            <p>The <strong>Mode</strong> tab opens a choice menu. Only one can be on at a time; the button colours with your choice:</p>
+            <ul style="margin: 8px 0; padding-left: 20px;">
+                <li><strong>Road</strong> — normal on the road. Here you see the choice Fast / Quiet / Neutral.</li>
+                <li><strong>Offroad</strong> — seeks out unpaved roads (sand roads, tracks), asphalt is avoided. Ideal for open terrain.</li>
+                <li><strong>Bike</strong> — a normal cycling route on the road.</li>
+                <li><strong>Race bike</strong> — a fast road-bike route, avoids unpaved.</li>
+                <li><strong>Walk</strong> — seeks footpaths and walking trails, to set out a route on foot.</li>
+            </ul>
+            <p style="background:#e3e7f5; padding:10px 14px; border-radius:8px;">For every mode you just make a <strong>Start</strong> and <strong>Finish</strong> (and optional via points), and you can set a <strong>pin to avoid something</strong> as usual. Fast/Quiet/Neutral is only visible with <strong>Road</strong>. Choose <strong>Road</strong> (or <strong>Clear route</strong>) to go back to normal.</p>
+            <p><strong>Sound &amp; arrows:</strong> with <strong>Offroad</strong>, sound and navigation arrows turn off automatically — there you follow the track ("string") on the map. With Road, Bike, Race bike and Walk the directions are on (clear turns). In the ☰ menu you can always turn them on or off yourself. The green <strong>GO ▶</strong> keeps giving the remaining distance + time everywhere.</p>
+
+            <h3 style="color: #00BCD4; margin-top: 25px;">Detour generator</h3>
+            <p>Enter a desired <strong>distance</strong> (km) and the number of <strong>points</strong> and tap <strong>Generate detour</strong>. The planner makes a winding route that comes out around your target distance. The detour points (orange) lie on the route; your own points (purple) stay. Tap again = a new variant.</p>
+
+            <h3 style="color: #00BCD4; margin-top: 25px;">Avoid</h3>
+            <p>Tap the map → <strong>Avoid</strong> and enter a radius (km). A red pin with circle appears: the route <strong>always</strong> goes around it. If the zone blocks the only road, no route appears — make the circle <strong>smaller</strong> or move it. Tap the pin to adjust the radius or remove the zone.</p>
+
+            <h3 style="color: #00BCD4; margin-top: 25px;">POI — finding something along the way</h3>
+            <p>Open <strong>POI</strong> for focus mode. Choose <strong>Fuel</strong>, <strong>Food</strong> or <strong>Coffee</strong>, or type a keyword (e.g. hotel, bakery, supermarket, viewpoint, toilet) or a name (e.g. Shell).</p>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+                <li>Icons per type appear on the map. You pan the map yourself to look nearby.</li>
+                <li>Top left a small list of places right along your route: <strong>left the distance from you</strong> (orange, nearest first), next to it the <strong>distance to the route</strong> (cyan) and the name. Click = centre on the map.</li>
+                <li>Tap an icon → name, details and opening hours + <strong>Smart add to route</strong>. The place becomes a via point; the other icons disappear.</li>
+            </ul>
+
+            <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
+                HO-ME v21.2 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2575,7 +2845,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "21.0";
+        const APP_VERSION = "21.2";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -6546,7 +6816,7 @@ assign initialcost =
             const planPanel = document.getElementById('plannerPanel');
             if (planPanel) planPanel.style.display = 'none'; // planner dicht als 'ie nog open was
             // ALLE menu's/panelen sluiten zodat er na STOP niks open blijft staan.
-            ['appMenuModal','handleidingModal','gpxModal','poiFocusBar','poiFocusList'].forEach(id => {
+            ['appMenuModal','handleidingModal','handleidingModalEN','gpxModal','poiFocusBar','poiFocusList'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) { el.style.display = 'none'; if (id === 'gpxModal') el.remove(); }
             });
@@ -6640,6 +6910,17 @@ assign initialcost =
 
         function toggleHandleiding() {
             const modal = document.getElementById('handleidingModal');
+            if (modal.classList.contains('hidden')) {
+                modal.classList.remove('hidden');
+                modal.style.display = 'block';
+            } else {
+                modal.classList.add('hidden');
+                modal.style.display = 'none';
+            }
+        }
+
+        function toggleHandleidingEN() {
+            const modal = document.getElementById('handleidingModalEN');
             if (modal.classList.contains('hidden')) {
                 modal.classList.remove('hidden');
                 modal.style.display = 'block';
