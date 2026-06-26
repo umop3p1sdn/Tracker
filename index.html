@@ -764,7 +764,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v23.1 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v23.2 © Umop3p1sdn</div>
 
             </div>
 
@@ -1201,7 +1201,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v23.1 © Umop3p1sdn
+                HO-ME v23.2 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1476,7 +1476,7 @@
             </ul>
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v23.1 © Umop3p1sdn
+                HO-ME v23.2 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2877,7 +2877,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "23.1";
+        const APP_VERSION = "23.2";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -3035,6 +3035,19 @@ assign initialcost =
             try {
                 if ('speechSynthesis' in window && !window._speechPrimed) {
                     const u = new SpeechSynthesisUtterance(' ');  // (bijna) stil
+                    u.volume = 0; u.lang = 'nl-NL';
+                    window.speechSynthesis.speak(u);
+                    window._speechPrimed = true;
+                }
+            } catch (e) {}
+        }
+
+        // Spraak (speechSynthesis) ontgrendelen op iOS — moet vlak na een ECHTE aanraking 1× .speak()
+        // aanroepen, anders blijft de stem stil bij berichten die via de poll binnenkomen (geen aanraking).
+        function primeSpeech() {
+            try {
+                if ('speechSynthesis' in window && !window._speechPrimed) {
+                    const u = new SpeechSynthesisUtterance(' ');
                     u.volume = 0; u.lang = 'nl-NL';
                     window.speechSynthesis.speak(u);
                     window._speechPrimed = true;
@@ -3292,6 +3305,7 @@ assign initialcost =
             if (ev) { ev.preventDefault(); ev.stopPropagation(); }
             if (talkBusy) return;
             if (!SpeechRec) { showError && showError('Spraakherkenning niet beschikbaar'); return; }
+            primeSpeech();   // iOS: spraak ontgrendelen bij deze aanraking (zodat ontvangen berichten klinken)
             talkBusy = true;
             talkText = '';
             const btn = document.getElementById('talkBtn');
