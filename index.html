@@ -764,7 +764,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v22.9 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v23.0 © Umop3p1sdn</div>
 
             </div>
 
@@ -1201,7 +1201,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v22.9 © Umop3p1sdn
+                HO-ME v23.0 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1476,7 +1476,7 @@
             </ul>
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v22.9 © Umop3p1sdn
+                HO-ME v23.0 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2877,7 +2877,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "22.9";
+        const APP_VERSION = "23.0";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -3335,8 +3335,9 @@ assign initialcost =
             const ts = Date.now();
             const from = (myTag || (currentMode === 'master' ? 'Master' : 'Rider'));
             vdbg('finishTalk: stuur "' + txt + '" (code ' + currentCode + ')');
-            // naar Firebase (alleen laatste bericht onder /voice/) — overschrijft het vorige
-            fetch(`${firebaseConfig.databaseURL}/voice/${currentCode}.json`, {
+            // naar Firebase onder het AL-TOEGESTANE /tracking/ pad (eigen /voice/ pad gaf 401 — niet in de regels).
+            // Het is gewoon TEKST onder de groepscode.
+            fetch(`${firebaseConfig.databaseURL}/tracking/${currentCode}/msg.json`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ ts, text: txt, from })
@@ -3404,7 +3405,7 @@ assign initialcost =
         async function checkVoice() {
             if (!currentCode) { vdbg('checkVoice: GEEN currentCode'); return; }
             try {
-                const res = await fetch(`${firebaseConfig.databaseURL}/voice/${currentCode}.json`);
+                const res = await fetch(`${firebaseConfig.databaseURL}/tracking/${currentCode}/msg.json`);
                 if (!res.ok) { vdbg('checkVoice: HTTP ' + res.status); return; }
                 const v = await res.json();
                 if (!v) { vdbg('checkVoice: Firebase LEEG (code ' + currentCode + ')'); return; }
