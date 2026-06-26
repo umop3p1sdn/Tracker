@@ -589,6 +589,8 @@
     <div id="talkBtn" style="display:none; position: fixed; bottom: 367px; left: 10px; z-index: 1250; width: 78px; height: 78px; border-radius: 50%; border: 4px solid #000; background: rgba(255,255,255,0.12); box-shadow: 0 0 0 2px rgba(255,255,255,0.4); align-items:center; justify-content:center; cursor: pointer; -webkit-user-select:none; user-select:none; touch-action:none;">
         <svg width="34" height="34" viewBox="0 0 24 24" fill="#000" style="filter: drop-shadow(0 0 2px rgba(255,255,255,0.9));"><path d="M12 14a3 3 0 003-3V5a3 3 0 00-6 0v6a3 3 0 003 3zm5-3a5 5 0 01-10 0H5a7 7 0 006 6.92V21h2v-3.08A7 7 0 0019 11h-2z"/></svg>
     </div>
+    <!-- TIJDELIJK diagnose-balkje voor spraakberichten -->
+    <div id="voiceDebug" style="display:block; position:fixed; top:2px; left:2px; right:2px; z-index:99999; background:rgba(0,0,0,0.8); color:#0f0; font-family:monospace; font-size:11px; padding:4px 6px; border-radius:6px; pointer-events:none; white-space:pre-wrap; line-height:1.3;">voice-debug klaar</div>
     <!-- SPRAAKBERICHT lichtkrant: tekst scrolt 1× van rechts naar links, transparant met zwarte rand -->
     <div id="voiceMarquee" style="display:none; position:fixed; top:18%; left:0; right:0; z-index:1240; pointer-events:none; overflow:hidden; height:90px;">
         <span id="voiceMarqueeText" style="position:absolute; top:0; white-space:nowrap; font-family:sans-serif; font-weight:900; font-size:64px; line-height:90px; color:rgba(255,255,255,0.12); -webkit-text-stroke:3.5px #000; text-stroke:3.5px #000; paint-order:stroke fill; will-change:transform;"></span>
@@ -762,7 +764,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v22.8 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v22.9 © Umop3p1sdn</div>
 
             </div>
 
@@ -1199,7 +1201,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v22.8 © Umop3p1sdn
+                HO-ME v22.9 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1474,7 +1476,7 @@
             </ul>
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v22.8 © Umop3p1sdn
+                HO-ME v22.9 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2875,7 +2877,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "22.8";
+        const APP_VERSION = "22.9";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -3329,15 +3331,16 @@ assign initialcost =
             const txt = (talkText || '').trim();
             talkRecog = null;
             talkBusy = false;
-            if (!txt) return;   // niks herkend → niks sturen
+            if (!txt) { vdbg('finishTalk: GEEN tekst herkend'); return; }   // niks herkend → niks sturen
             const ts = Date.now();
             const from = (myTag || (currentMode === 'master' ? 'Master' : 'Rider'));
+            vdbg('finishTalk: stuur "' + txt + '" (code ' + currentCode + ')');
             // naar Firebase (alleen laatste bericht onder /voice/) — overschrijft het vorige
             fetch(`${firebaseConfig.databaseURL}/voice/${currentCode}.json`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ ts, text: txt, from })
-            }).catch(() => {});
+            }).then(r => vdbg('PUT klaar: HTTP ' + r.status)).catch(e => vdbg('PUT FOUT: ' + e.message));
             // ALTIJD via Firebase — nooit lokaal. Eén afspeel-pad (de poller pikt 't op, ook je eigen
             // bericht bij Voice check aan). Zo test je altijd de echte rondgang.
             if (talkEchoSelf) {
@@ -3394,17 +3397,24 @@ assign initialcost =
         }
 
         // Poll Firebase op nieuwe spraakberichten (tekst) en zet ze in de wachtrij.
+        function vdbg(msg) {
+            const el = document.getElementById('voiceDebug');
+            if (el) el.textContent = '[' + new Date().toLocaleTimeString() + '] ' + msg;
+        }
         async function checkVoice() {
-            if (!currentCode) return;
+            if (!currentCode) { vdbg('checkVoice: GEEN currentCode'); return; }
             try {
                 const res = await fetch(`${firebaseConfig.databaseURL}/voice/${currentCode}.json`);
-                if (!res.ok) return;
+                if (!res.ok) { vdbg('checkVoice: HTTP ' + res.status); return; }
                 const v = await res.json();
-                if (v && v.ts && v.ts !== lastTalkTs && v.text) {
-                    lastTalkTs = v.ts;
-                    enqueueVoiceMsg({ text: v.text, from: v.from || '' });
-                }
-            } catch (e) {}
+                if (!v) { vdbg('checkVoice: Firebase LEEG (code ' + currentCode + ')'); return; }
+                if (!v.ts) { vdbg('checkVoice: bericht zonder ts'); return; }
+                if (v.ts === lastTalkTs) { vdbg('checkVoice: zelfde ts (al gehad)'); return; }
+                if (!v.text) { vdbg('checkVoice: bericht zonder text'); return; }
+                vdbg('checkVoice: NIEUW! "' + v.text + '" → wachtrij');
+                lastTalkTs = v.ts;
+                enqueueVoiceMsg({ text: v.text, from: v.from || '' });
+            } catch (e) { vdbg('checkVoice FOUT: ' + e.message); }
         }
 
         // menu-knop: eigen bericht ook horen/lezen aan/uit (standaard AAN)
