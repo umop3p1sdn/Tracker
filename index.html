@@ -780,7 +780,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v28.4 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v28.6 © Umop3p1sdn</div>
 
             </div>
 
@@ -923,8 +923,6 @@
                 </div>
                 <button class="button-secondary" onclick="toggleTalkEcho()" id="talkEchoBtn" style="width: 100%;">Voice check: AAN</button>
                 <button class="button-secondary" onclick="toggleMicMode()" id="micModeBtn" style="width: 100%;">Mic: Talk</button>
-                <button class="button-secondary" onclick="toggleAvoidFerry()" id="avoidFerryBtn" style="width: 100%;">Veerboten: AAN</button>
-                <button class="button-secondary" onclick="toggleAvoidToll()" id="avoidTollBtn" style="width: 100%;">Tolwegen: AAN</button>
                 <button class="button-secondary" onclick="openHistory()" style="width: 100%;">Geschiedenis</button>
                 <button class="button-secondary" onclick="testStem()" style="width: 100%;">Test stem</button>
                 <div id="tagOpacityRow" style="display:flex; align-items:center; justify-content:space-between; gap:8px; background:#1a2148; padding:8px 12px; border-radius:8px;">
@@ -1228,6 +1226,9 @@
             <h3 style="color: #00BCD4; margin-top: 25px;">Vermijden</h3>
             <p>Tik op de kaart → <strong>Vermijden</strong> en vul een straal (km) in. Er verschijnt een rode pin met cirkel: de route gaat daar <strong>altijd</strong> omheen. Blokkeert de zone de enige weg, dan komt er geen route — maak de cirkel dan <strong>kleiner</strong> of verplaats 'm. Tik op de pin om de straal aan te passen of de zone te verwijderen.</p>
 
+            <h3 style="color: #00BCD4; margin-top: 25px;">Veerboten &amp; tolwegen</h3>
+            <p>In het <strong>Mode</strong>-menu (bovenin de planner) staan twee schakelaars. <strong>Veerboten: UIT</strong> → de route mijdt veerponten (over water). <strong>Tolwegen: UIT</strong> → de route mijdt betaalde autowegen (over land). Op <strong>AAN</strong> (standaard) zijn ze toegestaan. De route wordt meteen opnieuw berekend.</p>
+
             <h3 style="color: #00BCD4; margin-top: 25px;">POI — onderweg iets vinden</h3>
             <p>Open <strong>POI</strong> voor de focus-modus. Kies <strong>Benzine</strong>, <strong>Eten</strong> of <strong>Koffie</strong>, of typ een steekwoord (bv hotel, bakker, supermarkt, uitzicht, pin, wc) of een naam (bv Shell).</p>
             <ul style="margin: 10px 0; padding-left: 20px;">
@@ -1238,7 +1239,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v28.4 © Umop3p1sdn
+                HO-ME v28.6 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1508,6 +1509,9 @@
             <h3 style="color: #00BCD4; margin-top: 25px;">Avoid</h3>
             <p>Tap the map → <strong>Avoid</strong> and enter a radius (km). A red pin with circle appears: the route <strong>always</strong> goes around it. If the zone blocks the only road, no route appears — make the circle <strong>smaller</strong> or move it. Tap the pin to adjust the radius or remove the zone.</p>
 
+            <h3 style="color: #00BCD4; margin-top: 25px;">Ferries &amp; toll roads</h3>
+            <p>The <strong>Mode</strong> menu (top of the planner) has two switches. <strong>Ferries: OFF</strong> → the route avoids ferries (over water). <strong>Toll roads: OFF</strong> → the route avoids paid roads (over land). On <strong>ON</strong> (default) they're allowed. The route is recalculated right away.</p>
+
             <h3 style="color: #00BCD4; margin-top: 25px;">POI — finding something along the way</h3>
             <p>Open <strong>POI</strong> for focus mode. Choose <strong>Fuel</strong>, <strong>Food</strong> or <strong>Coffee</strong>, or type a keyword (e.g. hotel, bakery, supermarket, viewpoint, toilet) or a name (e.g. Shell).</p>
             <ul style="margin: 10px 0; padding-left: 20px;">
@@ -1517,7 +1521,7 @@
             </ul>
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v28.4 © Umop3p1sdn
+                HO-ME v28.6 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1548,6 +1552,11 @@
                     <button class="mode-choice"        id="mcBike"     onclick="setMode('bike')">Bike</button>
                     <button class="mode-choice"        id="mcRacebike" onclick="setMode('racebike')">Race bike</button>
                     <button class="mode-choice"        id="mcWalk"     onclick="setMode('walk')">Walk</button>
+                </div>
+                <!-- veerboten / tolwegen vermijden: hoort bij hoe je reist → in het Mode-menu -->
+                <div style="display:flex; gap:6px; margin-top:8px;">
+                    <button onclick="toggleAvoidFerry()" id="avoidFerryBtn" style="flex:1; padding:8px; border-radius:8px; border:2px solid #00838f; background:#0a0e27; color:#cfeffd; font-weight:bold; font-size:0.78em; cursor:pointer;">Veerboten: AAN</button>
+                    <button onclick="toggleAvoidToll()" id="avoidTollBtn" style="flex:1; padding:8px; border-radius:8px; border:2px solid #00838f; background:#0a0e27; color:#cfeffd; font-weight:bold; font-size:0.78em; cursor:pointer;">Tolwegen: AAN</button>
                 </div>
             </div>
             <div id="panelRoute" class="panel">
@@ -3260,7 +3269,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "28.4";
+        const APP_VERSION = "28.6";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
