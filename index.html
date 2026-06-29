@@ -780,7 +780,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v30.4 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v30.5 © Umop3p1sdn</div>
 
             </div>
 
@@ -1244,7 +1244,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v30.4 © Umop3p1sdn
+                HO-ME v30.5 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1530,7 +1530,7 @@
             </ul>
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v30.4 © Umop3p1sdn
+                HO-ME v30.5 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -3238,14 +3238,16 @@ assign initialcost =
                     if (acc >= CORRIDOR_KM * 1000) break;
                 }
                 if (!corridorPts.length) corridorPts.push(lastRouteCoords[startIdx]);
-                // om de aanvraag klein te houden: maximaal ~20 cirkels langs het stuk (om de ~1km)
-                const step = Math.max(1, Math.floor(corridorPts.length / 20));
-                const circles = [];
+                // SNEL: één polyline-corridor i.p.v. ~40 losse cirkels. Overpass' "around:R,lat,lon,lat,lon,..."
+                // zoekt in één keer langs de hele lijn — veel lichter voor de server. We dunnen de punten uit
+                // tot max ~50 (anders wordt de URL te lang) en bouwen één node- + één way-zoek.
+                const step = Math.max(1, Math.floor(corridorPts.length / 50));
+                const poly = [];
                 for (let i = 0; i < corridorPts.length; i += step) {
-                    const p = corridorPts[i];
-                    circles.push(`node${filter}(around:${SIDE_M},${p[1]},${p[0]});way${filter}(around:${SIDE_M},${p[1]},${p[0]});`);
+                    poly.push(`${corridorPts[i][1]},${corridorPts[i][0]}`);   // lat,lon
                 }
-                aroundClause = circles.join('');
+                const polyStr = poly.join(',');
+                aroundClause = `node${filter}(around:${SIDE_M},${polyStr});way${filter}(around:${SIDE_M},${polyStr});`;
             } else {
                 // geen route → klein gebied rond je positie/kaartmidden (5 km)
                 const c = myPos || map.getCenter();
@@ -3253,7 +3255,7 @@ assign initialcost =
             }
 
             const q = `[out:json][timeout:25];(${aroundClause});out center 80;`;
-            // Meerdere Overpass-servers: als de eerste traag/plat is, probeer de volgende.
+            // Meerdere Overpass-servers: als de eerste traag/plat is, snel doorschakelen (timeout 8s per server).
             const servers = [
                 'https://overpass-api.de/api/interpreter',
                 'https://overpass.kumi.systems/api/interpreter',
@@ -3262,11 +3264,14 @@ assign initialcost =
             let data = null;
             for (const srv of servers) {
                 try {
-                    const res = await fetch(srv, { method: 'POST', body: 'data=' + encodeURIComponent(q) });
+                    const ctrl = new AbortController();
+                    const t = setTimeout(() => ctrl.abort(), 8000);   // niet eindeloos wachten
+                    const res = await fetch(srv, { method: 'POST', body: 'data=' + encodeURIComponent(q), signal: ctrl.signal });
+                    clearTimeout(t);
                     if (!res.ok) continue;
                     data = await res.json();
                     break;   // gelukt → stop met proberen
-                } catch (e) { /* volgende server proberen */ }
+                } catch (e) { /* timeout of fout → volgende server */ }
             }
             if (!data) { showInfo('POI-server reageert niet — probeer zo nog eens.'); return; }
             try {
@@ -3449,7 +3454,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "30.4";
+        const APP_VERSION = "30.5";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
