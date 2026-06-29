@@ -780,7 +780,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v32.9 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v33.0 © Umop3p1sdn</div>
 
             </div>
 
@@ -1244,7 +1244,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v32.9 © Umop3p1sdn
+                HO-ME v33.0 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1530,7 +1530,7 @@
             </ul>
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v32.9 © Umop3p1sdn
+                HO-ME v33.0 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -3450,11 +3450,13 @@ assign initialcost =
             // start, deze plek wordt eindpunt, en de route ertussen wordt berekend.
             const heeftRoute = lastRouteCoords && lastRouteCoords.length;
             let html = `<b>${name}</b>${details.length ? '<br>' + details.join('<br>') : ''}`;
-            if (heeftRoute) {
-                html += `<br><button onclick="addPOIasVia(${e.lat},${e.lng},'${safeName}')" style="margin-top:8px;padding:8px 10px;border-radius:8px;border:none;background:#9C27B0;color:#fff;font-weight:bold;cursor:pointer;">Slim toevoegen aan route</button>`;
-            } else {
-                html += `<br><button onclick="addPOIasFinish(${e.lat},${e.lng},'${safeName}')" style="margin-top:8px;padding:8px 10px;border-radius:8px;border:none;background:#9C27B0;color:#fff;font-weight:bold;cursor:pointer;">🏁 Route hierheen (finish)</button>`;
-            }
+            // Vier opties — de planner kiest zelf wat deze plek wordt in de route:
+            html += `<div style="margin-top:8px;display:flex;flex-direction:column;gap:6px;">` +
+                `<button onclick="poiSetStart(${e.lat},${e.lng},'${safeName}')" style="padding:9px 10px;border-radius:8px;border:2px solid #9E9E9E;background:transparent;color:#bbb;font-weight:bold;cursor:pointer;">Start</button>` +
+                `<button onclick="poiSetDest(${e.lat},${e.lng},'${safeName}')" style="padding:9px 10px;border-radius:8px;border:none;background:#eee;color:#000;font-weight:bold;cursor:pointer;">Finish 🏁</button>` +
+                `<button onclick="addPOIasVia(${e.lat},${e.lng},'${safeName}')" style="padding:9px 10px;border-radius:8px;border:2px solid #9C27B0;background:transparent;color:#ce93d8;font-weight:bold;cursor:pointer;">Tussen (slim) 📍</button>` +
+                `<button onclick="addPOIasLast(${e.lat},${e.lng},'${safeName}')" style="padding:9px 10px;border-radius:8px;border:2px solid #9C27B0;background:transparent;color:#ce93d8;font-weight:bold;cursor:pointer;">Achteraan</button>` +
+                `</div>`;
             // Bij een tankstation: knoppen naar échte brandstofprijs-kaarten (Google Maps toont in NL
             // geen pompprijzen). brandstof-zoeker.nl = beste NL/BE-prijzen; goedkooptanken.app = kaart die
             // ook Duitsland/Frankrijk dekt (handig voor ritten over de grens).
@@ -3472,6 +3474,28 @@ assign initialcost =
         function addPOIasVia(lat, lng, name) {
             addVia(lat, lng, name, true, 'eigen');   // slim invoegen als eigen via
             clearPOI();                               // overige POI's van de kaart
+            maybeRoute();
+        }
+
+        // Deze plek als laatste via (finish −1): de route trekt er als laatste tussenpunt langs,
+        // vóór de finish. Stapelt netjes op: elke nieuwe 'achteraan' wordt de nieuwe laatste via.
+        function addPOIasLast(lat, lng, name) {
+            addVia(lat, lng, name, false, 'eigen');   // slim=false → achteraan in de rij
+            clearPOI();
+            maybeRoute();
+        }
+
+        // POI als startpunt zetten.
+        function poiSetStart(lat, lng, name) {
+            setStart(lat, lng, name, false);
+            clearPOI();
+            maybeRoute();
+        }
+
+        // POI als eindpunt (finish) zetten.
+        function poiSetDest(lat, lng, name) {
+            setDest(lat, lng, name);
+            clearPOI();
             maybeRoute();
         }
 
@@ -3565,7 +3589,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "32.9";
+        const APP_VERSION = "33.0";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
