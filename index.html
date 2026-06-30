@@ -921,7 +921,7 @@
                     <input type="range" id="flitserVolSlider" min="0" max="100" value="100" oninput="setFlitserVolume(this.value)" style="flex:1; accent-color:#00BCD4; cursor:pointer;">
                     <span id="flitserVolVal" style="min-width:42px; text-align:center; font-weight:bold;">100%</span>
                 </div>
-                <button class="button-secondary" onclick="toggleTalkEcho()" id="talkEchoBtn" style="width: 100%;">See/hear own mic: ON</button>
+
                 <button class="button-secondary" onclick="toggleMicMode()" id="micModeBtn" style="width: 100%;">Mic: Talk</button>
                 <button class="button-secondary" onclick="openHistory()" style="width: 100%;">Geschiedenis</button>
                 <button class="button-secondary" onclick="testStem()" style="width: 100%;">Test stem</button>
@@ -4329,11 +4329,7 @@ assign initialcost =
         }
 
         // menu-knop: eigen bericht ook horen/lezen aan/uit (standaard AAN)
-        function toggleTalkEcho() {
-            talkEchoSelf = !talkEchoSelf;
-            const b = document.getElementById('talkEchoBtn');
-            if (b) b.textContent = 'See/hear own mic: ' + (talkEchoSelf ? 'ON' : 'OFF');
-        }
+        
 
         // ── WOORDENLIJST (Words-modus): kant-en-klare zinnen i.p.v. inspreken ──
         // Gesorteerd op urgentie/tijd: direct (rood) → in het moment (oranje) → antwoord (rustig).
