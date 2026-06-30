@@ -464,12 +464,16 @@
         /* Mini-labels bij POI-iconen: standaard verborgen, alleen tonen als je ver inzoomt (body.poi-zoomed) */
         .leaflet-tooltip.poi-label {
             display: none;
-            background: rgba(10,14,39,0.88); color: #fff; border: 2px solid #00BCD4;
-            border-radius: 8px; font-size: 22px; line-height: 1.2; padding: 5px 9px;
+            background: rgba(10,14,39,0.88); color: #fff; border: 1px solid #00BCD4;
+            border-radius: 6px; font-size: 12px; line-height: 1.2; padding: 2px 5px;
             box-shadow: 0 2px 6px rgba(0,0,0,0.5); white-space: nowrap;
         }
         .leaflet-tooltip.poi-label::before { display: none; }   /* pijltje weg */
         body.poi-zoomed .leaflet-tooltip.poi-label { display: block; }
+        /* nog verder ingezoomd (19+) → grotere, goed leesbare borden */
+        body.poi-zoomed-groot .leaflet-tooltip.poi-label {
+            font-size: 22px; border-radius: 8px; padding: 5px 9px; border-width: 2px;
+        }
         /* POI-popup groot & leesbaar (naam, openingstijden, knoppen) */
         .poi-popup .leaflet-popup-content { margin: 14px 16px; font-size: 18px; }
         .poi-popup .leaflet-popup-content-wrapper { border-radius: 12px; }
@@ -716,7 +720,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v34.7 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v34.8 © Umop3p1sdn</div>
 
             </div>
 
@@ -1180,7 +1184,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v34.7 © Umop3p1sdn
+                HO-ME v34.8 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1466,7 +1470,7 @@
             </ul>
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v34.7 © Umop3p1sdn
+                HO-ME v34.8 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -3426,7 +3430,7 @@ assign initialcost =
                     const div = document.createElement('div');
                     div.style.cssText = 'padding:14px 16px;color:#fff;cursor:pointer;border-bottom:1px solid #1a2148;font-size:1.15em;display:flex;gap:8px;align-items:center;';
                     div.innerHTML = `<span style="font-size:1.2em;">${emoji}</span>${leftStr}${rightStr}${chargeStr}<span>${name}</span>`;
-                    div.onclick = () => { map.setView([e.lat, e.lng], 17); };
+                    div.onclick = () => { map.setView([e.lat, e.lng], 19); };
                     box.appendChild(div);
                 });
                 // kop met kolomtitels + grote vouw-pijl (◀ wegvouwen) + grote rode X (sluiten)
@@ -3634,7 +3638,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "34.7";
+        const APP_VERSION = "34.8";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -7392,11 +7396,12 @@ assign initialcost =
                     mapInstance.createPane('hmPointPane');
                     mapInstance.getPane('hmPointPane').style.zIndex = 500;
                 }
-                // POI mini-labels alleen tonen als je ver inzoomt (zoom 17+) — anders te druk.
+                // POI mini-labels: zichtbaar vanaf zoom 17 (klein), groter vanaf zoom 19.
                 const POI_LABEL_ZOOM = 17;
                 const updatePoiLabels = () => {
-                    const on = mapInstance.getZoom() >= POI_LABEL_ZOOM;
-                    document.body.classList.toggle('poi-zoomed', on);
+                    const z = mapInstance.getZoom();
+                    document.body.classList.toggle('poi-zoomed', z >= POI_LABEL_ZOOM);
+                    document.body.classList.toggle('poi-zoomed-groot', z >= 19);
                 };
                 mapInstance.on('zoomend', updatePoiLabels);
                 updatePoiLabels();
