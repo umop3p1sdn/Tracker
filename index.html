@@ -921,7 +921,7 @@
                     <input type="range" id="flitserVolSlider" min="0" max="100" value="100" oninput="setFlitserVolume(this.value)" style="flex:1; accent-color:#00BCD4; cursor:pointer;">
                     <span id="flitserVolVal" style="min-width:42px; text-align:center; font-weight:bold;">100%</span>
                 </div>
-                <button class="button-secondary" onclick="toggleTalkEcho()" id="talkEchoBtn" style="width: 100%;">Voice check: AAN</button>
+                <button class="button-secondary" onclick="toggleTalkEcho()" id="talkEchoBtn" style="width: 100%;">See/hear own mic: ON</button>
                 <button class="button-secondary" onclick="toggleMicMode()" id="micModeBtn" style="width: 100%;">Mic: Talk</button>
                 <button class="button-secondary" onclick="openHistory()" style="width: 100%;">Geschiedenis</button>
                 <button class="button-secondary" onclick="testStem()" style="width: 100%;">Test stem</button>
@@ -1123,7 +1123,7 @@
             <h3 style="color: #00BCD4; margin-top: 25px;">Geschiedenis 📜</h3>
             <p>In het <strong>☰ menu</strong> → <strong>Geschiedenis</strong> zie je alle berichten terug (tijd · naam · tekst, nieuwste boven). <strong>Tik op een bericht</strong> om het opnieuw te laten voorlezen. De geschiedenis blijft op je telefoon bewaard, ook na afsluiten. Met <strong>Wissen</strong> maak je 'm leeg.</p>
 
-            <p style="background:#e3e7f5; padding:10px 14px; border-radius:8px;"><strong>Werkt het? Test 'm:</strong> druk bij de start op <strong>toestemming</strong> (mic + beweging). Houd dan de mic-knop vast, spreek iets in, en laat los. Je ziet je eigen bericht als lichtkrant en hoort het voorgelezen. Met de knop <strong>Test stem</strong> in het menu check je of het geluid aan staat.</p>
+            <p style="background:#e3e7f5; padding:10px 14px; border-radius:8px;"><strong>Werkt het? Test 'm:</strong> druk bij de start op <strong>toestemming</strong> (mic + beweging). Houd dan de mic-knop vast, spreek iets in, en laat los. Je ziet je eigen bericht als lichtkrant en hoort het voorgelezen. Met <strong>See/hear own mic</strong> in het menu hoor en zie je je eigen ingesproken tekst terug.</p>
 
             <h3 style="color: #00BCD4; margin-top: 25px;">Privacy / STOP</h3>
             <p>Bij <strong>STOP</strong> worden je gegevens uit de cloud gewist (geen sporen). Sluit je de app zonder STOP, dan ruimt de app het later vanzelf op (binnen ~10 min).</p>
@@ -1416,7 +1416,7 @@
                 <li>Max <strong>5 seconds</strong> per message — stops by itself.</li>
                 <li>Everyone in the group <strong>hears it automatically</strong>.</li>
             </ul>
-            <p style="background:#e3e7f5; padding:10px 14px; border-radius:8px;"><strong>Does it work? Test it yourself:</strong> in the ☰ menu set <strong>Voice check</strong> to <strong>ON</strong>. Hold the mic button, say something, and release. <strong>Do you hear yourself back? Then it works.</strong> Turn Voice check off again for normal use.</p>
+            <p style="background:#e3e7f5; padding:10px 14px; border-radius:8px;"><strong>Does it work? Test it yourself:</strong> in the ☰ menu set <strong>See/hear own mic</strong> to <strong>ON</strong>. Hold the mic button, say something, and release. <strong>Do you hear yourself back? Then it works.</strong> Turn See/hear own mic off again for normal use.</p>
 
             <h3 style="color: #00BCD4; margin-top: 25px;">Privacy / STOP</h3>
             <p>On <strong>STOP</strong> your data is wiped from the cloud (no traces). If you close the app without STOP, the app cleans it up later automatically (within ~10 min).</p>
@@ -4332,7 +4332,7 @@ assign initialcost =
         function toggleTalkEcho() {
             talkEchoSelf = !talkEchoSelf;
             const b = document.getElementById('talkEchoBtn');
-            if (b) b.textContent = 'Voice check: ' + (talkEchoSelf ? 'AAN' : 'UIT');
+            if (b) b.textContent = 'See/hear own mic: ' + (talkEchoSelf ? 'ON' : 'OFF');
         }
 
         // ── WOORDENLIJST (Words-modus): kant-en-klare zinnen i.p.v. inspreken ──
