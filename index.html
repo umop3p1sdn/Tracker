@@ -4663,7 +4663,7 @@ assign initialcost =
         //              mag een flitser-aanduiding zelfs niet passief zichtbaar zijn
         //  ZONES (1) → transparante rode cirkels (1km straal), GEEN exacte bordjes (Frankrijk-legaal)
         //  ACTIEF (2)→ witte snelheidsbordjes op de exacte locatie (NL/BE)
-        const FLITSER_DRAW_ZOOM = 11;   // onder dit zoom-niveau (ver uit) → geen flitsers tekenen
+        const FLITSER_DRAW_ZOOM = 13;   // onder dit zoom-niveau (ver uit) → geen flitsers tekenen
         function drawFlitserMarkers() {
             flitserMarkers.forEach(m => { try { mapInstance.removeLayer(m); } catch (e) {} });
             flitserMarkers = [];
