@@ -1868,22 +1868,17 @@ assign initialcost =
             poiScope = (lastRouteCoords && lastRouteCoords.length) ? 'route' : 'lokaal';
             const sb = document.getElementById('poiScopeBtn');
             if (sb) sb.textContent = 'Zoekgebied: ' + (poiScope === 'route' ? 'Route' : 'Lokaal');
-            // gewone menu's verbergen → focus op de kaart (GEEN clean/map-only gedoe — dat gaf vervuiling)
-            document.getElementById('menuTabs').style.display = 'none';
+            // Tabs (Route/Extra/POI/Mode) BLIJVEN zichtbaar, alleen de open panelen dichtklappen (minimized).
+            // Stop-knop blijft ook staan. Zo niks verbergen → geen verdwijn-bug meer.
             document.getElementById('panelRoute').classList.remove('open');
             document.getElementById('panelExtra').classList.remove('open');
             document.getElementById('poiFocusBar').style.display = 'flex';
-            // STOP-knop weg zodat 'ie niet in de weg zit van het POI-paneel
-            document.querySelectorAll('.button-stop').forEach(b => b.style.display = 'none');
         }
         function closePoiFocus() {
             clearPOI();
             document.getElementById('poiFocusBar').style.display = 'none';
             document.getElementById('poiFocusList').style.display = 'none';
-            // alleen de menu-knoppen terug (panelen blijven dicht)
-            document.getElementById('menuTabs').style.display = 'flex';
-            // STOP-knop weer terug
-            document.querySelectorAll('.button-stop').forEach(b => b.style.display = '');
+            // tabs en Stop-knop hoefden niet verborgen te worden → hier ook niks terug te zetten. Simpel.
         }
 
         function onMapTap(e) {
