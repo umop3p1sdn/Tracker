@@ -762,7 +762,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v37.2 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v37.6 © Umop3p1sdn</div>
 
             </div>
 
@@ -1121,6 +1121,15 @@
             </ul>
             <p>De zinnen staan op kleur: <strong>rood</strong> = direct/belangrijk (Stoppen, Let op flitser, Ik heb pech…), <strong>oranje</strong> = voor straks (Pauze, Tanken, Plassen…), <strong>rustig</strong> = antwoord (Rij maar door, Ik kom eraan…).</p>
 
+            <h3 style="color: #00BCD4; margin-top: 25px;">T-knop ✍️ (getypt bericht + eigen zinnen)</h3>
+            <p>Boven de mic-knop zit de <strong>T-knop</strong>. Hiermee stuur je een <strong>getypt</strong> bericht naar de hele groep — handig als inspreken lastig is (wind, lawaai). Tik 'm aan:</p>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+                <li>Typ tekst en druk op <strong>▶ Verstuur</strong> — iedereen hoort het voorgelezen en ziet de lichtkrant, net als bij een ingesproken bericht.</li>
+                <li>Met <strong>+ Aan lijst</strong> bewaar je een zin in je <strong>eigen afspeellijst</strong>. Elke zin krijgt een grote <strong>▶</strong> (links) om 'm met één tik naar iedereen te sturen, en een <strong>✕</strong> om 'm te verwijderen.</li>
+                <li>Met <strong>💾 Opslaan</strong> zet je je lijst als bestand in een eigen map op je telefoon (net als een GPX). Met <strong>📂 Laden</strong> haal je 'm later weer terug.</li>
+            </ul>
+            <p style="font-size:0.9em; color:#555;">Zo maak je je eigen setje vaste kreten (“Pauze?”, “Tanken”, “Gevaar!”) en stuur je ze onderweg met één tik naar de crew.</p>
+
             <h3 style="color: #00BCD4; margin-top: 25px;">Geschiedenis 📜</h3>
             <p>In het <strong>☰ menu</strong> → <strong>Geschiedenis</strong> zie je alle berichten terug (tijd · naam · tekst, nieuwste boven). <strong>Tik op een bericht</strong> om het opnieuw te laten voorlezen. De geschiedenis blijft op je telefoon bewaard, ook na afsluiten. Met <strong>Wissen</strong> maak je 'm leeg.</p>
 
@@ -1245,7 +1254,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v37.2 © Umop3p1sdn
+                HO-ME v37.6 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1531,7 +1540,7 @@
             </ul>
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v37.2 © Umop3p1sdn
+                HO-ME v37.6 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1735,6 +1744,8 @@
                 // 3. in de tracker-navigatie zetten (i.p.v. detectTurns-schatting)
                 activeRoute = route;
                 detectedTurns = turns;
+                // rotonde-exitnummers ophalen (aanpak A: alle rotondes in één query). Vult turn.exit als 't zeker is.
+                if (typeof loadRoundaboutExits === 'function') loadRoundaboutExits(route, turns);
                 beepedApproach = {}; beepedNow = {}; spokenFirst = {}; spokenAt = {}; spokenAtPrev = {};   // nieuwe route → flags schoon
                 // totale route-stats bewaren voor de aftelling (resterende afstand/tijd)
                 try {
@@ -3696,7 +3707,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "37.2";
+        const APP_VERSION = "37.6";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -3944,27 +3955,35 @@ assign initialcost =
 
         // Distance in meters between two [lat,lng]
         // Afslag-types (BRouter cmd-codes) → spraaktekst. Twee vormen:
-        //  turnDir: gebruikt na "Over 300 meter ..."  → "...rechtsaf" / "...de rotonde"
-        //  turnNow: gebruikt vlak voor de bocht "Nu ..." → "Nu rechtsaf" / "Nu de rotonde nemen"
+        //  turnDir: gebruikt na "Over 300 meter ..."  → "...rechtsaf" / "...de rotonde op"
+        //  turnNow: gebruikt vlak voor de bocht "Nu ..." → "Nu rechtsaf" / "Nu de rotonde op"
+        //  Alle BRouter voice-hint codes hebben een nette, natuurlijke NL-tekst.
         const TURN_SPEECH = {
-            2:  { dir: 'linksaf',                 now: 'linksaf' },
-            3:  { dir: 'flauw naar links',        now: 'flauw naar links' },
-            4:  { dir: 'scherp naar links',       now: 'scherp naar links' },
-            5:  { dir: 'rechtsaf',                now: 'rechtsaf' },
-            6:  { dir: 'flauw naar rechts',       now: 'flauw naar rechts' },
-            7:  { dir: 'scherp naar rechts',      now: 'scherp naar rechts' },
-            8:  { dir: 'links aanhouden',         now: 'links aanhouden' },
-            9:  { dir: 'rechts aanhouden',        now: 'rechts aanhouden' },
-            10: { dir: 'keren naar links',        now: 'keren naar links' },
-            11: { dir: 'keren naar rechts',       now: 'keren naar rechts' },
-            13: { dir: 'de rotonde',              now: 'de rotonde nemen' },
-            14: { dir: 'op de rotonde linksaf',   now: 'op de rotonde linksaf' },
-            15: { dir: 'omkeren',                 now: 'omkeren' },
-            17: { dir: 'de afrit links',          now: 'de afrit links nemen' },
-            18: { dir: 'de afrit rechts',         now: 'de afrit rechts nemen' }
+            2:  { dir: 'linksaf',                  now: 'linksaf' },
+            3:  { dir: 'flauw naar links',         now: 'flauw naar links' },
+            4:  { dir: 'scherp naar links',        now: 'scherp linksaf' },
+            5:  { dir: 'rechtsaf',                 now: 'rechtsaf' },
+            6:  { dir: 'flauw naar rechts',        now: 'flauw naar rechts' },
+            7:  { dir: 'scherp naar rechts',       now: 'scherp rechtsaf' },
+            8:  { dir: 'links aanhouden',          now: 'links aanhouden' },
+            9:  { dir: 'rechts aanhouden',         now: 'rechts aanhouden' },
+            10: { dir: 'rechtdoor',                now: 'rechtdoor' },
+            11: { dir: 'rechtdoor',                now: 'rechtdoor' },
+            12: { dir: 'de route volgen',          now: 'rechtdoor' },
+            13: { dir: 'de rotonde op',            now: 'de rotonde op, richting rechts' },
+            14: { dir: 'de rotonde op',            now: 'de rotonde op, richting links' },
+            15: { dir: 'omkeren',                  now: 'omkeren' },
+            16: { dir: 'rechtdoor',                now: 'rechtdoor' },
+            17: { dir: 'de afrit links',           now: 'de afrit links' },
+            18: { dir: 'de afrit rechts',          now: 'de afrit rechts' }
         };
         // Val terug op simpel links/rechts als het type onbekend is.
         function turnText(turn, when) {
+            // Rotonde met een ZEKER exit-nummer → noem de afslag ("de 2e afslag"). Anders "de rotonde op".
+            if ((turn.cmd === 13 || turn.cmd === 14) && turn.exit) {
+                const rang = { 1:'1e', 2:'2e', 3:'3e', 4:'4e', 5:'5e', 6:'6e', 7:'7e', 8:'8e' }[turn.exit] || (turn.exit + 'e');
+                return 'op de rotonde de ' + rang + ' afslag';
+            }
             const t = TURN_SPEECH[turn.cmd];
             if (t) return t[when];
             return (turn.dir === 'R' ? 'rechtsaf' : 'linksaf');
@@ -5118,6 +5137,123 @@ assign initialcost =
         let currentSpeedLimit = null;  // laatst getoonde limiet (voorkomt onnodig hertekenen)
 
         // Haal in één Overpass-query alle wegen (met maxspeed) rond de route op, en koppel ze aan de route-punten.
+        // ═══════════ ROTONDE-AFSLAG TELLEN: exit-nummer bepalen uit OSM (junction=roundabout) ═══════════
+        // Aanpak A: één Overpass-query voor ALLE rotondes langs de route (bij GO), inclusief de wegen
+        // die erop aansluiten (via gedeelde knooppunten). Per rotonde-afslag tellen we hoeveel exits er
+        // tussen je oprit en je afrit zitten → exit-nummer. Lukt het niet zeker → GEEN nummer.
+        async function loadRoundaboutExits(route, turns) {
+            const raTurns = turns.filter(t => t.cmd === 13 || t.cmd === 14);
+            if (!raTurns.length) return;
+            const step = Math.max(1, Math.floor(route.length / 40));
+            const poly = [];
+            for (let i = 0; i < route.length; i += step) poly.push(`${route[i][0]},${route[i][1]}`);
+            const polyStr = poly.join(',');
+            // Rotondes langs de route (.ra), plus alle wegen die hun knooppunten raken (aansluitende wegen).
+            const q = `[out:json][timeout:25];`
+                + `way["junction"="roundabout"](around:60,${polyStr})->.ra;`
+                + `node(w.ra)->.rn;`                 // alle knooppunten van die rotondes
+                + `way(bn.rn)->.conn;`               // alle wegen die door die knooppunten lopen
+                + `(.ra;.conn;);out geom;`;
+            const servers = [
+                'https://overpass-api.de/api/interpreter',
+                'https://overpass.kumi.systems/api/interpreter',
+                'https://maps.mail.ru/osm/tools/overpass/api/interpreter'
+            ];
+            let data = null;
+            for (const srv of servers) {
+                try {
+                    const ctrl = new AbortController();
+                    const t = setTimeout(() => ctrl.abort(), 9000);
+                    const res = await fetch(srv, { method: 'POST', body: 'data=' + encodeURIComponent(q), signal: ctrl.signal });
+                    clearTimeout(t);
+                    if (res.ok) { data = await res.json(); break; }
+                } catch (e) { /* volgende server */ }
+            }
+            if (!data || !data.elements) return;
+
+            // Splits in rotonde-ringen en overige (aansluitende) wegen.
+            const rings = [], others = [];
+            data.elements.forEach(el => {
+                if (el.type !== 'way' || !el.geometry) return;
+                const geom = el.geometry.map(g => [g.lat, g.lon]);
+                if (el.tags && el.tags.junction === 'roundabout') rings.push(geom);
+                else others.push(geom);
+            });
+            if (!rings.length) return;
+
+            let gotExit = false;
+            raTurns.forEach(turn => {
+                try {
+                    const exit = computeRoundaboutExit(turn, route, rings, others);
+                    if (exit && exit >= 1 && exit <= 12) { turn.exit = exit; gotExit = true; }
+                } catch (e) { /* geen nummer → blijft "de rotonde op" */ }
+            });
+            if (typeof drawTurnDots === 'function') drawTurnDots();
+            // Exits binnen ná het versturen? Stuur de turns nog eens naar de volger (met exit-nummers).
+            if (gotExit && currentMode === 'master' && typeof sendGPXToFirebase === 'function') {
+                try { sendGPXToFirebase(currentCode, activeRoute, detectedTurns, routeTotalKm, routeTotalMin); } catch (e) {}
+            }
+        }
+
+        // Bepaal welke exit (1e, 2e, …) je neemt op de rotonde waar deze afslag bij hoort.
+        function computeRoundaboutExit(turn, route, rings, others) {
+            const turnPt = [turn.lat, turn.lng];
+            // 1) bijbehorende rotonde-ring (dichtstbijzijnde binnen ~30m van de afslag)
+            let ring = null, ringDist = Infinity;
+            for (const r of rings) {
+                for (const p of r) {
+                    const d = distMeters(turnPt, p);
+                    if (d < ringDist) { ringDist = d; ring = r; }
+                }
+            }
+            if (!ring || ringDist > 30) return null;
+            // middelpunt
+            let clat = 0, clng = 0; ring.forEach(p => { clat += p[0]; clng += p[1]; });
+            const center = [clat / ring.length, clng / ring.length];
+            // gemiddelde straal (voor "raakt deze weg de ring?")-check
+            let rad = 0; ring.forEach(p => rad += distMeters(center, p)); rad /= ring.length;
+
+            // 2) exits = punten waar een AANSLUITENDE weg de ring raakt. Verzamel hun hoek t.o.v. het midden.
+            const exitAngles = [];
+            others.forEach(w => {
+                // raakpunt = het punt van deze weg dat het dichtst bij de ring ligt
+                let touch = null, td = Infinity;
+                for (const p of w) {
+                    // afstand van p tot dichtstbijzijnde ring-punt
+                    let dmin = Infinity;
+                    for (const rp of ring) { const d = distMeters(p, rp); if (d < dmin) dmin = d; }
+                    if (dmin < td) { td = dmin; touch = p; }
+                }
+                if (touch && td < 8) {   // deze weg raakt de ring (gedeeld knooppunt)
+                    exitAngles.push(bearing(center, touch));
+                }
+            });
+            // dubbele/nabije hoeken samenvoegen (zelfde exit soms 2 ways)
+            const uniq = [];
+            exitAngles.sort((a, b) => a - b).forEach(a => {
+                if (!uniq.length || Math.abs(a - uniq[uniq.length - 1]) > 12) uniq.push(a);
+            });
+            if (uniq.length < 2) return null;   // te weinig exits herkend → geen nummer
+
+            // 3) oprit- en afrit-hoek uit de route (net vóór en net ná de afslag)
+            const idx = turn.index;
+            const before = route[Math.max(0, idx - 2)];
+            const after  = route[Math.min(route.length - 1, idx + 2)];
+            const entryAng = bearing(center, before);
+            const exitAng  = bearing(center, after);
+
+            // 4) tel de exits die je passeert van oprit tot afrit, in rijrichting (NL: linksom = met de klok mee
+            //    vanuit het midden gezien nemen de hoeken toe). Reken alles relatief t.o.v. de oprit.
+            const norm = a => (a % 360 + 360) % 360;
+            const relExits = uniq.map(a => norm(a - entryAng)).filter(a => a > 5);  // exits ná de oprit
+            const relTarget = norm(exitAng - entryAng);
+            relExits.sort((a, b) => a - b);
+            // de zoveelste exit = aantal exits met hoek <= jouw afrit-hoek (met kleine marge)
+            let nr = 0;
+            for (const a of relExits) { if (a <= relTarget + 8) nr++; else break; }
+            return (nr >= 1) ? nr : null;
+        }
+
         async function loadSpeedLimitsForRoute() {
             speedSegments = [];
             if (!lastRouteCoords || lastRouteCoords.length < 2) { hideSpeedSign(); return; }
@@ -5746,6 +5882,13 @@ assign initialcost =
             routeTotalMin = L_.min || 0;
             if (typeof loadFlitsers === 'function') loadFlitsers();   // flitsers langs de route ophalen
             if (typeof drawTurnDots === 'function') drawTurnDots();
+            // rotonde-exitnummers ophalen (net als bij een planner-route)
+            if (typeof loadRoundaboutExits === 'function') loadRoundaboutExits(activeRoute, detectedTurns);
+            // snelheidsbord: route-coords in [lng,lat] zetten (formaat dat loadSpeedLimitsForRoute verwacht) + ophalen
+            try {
+                lastRouteCoords = activeRoute.map(p => [p[1], p[0]]);
+                if (typeof loadSpeedLimitsForRoute === 'function') loadSpeedLimitsForRoute();
+            } catch (e) {}
             // delen met de volger (zoals een planner-route)
             if (currentMode === 'master' && typeof sendGPXToFirebase === 'function') {
                 gpxRoute = L_.route;
