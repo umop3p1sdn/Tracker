@@ -4614,7 +4614,7 @@ assign initialcost =
             el.style.transform = 'translateX(' + screenW + 'px)';
             // forceer reflow zodat de meting klopt
             const textW = el.offsetWidth;
-            const speed = 234;                 // px per seconde (30% sneller, past bij de grotere letters)
+            const speed = 270;                 // px per seconde (iets sneller voorbij)
             const startT = performance.now();
             function step(now) {
                 const t = (now - startT) / 1000;       // sec verstreken
