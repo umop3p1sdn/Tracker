@@ -774,7 +774,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v38.8 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v38.9 © Umop3p1sdn</div>
 
             </div>
 
@@ -1266,7 +1266,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v38.8 © Umop3p1sdn
+                HO-ME v38.9 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1552,7 +1552,7 @@
             </ul>
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v38.8 © Umop3p1sdn
+                HO-ME v38.9 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -3728,7 +3728,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "38.8";
+        const APP_VERSION = "38.9";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -5373,9 +5373,29 @@ assign initialcost =
         let liveFetching = false;
         let liveLastHeading = null;      // koers bij de laatste keer lezen
         let liveLastFetchPos = null;
-        let currentStreet = null;        // { segs:[{pts,maxspeed}], allPts:[...] } — de weg waar je nu op zit
-        const STREET_ON_M = 20;          // binnen 20m van de straat-lijn = je zit op die straat
-        const STREET_OFF_M = 20;         // verder dan dit = straat opgehouden / eraf → opnieuw lezen
+        let currentStreet = null;        // de weg waar je nu op zit (met segmenten + maxspeed)
+        const SEARCH_M = 60;             // ruim zoekgebied voor kandidaat-wegen (geen harde "op de weg"-grens)
+        const KEEP_M = 45;               // blijf je huidige weg gebruiken zolang je hier binnen zit
+        // Map-matching-light: kies de weg met de beste score uit afstand + richting + continuïteit.
+
+        // Kleinste afstand tot een weg + de richting (bearing) van het dichtstbijzijnde segment.
+        function matchRoad(here, pts) {
+            let best = Infinity, segA = null, segB = null;
+            for (let i = 0; i < pts.length - 1; i++) {
+                const d = distToSegment(here, pts[i], pts[i + 1]);
+                if (d < best) { best = d; segA = pts[i]; segB = pts[i + 1]; }
+            }
+            let dir = null;
+            if (segA && segB) dir = bearing(segA, segB);
+            return { dist: best, dir };
+        }
+        // Verschil tussen twee koersen, maar een weg is tweerichting → neem de kleinste t.o.v. heen én terug.
+        function headingDiff(a, b) {
+            if (a === null || b === null) return 90;   // onbekend → neutraal
+            let d = Math.abs(((a - b + 540) % 360) - 180);
+            let d2 = Math.abs(((a - (b + 180) + 540) % 360) - 180);
+            return Math.min(d, d2);
+        }
 
         function updateLiveSpeed(lat, lng) {
             // Alleen zonder route (met route gebruiken we de vooraf geladen data).
@@ -5383,27 +5403,24 @@ assign initialcost =
             liveSpeedActive = true;
             const here = [lat, lng];
 
-            // 1) Heb ik een straat onthouden? Zit ik daar nog op (binnen 20m van de lijn)?
-            let onStreet = false;
+            // Zit ik nog goed op mijn huidige weg? (map-matching: dicht genoeg + richting past ongeveer)
+            let stayOn = false;
             if (currentStreet && currentStreet.allPts.length > 1) {
-                const d = distToRoadLine(here, currentStreet.allPts);
-                onStreet = (d <= STREET_OFF_M);
+                const m = matchRoad(here, currentStreet.allPts);
+                const hd = headingDiff(gpsHeading, m.dir);
+                // blijf plakken zolang je binnen KEEP_M zit én niet totaal de verkeerde kant op gaat
+                if (m.dist <= KEEP_M && hd < 65) stayOn = true;
             }
 
-            // 2) draai gemaakt? (koers flink veranderd + een stukje vooruit)
-            let turned = false;
-            if (gpsHeading !== null && liveLastHeading !== null && liveLastFetchPos) {
-                const diff = Math.abs(((gpsHeading - liveLastHeading + 540) % 360) - 180);
-                const moved = distMeters(here, liveLastFetchPos);
-                if (diff > 30 && moved > 15) turned = true;
-            }
+            // Verplaatst sinds de laatste keer lezen? (voorkomt bevragen bij stilstand/gedraai op de plek)
+            let moved = liveLastFetchPos ? distMeters(here, liveLastFetchPos) : 999;
 
-            // 3) opnieuw lezen? → straat opgehouden (niet meer op de lijn) OF een draai gemaakt OF nog niks gelezen
-            if ((!onStreet || turned) && !liveFetching) {
+            // Opnieuw wegen ophalen als: nog niks, of niet meer goed op mijn weg + een stukje verplaatst.
+            if ((!currentStreet || !stayOn) && moved > 12 && !liveFetching) {
                 fetchLiveRoad(lat, lng);
             }
 
-            // 4) tonen: snelheid van het segment van de ONTHOUDEN straat waar ik nu op zit (volgt 100→130 vanzelf)
+            // Tonen: snelheid van het segment van mijn huidige weg (volgt 100→130 vanzelf).
             showStreetSpeed(here);
         }
 
@@ -5411,8 +5428,8 @@ assign initialcost =
             liveFetching = true;
             liveLastFetchPos = [lat, lng];
             liveLastHeading = gpsHeading;
-            // Lees de weg(en) onder je met hun maxspeed — meestal een klein bestand.
-            const q = `[out:json][timeout:15];way["highway"]["maxspeed"](around:25,${lat},${lng});out geom;`;
+            // Lees de wegen rond je (ruim zoekgebied) met hun maxspeed — meestal een klein bestand.
+            const q = `[out:json][timeout:15];way["highway"]["maxspeed"](around:${SEARCH_M},${lat},${lng});out geom;`;
             const servers = [
                 'https://overpass-api.de/api/interpreter',
                 'https://overpass.kumi.systems/api/interpreter',
@@ -5429,34 +5446,44 @@ assign initialcost =
                 } catch (e) { /* volgende server */ }
             }
             liveFetching = false;
-            if (!data || !data.elements) { currentStreet = null; return; }
-            // Alle wegstukken met maxspeed die ik net gelezen heb.
-            const roads = [];
+            if (!data || !data.elements) return;   // niks → houd huidige weg (val niet terug op leeg)
+            // Alle wegstukken met maxspeed, gegroepeerd op straatnaam.
+            const byName = {};
             data.elements.forEach(el => {
                 if (el.type === 'way' && el.geometry && el.geometry.length >= 2 && el.tags && el.tags.maxspeed) {
                     const ms = parseInt(String(el.tags.maxspeed).replace(/[^0-9]/g, ''), 10);
                     if (ms > 0) {
                         const pts = el.geometry.map(g => [g.lat, g.lon]);
-                        // groepeer op straatnaam/ref zodat opgedeelde stukken (100→130) samen één straat zijn
                         const name = (el.tags.name || el.tags.ref || ('w' + el.id));
-                        roads.push({ name, pts, maxspeed: ms });
+                        if (!byName[name]) byName[name] = { name, segs: [], allPts: [] };
+                        byName[name].segs.push({ pts, maxspeed: ms });
+                        pts.forEach(p => byName[name].allPts.push(p));
                     }
                 }
             });
-            if (!roads.length) { currentStreet = null; return; }
-            // Kies de straat waar ik het DICHTST bij zit (kleinste lijn-afstand).
+            const streets = Object.values(byName);
+            if (!streets.length) return;   // houd huidige weg
+
+            // MAP-MATCHING: score elke straat op afstand + richting + continuïteit. Hoogste score wint.
             const here = [lat, lng];
-            let bestRoad = null, bestD = Infinity;
-            roads.forEach(r => { const d = distToRoadLine(here, r.pts); if (d < bestD) { bestD = d; bestRoad = r; } });
-            if (!bestRoad || bestD > STREET_ON_M) { currentStreet = null; return; }  // niet echt op een weg
-            // Verzamel ALLE stukken met dezelfde straatnaam (de opdeling 100/130 hoort bij één straat).
-            const sameName = roads.filter(r => r.name === bestRoad.name);
-            const allPts = [];
-            sameName.forEach(r => r.pts.forEach(p => allPts.push(p)));
-            currentStreet = { segs: sameName.map(r => ({ pts: r.pts, maxspeed: r.maxspeed })), allPts };
+            let bestStreet = null, bestScore = -Infinity;
+            streets.forEach(st => {
+                const m = matchRoad(here, st.allPts);
+                if (m.dist > SEARCH_M) return;
+                // emissie: dichterbij = beter (score daalt met afstand)
+                const distScore = -m.dist;                 // in meters, negatief
+                // richting: weg loopt mee met je koers = beter (0..90 → +45..-45)
+                const hd = headingDiff(gpsHeading, m.dir);
+                const dirScore = (45 - hd) * 0.8;          // richting weegt mee
+                // continuïteit: is dit dezelfde weg als nu? → flinke bonus (vasthouden)
+                const contScore = (currentStreet && st.name === currentStreet.name) ? 40 : 0;
+                const score = distScore + dirScore + contScore;
+                if (score > bestScore) { bestScore = score; bestStreet = st; }
+            });
+            if (bestStreet) currentStreet = bestStreet;
         }
 
-        // Toon de snelheid van het segment van de onthouden straat dat het dichtst bij mij ligt.
+        // Toon de snelheid van het segment van de huidige weg dat het dichtst bij mij ligt.
         function showStreetSpeed(here) {
             if (!currentStreet || !currentStreet.segs.length) { renderSpeedSign(null); return; }
             let best = null, bestD = Infinity;
@@ -5466,7 +5493,8 @@ assign initialcost =
                     if (d < bestD) { bestD = d; best = seg; }
                 }
             });
-            renderSpeedSign((best && bestD <= STREET_OFF_M) ? best.maxspeed : null);
+            // ruim tonen (KEEP_M) zodat 't blijft staan zolang je op de weg zit; ver weg → leeg
+            renderSpeedSign((best && bestD <= KEEP_M) ? best.maxspeed : null);
         }
 
         function hideSpeedSign() {
