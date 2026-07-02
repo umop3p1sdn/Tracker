@@ -633,6 +633,18 @@
             <button onclick="dismissReroute()" style="flex:1; padding:14px; border-radius:10px; border:2px solid #9E9E9E; background:transparent; color:#ccc; font-weight:bold; font-size:17px; cursor:pointer;">Nee</button>
         </div>
     </div>
+    <!-- FM-vraag: "Alleen FM geluid?" (dempt HO-ME's eigen flitser-meldingen) -->
+    <div id="fmAskPanel" style="display:none; position:fixed; left:50%; bottom:150px; transform:translateX(-50%); z-index:2600; background:rgba(10,14,39,0.95); border:2px solid #00BCD4; border-radius:14px; padding:14px 16px; box-shadow:0 4px 18px rgba(0,0,0,0.6); font-family:sans-serif; max-width:320px; text-align:center;">
+        <div id="fmAskText" style="color:#fff; font-weight:bold; font-size:17px; margin-bottom:12px;">Alleen FM geluid?</div>
+        <div style="display:flex; gap:10px;">
+            <button onclick="fmAskAnswer(true)" style="flex:1; padding:14px; border-radius:10px; border:none; background:#4CAF50; color:#fff; font-weight:bold; font-size:17px; cursor:pointer;">Ja</button>
+            <button onclick="fmAskAnswer(false)" style="flex:1; padding:14px; border-radius:10px; border:2px solid #9E9E9E; background:transparent; color:#ccc; font-weight:bold; font-size:17px; cursor:pointer;">Nee</button>
+        </div>
+    </div>
+    <!-- FM-knop: opent Flitsmeister (eigen 'FM'-icoon, doorzichtig). Staat boven de T-knop. -->
+    <div id="fmBtn" onclick="openFlitsmeister()" title="Flitsmeister openen" style="display:none; position: fixed; bottom: 543px; left: 10px; z-index: 1250; width: 78px; height: 78px; border-radius: 50%; border: 4px solid #000; background: rgba(255,255,255,0.12); box-shadow: 0 0 0 2px rgba(255,255,255,0.4); align-items:center; justify-content:center; cursor: pointer; -webkit-user-select:none; user-select:none;">
+        <span style="font-size: 30px; font-weight: 900; color: #000; font-family: sans-serif; filter: drop-shadow(0 0 2px rgba(255,255,255,0.9)); line-height:1;">FM</span>
+    </div>
     <div id="ttsBtn" onclick="openTtsPanel()" style="display:none; position: fixed; bottom: 455px; left: 10px; z-index: 1250; width: 78px; height: 78px; border-radius: 50%; border: 4px solid #000; background: rgba(255,255,255,0.12); box-shadow: 0 0 0 2px rgba(255,255,255,0.4); align-items:center; justify-content:center; cursor: pointer; -webkit-user-select:none; user-select:none;">
         <span style="font-size: 42px; font-weight: 900; color: #000; font-family: sans-serif; filter: drop-shadow(0 0 2px rgba(255,255,255,0.9)); line-height:1;">T</span>
     </div>
@@ -774,7 +786,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v40.0 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v40.3 © Umop3p1sdn</div>
 
             </div>
 
@@ -912,6 +924,7 @@
                 <button class="button-secondary" onclick="toggleNavArrows()" id="navBtnMenu" style="width: 100%;">Navigatie pijlen: AAN</button>
                 <button class="button-secondary" onclick="toggleSpeech()" id="speechBtnMenu" style="width: 100%;">Spraak: AAN</button>
                 <button class="button-secondary" onclick="toggleFlitserWarn()" id="flitserBtnMenu" style="width: 100%;">Flitsmelding: ACTIEF</button>
+                <button class="button-secondary" onclick="toggleFlitserStil()" id="flitserStilBtn" style="width: 100%;">Flitser stil: UIT</button>
                 <div id="flitserVolRow" style="display:flex; align-items:center; justify-content:space-between; gap:10px; background:#1a2148; padding:8px 12px; border-radius:8px;">
                     <span style="font-size:0.9em; white-space:nowrap;">Flits-volume</span>
                     <input type="range" id="flitserVolSlider" min="0" max="100" value="100" oninput="setFlitserVolume(this.value)" style="flex:1; accent-color:#00BCD4; cursor:pointer;">
@@ -1266,7 +1279,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v40.0 © Umop3p1sdn
+                HO-ME v40.3 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1552,7 +1565,7 @@
             </ul>
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v40.0 © Umop3p1sdn
+                HO-ME v40.3 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -3755,7 +3768,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "40.0";
+        const APP_VERSION = "40.3";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -4616,6 +4629,8 @@ assign initialcost =
             btn.style.display = show ? 'flex' : 'none';
             const tbtn = document.getElementById('ttsBtn');   // T-knop volgt dezelfde zichtbaarheid
             if (tbtn) tbtn.style.display = show ? 'flex' : 'none';
+            const fbtn = document.getElementById('fmBtn');    // FM-knop volgt ook dezelfde zichtbaarheid
+            if (fbtn) fbtn.style.display = show ? 'flex' : 'none';
             // poll draait zolang je verbonden bent (los van scherm), zodat je berichten altijd hoort
             if (currentCode) {
                 startVoicePoll();
@@ -4890,6 +4905,10 @@ assign initialcost =
         function checkFlitsers(lat, lng) {
             const box = document.getElementById('flitserBox');
             if (!box) return;
+            // 'Alleen FM geluid' aan → HO-ME's eigen flitser-meldingen dempen (je gebruikt Flitsmeister).
+            if (homeFlitserSilent) {
+                box.style.display = 'none'; lastFlitserKey = null; lastFlitserSpeed = null; return;
+            }
             // alleen tonen tijdens het rijden (na rode GO) en met meldingen aan
             if (!flitserRijden || flitserMode === 0 || !flitsers.length) {
                 box.style.display = 'none'; lastFlitserKey = null; lastFlitserSpeed = null; return;
@@ -7829,6 +7848,52 @@ assign initialcost =
         // ─── SPRAAK (gesproken afslagen, NL) ───
         // ═══════════ T-KNOP: eigen tekst typen + afspelen + afspeellijst + opslaan/laden ═══════════
         let ttsListItems = [];   // array van zinnen in de eigen afspeellijst
+
+        let homeFlitserSilent = false;   // zijn HO-ME's eigen flitser-meldingen gedempt (bij FM-gebruik)?
+
+        // Menu-schakelaar: HO-ME flitsers stil aan/uit (zelfde vlag als de FM-knop gebruikt).
+        function toggleFlitserStil() {
+            homeFlitserSilent = !homeFlitserSilent;
+            const b = document.getElementById('flitserStilBtn');
+            if (b) b.textContent = 'Flitser stil: ' + (homeFlitserSilent ? 'AAN' : 'UIT');
+        }
+
+        // FM-knop: vraag eerst of alleen Flitsmeister-geluid gewenst is, daarna Flitsmeister openen.
+        function openFlitsmeister() {
+            const p = document.getElementById('fmAskPanel');
+            const t = document.getElementById('fmAskText');
+            if (!homeFlitserSilent) {
+                if (t) t.textContent = 'Alleen FM geluid?';
+            } else {
+                if (t) t.textContent = 'HO-ME flitsers weer aan?';
+            }
+            if (p) p.style.display = 'flex';
+        }
+        // Ja: dempen (of weer aanzetten), daarna FM openen. Nee: niks wijzigen, wel FM openen.
+        function fmAskAnswer(ja) {
+            const p = document.getElementById('fmAskPanel');
+            if (p) p.style.display = 'none';
+            if (ja) {
+                homeFlitserSilent = !homeFlitserSilent;   // togglen: dempen ↔ weer aan
+                const b = document.getElementById('flitserStilBtn');   // menu-schakelaar synchroon houden
+                if (b) b.textContent = 'Flitser stil: ' + (homeFlitserSilent ? 'AAN' : 'UIT');
+            }
+            launchFlitsmeister();
+        }
+        function launchFlitsmeister() {
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+            const store = isIOS
+                ? 'https://apps.apple.com/nl/app/flitsmeister/id515911235'
+                : 'https://play.google.com/store/apps/details?id=nl.flitsmeister';
+            let opened = false;
+            const onHide = () => { opened = true; };
+            document.addEventListener('visibilitychange', onHide, { once: true });
+            try { window.location.href = 'flitsmeister://'; } catch (e) {}
+            setTimeout(() => {
+                document.removeEventListener('visibilitychange', onHide);
+                if (!opened && !document.hidden) window.location.href = store;
+            }, 1200);
+        }
 
         function openTtsPanel() {
             const p = document.getElementById('ttsPanel');
