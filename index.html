@@ -620,7 +620,14 @@
     <div id="talkBtn" style="display:none; position: fixed; bottom: 367px; left: 10px; z-index: 1250; width: 78px; height: 78px; border-radius: 50%; border: 4px solid #000; background: rgba(255,255,255,0.12); box-shadow: 0 0 0 2px rgba(255,255,255,0.4); align-items:center; justify-content:center; cursor: pointer; -webkit-user-select:none; user-select:none; touch-action:none;">
         <svg width="34" height="34" viewBox="0 0 24 24" fill="#000" style="filter: drop-shadow(0 0 2px rgba(255,255,255,0.9));"><path d="M12 14a3 3 0 003-3V5a3 3 0 00-6 0v6a3 3 0 003 3zm5-3a5 5 0 01-10 0H5a7 7 0 006 6.92V21h2v-3.08A7 7 0 0019 11h-2z"/></svg>
     </div>
-    <!-- T-knop: eigen tekst typen + laten voorlezen, met afspeellijst. Staat boven de mic-knop. -->
+    <!-- Off-route vraag: "Je bent van de route. Nieuwe route ernaartoe?" (grote Ja/Nee knoppen) -->
+    <div id="reroutePrompt" style="display:none; position:fixed; left:50%; bottom:150px; transform:translateX(-50%); z-index:2600; background:rgba(10,14,39,0.95); border:2px solid #FF9800; border-radius:14px; padding:14px 16px; box-shadow:0 4px 18px rgba(0,0,0,0.6); font-family:sans-serif; max-width:340px; text-align:center;">
+        <div style="color:#fff; font-weight:bold; font-size:17px; margin-bottom:12px;">Je bent van de route.<br>Nieuwe route ernaartoe?</div>
+        <div style="display:flex; gap:10px;">
+            <button onclick="acceptReroute()" style="flex:1; padding:14px; border-radius:10px; border:none; background:#4CAF50; color:#fff; font-weight:bold; font-size:17px; cursor:pointer;">Ja</button>
+            <button onclick="dismissReroute()" style="flex:1; padding:14px; border-radius:10px; border:2px solid #9E9E9E; background:transparent; color:#ccc; font-weight:bold; font-size:17px; cursor:pointer;">Nee</button>
+        </div>
+    </div>
     <div id="ttsBtn" onclick="openTtsPanel()" style="display:none; position: fixed; bottom: 455px; left: 10px; z-index: 1250; width: 78px; height: 78px; border-radius: 50%; border: 4px solid #000; background: rgba(255,255,255,0.12); box-shadow: 0 0 0 2px rgba(255,255,255,0.4); align-items:center; justify-content:center; cursor: pointer; -webkit-user-select:none; user-select:none;">
         <span style="font-size: 42px; font-weight: 900; color: #000; font-family: sans-serif; filter: drop-shadow(0 0 2px rgba(255,255,255,0.9)); line-height:1;">T</span>
     </div>
@@ -762,7 +769,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v37.6 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v38.0 © Umop3p1sdn</div>
 
             </div>
 
@@ -1254,7 +1261,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v37.6 © Umop3p1sdn
+                HO-ME v38.0 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1540,7 +1547,7 @@
             </ul>
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v37.6 © Umop3p1sdn
+                HO-ME v38.0 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2949,6 +2956,15 @@ assign initialcost =
             return null;
         }
 
+        // Vertrekpunt voor POI-zoeken: ALTIJD de master-positie (de groep rijdt naar waar de master is).
+        // Master → eigen GPS. Volger → de master-positie (POI's vóór de master op de route). Terugval: eigen.
+        function poiOrigin() {
+            if (currentMode === 'follower' && masterPos && typeof masterPos.lat === 'number') {
+                return { lat: masterPos.lat, lng: masterPos.lng };
+            }
+            return myPosition();
+        }
+
         // ─── Auto-tussenpunten (geel) bij een te lange route ───
         // Bij een time-out plaatst de app zelf gele tussenpunten op de rechte lijn start→finish,
         // gesnapt naar de weg MET het huidige profiel (Snel→snelweg, Rustig→binnenweg). Zelf te wissen.
@@ -3333,7 +3349,7 @@ assign initialcost =
             // alleen rond díe punten (kleine cirkels) — veel sneller dan 20 km rond je scherm.
             const CORRIDOR_KM = 30;     // lengte vooruit
             const SIDE_M = 1000;        // 1 km aan elke kant
-            const myPos = myPosition();
+            const myPos = poiOrigin();  // vertrekpunt = master-positie (ook bij de volger)
             let aroundClause = '';
             let corridorPts = null;     // route-stuk vóór je (voor lokaal filteren)
 
@@ -3462,7 +3478,7 @@ assign initialcost =
 
             // lijst: met route → POI's binnen ~2km van de route; zonder route → gewoon alle gevonden POI's,
             // gesorteerd op afstand vanaf jou (of vanaf het kaartmidden). Zo werkt POI ook zonder route.
-            const myPos = myPosition() || map.getCenter();
+            const myPos = poiOrigin() || map.getCenter();
             const hasRoute = coords && coords.length;
             let near;
             if (hasRoute) {
@@ -3707,7 +3723,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "37.6";
+        const APP_VERSION = "38.0";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -5333,6 +5349,111 @@ assign initialcost =
             currentSpeedLimit = null;
         }
 
+        // ═══════════ VAN DE ROUTE? → vraag om een nieuwe route ernaartoe (optie B) ═══════════
+        let offRouteSince = 0;         // sinds wanneer >60m van de route (0 = op de route)
+        let reroutePromptShown = false;
+        let rerouteCooldownUntil = 0;  // na "Nee" even niet opnieuw vragen
+        let rerouteBusy = false;
+        const OFFROUTE_M = 60;         // grens: verder dan dit = van de route
+        const OFFROUTE_SECONDS = 4;    // zo lang moet je eraf zijn vóór de vraag komt
+        const REROUTE_COOLDOWN_MS = 120000;  // na "Nee": 2 min rust
+
+        // Aangeroepen vanuit de GPS-loop met je afstand tot de route.
+        function checkOffRoute(myDistToRoute, lat, lng) {
+            if (currentMode === 'follower') { offRouteSince = 0; return; }   // volger krijgt dit niet
+            if (!detectedTurns.length || !activeRoute || !navArrowsEnabled) { offRouteSince = 0; return; }
+            const now = Date.now();
+            if (myDistToRoute <= OFFROUTE_M) {
+                // terug op de route → reset alles
+                offRouteSince = 0;
+                if (reroutePromptShown) { hideReroutePrompt(); }
+                return;
+            }
+            // je bent van de route af
+            if (now < rerouteCooldownUntil) return;         // net "Nee" gezegd → even rust
+            if (reroutePromptShown || rerouteBusy) return;
+            if (offRouteSince === 0) offRouteSince = now;    // begin met tellen
+            if (now - offRouteSince >= OFFROUTE_SECONDS * 1000) {
+                showReroutePrompt();
+            }
+        }
+        function showReroutePrompt() {
+            reroutePromptShown = true;
+            const p = document.getElementById('reroutePrompt');
+            if (p) p.style.display = 'block';
+        }
+        function hideReroutePrompt() {
+            reroutePromptShown = false;
+            const p = document.getElementById('reroutePrompt');
+            if (p) p.style.display = 'none';
+        }
+        function dismissReroute() {
+            hideReroutePrompt();
+            offRouteSince = 0;
+            rerouteCooldownUntil = Date.now() + REROUTE_COOLDOWN_MS;   // niet blijven zeuren
+        }
+        // "Ja" → bereken via BRouter een route van je huidige positie naar het dichtstbijzijnde punt
+        // dat VÓÓR je op de route ligt, en ga die rijden. Bij geen bereik: nette melding.
+        async function acceptReroute() {
+            hideReroutePrompt();
+            if (rerouteBusy) return;
+            rerouteBusy = true;
+            try {
+                const me = (typeof lastGps === 'object' && lastGps) ? [lastGps.lat, lastGps.lng] : null;
+                if (!me || !activeRoute || !activeRoute.length) { rerouteBusy = false; return; }
+                // dichtstbijzijnde route-index
+                let nearIdx = 0, nearD = Infinity;
+                for (let i = 0; i < activeRoute.length; i++) {
+                    const d = distMeters(me, activeRoute[i]);
+                    if (d < nearD) { nearD = d; nearIdx = i; }
+                }
+                // mik een klein stukje VÓÓR je op de route (niet terug), zodat je vooruit invoegt
+                const targetIdx = Math.min(activeRoute.length - 1, nearIdx + 3);
+                const target = activeRoute[targetIdx];
+                if (typeof showBufferToast === 'function') showBufferToast('Route berekenen…', '#FF9800', 1500);
+                // BRouter: van mij → invoegpunt
+                const chunk = await brouterChunk([me, target]);
+                if (!chunk || !chunk.coords || chunk.coords.length < 2) throw new Error('leeg');
+                // Plak: nieuwe verbindingsroute + de rest van de oorspronkelijke route vanaf het invoegpunt.
+                const rest = activeRoute.slice(targetIdx);
+                const newRoute = chunk.coords.concat(rest);
+                // afslagen van het nieuwe stuk (BRouter hints) omzetten naar turns
+                const LEFT = [2,3,4,8,10,14,17];
+                const newTurns = [];
+                chunk.hints.forEach(h => {
+                    const i = h[0], cmd = h[1];
+                    if (cmd === 1 || cmd === 16) return;
+                    const pt = chunk.coords[i];
+                    if (!pt) return;
+                    newTurns.push({ lat: pt[0], lng: pt[1], dir: LEFT.includes(cmd) ? 'L' : 'R', cmd: cmd, angle: 90, index: i });
+                });
+                // oorspronkelijke afslagen die ná het invoegpunt liggen, opschuiven qua index
+                const offset = chunk.coords.length;
+                detectedTurns.forEach(t => {
+                    if (t.index >= targetIdx) newTurns.push(Object.assign({}, t, { index: t.index - targetIdx + offset }));
+                });
+                activeRoute = newRoute;
+                detectedTurns = newTurns;
+                beepedApproach = {}; beepedNow = {}; spokenFirst = {}; spokenAt = {}; spokenAtPrev = {};
+                offRouteSince = 0;
+                // op de kaart tonen + naar de volger sturen
+                if (typeof drawTurnDots === 'function') drawTurnDots();
+                // de zichtbare navi-lijn vervangen door de nieuwe route
+                try {
+                    if (routeLine) map.removeLayer(routeLine);
+                    const gj = { type:'Feature', geometry:{ type:'LineString', coordinates: activeRoute.map(p => [p[1], p[0]]) } };
+                    routeLine = L.geoJSON(gj, { pane:'hmNaviPane', style:{ color:'#00BCD4', weight: trackLineWidth, opacity:0.9 }, interactive:false }).addTo(map);
+                } catch (e) {}
+                if (currentMode === 'master' && typeof sendGPXToFirebase === 'function') {
+                    try { sendGPXToFirebase(currentCode, activeRoute, detectedTurns, routeTotalKm, routeTotalMin); } catch (e) {}
+                }
+                if (typeof speak === 'function') speak('Nieuwe route naar je route');
+            } catch (e) {
+                if (typeof showBufferToast === 'function') showBufferToast('Geen route (geen bereik?)', '#FF1744', 2500);
+            }
+            rerouteBusy = false;
+        }
+
         function checkUpcomingTurn(lat, lng) {
             const left = document.getElementById('turnArrowLeft');
             const right = document.getElementById('turnArrowRight');
@@ -5357,6 +5478,7 @@ assign initialcost =
                 const d = distMeters(here, activeRoute[i]);
                 if (d < myDist) myDist = d;
             }
+            if (typeof checkOffRoute === 'function') checkOffRoute(myDist, lat, lng);   // van de route? → vraag
             if (myDist > 60) { hideAll(); return; }   // >60m van de route = van de route af → niks tonen
 
             // De eerstvolgende afslag VÓÓR je op de route (ongeacht afstand — ook 60/120 km op de snelweg).
@@ -7963,6 +8085,7 @@ assign initialcost =
                             const { latitude, longitude } = position.coords;
                             if (position.coords.heading !== null && !isNaN(position.coords.heading) && position.coords.speed > 0.5) gpsHeading = position.coords.heading; else gpsHeading = null;
                             masterPos = { lat: latitude, lng: longitude };
+                            lastGps = { lat: latitude, lng: longitude };   // huidige positie bijhouden (o.a. voor POI-zoek)
                             updateSpeed(latitude, longitude);
                             checkUpcomingTurn(latitude, longitude);
                             updateRemaining(latitude, longitude);
@@ -8013,6 +8136,7 @@ assign initialcost =
                             const { latitude, longitude } = position.coords;
                             if (position.coords.heading !== null && !isNaN(position.coords.heading) && position.coords.speed > 0.5) gpsHeading = position.coords.heading; else gpsHeading = null;
                             followerPos = { lat: latitude, lng: longitude };
+                            lastGps = { lat: latitude, lng: longitude };   // huidige positie bijhouden (o.a. voor POI-zoek)
                             updateSpeed(latitude, longitude);
                             checkUpcomingTurn(latitude, longitude);
                             updateRemaining(latitude, longitude);
@@ -8147,6 +8271,8 @@ assign initialcost =
                                             detectedTurns = followerNavTurns;
                                             routeTotalKm = followerNavTotalKm;
                                             routeTotalMin = followerNavTotalMin;
+                                            // ook lastRouteCoords vullen ([lng,lat]) zodat POI "langs de route" bij de volger werkt
+                                            try { lastRouteCoords = fetchedGpxRoute.map(p => [p[1], p[0]]); } catch (e) {}
                                             if (!followerNavActive) {
                                                 followerNavActive = true;
                                                 spokenFirst = {}; spokenAt = {}; spokenAtPrev = {}; beepedNow = {};   // schone aankondigingen
