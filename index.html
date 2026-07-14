@@ -812,7 +812,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v47.3 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v47.4 © Umop3p1sdn</div>
 
             </div>
 
@@ -1316,7 +1316,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v47.3 © Umop3p1sdn
+                HO-ME v47.4 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1602,7 +1602,7 @@
             </ul>
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v47.3 © Umop3p1sdn
+                HO-ME v47.4 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -3831,7 +3831,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "47.3";
+        const APP_VERSION = "47.4";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -7312,6 +7312,9 @@ assign initialcost =
                 }
             });
 
+            // Tag-namenlijst verversen — voor master ÉN volger (volger ziet de andere volgers).
+            renderTagList();
+
             // ── Onderstaande is master-specifiek (volger-teller, beep, LIJN-knop). Bij de volger overslaan. ──
             if (currentMode !== 'follower') {
                 // Aantal volgers nu (zelfde getal als in het balletje links).
@@ -7324,7 +7327,6 @@ assign initialcost =
 
                 applyFollowerVisibility();
                 if (typeof applyPlaneZOrder === 'function') applyPlaneZOrder();
-                renderTagList();
                 const countEl = document.getElementById('followerCount');
                 if (countEl) countEl.textContent = followerCountNow;
                 // LIJN-knop alleen tonen als er volgers zijn (anders nutteloos).
