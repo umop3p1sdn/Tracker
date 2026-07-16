@@ -812,7 +812,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v47.9 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v48.2 © Umop3p1sdn</div>
 
             </div>
 
@@ -959,6 +959,7 @@
 
                 <button class="button-secondary" onclick="toggleMicMode()" id="micModeBtn" style="width: 100%;">Mic: Talk</button>
                 <button class="button-secondary" onclick="openHistory()" style="width: 100%;">Geschiedenis</button>
+                <button class="button-secondary" onclick="toggleVoicePref()" id="voicePrefBtn" style="width: 100%;">Stem: NL</button>
                 <button class="button-secondary" onclick="testStem()" style="width: 100%;">Test stem</button>
                 <div id="tagOpacityRow" style="display:flex; align-items:center; justify-content:space-between; gap:8px; background:#1a2148; padding:8px 12px; border-radius:8px;">
                     <span style="font-size:0.9em;">Tags zichtbaar</span>
@@ -1326,7 +1327,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v47.9 © Umop3p1sdn
+                HO-ME v48.2 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1683,7 +1684,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v47.9 © Umop3p1sdn
+                HO-ME v48.2 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -3912,7 +3913,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "47.9";
+        const APP_VERSION = "48.2";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -4072,7 +4073,7 @@ assign initialcost =
             try {
                 if ('speechSynthesis' in window && !window._speechPrimed) {
                     const u = new SpeechSynthesisUtterance(' ');  // (bijna) stil
-                    u.volume = 0; u.lang = 'nl-NL';
+                    u.volume = 0; applyVoice(u);
                     window.speechSynthesis.speak(u);
                     window._speechPrimed = true;
                 }
@@ -4085,7 +4086,7 @@ assign initialcost =
             try {
                 if ('speechSynthesis' in window && !window._speechPrimed) {
                     const u = new SpeechSynthesisUtterance(' ');
-                    u.volume = 0; u.lang = 'nl-NL';
+                    u.volume = 0; applyVoice(u);
                     window.speechSynthesis.speak(u);
                     window._speechPrimed = true;
                 }
@@ -4407,7 +4408,7 @@ assign initialcost =
             // niet meer — dan blijft achtergrondmuziek gewoon doorspelen.
             try {
                 const warm = new SpeechSynthesisUtterance(' ');
-                warm.volume = 0; warm.lang = 'nl-NL';
+                warm.volume = 0; applyVoice(warm);
                 window.speechSynthesis.speak(warm);
             } catch (e) {}
             const ts = Date.now();
@@ -4432,7 +4433,7 @@ assign initialcost =
             try {
                 if ('speechSynthesis' in window) {
                     const u = new SpeechSynthesisUtterance(text);
-                    u.lang = 'nl-NL'; u.rate = 1.0; u.volume = 1.0;
+                    applyVoice(u); u.rate = 1.0; u.volume = 1.0;
                     // GEEN cancel() hier — dat zou de warm-up utterance uit stopTalk wissen en het
                     // iOS-venster sluiten. Gewoon achter de stille warm-up aan in de wachtrij spreken.
                     window.speechSynthesis.speak(u);
@@ -4470,7 +4471,7 @@ assign initialcost =
             try {
                 if ('speechSynthesis' in window) {
                     const u = new SpeechSynthesisUtterance(msg.text);
-                    u.lang = 'nl-NL'; u.rate = 1.0; u.volume = 1.0;
+                    applyVoice(u); u.rate = 1.0; u.volume = 1.0;
                     u.onend = finishSpeech;
                     u.onerror = finishSpeech;
                     u.rate = 0.85;   // iets langzamer = beter verstaanbaar (overschrijft de 1.0 hierboven)
@@ -4527,7 +4528,7 @@ assign initialcost =
             try {
                 if (!('speechSynthesis' in window)) { setTimeout(fin, 3000); return; }
                 const u = new SpeechSynthesisUtterance(text);
-                u.lang = 'nl-NL'; u.rate = 1.0; u.volume = 1.0;
+                applyVoice(u); u.rate = 1.0; u.volume = 1.0;
                 u.onend = fin;
                 u.onerror = fin;
                 window.speechSynthesis.cancel();   // onderbreek vorige (cruciaal op iOS, anders speelt 't niet)
@@ -4602,7 +4603,7 @@ assign initialcost =
                                     '<div style="font-size:20px; font-weight:600;">' + (m.text || '') + '</div>';
                     row.onclick = () => { try {
                         const u = new SpeechSynthesisUtterance(m.text);
-                        u.lang = 'nl-NL'; u.rate = 0.85; u.volume = 1.0;
+                        applyVoice(u); u.rate = 0.85; u.volume = 1.0;
                         window.speechSynthesis.cancel(); window.speechSynthesis.speak(u);
                     } catch (e) {} };
                     list.appendChild(row);
@@ -4728,12 +4729,7 @@ assign initialcost =
 
         // TEST: precies zoals de werkende tts-test — tik → telefoon spreekt een zin uit. Niks anders.
         function testStem() {
-            try {
-                const u = new SpeechSynthesisUtterance('Stoppen bij het tankstation');
-                u.lang = 'nl-NL'; u.rate = 1.0; u.volume = 1.0;
-                window.speechSynthesis.cancel();
-                window.speechSynthesis.speak(u);
-            } catch (e) {}
+            speakVoiceDemo();   // random zin uit bestaande app-zinnen, in de gekozen stem
         }
 
         // Lichtkrant: laat de tekst 1× van rechts naar links door beeld scrollen.
@@ -8454,7 +8450,7 @@ assign initialcost =
                 try {
                     if ('speechSynthesis' in window) {
                         const u = new SpeechSynthesisUtterance(txt);
-                        u.lang = 'nl-NL'; u.rate = 1.0; u.volume = 1.0;
+                        applyVoice(u); u.rate = 1.0; u.volume = 1.0;
                         window.speechSynthesis.cancel(); window.speechSynthesis.speak(u);
                     }
                 } catch (e) {}
@@ -8551,12 +8547,73 @@ assign initialcost =
             event.target.value = '';   // zelfde bestand opnieuw kiesbaar
         }
 
+        // ── Stemkeuze: NL (standaard) of BE (Ellen, Vlaams — zachter/vriendelijker) ──
+        // Keuze in localStorage; geldt voor ALLE spraak (navigatie, flitsers, berichten, lichtkrant).
+        // iOS laadt de stemmenlijst soms pas later (voiceschanged) — daarom telkens opnieuw zoeken tot gevonden.
+        let voicePref = localStorage.getItem('homeVoicePref') || 'NL';
+        let _beVoice = null;
+        function findBEVoice() {
+            try {
+                const vs = ('speechSynthesis' in window) ? window.speechSynthesis.getVoices() : [];
+                _beVoice = vs.find(v => v.lang && v.lang.toLowerCase().replace('_','-').startsWith('nl-be'))
+                        || vs.find(v => v.name && /ellen/i.test(v.name)) || null;
+            } catch (e) { _beVoice = null; }
+        }
+        if ('speechSynthesis' in window) {
+            findBEVoice();
+            window.speechSynthesis.onvoiceschanged = findBEVoice;
+        }
+        function applyVoice(u) {
+            if (voicePref === 'BE' && !_beVoice) findBEVoice();   // late lader (iOS)
+            if (voicePref === 'BE' && _beVoice) { u.voice = _beVoice; u.lang = _beVoice.lang; }
+            else { u.lang = 'nl-NL'; }                             // BE niet gevonden = nette terugval op NL
+        }
+        function toggleVoicePref() {
+            voicePref = (voicePref === 'NL') ? 'BE' : 'NL';
+            localStorage.setItem('homeVoicePref', voicePref);
+            updateVoicePrefBtn();
+            if (voicePref === 'BE' && !_beVoice) findBEVoice();
+            const msg = (voicePref === 'BE')
+                ? (_beVoice ? 'Stem: Belgisch (' + _beVoice.name + ')' : 'Stem: BE — niet gevonden, valt terug op NL')
+                : 'Stem: Nederlands';
+            if (typeof showBufferToast === 'function') showBufferToast(msg, '#00BCD4', 2000);
+            // Demo-geluidje: random bestaande app-zin in de nieuwe stem (bewuste tik, dus altijd afspelen)
+            speakVoiceDemo();
+        }
+        function updateVoicePrefBtn() {
+            const b = document.getElementById('voicePrefBtn');
+            if (b) b.textContent = 'Stem: ' + voicePref;
+        }
+        updateVoicePrefBtn();   // label direct goed zetten bij laden (keuze onthouden)
+
+        // ── Stem-demo: random zin uit de BESTAANDE app-zinnen (Words-lijst + nav/flitser) ──
+        let _lastDemoIdx = -1;
+        function speakVoiceDemo() {
+            try {
+                if (!('speechSynthesis' in window)) return;
+                const pool = WORDS_LIST.map(w => w.text).concat([
+                    'Volg de route',
+                    'Over 600 meter flitser',
+                    'Let op flitser over 300 meter',
+                    'Over 300 meter rechtsaf',
+                    'Over 300 meter linksaf',
+                ]);
+                let i;
+                do { i = Math.floor(Math.random() * pool.length); } while (i === _lastDemoIdx && pool.length > 1);
+                _lastDemoIdx = i;   // niet 2× dezelfde achter elkaar
+                const d = new SpeechSynthesisUtterance(pool[i]);
+                applyVoice(d); d.rate = 1.0; d.volume = 1.0;
+                window.speechSynthesis.cancel();
+                window.speechSynthesis.speak(d);
+            } catch (e) { console.warn('stem-demo mislukt', e); }
+        }
+
         function speak(text, vol) {
             if (!speechEnabled) return;
             try {
                 if (!('speechSynthesis' in window)) return;
                 const u = new SpeechSynthesisUtterance(text);
-                u.lang = 'nl-NL';
+                applyVoice(u);
                 u.rate = 1.0;
                 u.volume = (typeof vol === 'number') ? vol : 1.0;
                 window.speechSynthesis.cancel();   // onderbreek vorige (anders stapelt 't)
