@@ -812,7 +812,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v49.0 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v49.1 © Umop3p1sdn</div>
 
             </div>
 
@@ -1327,7 +1327,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v49.0 © Umop3p1sdn
+                HO-ME v49.1 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1684,7 +1684,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v49.0 © Umop3p1sdn
+                HO-ME v49.1 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -3913,7 +3913,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "49.0";
+        const APP_VERSION = "49.1";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -4477,14 +4477,20 @@ assign initialcost =
                     u.onend = finishSpeech;
                     u.onerror = finishSpeech;
                     u.rate = 0.85;   // iets langzamer = beter verstaanbaar (overschrijft de 1.0 hierboven)
-                    // GEEN cancel() — die zou het lopende bericht wegdrukken
-                    // WEL resume(): poll-berichten komen buiten een schermtik binnen en iOS zet de
-                    // spraakmotor dan op "gepauzeerd" → utterance speelt stil af (lichtkrant wel,
-                    // geluid niet). resume() wekt de motor zonder geluidje (geen muziek-dip zoals
-                    // de oude keep-alive). Buiten een tik toegestaan.
-                    try { window.speechSynthesis.resume(); } catch (e) {}
-                    window.speechSynthesis.speak(u);
-                    setTimeout(finishSpeech, 2500 + msg.text.length * 95);   // vangnet als onend niet vuurt
+                    // ATTENTIE-BEEP vóór de stem (walkie-talkie-stijl): de beep loopt via Web Audio —
+                    // hetzelfde systeem als de flitser-beeps, dat bewezen buiten een tik werkt — en
+                    // activeert op dít moment de audiosessie. De TTS volgt er 0,3s achteraan, zodat
+                    // ook berichten buiten een tik (poll) klinken. Bijvangst: je mist de eerste
+                    // woorden niet, want de chirp trekt eerst je aandacht.
+                    try { if (typeof playBeep === 'function') playBeep(0); } catch (e) {}
+                    setTimeout(() => {
+                        try {
+                            // GEEN cancel() — die zou het lopende bericht wegdrukken
+                            try { window.speechSynthesis.resume(); } catch (e) {}   // motor wekken
+                            window.speechSynthesis.speak(u);
+                        } catch (e) { finishSpeech(); }
+                    }, 300);
+                    setTimeout(finishSpeech, 2800 + msg.text.length * 95);   // vangnet als onend niet vuurt (incl. 0,3s beep-pauze)
                 } else {
                     setTimeout(finishSpeech, 1800 + msg.text.length * 95);
                 }
