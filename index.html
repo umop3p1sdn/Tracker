@@ -412,7 +412,7 @@
             display: flex !important;
             position: fixed !important; top: 50% !important; left: 50% !important; right: auto !important;
             transform: translate(-50%, -50%) !important;
-            z-index: 1500 !important;
+            z-index: 2400 !important;   /* boven de backdrop (2300); pijlen (2000) en flitser (2050) vallen eronder */
             flex-direction: row !important; flex-wrap: wrap !important;
             justify-content: center !important; align-content: center !important;
             gap: 12px !important; width: 272px !important; max-height: 84vh !important; overflow-y: auto !important;
@@ -857,7 +857,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v52.1 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v52.2 © Umop3p1sdn</div>
 
             </div>
 
@@ -865,11 +865,11 @@
             <div id="activeTracking" class="active-tracking hidden">
                 <!-- KNOPPEN-MENU (v51.5): één knop rechts, ONDER het slotje (slot: top 20 + 40 hoog).
                      Opent alle kaart-instelknoppen (draai/center/toon/tag/lijn/crew/FM) als groot menu. -->
-                <div id="btnMenuBtn" onclick="openBtnMenu()" title="Knoppen-menu" style="position: fixed; top: 70px; right: 10px; z-index: 1300; width: 64px; height: 64px; border-radius: 6px; background: transparent; border: 3px solid #000; box-shadow: 0 0 0 2px rgba(255,255,255,0.4); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; cursor: pointer; -webkit-user-select:none; user-select:none;">
+                <div id="btnMenuBtn" onclick="openBtnMenu()" title="Knoppen-menu" style="position: fixed; top: 70px; right: 10px; z-index: 2200; width: 64px; height: 64px; border-radius: 6px; background: transparent; border: 3px solid #000; box-shadow: 0 0 0 2px rgba(255,255,255,0.4); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; cursor: pointer; -webkit-user-select:none; user-select:none;">
                     <svg width="30" height="30" viewBox="0 0 24 24" fill="#000" style="filter: drop-shadow(0 0 2px rgba(255,255,255,0.9));"><path d="M4 4h7v7H4V4zm9 0h7v7h-7V4zM4 13h7v7H4v-7zm9 0h7v7h-7v-7z"/></svg>
                     <span id="btnMenuCount" style="font-size: 0.55em; font-weight: bold; color: #000; text-shadow: 0 0 2px rgba(255,255,255,0.9); line-height: 1;"></span>
                 </div>
-                <div id="btnMenuOverlay" style="display:none; position:fixed; inset:0; z-index:1400; background:rgba(0,0,0,0.55);" onclick="closeBtnMenu()"></div>
+                <div id="btnMenuOverlay" style="display:none; position:fixed; inset:0; z-index:2300; background:rgba(0,0,0,0.55);" onclick="closeBtnMenu()"></div>
                 <!-- MASTER MODE -->
                 <div id="masterMode">
                     <div style="position: relative;">
@@ -970,7 +970,7 @@
     <!-- HANDLEIDING -->
     <!-- APP MENU MODAL -->
     <!-- TAG INPUT MODAL -->
-    <div id="tagModal" class="hidden" onclick="if (event.target === this) closeTagInput()" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); display: none; z-index: 1700; padding: 20px;">
+    <div id="tagModal" class="hidden" onclick="if (event.target === this) closeTagInput()" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); display: none; z-index: 2500; padding: 20px;">
         <div style="background: #0a0e27; color: #fff; border-radius: 10px; max-width: 360px; margin: 80px auto; padding: 24px; font-family: sans-serif;">
             <h2 style="color: #00BCD4; margin: 0 0 16px;">Jouw tag</h2>
             <input id="tagInput" type="text" maxlength="6" placeholder="Max 6 tekens" style="width: 100%; box-sizing: border-box; font-size: 1.4em; text-align: center; padding: 12px; border-radius: 8px; border: 2px solid #00BCD4; background: #060818; color: #fff; text-transform: uppercase;">
@@ -1385,7 +1385,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v52.1 © Umop3p1sdn
+                HO-ME v52.2 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1747,7 +1747,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v52.1 © Umop3p1sdn
+                HO-ME v52.2 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -3976,7 +3976,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "52.1";
+        const APP_VERSION = "52.2";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
