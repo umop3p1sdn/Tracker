@@ -617,11 +617,17 @@
             #tagList { top: 95px !important; left: 100px !important; }
             /* (v51.5: de rechter knoppenbalken staan niet meer op de kaart — de oude liggend-regels
                voor balk-top en de kolom-2 van LIJN/CREW zijn vervallen; alles zit in het knoppen-menu.) */
-            /* Liggend: afstand/tijd (remPanel) een stukje naar rechts — net naast de ronde knoppen. */
-            body.map-only #remPanel { left: 100px !important; right: auto !important; bottom: 10px !important; }
-            /* Liggend: de ronde knoppen (mic/T/FM) links onder elkaar, passend op het lagere scherm. */
-            #talkBtn { bottom: 10px !important; }
-            #ttsBtn  { bottom: 98px !important; }
+            /* Liggend (v51.6): slot + menu-knop omlaag zodat de flitser (top 10, eindigt ~156)
+               er netjes boven past. Slot 160-200, menu 208-272 — past op de laagste stand (375). */
+            #lockIcon { top: 160px !important; }
+            #btnMenuBtn { top: 208px !important; }
+            /* Liggend (v51.6): mic + T iets omhoog en afstand/tijd (remPanel) ERONDER in dezelfde
+               linkerkolom. remPanel ~90 hoog: 8-98; mic 104-182; T 192-270. Bovenlangs: T-bovenrand
+               ligt op 390-hoogte rond 124 — het snelheidsbord (top 60, ~56 hoog) eindigt ~116, dus
+               vrij; alleen op de allerlaagste stand (375) kussen ze elkaar net. */
+            body.map-only #remPanel { left: 10px !important; right: auto !important; bottom: 8px !important; }
+            #talkBtn { bottom: 104px !important; }
+            #ttsBtn  { bottom: 192px !important; }
             /* Liggend: play + Plan ook boven FM (kleiner, dus 64px stappen). */
             #plannerGoBtn     { top: auto !important; bottom: 274px !important; }
             #plannerToggleBtn { top: auto !important; bottom: 338px !important; }
@@ -853,7 +859,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v51.5 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v51.6 © Umop3p1sdn</div>
 
             </div>
 
@@ -966,7 +972,7 @@
     <!-- HANDLEIDING -->
     <!-- APP MENU MODAL -->
     <!-- TAG INPUT MODAL -->
-    <div id="tagModal" class="hidden" onclick="if (event.target === this) closeTagInput()" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); display: none; z-index: 1300; padding: 20px;">
+    <div id="tagModal" class="hidden" onclick="if (event.target === this) closeTagInput()" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); display: none; z-index: 1700; padding: 20px;">
         <div style="background: #0a0e27; color: #fff; border-radius: 10px; max-width: 360px; margin: 80px auto; padding: 24px; font-family: sans-serif;">
             <h2 style="color: #00BCD4; margin: 0 0 16px;">Jouw tag</h2>
             <input id="tagInput" type="text" maxlength="6" placeholder="Max 6 tekens" style="width: 100%; box-sizing: border-box; font-size: 1.4em; text-align: center; padding: 12px; border-radius: 8px; border: 2px solid #00BCD4; background: #060818; color: #fff; text-transform: uppercase;">
@@ -1380,7 +1386,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v51.5 © Umop3p1sdn
+                HO-ME v51.6 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1741,7 +1747,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v51.5 © Umop3p1sdn
+                HO-ME v51.6 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -3970,7 +3976,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "51.5";
+        const APP_VERSION = "51.6";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
