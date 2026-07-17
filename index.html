@@ -826,7 +826,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v50.4 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v50.6 © Umop3p1sdn</div>
 
             </div>
 
@@ -1034,6 +1034,7 @@
                 <li>De teller in de rechter icoonbalk toont <strong>hoeveel</strong> volgers er verbonden zijn.</li>
                 <li>Onder de teller zit de <strong>LIJN</strong>-knop: tik 'm aan om de <strong>gereden sporen van je volgers</strong> te zien (elk in zijn eigen kleur). Handig als een volger een leuke weg weet en even voorrijdt — dan volg je gewoon zijn lijn. Standaard uit, zodat je kaart rustig blijft.</li>
                 <li>Zo weet je in één oogopslag wie achter je rijdt en wie nog stilstaat.</li>
+                <li>Met de <strong>TAG</strong>-knop (rechts) zet je als master ook je eigen naam — die zien spectators op hun volg-knop.</li>
             </ul>
 
             <h3 style="color: #00BCD4; margin-top: 25px;">Toon-knop (wie in beeld)</h3>
@@ -1119,7 +1120,7 @@
             <ul style="margin: 10px 0; padding-left: 20px;">
                 <li><strong>Volg-knop</strong> (rond, links op het scherm): toont wie je volgt — <strong>M</strong> = master, anders de tag van een volger. Tik = je kaart springt naar het <strong>volgende vliegtuigje</strong> (Master → volgers → weer Master), met je eigen zoom. Zo kijk je van dichtbij met één rijder mee.</li>
                 <li><strong>CREW 2×</strong> werkt ook: dan past de kaart op de hele gróep (niet op jouw bank).</li>
-                <li>Meepraten via <strong>mic of T</strong> kan gewoon — je tag staat bij je bericht.</li>
+                <li>Meepraten via <strong>mic of T</strong> kan gewoon — je tag staat bij je bericht, en je blijft als meekijker zichtbaar in de <strong>taglijst</strong> linksboven (alleen niet op de kaart).</li>
                 <li>Onderweg wisselen kan via het <strong>☰ menu</strong> → <strong>Spectator: UIT/AAN</strong> (bijv. als je alsnog op de motor stapt).</li>
             </ul>
 
@@ -1343,7 +1344,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v50.4 © Umop3p1sdn
+                HO-ME v50.6 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1392,6 +1393,7 @@
                 <li>The counter in the right icon bar shows <strong>how many</strong> followers are connected.</li>
                 <li>Below the counter is the <strong>LIJN</strong> (line) button: tap it to see the <strong>ridden tracks of your followers</strong> (each in their own colour). Handy when a follower knows a nice road and rides ahead — you simply follow their line. Off by default, so your map stays calm.</li>
                 <li>So at a glance you know who's riding behind you and who's still stationary.</li>
+                <li>With the <strong>TAG</strong> button (right) you as master set your own name too — spectators see it on their follow button.</li>
             </ul>
 
             <h3 style="color: #00BCD4; margin-top: 25px;">Show button (who's in view)</h3>
@@ -1478,7 +1480,7 @@
             <ul style="margin: 10px 0; padding-left: 20px;">
                 <li><strong>Follow button</strong> (round, left on the screen): shows who you're following — <strong>M</strong> = master, otherwise a follower's tag. Tap = your map jumps to the <strong>next plane</strong> (Master → followers → Master again), with your own zoom. Ride along up close with one rider.</li>
                 <li><strong>CREW 2×</strong> works too: the map then fits the whole group (not your couch).</li>
-                <li>Joining the chat via <strong>mic or T</strong> works as normal — your tag shows with your message.</li>
+                <li>Joining the chat via <strong>mic or T</strong> works as normal — your tag shows with your message, and as a watcher you stay visible in the <strong>tag list</strong> top left (just not on the map).</li>
                 <li>Switching on the go is possible via the <strong>☰ menu</strong> → <strong>Spectator: UIT/AAN</strong> (e.g. if you hop on the bike after all).</li>
             </ul>
 
@@ -1702,7 +1704,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v50.4 © Umop3p1sdn
+                HO-ME v50.6 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -3931,7 +3933,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "50.4";
+        const APP_VERSION = "50.6";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -4058,14 +4060,21 @@ assign initialcost =
         let spectatorMode = false;
         // Volg-cam (spectator): null = master volgen, anders deviceId van de volger die je volgt.
         let spectFollowTarget = null;
-        function cycleSpectFollow() {
-            // volgorde: Master → volgers op idx → weer Master
+        let masterTagShared = '';   // tag van de master (uit z'n locatiebericht, v50.6)
+        function spectRing() {
+            // wie kun je volgen: master (alleen als die er écht is — vrienden-modus heeft er geen)
+            // + alle volgers mét positie (spectators zonder positie doen niet mee)
             const ids = Object.keys(masterFollowersData)
                 .filter(id => masterFollowersData[id] && typeof masterFollowersData[id].lat === 'number')
                 .sort((a, b) => (masterFollowersData[a].idx || 99) - (masterFollowersData[b].idx || 99));
-            const ring = [null, ...ids];
+            const hasMaster = !!(masterPos && typeof masterPos.lat === 'number');
+            return hasMaster ? [null, ...ids] : ids;
+        }
+        function cycleSpectFollow() {
+            const ring = spectRing();
+            if (!ring.length) return;
             const cur = ring.indexOf(spectFollowTarget);
-            spectFollowTarget = ring[(cur + 1) % ring.length];
+            spectFollowTarget = ring[(cur + 1) % ring.length];   // niet gevonden (-1) → ring[0]
             updateSpectFollowBtn();
             if (isAutoFollowActive && typeof updateMapView === 'function') updateMapView();
         }
@@ -4077,14 +4086,17 @@ assign initialcost =
             b.style.display = onMap ? 'flex' : 'none';
             if (l) {
                 if (!spectFollowTarget) {
-                    l.textContent = 'M';
-                    l.style.color = '#F44336';   // master = rood, net als z'n pijl
+                    // master volgen: ALTIJD de tag (v50.6); 'M' alleen als de master er geen zette.
+                    // Vrienden-modus (geen master): streepje tot de eerste tik.
+                    const hasMaster = !!(masterPos && typeof masterPos.lat === 'number');
+                    l.textContent = hasMaster ? (masterTagShared ? String(masterTagShared).slice(0, 6) : 'M') : '—';
+                    l.style.fontSize = masterTagShared ? '17px' : '17px';
+                    l.style.color = '#F44336';   // rood, net als z'n pijl
                 } else {
                     const f = masterFollowersData[spectFollowTarget];
-                    // tag als die er is, anders V1/V2/V3 (volgnummer) — zonder dit heetten
-                    // alle taglozen "V" en leek de knop maar tussen 2 standen te wisselen
                     const idx = (f && typeof f.idx === 'number') ? f.idx : 0;
                     l.textContent = (f && f.tag) ? String(f.tag).slice(0, 6) : ('V' + (idx + 1));
+                    l.style.fontSize = '17px';
                     l.style.color = (typeof colorForIndex === 'function') ? colorForIndex(idx) : '#000';
                 }
             }
@@ -4094,8 +4106,13 @@ assign initialcost =
             const b = document.getElementById('spectatorBtn');
             if (b) b.textContent = 'Spectator: ' + (spectatorMode ? 'AAN' : 'UIT');
             if (spectatorMode && currentMode === 'follower' && currentCode && typeof deviceId !== 'undefined') {
-                // vliegtuigje bij de anderen meteen weghalen (niet wachten op verlopen timestamp)
-                fetch(`${firebaseConfig.databaseURL}/tracking/${currentCode}/followers/${deviceId}.json`, { method: 'DELETE' }).catch(() => {});
+                // vliegtuigje bij de anderen meteen weg, maar tag/idx BLIJVEN (v50.6: zichtbaar in de
+                // taglijst als meekijker) — alleen de positie wordt gewist, plus de spectator-vlag erop
+                _lastSpectPresence = Date.now();
+                fetch(`${firebaseConfig.databaseURL}/tracking/${currentCode}/followers/${deviceId}.json`, {
+                    method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ latitude: null, longitude: null, heading: null, spectator: true, timestamp: Date.now(), tag: myTag || '' })
+                }).catch(() => {});
             }
             if (spectatorMode && followerMarker && mapInstance) {
                 mapInstance.removeLayer(followerMarker); followerMarker = null;   // eigen vliegtuigje ook lokaal weg
@@ -7057,6 +7074,13 @@ assign initialcost =
             const el = document.getElementById('myColorBadge');
             const tagBtn = document.getElementById('tagBtn');
             if (!el) return;
+            if (currentMode === 'master') {
+                // master: geen kleur-badge (die is voor volger-nummers), wél de TAG-knop —
+                // de master heeft sinds v50.6 ook een tag (gedeeld in z'n locatiebericht)
+                el.style.display = 'none';
+                if (tagBtn) { tagBtn.style.display = 'block'; tagBtn.textContent = myTag ? myTag : 'TAG'; }
+                return;
+            }
             if (currentMode !== 'follower' || typeof myFollowerIdx !== 'number') {
                 el.style.display = 'none';
                 if (tagBtn) tagBtn.style.display = 'none';
@@ -7357,6 +7381,13 @@ assign initialcost =
                     body: JSON.stringify({ tag: myTag })
                 }).catch(() => {});
             }
+            if (currentCode && currentMode === 'master') {
+                // master-tag top-level (PATCH raakt de rest niet); volgers lezen 'm uit location.tag
+                fetch(`${firebaseConfig.databaseURL}/tracking/${currentCode}.json`, {
+                    method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ tag: myTag })
+                }).catch(() => {});
+            }
         }
 
         // Follower claims its own index when joining: reuse own if already set
@@ -7414,12 +7445,22 @@ assign initialcost =
             const now = Date.now();
             const seen = {};
             masterFollowersData = {};
+            // na het vullen hieronder draait de spectator-rotatie mee met de gevolgde volger
+            if (spectatorMode && mapRotationEnabled) setTimeout(applyMapRotation, 0);
 
             const ids = Object.keys(followers);
             for (const id of ids) {
                 if (currentMode === 'follower' && id === deviceId) continue;   // volger: mezelf niet dubbel tekenen
                 const f = followers[id];
-                if (!f || typeof f.latitude !== 'number') continue;
+                if (!f) continue;
+                if (typeof f.latitude !== 'number') {
+                    // geen positie: spectator? dan wél in de datalijst (taglijst toont 'm),
+                    // maar nooit een marker en nooit in een fit (die filteren op lat)
+                    if (f.spectator && f.timestamp && (now - f.timestamp) < 120000) {
+                        masterFollowersData[id] = { spectator: true, idx: (typeof f.idx==='number'?f.idx:0), tag: f.tag || '' };
+                    }
+                    continue;
+                }
                 if (f.timestamp && (now - f.timestamp) > 60000) {
                     // off the map after 60s; if really gone (>10 min), wipe from Firebase too
                     if ((now - f.timestamp) > 600000) {
@@ -7766,8 +7807,23 @@ assign initialcost =
             return true;
         }
 
+        let _lastSpectPresence = 0;
         async function sendFollowerToFirebase(code, lat, lng, heading) {
-            if (spectatorMode) return;   // spectator deelt niks — geen vliegtuigje, geen zoom-verstoring
+            if (spectatorMode) {
+                // Spectator deelt GEEN positie (geen vliegtuigje, geen zoom-verstoring), maar wél een
+                // lichte aanwezigheid (v50.6): tag + timestamp + spectator-vlag, 1× per 30s. Zo staat
+                // hij in ieders taglijst ("kijkt mee") zonder ooit op een kaart of in een fit te komen.
+                const now = Date.now();
+                if (now - _lastSpectPresence > 30000) {
+                    _lastSpectPresence = now;
+                    fetch(`${firebaseConfig.databaseURL}/tracking/${code}/followers/${deviceId}.json`, {
+                        method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ timestamp: now, spectator: true, tag: myTag || '',
+                                               latitude: null, longitude: null, heading: null })
+                    }).catch(() => {});
+                }
+                return;
+            }
             if (!shouldShareNow(lat, lng, heading)) return;   // stilstand-hartslag (draai = wel direct delen)
             try {
                 const controller = new AbortController();
@@ -7778,7 +7834,7 @@ assign initialcost =
                 await fetch(base + '.json', {
                     method: 'PATCH',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ latitude: lat, longitude: lng, heading: heading, timestamp: Date.now() }),
+                    body: JSON.stringify({ latitude: lat, longitude: lng, heading: heading, timestamp: Date.now(), spectator: null }),
                     signal: controller.signal
                 });
 
@@ -7975,11 +8031,24 @@ assign initialcost =
         }
 
         // Rotate only the active map container around its center.
+        // Volger-heading bewaren voor de spectator-rotatie (gezet door de master-poll).
+        let masterHeadingShared = 0;
         function applyMapRotation() {
             if (!mapRotationEnabled || !mapInstance) return;
+            // SPECTATOR (v50.5): draai de kaart met de rijrichting van wie je VOLGT — jij zit op de
+            // bank en hebt zelf geen rijrichting, dus "Zodat ik echt iemand volg zoals hij rijdt
+            // en het ziet" (Sjoerd). Volg-knop op een volger = zijn heading; anders master-heading.
+            let h = deviceHeading;
+            if (spectatorMode) {
+                if (spectFollowTarget && masterFollowersData[spectFollowTarget]) {
+                    h = masterFollowersData[spectFollowTarget].heading || 0;
+                } else {
+                    h = masterHeadingShared || 0;
+                }
+            }
             const el = mapInstance.getContainer();
             el.style.transformOrigin = 'center center';
-            el.style.transform = `rotate(${-deviceHeading}deg)`;
+            el.style.transform = `rotate(${-h}deg)`;
         }
 
         // When DRAAI is on, render the map as a square the size of the screen
@@ -9200,6 +9269,9 @@ assign initialcost =
                         }
                         if (location) {
                             masterPos = { lat: location.lat, lng: location.lng };
+                            if (typeof location.heading === 'number') masterHeadingShared = location.heading;
+                            if (location.tag) masterTagShared = location.tag;
+                            if (spectatorMode && mapRotationEnabled) applyMapRotation();   // bank-rotatie draait op poll-data
 
                             if (masterMarker) {
                                 masterMarker.setLatLng([location.lat, location.lng]);
