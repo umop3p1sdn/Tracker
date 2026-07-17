@@ -857,7 +857,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v52.0 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v52.1 © Umop3p1sdn</div>
 
             </div>
 
@@ -1235,8 +1235,8 @@
             <h3 style="color: #00BCD4; margin-top: 25px;">FM-knop 📲 (Flitsmeister) &amp; Flitser stil</h3>
             <p>Voor <strong>live mobiele flitsers</strong> (die HO-ME niet heeft) kun je Flitsmeister ernaast gebruiken. De <strong>FM</strong>-knop zit in het <strong>knoppen-menu</strong> (rechts op de kaart) en opent Flitsmeister.</p>
             <ul style="margin: 10px 0; padding-left: 20px;">
-                <li>Tik je op <strong>FM</strong>, dan vraagt de app eerst <strong>"Alleen FM geluid?"</strong>. Kies <strong>Ja</strong> om HO-ME's eigen flitser-meldingen te dempen (zodat je geen <strong>dubbele</strong> meldingen krijgt), daarna opent Flitsmeister. <strong>Nee</strong> opent Flitsmeister zonder iets te dempen.</li>
-                <li>Zijn ze gedempt, dan vraagt de FM-knop de volgende keer <strong>"HO-ME flitsers weer aan?"</strong> om ze terug te zetten.</li>
+                <li>Tik je op <strong>FM</strong>, dan vraagt de app eerst <strong>"Alleen FM geluid?"</strong>. Kies <strong>Ja</strong> om alléén het <strong>geluid</strong> van HO-ME's flitsermeldingen te dempen — het <strong>bord met aftelling blijft gewoon in beeld</strong> (Flitsmeister praat, HO-ME toont; geen dubbel geluid), daarna opent Flitsmeister. <strong>Nee</strong> opent Flitsmeister zonder iets te dempen.</li>
+                <li>Is het geluid gedempt, dan vraagt de FM-knop de volgende keer <strong>"HO-ME flits-geluid weer aan?"</strong> om het terug te zetten.</li>
                 <li>In het <strong>☰ menu</strong> staat ook een schakelaar <strong>Flitser stil</strong> (AAN/UIT) die hetzelfde doet — handmatig HO-ME's flitsers dempen.</li>
             </ul>
             <p style="font-size:0.85em; color:#555;">Tip: laat Flitsmeister zelf op de achtergrond waarschuwen (instelling in Flitsmeister). HO-ME kan Flitsmeister niet op de achtergrond zetten — dat bepaalt je telefoon — maar met "Flitser stil" voorkom je wel dubbele meldingen.</p>
@@ -1385,7 +1385,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v52.0 © Umop3p1sdn
+                HO-ME v52.1 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1597,8 +1597,8 @@
             <h3 style="color: #00BCD4; margin-top: 25px;">FM button 📲 (Flitsmeister) &amp; muting</h3>
             <p>For <strong>live mobile speed traps</strong> (which HO-ME doesn't have) you can use the Dutch Flitsmeister app alongside. The <strong>FM</strong> button sits in the <strong>button menu</strong> (right on the map) and opens Flitsmeister.</p>
             <ul style="margin: 10px 0; padding-left: 20px;">
-                <li>Tapping <strong>FM</strong> first asks <strong>"Alleen FM geluid?"</strong> (only FM sound?). Choose <strong>Ja</strong> (yes) to mute HO-ME's own camera alerts (so you don't get <strong>double</strong> warnings), then Flitsmeister opens. <strong>Nee</strong> (no) opens Flitsmeister without muting anything.</li>
-                <li>When muted, the FM button next time asks <strong>"HO-ME flitsers weer aan?"</strong> (turn HO-ME cameras back on?) to restore them.</li>
+                <li>Tapping <strong>FM</strong> first asks <strong>"Alleen FM geluid?"</strong> (only FM sound?). Choose <strong>Ja</strong> (yes) to mute only the <strong>sound</strong> of HO-ME's camera alerts — the <strong>sign with countdown stays on screen</strong> (Flitsmeister talks, HO-ME shows; no double sound), then Flitsmeister opens. <strong>Nee</strong> (no) opens Flitsmeister without muting anything.</li>
+                <li>When muted, the FM button next time asks <strong>"HO-ME flits-geluid weer aan?"</strong> (turn HO-ME camera sound back on?) to restore it.</li>
                 <li>The <strong>☰ menu</strong> also has a <strong>Flitser stil</strong> (camera mute) switch (AAN/UIT = on/off) that does the same — manually mute HO-ME's camera alerts.</li>
             </ul>
             <p style="font-size:0.85em; color:#555;">Tip: let Flitsmeister itself warn in the background (a setting in Flitsmeister). HO-ME can't put Flitsmeister in the background — your phone controls that — but with the mute you do prevent double alerts.</p>
@@ -1747,7 +1747,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v52.0 © Umop3p1sdn
+                HO-ME v52.1 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -3976,7 +3976,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "52.0";
+        const APP_VERSION = "52.1";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -5216,9 +5216,9 @@ assign initialcost =
             const box = document.getElementById('flitserBox');
             if (!box) return;
             // 'Alleen FM geluid' aan → HO-ME's eigen flitser-meldingen dempen (je gebruikt Flitsmeister).
-            if (homeFlitserSilent) {
-                box.style.display = 'none'; lastFlitserKey = null; lastFlitserSpeed = null; return;
-            }
+            // "Alleen FM geluid" (homeFlitserSilent) dempt sinds v52.1 alléén het geluid — het
+            // visuele bord met aftelling en km-kleuring blijft gewoon in beeld (Flitsmeister praat,
+            // HO-ME toont). De geluidspunten hieronder checken de vlag elk apart.
             // alleen tonen tijdens het rijden (na rode GO) en met meldingen aan
             if (!flitserRijden || flitserMode === 0 || !flitsers.length) {
                 box.style.display = 'none'; lastFlitserKey = null; lastFlitserSpeed = null; return;
@@ -5279,14 +5279,14 @@ assign initialcost =
                 // begin van de melding (n=9, ~900m): 1× beep — fijn voor snelweg
                 if (n === 9 && !flitserBeginBeep[key]) {
                     flitserBeginBeep[key] = true;
-                    singleBeep();
+                    if (!homeFlitserSilent) singleBeep();
                 }
                 // op ~600m: gesproken "Over 600 meter flitser" (i.p.v. de dubbele piep) — 1× per flitser.
                 if (bestD <= 600 && !flitserBeeped[key]) {
                     flitserBeeped[key] = true;
                     let zin = 'Over 600 meter flitser';
                     if (best.maxspeed) zin += ', ' + best.maxspeed + ' kilometer per uur';
-                    if (typeof speak === 'function') speak(zin, flitserVolume);
+                    if (!homeFlitserSilent && typeof speak === 'function') speak(zin, flitserVolume);
                 }
                 // binnen 300m: gesproken "Let op flitser over 300 meter" (1×), geen piep meer.
                 // Als de maximumsnelheid bekend is, noem die er ook bij ("... 50 kilometer per uur").
@@ -5294,12 +5294,12 @@ assign initialcost =
                     flitser300[key] = true;
                     let zin = 'Let op flitser over 300 meter';
                     if (best.maxspeed) zin += ', ' + best.maxspeed + ' kilometer per uur';
-                    if (typeof speak === 'function') speak(zin, flitserVolume);
+                    if (!homeFlitserSilent && typeof speak === 'function') speak(zin, flitserVolume);
                 }
                 // bij de laatste stap (n=1, ~100m): extra gesproken "Flitser" — 1× per flitser
                 if (n === 1 && !flitserGesproken[key]) {
                     flitserGesproken[key] = true;
-                    if (typeof speak === 'function') speak('Flitser', flitserVolume);
+                    if (!homeFlitserSilent && typeof speak === 'function') speak('Flitser', flitserVolume);
                 }
                 lastFlitserSpeed = best.maxspeed || null;
             }
@@ -8665,7 +8665,7 @@ assign initialcost =
             if (!homeFlitserSilent) {
                 if (t) t.textContent = 'Alleen FM geluid?';
             } else {
-                if (t) t.textContent = 'HO-ME flitsers weer aan?';
+                if (t) t.textContent = 'HO-ME flits-geluid weer aan?';
             }
             if (p) p.style.display = 'flex';
         }
