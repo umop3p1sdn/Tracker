@@ -826,7 +826,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v50.3 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v50.4 © Umop3p1sdn</div>
 
             </div>
 
@@ -934,7 +934,7 @@
     <div id="tagModal" class="hidden" onclick="if (event.target === this) closeTagInput()" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); display: none; z-index: 1300; padding: 20px;">
         <div style="background: #0a0e27; color: #fff; border-radius: 10px; max-width: 360px; margin: 80px auto; padding: 24px; font-family: sans-serif;">
             <h2 style="color: #00BCD4; margin: 0 0 16px;">Jouw tag</h2>
-            <input id="tagInput" type="text" maxlength="5" placeholder="Max 5 tekens" style="width: 100%; box-sizing: border-box; font-size: 1.4em; text-align: center; padding: 12px; border-radius: 8px; border: 2px solid #00BCD4; background: #060818; color: #fff; text-transform: uppercase;">
+            <input id="tagInput" type="text" maxlength="6" placeholder="Max 6 tekens" style="width: 100%; box-sizing: border-box; font-size: 1.4em; text-align: center; padding: 12px; border-radius: 8px; border: 2px solid #00BCD4; background: #060818; color: #fff; text-transform: uppercase;">
             <p style="font-size: 0.75em; color: #888; margin: 8px 0 20px;">tag is zichtbaar voor Master</p>
             <div style="display: flex; gap: 10px;">
                 <button class="button-secondary" onclick="closeTagInput()" style="flex: 1;">Annuleer</button>
@@ -1102,7 +1102,7 @@
             <div style="margin: 20px 0;">
                 <div style="width:64px; height:64px; border-radius:50%; background:rgba(33,150,243,0.55); border:3px solid #fff; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:bold; font-size:1.6em; margin-bottom:8px;">1</div>
                 <strong>Jouw kleur &amp; TAG</strong>
-                <p style="margin:4px 0 0;">Master = rode pijl. Elke volger krijgt een eigen kleur (vanaf blauw), bij meer dan 8 met een nummer. Het rondje rechts toont jouw kleur. Met de <strong>TAG</strong>-knop eronder zet je een korte naam (max 5 tekens) die de Master linksboven ziet. (De Master regelt in het menu hoe zichtbaar de tags zijn.)</p>
+                <p style="margin:4px 0 0;">Master = rode pijl. Elke volger krijgt een eigen kleur (vanaf blauw), bij meer dan 8 met een nummer. Het rondje rechts toont jouw kleur. Met de <strong>TAG</strong>-knop eronder zet je een korte naam (max 6 tekens) die de Master linksboven ziet. (De Master regelt in het menu hoe zichtbaar de tags zijn.)</p>
             </div>
 
             <h3 style="color: #00BCD4; margin-top: 25px;">CREW-knop (iedereen zien)</h3>
@@ -1343,7 +1343,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v50.3 © Umop3p1sdn
+                HO-ME v50.4 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1461,7 +1461,7 @@
             <div style="margin: 20px 0;">
                 <div style="width:64px; height:64px; border-radius:50%; background:rgba(33,150,243,0.55); border:3px solid #fff; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:bold; font-size:1.6em; margin-bottom:8px;">1</div>
                 <strong>Your colour &amp; TAG</strong>
-                <p style="margin:4px 0 0;">Master = red arrow. Each follower gets its own colour (starting with blue), with a number when there are more than 8. The circle on the right shows your colour. With the <strong>TAG</strong> button below it you set a short name (max 5 characters) that the Master sees top left. (The Master controls tag visibility in the menu.)</p>
+                <p style="margin:4px 0 0;">Master = red arrow. Each follower gets its own colour (starting with blue), with a number when there are more than 8. The circle on the right shows your colour. With the <strong>TAG</strong> button below it you set a short name (max 6 characters) that the Master sees top left. (The Master controls tag visibility in the menu.)</p>
             </div>
 
             <h3 style="color: #00BCD4; margin-top: 25px;">CREW button (seeing everyone)</h3>
@@ -1702,7 +1702,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v50.3 © Umop3p1sdn
+                HO-ME v50.4 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -3931,7 +3931,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "50.3";
+        const APP_VERSION = "50.4";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -4022,7 +4022,7 @@ assign initialcost =
         let masterFollowersTimer = null;
         let followerHeartbeatTimer = null;
         let myFollowerIdx = null;      // this follower's assigned color index (read from Firebase)
-        let myTag = '';                // this follower's tag (max 5 chars)
+        let myTag = '';                // this follower's tag (max 6 chars)
         let tagOpacity = 70;           // master: opacity % for tag list (0-100, step 5)
         let followInterval = null;
         let trackVisible = false;
@@ -4084,7 +4084,7 @@ assign initialcost =
                     // tag als die er is, anders V1/V2/V3 (volgnummer) — zonder dit heetten
                     // alle taglozen "V" en leek de knop maar tussen 2 standen te wisselen
                     const idx = (f && typeof f.idx === 'number') ? f.idx : 0;
-                    l.textContent = (f && f.tag) ? String(f.tag).slice(0, 5) : ('V' + (idx + 1));
+                    l.textContent = (f && f.tag) ? String(f.tag).slice(0, 6) : ('V' + (idx + 1));
                     l.style.color = (typeof colorForIndex === 'function') ? colorForIndex(idx) : '#000';
                 }
             }
@@ -7200,8 +7200,8 @@ assign initialcost =
             const tag = (masterFollowersData[id] && masterFollowersData[id].tag) || id;
             devShowPanel('Test-volger ' + tag, [
                 ['Tag wijzigen', '#2196F3', () => {
-                    const t = prompt('Nieuwe tag (max 5 tekens):', tag);
-                    if (t) { masterFollowersData[id].tag = t.slice(0, 5); renderTagList(); }
+                    const t = prompt('Nieuwe tag (max 6 tekens):', tag);
+                    if (t) { masterFollowersData[id].tag = t.slice(0, 6); renderTagList(); }
                 }],
                 ['Beweeg naar…', '#4CAF50', () => {
                     devAwaitDest = id;
@@ -7347,7 +7347,7 @@ assign initialcost =
         }
         function saveTag() {
             const inp = document.getElementById('tagInput');
-            myTag = (inp ? inp.value : '').trim().toUpperCase().slice(0, 5);
+            myTag = (inp ? inp.value : '').trim().toUpperCase().slice(0, 6);
             closeTagInput();
             updateMyColorBadge();
             // write tag to Firebase (PATCH so we don't wipe position/idx)
