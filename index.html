@@ -812,7 +812,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v48.4 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v48.5 © Umop3p1sdn</div>
 
             </div>
 
@@ -1327,7 +1327,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v48.4 © Umop3p1sdn
+                HO-ME v48.5 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1684,7 +1684,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v48.4 © Umop3p1sdn
+                HO-ME v48.5 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -3913,7 +3913,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "48.4";
+        const APP_VERSION = "48.5";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -4498,6 +4498,11 @@ assign initialcost =
 
         function startVoicePoll() {
             if (!currentCode) return;
+            // Draait de poll al? Dan NIETS doen — vooral de primer niet. Die leest het huidige bericht
+            // uit Firebase en markeert het als "al gehad"; na het versturen van je EIGEN bericht is dat
+            // een race: wint de primer, dan wordt je eigen bericht overgeslagen (geen lichtkrant, geen
+            // stem). De primer hoort alleen bij het échte verbinden, als de poll nog niet loopt.
+            if (window._voicePoll) return;
             // PRIMER: bij verbinden staat er soms nog een OUD bericht in Firebase (van een vorige sessie
             // met dezelfde code). Zet lastTalkTs meteen op de ts van dat bericht — dan wordt het niet
             // opnieuw afgespeeld. Alleen berichten die ná het verbinden binnenkomen (nieuwere ts) klinken.
