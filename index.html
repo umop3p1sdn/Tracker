@@ -826,7 +826,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v50.6 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v50.7 © Umop3p1sdn</div>
 
             </div>
 
@@ -1344,7 +1344,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v50.6 © Umop3p1sdn
+                HO-ME v50.7 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1704,7 +1704,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v50.6 © Umop3p1sdn
+                HO-ME v50.7 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -3933,7 +3933,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "50.6";
+        const APP_VERSION = "50.7";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -9705,6 +9705,7 @@ assign initialcost =
             const code = await generateFreeCode();   // code die niet al in gebruik is
             currentCode = code;
             currentMode = 'master';
+            updateMyColorBadge();   // toont de TAG-knop voor de master (v50.6 gaf 'm die, maar deze aanroep ontbrak)
             masterLocations = [];
             isAutoFollowActive = false;   // Center UIT bij start → je ziet je hele route terwijl je 'm bouwt
             // knop-kleur op grijs (uit-stand)
