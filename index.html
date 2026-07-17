@@ -857,7 +857,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v51.7 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v51.8 © Umop3p1sdn</div>
 
             </div>
 
@@ -1384,7 +1384,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v51.7 © Umop3p1sdn
+                HO-ME v51.8 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1745,7 +1745,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v51.7 © Umop3p1sdn
+                HO-ME v51.8 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -3974,7 +3974,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "51.7";
+        const APP_VERSION = "51.8";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -9903,6 +9903,22 @@ assign initialcost =
                 if (document.body.classList.contains('btn-menu-open')) resetBtnMenuTimer();
             });
         });
+
+        // ── ERNAAST TIKKEN = SLUITEN (v51.8) — ook voor de twee kleine vraag-panelen zonder backdrop.
+        // De rode kruisjes/Nee-knoppen blijven gewoon werken als optie. Capture-fase: draait vóór de
+        // knop-handlers, dus de tik die het paneel ópent (paneel dan nog dicht) sluit 'm niet meteen.
+        document.addEventListener('click', (e) => {
+            // FM-vraag: puur sluiten — NIET fmAskAnswer(false), want "Nee" opent alsnog Flitsmeister
+            const fm = document.getElementById('fmAskPanel');
+            if (fm && fm.style.display && fm.style.display !== 'none' && !fm.contains(e.target)) {
+                fm.style.display = 'none';
+            }
+            // Reroute-vraag: buiten tikken = Nee (dismissReroute is een schone sluiter met cooldown)
+            const rr = document.getElementById('reroutePrompt');
+            if (rr && rr.style.display && rr.style.display !== 'none' && !rr.contains(e.target)) {
+                if (typeof dismissReroute === 'function') dismissReroute();
+            }
+        }, true);
 
         function stopTracking() {
             closeBtnMenu();   // knoppen-menu dicht (anders blijft de backdrop hangen)
