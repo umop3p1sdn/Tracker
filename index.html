@@ -575,8 +575,8 @@
             #turnDist       { bottom: 30px !important; }
             #turnArrowLeft  { left: calc(50% - 130px) !important; right: auto !important; bottom: 26px !important; }
             #turnArrowRight { left: calc(50% + 75px)  !important; right: auto !important; bottom: 26px !important; }
-            /* Liggend: GPS-snelheid altijd zichtbaar linksboven (flex). Flitser-melding komt LINKS ervan,
-               in dezelfde hoogte. De snelheid staat vast op left:12px; de flitser schuift ernaast. */
+            /* Liggend: GPS-snelheid altijd zichtbaar linksboven (flex), vast op left:12px.
+               De flitser-melding staat sinds v51.2 RECHTS van de zoom-plus/min (regel hieronder). */
             body.map-only #gpsSpeedBox { display: flex !important; }
             /* Snelheidsbord: zelfde zichtbaarheidsformule als de km-teller (zichtbaar in clean screen).
                Flitser-voorrang: als de body 'flitser-actief' heeft, blijft het bord verborgen. */
@@ -828,7 +828,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v51.2 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v51.3 © Umop3p1sdn</div>
 
             </div>
 
@@ -1347,7 +1347,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v51.2 © Umop3p1sdn
+                HO-ME v51.3 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1707,7 +1707,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v51.2 © Umop3p1sdn
+                HO-ME v51.3 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -3936,7 +3936,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "51.2";
+        const APP_VERSION = "51.3";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
