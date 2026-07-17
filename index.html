@@ -825,7 +825,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v49.9 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v50.0 © Umop3p1sdn</div>
 
             </div>
 
@@ -1342,7 +1342,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v49.9 © Umop3p1sdn
+                HO-ME v50.0 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1701,7 +1701,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v49.9 © Umop3p1sdn
+                HO-ME v50.0 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -3930,7 +3930,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "49.9";
+        const APP_VERSION = "50.0";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -4089,6 +4089,9 @@ assign initialcost =
             if (spectatorMode && currentMode === 'follower' && currentCode && typeof deviceId !== 'undefined') {
                 // vliegtuigje bij de anderen meteen weghalen (niet wachten op verlopen timestamp)
                 fetch(`${firebaseConfig.databaseURL}/tracking/${currentCode}/followers/${deviceId}.json`, { method: 'DELETE' }).catch(() => {});
+            }
+            if (spectatorMode && followerMarker && mapInstance) {
+                mapInstance.removeLayer(followerMarker); followerMarker = null;   // eigen vliegtuigje ook lokaal weg
             }
             if (!spectatorMode) spectFollowTarget = null;   // uit = terug naar gewoon volgen
             updateSpectFollowBtn();
@@ -9105,7 +9108,11 @@ assign initialcost =
                             if (typeof updateSpeedSign === 'function') updateSpeedSign(latitude, longitude);   // ná flitser: flitser heeft voorrang
                             if (typeof updateLiveSpeed === 'function') updateLiveSpeed(latitude, longitude);   // live snelheid zonder route
                             
-                            if (followerMarker) {
+                            if (spectatorMode) {
+                                // spectator: geen eigen vliegtuigje, ook niet op je eigen kaart —
+                                // je kijkt mee, je rijdt niet mee
+                                if (followerMarker) { mapInstance.removeLayer(followerMarker); followerMarker = null; }
+                            } else if (followerMarker) {
                                 followerMarker.setLatLng([latitude, longitude]);
                                 updateSelfMarkerRotation();
                             } else {
