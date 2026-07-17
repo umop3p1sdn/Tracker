@@ -591,6 +591,14 @@
             #tagList { top: 95px !important; left: 100px !important; }
             /* Liggend: rechter knoppenkolom volger fors omhoog, bovenrand bij de +/- zoomknoppen. */
             #followerSideBar { top: 10px !important; }
+            /* Liggend (v51.4): master-kolom ook omhoog; LIJN + CREW vielen onderaan buiten beeld →
+               naar een 2e kolom LINKS naast de balk, ter hoogte van de TAG-knop (kolom 1 na top:10:
+               rot 18-82, center 90-154, toon 162-226, tag 234-270, teller ~278-313 — past).
+               Kolom 2 op right:90 (10 rand + 64 knop + 8 gap + 8 padding); geen botsing met de
+               flitser rechts van de zoom: die eindigt boven top ~150, kolom 2 begint op 234. */
+            #masterSideBar { top: 10px !important; }
+            #folLinesBtn { position: fixed !important; right: 90px !important; top: 234px !important; }
+            #crewBtn     { position: fixed !important; right: 90px !important; top: 306px !important; }
             /* Liggend: afstand/tijd (remPanel) een stukje naar rechts — net naast de ronde knoppen. */
             body.map-only #remPanel { left: 100px !important; right: auto !important; bottom: 10px !important; }
             /* Liggend: de ronde knoppen (mic/T/FM) links onder elkaar, passend op het lagere scherm. */
@@ -828,7 +836,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v51.3 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v51.4 © Umop3p1sdn</div>
 
             </div>
 
@@ -845,7 +853,7 @@
                         </div>
 
                         <!-- SIDE ICON BAR (right) -->
-                        <div style="position: fixed; top: 70px; right: 10px; z-index: 1001; display: flex; flex-direction: column; gap: 8px; background: rgba(0,0,0,0.15); padding: 8px; border-radius: 8px;">
+                        <div id="masterSideBar" style="position: fixed; top: 70px; right: 10px; z-index: 1001; display: flex; flex-direction: column; gap: 8px; background: rgba(0,0,0,0.15); padding: 8px; border-radius: 8px;">
                             <button id="rotBtnMaster" title="Kaart meedraaien" style="padding: 10px; width: 64px; height: 64px; border-radius: 6px; background: transparent; color: #000; text-shadow: 0 0 2px rgba(255,255,255,0.9); border: 3px solid #000; box-shadow: 0 0 0 2px rgba(255,255,255,0.4); cursor: pointer; display: flex; align-items: center; justify-content: center;" onclick="toggleMapRotation()"><svg width="36" height="36" viewBox="0 0 24 24" fill="currentColor" style="filter: drop-shadow(0 0 2px rgba(255,255,255,0.9));"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm2.19 12.19L6 18l3.81-8.19L18 6l-3.81 8.19z"/></svg></button>
                             <button onclick="toggleFollow()" id="followBtnMaster" title="Center" style="width: 64px; height: 64px; border-radius: 6px; background: #555; color: #fff; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;"><svg width="34" height="34" viewBox="0 0 24 24" fill="currentColor" style="filter: drop-shadow(0 0 2px rgba(255,255,255,0.9));"><path d="M12 8a4 4 0 100 8 4 4 0 000-8zm8.94 3A8.994 8.994 0 0013 3.06V1h-2v2.06A8.994 8.994 0 003.06 11H1v2h2.06A8.994 8.994 0 0011 20.94V23h2v-2.06A8.994 8.994 0 0020.94 13H23v-2h-2.06zM12 19a7 7 0 110-14 7 7 0 010 14z"/></svg></button>
                             <button id="zoomIconMaster" title="Toon: alleen ik / volgers / beide" style="padding: 8px; width: 64px; height: 64px; border-radius: 6px; background: transparent; color: #000; text-shadow: 0 0 2px rgba(255,255,255,0.9); border: 3px solid #000; box-shadow: 0 0 0 2px rgba(255,255,255,0.4); cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;" onclick="toggleZoom()"><svg id="zoomSvgMaster" width="40" height="40" viewBox="0 0 36 36" fill="currentColor" style="filter: drop-shadow(0 0 2px rgba(255,255,255,0.9));"></svg><span id="zoomIconLabelMaster" style="font-size: 0.5em; font-weight: bold; line-height: 1;">IK</span></button>
@@ -1347,7 +1355,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v51.3 © Umop3p1sdn
+                HO-ME v51.4 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1707,7 +1715,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v51.3 © Umop3p1sdn
+                HO-ME v51.4 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -3936,7 +3944,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "51.3";
+        const APP_VERSION = "51.4";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -8165,6 +8173,17 @@ assign initialcost =
                     heading = (360 - event.alpha) % 360;
                 }
                 if (heading !== null) {
+                    // LIGGEND (v51.4): webkitCompassHeading is t.o.v. de BOVENKANT van het toestel
+                    // (portret). Ligt de telefoon een kwartslag, dan wijst "boven" opzij en draaide
+                    // de kaart 90 graden verkeerd. Compenseren met de schermrotatie zodat de heading
+                    // altijd bij de schermbovenkant hoort — geldt meteen ook voor het eigen pijltje
+                    // en de gedeelde heading (zelfde bron).
+                    let ang = 0;
+                    try {
+                        if (screen.orientation && typeof screen.orientation.angle === 'number') ang = screen.orientation.angle;
+                        else if (typeof window.orientation === 'number') ang = window.orientation;
+                    } catch (e) {}
+                    heading = (heading + ang + 360) % 360;
                     deviceHeading = heading;
                     const el = document.getElementById('headingReadout');
                     if (el) el.textContent = '🧭 ' + Math.round(heading) + '°';
