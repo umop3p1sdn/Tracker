@@ -657,6 +657,10 @@
         </div>
     </div>
     <!-- FM-knop: opent Flitsmeister (eigen 'FM'-icoon, doorzichtig). Staat boven de T-knop. -->
+    <!-- SPECTATOR volg-knop: tag van wie je volgt; tik = volgende vliegtuigje (Master → volgers → Master) -->
+    <div id="spectFollowBtn" onclick="cycleSpectFollow()" title="Volg de volgende rijder" style="display:none; position: fixed; bottom: 549px; left: 10px; z-index: 1250; width: 78px; height: 78px; border-radius: 50%; border: 4px solid #000; background: rgba(0,188,212,0.35); box-shadow: 0 0 0 2px rgba(255,255,255,0.4); align-items:center; justify-content:center; cursor: pointer; -webkit-user-select:none; user-select:none;">
+        <span id="spectFollowLabel" style="font-size: 24px; font-weight: 900; color: #000; font-family: sans-serif; filter: drop-shadow(0 0 2px rgba(255,255,255,0.9)); line-height:1;">M</span>
+    </div>
     <div id="fmBtn" onclick="openFlitsmeister()" title="Flitsmeister openen" style="display:none; position: fixed; bottom: 461px; left: 10px; z-index: 1250; width: 78px; height: 78px; border-radius: 50%; border: 4px solid #000; background: rgba(255,255,255,0.12); box-shadow: 0 0 0 2px rgba(255,255,255,0.4); align-items:center; justify-content:center; cursor: pointer; -webkit-user-select:none; user-select:none;">
         <span style="font-size: 30px; font-weight: 900; color: #000; font-family: sans-serif; filter: drop-shadow(0 0 2px rgba(255,255,255,0.9)); line-height:1;">FM</span>
     </div>
@@ -802,6 +806,12 @@
 
                 <div class="follow-section">
                     <input type="text" maxlength="4" placeholder="Enter code" id="inputCode" class="input" autocapitalize="characters" autocomplete="off" onkeyup="this.value = this.value.toUpperCase().replace(/[^0-9A-Z]/g, ''); if(this.value.length === 4) { startFollowing(); }" style="text-align: center; text-transform: uppercase;">
+                    <!-- Spectator kies je VÓÓR het joinen: anders zoomt de join-fit (master + jij) de kaart
+                         eerst extreem uit als je ver weg woont. Per join, standaard uit, niet onthouden. -->
+                    <label style="display:flex; align-items:center; gap:10px; justify-content:center; margin-top:12px; cursor:pointer; font-size:0.95em; color:#9fb0d0; -webkit-user-select:none; user-select:none;">
+                        <input type="checkbox" id="spectatorJoinChk" style="width:22px; height:22px; accent-color:#00BCD4; cursor:pointer;">
+                        Spectator
+                    </label>
                 </div>
 
                 <div id="error" class="error hidden"></div>
@@ -815,7 +825,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v49.6 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v49.9 © Umop3p1sdn</div>
 
             </div>
 
@@ -963,6 +973,7 @@
                 <button class="button-secondary" onclick="openHistory()" style="width: 100%;">Geschiedenis</button>
                 <button class="button-secondary" onclick="toggleVoicePref()" id="voicePrefBtn" style="width: 100%;">Stem: NL</button>
                 <button class="button-secondary" onclick="testStem()" style="width: 100%;">Test stem</button>
+                <button class="button-secondary" onclick="toggleSpectator()" id="spectatorBtn" style="width: 100%;">Spectator: UIT</button>
                 <div id="tagOpacityRow" style="display:flex; align-items:center; justify-content:space-between; gap:8px; background:#1a2148; padding:8px 12px; border-radius:8px;">
                     <span style="font-size:0.9em;">Tags zichtbaar</span>
                     <div style="display:flex; align-items:center; gap:10px;">
@@ -1101,6 +1112,15 @@
                 <li><strong>3× </strong> — uit; de andere volgers en hun lijnen verdwijnen weer.</li>
             </ul>
             <p style="font-size:0.85em; color:#555;">Zo houd je zicht op de hele groep. Zet 'm uit voor een rustige kaart met alleen de Master.</p>
+
+            <h3 style="color: #00BCD4; margin-top: 25px;">Spectator (meekijken vanaf huis)</h3>
+            <p>Kijk je mee zonder mee te rijden (thuis, langs de route)? Vink dan op het startscherm <strong>Spectator</strong> aan vóórdat je de code intikt. Je deelt dan <strong>geen GPS</strong> — geen vliegtuigje op andermans kaart, dus je verstoort nooit iemands (crew-)zoom — en je eigen kaart start netjes op de master in plaats van extreem uit te zoomen naar jouw woonkamer. Als spectator zie je <strong>alle rijders</strong> op je kaart.</p>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+                <li><strong>Volg-knop</strong> (rond, links op het scherm): toont wie je volgt — <strong>M</strong> = master, anders de tag van een volger. Tik = je kaart springt naar het <strong>volgende vliegtuigje</strong> (Master → volgers → weer Master), met je eigen zoom. Zo kijk je van dichtbij met één rijder mee.</li>
+                <li><strong>CREW 2×</strong> werkt ook: dan past de kaart op de hele gróep (niet op jouw bank).</li>
+                <li>Meepraten via <strong>mic of T</strong> kan gewoon — je tag staat bij je bericht.</li>
+                <li>Onderweg wisselen kan via het <strong>☰ menu</strong> → <strong>Spectator: UIT/AAN</strong> (bijv. als je alsnog op de motor stapt).</li>
+            </ul>
 
             <!-- ═══════════ ALGEMEEN ═══════════ -->
             <h2 style="color: #00BCD4; margin-top: 35px; border-top: 2px solid #00BCD4; padding-top: 22px;">Algemeen (Master &amp; Volger)</h2>
@@ -1322,7 +1342,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v49.6 © Umop3p1sdn
+                HO-ME v49.9 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1451,6 +1471,15 @@
                 <li><strong>3× </strong> — off; the other followers and their lines disappear again.</li>
             </ul>
             <p style="font-size:0.85em; color:#555;">This way you keep an eye on the whole group. Turn it off for a calm map with just the Master.</p>
+
+            <h3 style="color: #00BCD4; margin-top: 25px;">Spectator (watching from home)</h3>
+            <p>Watching without riding along (at home, along the route)? Then tick <strong>Spectator</strong> on the start screen before typing the code. You share <strong>no GPS</strong> — no plane on anyone's map, so you can never disturb anyone's (crew) zoom — and your own map starts neatly on the master instead of zooming out to your living room. As a spectator you see <strong>all riders</strong> on your map.</p>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+                <li><strong>Follow button</strong> (round, left on the screen): shows who you're following — <strong>M</strong> = master, otherwise a follower's tag. Tap = your map jumps to the <strong>next plane</strong> (Master → followers → Master again), with your own zoom. Ride along up close with one rider.</li>
+                <li><strong>CREW 2×</strong> works too: the map then fits the whole group (not your couch).</li>
+                <li>Joining the chat via <strong>mic or T</strong> works as normal — your tag shows with your message.</li>
+                <li>Switching on the go is possible via the <strong>☰ menu</strong> → <strong>Spectator: UIT/AAN</strong> (e.g. if you hop on the bike after all).</li>
+            </ul>
 
             <!-- ═══════════ GENERAL ═══════════ -->
             <h2 style="color: #00BCD4; margin-top: 35px; border-top: 2px solid #00BCD4; padding-top: 22px;">General (Master &amp; Follower)</h2>
@@ -1672,7 +1701,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v49.6 © Umop3p1sdn
+                HO-ME v49.9 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -3901,7 +3930,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "49.6";
+        const APP_VERSION = "49.9";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -4022,6 +4051,51 @@ assign initialcost =
 
         // ─── AUDIO (piep) + toggles ───
         let audioEnabled = true;        // menu toggle
+        // SPECTATOR (v49.7): gewoon volger, maar zonder GPS-delen. Iemand die vanaf huis meekijkt
+        // heeft geen vliegtuigje op andermans kaart en kan dus nooit iemands (crew-)zoom verstoren.
+        // Ontvangen (posities, sporen, berichten) en meepraten (mic/T) werkt gewoon. Per sessie, niet bewaard.
+        let spectatorMode = false;
+        // Volg-cam (spectator): null = master volgen, anders deviceId van de volger die je volgt.
+        let spectFollowTarget = null;
+        function cycleSpectFollow() {
+            // volgorde: Master → volgers op idx → weer Master
+            const ids = Object.keys(masterFollowersData)
+                .filter(id => masterFollowersData[id] && typeof masterFollowersData[id].lat === 'number')
+                .sort((a, b) => (masterFollowersData[a].idx || 99) - (masterFollowersData[b].idx || 99));
+            const ring = [null, ...ids];
+            const cur = ring.indexOf(spectFollowTarget);
+            spectFollowTarget = ring[(cur + 1) % ring.length];
+            updateSpectFollowBtn();
+            if (isAutoFollowActive && typeof updateMapView === 'function') updateMapView();
+        }
+        function updateSpectFollowBtn() {
+            const b = document.getElementById('spectFollowBtn');
+            const l = document.getElementById('spectFollowLabel');
+            if (!b) return;
+            const onMap = currentMode === 'follower' && spectatorMode && currentCode;
+            b.style.display = onMap ? 'flex' : 'none';
+            if (l) {
+                if (!spectFollowTarget) { l.textContent = 'M'; }
+                else {
+                    const f = masterFollowersData[spectFollowTarget];
+                    l.textContent = (f && f.tag) ? String(f.tag).slice(0, 5) : 'V';
+                }
+            }
+        }
+        function toggleSpectator() {
+            spectatorMode = !spectatorMode;
+            const b = document.getElementById('spectatorBtn');
+            if (b) b.textContent = 'Spectator: ' + (spectatorMode ? 'AAN' : 'UIT');
+            if (spectatorMode && currentMode === 'follower' && currentCode && typeof deviceId !== 'undefined') {
+                // vliegtuigje bij de anderen meteen weghalen (niet wachten op verlopen timestamp)
+                fetch(`${firebaseConfig.databaseURL}/tracking/${currentCode}/followers/${deviceId}.json`, { method: 'DELETE' }).catch(() => {});
+            }
+            if (!spectatorMode) spectFollowTarget = null;   // uit = terug naar gewoon volgen
+            updateSpectFollowBtn();
+            if (typeof showBufferToast === 'function') {
+                showBufferToast(spectatorMode ? 'Spectator: je kijkt mee zonder GPS te delen' : 'Spectator uit: GPS-delen weer aan', '#00BCD4', 2500);
+            }
+        }
         let navArrowsEnabled = true;    // menu toggle
         let speechEnabled = true;       // menu toggle — gesproken afslagen (NL)
         let audioCtx = null;            // Web Audio context (created on unlock)
@@ -4786,6 +4860,9 @@ assign initialcost =
             if (tbtn) tbtn.style.display = show ? 'flex' : 'none';
             const fbtn = document.getElementById('fmBtn');    // FM-knop volgt ook dezelfde zichtbaarheid
             if (fbtn) fbtn.style.display = show ? 'flex' : 'none';
+            // spectator-volgknop: zelfde schermregels, maar alleen als spectator-volger
+            const sfb = document.getElementById('spectFollowBtn');
+            if (sfb) sfb.style.display = (show && spectatorMode && currentMode === 'follower') ? 'flex' : 'none';
             // poll draait zolang je verbonden bent (los van scherm), zodat je berichten altijd hoort
             if (currentCode) {
                 startVoicePoll();
@@ -7314,7 +7391,7 @@ assign initialcost =
         let prevFollowerCount = null; // vorige ronde: aantal volgers (null = eerste ronde, niet piepen)
         async function updateFollowerMarkers(code) {
             // Volger die 'ALLEN' heeft uitgezet: niets tekenen (vangt late async-aanroepen op) + opruimen.
-            if (currentMode === 'follower' && !showEveryone) {
+            if (currentMode === 'follower' && !showEveryone && !spectatorMode) {   // spectator ziet altijd iedereen
                 Object.keys(followerMarkers).forEach(id => {
                     if (mapInstance) mapInstance.removeLayer(followerMarkers[id]); delete followerMarkers[id];
                 });
@@ -7546,7 +7623,23 @@ assign initialcost =
             if (!mapInstance) return;
             const me = (typeof followerPos === 'object' && followerPos) ? [followerPos.lat, followerPos.lng]
                      : (lastGps ? [lastGps.lat, lastGps.lng] : null);
-            if (!me) return;
+            if (!me && !spectatorMode) return;
+            // SPECTATOR: fit gewoon op de groep (master + volgers), zonder mij — mijn bankpositie
+            // zou de kaart anders tot provincie-formaat oprekken.
+            if (spectatorMode) {
+                const grp = [];
+                Object.keys(masterFollowersData).forEach(id => {
+                    const f = masterFollowersData[id];
+                    if (f && typeof f.lat === 'number') grp.push([f.lat, f.lng]);
+                });
+                if (masterPos && typeof masterPos.lat === 'number') grp.push([masterPos.lat, masterPos.lng]);
+                if (!grp.length) return;
+                const staandS = (window.innerHeight >= window.innerWidth);
+                const padS = staandS ? [120, 240] : [240, 120];
+                if (grp.length === 1) { mapInstance.setView(grp[0], Math.min(mapInstance.getZoom(), 15), { animate: false }); return; }
+                mapInstance.fitBounds(L.latLngBounds(grp), { padding: padS, maxZoom: 17, animate: false });
+                return;
+            }
             // verzamel alle punten: ik + alle andere volgers + master
             const pts = [me];
             Object.keys(masterFollowersData).forEach(id => {
@@ -7664,6 +7757,7 @@ assign initialcost =
         }
 
         async function sendFollowerToFirebase(code, lat, lng, heading) {
+            if (spectatorMode) return;   // spectator deelt niks — geen vliegtuigje, geen zoom-verstoring
             if (!shouldShareNow(lat, lng, heading)) return;   // stilstand-hartslag (draai = wel direct delen)
             try {
                 const controller = new AbortController();
@@ -8193,6 +8287,13 @@ assign initialcost =
 
             // CREW (volger) functie 2 is dominant: jij centraal + auto-zoom, ongeacht de IK/MASTER/BEIDE toggle.
             if (currentMode === 'follower' && everyoneMode === 2) { fitEveryoneInView(); return; }
+
+            // SPECTATOR volg-cam: kaart plakt aan de gekozen rijder (eigen zoom). Doel weggevallen → master.
+            if (currentMode === 'follower' && spectatorMode && spectFollowTarget) {
+                const f = masterFollowersData[spectFollowTarget];
+                if (f && typeof f.lat === 'number') { mapInstance.setView([f.lat, f.lng], zoomLevelValue); return; }
+                spectFollowTarget = null; updateSpectFollowBtn();
+            }
 
             // Master view: zoomMode mirrored - self=me, master=followers, both=all
             if (currentMode === 'master') {
@@ -9549,6 +9650,19 @@ assign initialcost =
 
             currentCode = code;
             currentMode = 'follower';
+            // Spectator-vinkje van het startscherm: VÓÓR het joinen gekozen, zodat er nooit een
+            // vliegtuigje verschijnt en de join-fit (master + jij = extreme uitzoomer bij afstand)
+            // wordt overgeslagen — de kaart start gewoon op de master, met nette zoom.
+            const chk = document.getElementById('spectatorJoinChk');
+            if (chk && chk.checked) {
+                spectatorMode = true;
+                const sb = document.getElementById('spectatorBtn');
+                if (sb) sb.textContent = 'Spectator: AAN';
+                zoomMode = 'master';
+                if (typeof updateZoomIcons === 'function') updateZoomIcons();
+                const fl = document.getElementById('zoomIconLabelFollower');
+                if (fl) fl.textContent = 'MASTER';
+            }
             // HOORBARE activatie: de master krijgt "Volg de route" bij GO — de volger had alleen
             // stille (volume-0) primers, en die activeren de iOS-spraakmotor NIET (bewezen in de
             // v48.x-zoektocht: alleen een hoorbare utterance in een echte tik wekt de motor).
