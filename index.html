@@ -826,7 +826,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v51.0 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v51.1 © Umop3p1sdn</div>
 
             </div>
 
@@ -1345,7 +1345,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v51.0 © Umop3p1sdn
+                HO-ME v51.1 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1705,7 +1705,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v51.0 © Umop3p1sdn
+                HO-ME v51.1 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -3934,7 +3934,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "51.0";
+        const APP_VERSION = "51.1";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -5132,28 +5132,51 @@ assign initialcost =
             const speed = document.getElementById('flitserSpeed');
             const count = document.getElementById('flitserCount');
             if (!sign) return;
-            const S = [ {sign:46, speed:20, count:38}, {sign:62, speed:27, count:52}, {sign:84, speed:37, count:72} ][flitserSize];
+            const isLandscape = window.matchMedia('(orientation: landscape)').matches;
+            // LIGGEND (v51.1): het hele flitser-vlak 1,5x groter — staand ongewijzigd.
+            const M = isLandscape ? 1.5 : 1;
+            const B = [ {sign:46, speed:20, count:38}, {sign:62, speed:27, count:52}, {sign:84, speed:37, count:72} ][flitserSize];
+            const S = { sign: Math.round(B.sign * M), speed: Math.round(B.speed * M), count: Math.round(B.count * M) };
             sign.style.width = S.sign + 'px';
             sign.style.height = S.sign + 'px';
             sign.style.fontSize = S.speed + 'px';
             speed.style.fontSize = S.speed + 'px';
             const gsv = document.getElementById('gpsSpeedVal');
             const gsu = document.getElementById('gpsSpeedUnit');
-            if (gsv) gsv.style.fontSize = S.count + 'px';                    // GPS-snelheid groot (zelfde als aftel-cijfer)
-            if (gsu) gsu.style.fontSize = Math.round(S.count * 0.3) + 'px';  // eenheid km/u kleiner
-            // "ZONE" is een woord → kleinere font dan het losse aftel-cijfer (dat mag groot)
-            const isWord = (count.textContent || '').length > 2;
+            if (gsv) gsv.style.fontSize = B.count + 'px';                    // GPS-snelheid: eigen box, NIET mee vergroot
+            if (gsu) gsu.style.fontSize = Math.round(B.count * 0.3) + 'px';  // eenheid km/u kleiner
+            // "ZONE" is een woord → kleinere font. Let op: op cijfers testen, niet op lengte —
+            // "700" (liggend, v51.1) is 3 tekens maar moet juist GROOT.
+            const isWord = /\D/.test(count.textContent || '');
             count.style.fontSize = (isWord ? Math.round(S.count * 0.32) : S.count) + 'px';
-            // LIGGEND: flitser-box netjes RECHTS van de snelheid-box zetten (meet de echte breedte,
-            // zodat 'ie nooit overlapt, ongeacht grootte). Alleen in landscape + schoon scherm.
-            const isLandscape = window.matchMedia('(orientation: landscape)').matches;
             const fbox = document.getElementById('flitserBox');
-            const gbox = document.getElementById('gpsSpeedBox');
-            if (isLandscape && fbox && gbox) {
-                const gw = gbox.offsetWidth || 120;
-                fbox.style.left = (12 + gw + 10) + 'px';   // 12 (marge snelheid) + breedte + 10 gat
+            if (isLandscape && fbox) {
+                // LIGGEND (v51.1): gespiegeld — RECHTS naast de plus/min van de zoom (midden-boven).
+                // Meet de échte rand van de zichtbare zoombalk (master of volger) + 10px gat, en klem
+                // tegen de schermrand zodat 'ie nooit over de rechter zijbalk of het scherm valt.
+                let left = null, top = null;
+                const span = document.getElementById(currentMode === 'follower' ? 'zoomLevelFollower' : 'zoomLevelMaster');
+                const bar = span ? span.parentElement : null;
+                if (bar) {
+                    const r = bar.getBoundingClientRect();
+                    if (r && r.width > 0) { left = r.right + 10; top = r.top; }
+                }
+                if (left === null) {
+                    // zoombalk niet zichtbaar (schoon scherm): wiskundig spiegelen om het midden
+                    // (balk = 64+8+35+8+64 + 2x16 padding = 211px → halve balk ~106) + 10 gat
+                    left = Math.round(window.innerWidth / 2 + 106 + 10);
+                    top = 10;
+                }
+                const fw = fbox.offsetWidth || Math.round(90 * M);
+                left = Math.min(left, window.innerWidth - fw - 90);   // klem: 90px vrij voor de rechter zijbalk
+                fbox.style.left = left + 'px';
+                fbox.style.top = top + 'px';
+                fbox.style.bottom = 'auto';
             } else if (fbox) {
-                fbox.style.left = '';   // STAAND: inline-left weg → terug naar CSS (linksonder, 12px)
+                // STAAND: niets veranderen — terug naar de vaste plek (linksonder, bottom 175px)
+                fbox.style.left = '';
+                fbox.style.top = '';
+                fbox.style.bottom = '175px';
             }
         }
 
@@ -5222,7 +5245,8 @@ assign initialcost =
             } else {
                 // ACTIEF (NL/BE): exact aftellen 9→1 + piepen + km-kleuring
                 const n = Math.max(1, Math.min(9, Math.ceil(bestD / 100)));
-                countEl.textContent = n;
+                // LIGGEND (v51.1): in honderdtallen aftellen (900→800→…→100), staand het losse cijfer
+                countEl.textContent = window.matchMedia('(orientation: landscape)').matches ? (n * 100) : n;
                 applyFlitserSize();
                 // begin van de melding (n=9, ~900m): 1× beep — fijn voor snelweg
                 if (n === 9 && !flitserBeginBeep[key]) {
