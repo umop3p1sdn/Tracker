@@ -660,7 +660,7 @@
     <div id="fmBtn" onclick="openFlitsmeister()" title="Flitsmeister openen" style="display:none; position: fixed; bottom: 461px; left: 10px; z-index: 1250; width: 78px; height: 78px; border-radius: 50%; border: 4px solid #000; background: rgba(255,255,255,0.12); box-shadow: 0 0 0 2px rgba(255,255,255,0.4); align-items:center; justify-content:center; cursor: pointer; -webkit-user-select:none; user-select:none;">
         <span style="font-size: 30px; font-weight: 900; color: #000; font-family: sans-serif; filter: drop-shadow(0 0 2px rgba(255,255,255,0.9)); line-height:1;">FM</span>
     </div>
-    <div id="ttsBtn" onclick="openTtsPanel()" style="display:none; position: fixed; bottom: 373px; left: 10px; z-index: 1250; width: 78px; height: 78px; border-radius: 50%; border: 4px solid #000; background: rgba(255,255,255,0.12); box-shadow: 0 0 0 2px rgba(255,255,255,0.4); align-items:center; justify-content:center; cursor: pointer; -webkit-user-select:none; user-select:none;">
+    <div id="ttsBtn" onclick="openWordsList()" style="display:none; position: fixed; bottom: 373px; left: 10px; z-index: 1250; width: 78px; height: 78px; border-radius: 50%; border: 4px solid #000; background: rgba(255,255,255,0.12); box-shadow: 0 0 0 2px rgba(255,255,255,0.4); align-items:center; justify-content:center; cursor: pointer; -webkit-user-select:none; user-select:none;">
         <span style="font-size: 42px; font-weight: 900; color: #000; font-family: sans-serif; filter: drop-shadow(0 0 2px rgba(255,255,255,0.9)); line-height:1;">T</span>
     </div>
     <!-- Tekst-naar-spraak venster: typen, afspelen, eigen lijst, opslaan/laden (als bestand net als GPX) -->
@@ -815,7 +815,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v49.5 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v49.6 © Umop3p1sdn</div>
 
             </div>
 
@@ -1188,11 +1188,11 @@
                 <li>Berichten komen netjes <strong>om de beurt</strong> (een wachtrij), ze overschrijven elkaar niet.</li>
             </ul>
 
-            <h3 style="color: #00BCD4; margin-top: 25px;">T-knop ✍️ (getypt bericht + eigen zinnen)</h3>
-            <p>Boven de mic-knop zit de <strong>T-knop</strong>. Hiermee stuur je een <strong>getypt</strong> bericht naar de hele groep — handig als inspreken lastig is (wind, lawaai). Tik 'm aan:</p>
+            <h3 style="color: #00BCD4; margin-top: 25px;">T-knop ✍️ (vaste zinnen + getypt bericht)</h3>
+            <p>Boven de mic-knop zit de <strong>T-knop</strong>. Tik 'm aan en je landt <strong>direct in de vaste zinnen</strong> — een lijst kant-en-klare kreten met grote knoppen, gemaakt voor handschoenen: tik een zin → die gaat meteen naar iedereen (tik <strong>naast</strong> de lijst om te sluiten). De zinnen staan op kleur: <strong>rood</strong> = direct/belangrijk (Stoppen, Let op flitser…), <strong>oranje</strong> = voor straks (Pauze, Tanken…), <strong>rustig</strong> = antwoord (Rij maar door…).</p>
+            <p>Bovenin staat <strong>✍️ Miscellaneous</strong> — daar zit alles voor eigen tekst:</p>
             <ul style="margin: 10px 0; padding-left: 20px;">
                 <li>Typ tekst en druk op <strong>▶ Verstuur</strong> — iedereen hoort het voorgelezen en ziet de lichtkrant, net als bij een ingesproken bericht.</li>
-                <li>Met <strong>💬 Vaste zinnen</strong> open je een <strong>lijst kant-en-klare zinnen</strong> met grote knoppen — handig als typen én praten lastig is (handschoenen, wind). Tik een zin → die gaat meteen naar iedereen; tik <strong>naast</strong> de lijst om te sluiten. De zinnen staan op kleur: <strong>rood</strong> = direct/belangrijk (Stoppen, Let op flitser…), <strong>oranje</strong> = voor straks (Pauze, Tanken…), <strong>rustig</strong> = antwoord (Rij maar door…).</li>
                 <li>Met <strong>+ Aan lijst</strong> bewaar je een zin in je <strong>eigen afspeellijst</strong>. Elke zin krijgt een grote <strong>▶</strong> (links) om 'm met één tik naar iedereen te sturen, en een <strong>✕</strong> om 'm te verwijderen.</li>
                 <li>Met <strong>💾 Opslaan</strong> zet je je lijst als bestand in een eigen map op je telefoon (net als een GPX). Met <strong>📂 Laden</strong> haal je 'm later weer terug.</li>
             </ul>
@@ -1322,7 +1322,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v49.5 © Umop3p1sdn
+                HO-ME v49.6 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1538,11 +1538,11 @@
                 <li>Messages arrive neatly <strong>one at a time</strong> (a queue), they don't overwrite each other.</li>
             </ul>
 
-            <h3 style="color: #00BCD4; margin-top: 25px;">T button ✍️ (typed message + own phrases)</h3>
-            <p>Above the mic button is the <strong>T button</strong>. It sends a <strong>typed</strong> message to the whole group — handy when speaking is difficult (wind, noise). Tap it:</p>
+            <h3 style="color: #00BCD4; margin-top: 25px;">T button ✍️ (preset phrases + typed message)</h3>
+            <p>Above the mic button is the <strong>T button</strong>. Tap it and you land <strong>directly in the preset phrases</strong> — a list of ready-made calls with big buttons, made for gloves: tap a phrase → it goes to everyone immediately (tap <strong>next to</strong> the list to close it). The phrases are colour-coded: <strong>red</strong> = immediate/important (stop, watch out camera…), <strong>orange</strong> = for soon (break, fuel…), <strong>calm</strong> = reply (keep riding…).</p>
+            <p>At the top sits <strong>✍️ Miscellaneous</strong> — that's where everything for your own text lives:</p>
             <ul style="margin: 10px 0; padding-left: 20px;">
                 <li>Type text and press <strong>▶ Verstuur</strong> (send) — everyone hears it read aloud and sees the ticker, just like a spoken message.</li>
-                <li>With <strong>💬 Vaste zinnen</strong> (preset phrases) you open a <strong>list of ready-made phrases</strong> with big buttons — handy when typing and speaking are both difficult (gloves, wind). Tap a phrase → it goes to everyone immediately; tap <strong>next to</strong> the list to close it. The phrases are colour-coded: <strong>red</strong> = immediate/important (stop, watch out camera…), <strong>orange</strong> = for soon (break, fuel…), <strong>calm</strong> = reply (keep riding…).</li>
                 <li>With <strong>+ Aan lijst</strong> (add to list) you save a phrase in your <strong>own playlist</strong>. Each phrase gets a big <strong>▶</strong> (left) to send it to everyone with one tap, and a <strong>✕</strong> to remove it.</li>
                 <li>With <strong>💾 Opslaan</strong> (save) you store your list as a file in a folder on your phone (like a GPX). With <strong>📂 Laden</strong> (load) you get it back later.</li>
             </ul>
@@ -1672,7 +1672,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v49.5 © Umop3p1sdn
+                HO-ME v49.6 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -3901,7 +3901,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "49.5";
+        const APP_VERSION = "49.6";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -4682,6 +4682,15 @@ assign initialcost =
                 calm:   { bg: '#13294a', fg: '#cfeffd' }, // rustig donkerblauw/cyaan
             };
             box.innerHTML = '';
+            // BOVENIN (v49.6, handschoen-easy): ✍️ Miscellaneous — opent het paneel met typen,
+            // eigen afspeellijst en 💾/📂. De T-knop landt sinds v49.6 direct in deze zinnenlijst.
+            const misc = document.createElement('button');
+            misc.textContent = '✍️ Miscellaneous';
+            misc.style.cssText = 'display:block; width:100%; margin:0 0 8px 0; padding:18px 14px; ' +
+                'font-size:24px; font-weight:800; border:2px solid #00BCD4; border-radius:12px; ' +
+                'background:transparent; color:#00BCD4; cursor:pointer; line-height:1.2;';
+            misc.onclick = (e) => { e.stopPropagation(); closeWordsListNow(); openTtsPanel(); };
+            box.appendChild(misc);
             WORDS_LIST.forEach(item => {
                 const c = colors[item.kind] || colors.calm;
                 const btn = document.createElement('button');
@@ -4701,6 +4710,11 @@ assign initialcost =
             if (ov) ov.style.display = 'block';
             primeSpeech();              // stem ontgrendelen (deze tik telt op iOS)
             startSpeechKeepAlive();
+        }
+        // direct sluiten (zonder event-check) — gebruikt door de Miscellaneous-knop
+        function closeWordsListNow() {
+            const ov = document.getElementById('wordsOverlay');
+            if (ov) ov.style.display = 'none';
         }
         // sluiten als je NAAST de lijst tikt (op de donkere achtergrond)
         function closeWordsList(ev) {
