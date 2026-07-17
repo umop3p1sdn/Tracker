@@ -857,7 +857,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v51.8 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v51.9 © Umop3p1sdn</div>
 
             </div>
 
@@ -1384,7 +1384,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v51.8 © Umop3p1sdn
+                HO-ME v51.9 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1745,7 +1745,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v51.8 © Umop3p1sdn
+                HO-ME v51.9 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -3974,7 +3974,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "51.8";
+        const APP_VERSION = "51.9";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -9106,7 +9106,7 @@ assign initialcost =
                 followerLoadedGpxPolyline = null;
                 trackingPolyline = null;
 
-                mapInstance = L.map(mapDiv).setView([52.04, 5.67], 13);
+                mapInstance = L.map(mapDiv, { zoomControl: false }).setView([52.04, 5.67], 13);   // Leaflet's witte +/- linksboven uit — we hebben eigen grote zoomknoppen
                 mapInstance.doubleClickZoom.disable();
 
                 // ── Vaste laag-volgorde via panes (verschuift nooit, ook niet bij GPS-updates) ──
