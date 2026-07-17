@@ -581,7 +581,9 @@
             /* Snelheidsbord: zelfde zichtbaarheidsformule als de km-teller (zichtbaar in clean screen).
                Flitser-voorrang: als de body 'flitser-actief' heeft, blijft het bord verborgen. */
             body.map-only:not(.flitser-actief) #speedLimitSign { display: flex !important; }
-            #flitserBox { top: 10px !important; bottom: auto !important; left: 50% !important; transform: translateX(-168px) !important; }
+            /* v51.2: gespiegeld — RECHTS naast de plus/min van de zoom (balk 211px gecentreerd,
+               rechterrand 50%+105,5px; box-linkerrand op +112px). Past t/m iPhone SE landscape. */
+            #flitserBox { top: 10px !important; bottom: auto !important; left: 50% !important; transform: translateX(112px) !important; }
             /* Liggend: snelheidsbord ook linksboven, onder de GPS-snelheid. */
             #speedLimitSign { top: 60px !important; bottom: auto !important; left: 12px !important; }
             /* Liggend: tag-namenlijst rechts NAAST de ronde knoppen (niet eronder), op hoogte net onder
@@ -826,7 +828,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v51.1 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v51.2 © Umop3p1sdn</div>
 
             </div>
 
@@ -1345,7 +1347,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v51.1 © Umop3p1sdn
+                HO-ME v51.2 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1705,7 +1707,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v51.1 © Umop3p1sdn
+                HO-ME v51.2 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -3934,7 +3936,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "51.1";
+        const APP_VERSION = "51.2";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -5132,11 +5134,15 @@ assign initialcost =
             const speed = document.getElementById('flitserSpeed');
             const count = document.getElementById('flitserCount');
             if (!sign) return;
-            const isLandscape = window.matchMedia('(orientation: landscape)').matches;
-            // LIGGEND (v51.1): het hele flitser-vlak 1,5x groter — staand ongewijzigd.
-            const M = isLandscape ? 1.5 : 1;
+            // Orientatie via breedte>hoogte — matchMedia('orientation') loopt op iOS soms een tik
+            // achter (daardoor eerst "7" en dán pas "700" bij het draaien).
+            const isLandscape = window.innerWidth > window.innerHeight;
+            // LIGGEND (v51.2): bord 1,6x, snelheid 1,5x, aftel-cijfer 1,25x (was alles 1,5 —
+            // "700 tikje kleiner, bord ietsje groter, in hetzelfde vlak"). Staand ongewijzigd.
             const B = [ {sign:46, speed:20, count:38}, {sign:62, speed:27, count:52}, {sign:84, speed:37, count:72} ][flitserSize];
-            const S = { sign: Math.round(B.sign * M), speed: Math.round(B.speed * M), count: Math.round(B.count * M) };
+            const S = isLandscape
+                ? { sign: Math.round(B.sign * 1.6), speed: Math.round(B.speed * 1.5), count: Math.round(B.count * 1.25) }
+                : B;
             sign.style.width = S.sign + 'px';
             sign.style.height = S.sign + 'px';
             sign.style.fontSize = S.speed + 'px';
@@ -5149,34 +5155,15 @@ assign initialcost =
             // "700" (liggend, v51.1) is 3 tekens maar moet juist GROOT.
             const isWord = /\D/.test(count.textContent || '');
             count.style.fontSize = (isWord ? Math.round(S.count * 0.32) : S.count) + 'px';
+            // POSITIE (v51.2): volledig aan de CSS-mediaquery gelaten — daar staat de landscape-regel
+            // met !important (die won toch altijd van inline-JS; dáárom bleef de box eerst links).
+            // JS ruimt alleen eigen inline-resten op zodat CSS/HTML weer gelden.
             const fbox = document.getElementById('flitserBox');
-            if (isLandscape && fbox) {
-                // LIGGEND (v51.1): gespiegeld — RECHTS naast de plus/min van de zoom (midden-boven).
-                // Meet de échte rand van de zichtbare zoombalk (master of volger) + 10px gat, en klem
-                // tegen de schermrand zodat 'ie nooit over de rechter zijbalk of het scherm valt.
-                let left = null, top = null;
-                const span = document.getElementById(currentMode === 'follower' ? 'zoomLevelFollower' : 'zoomLevelMaster');
-                const bar = span ? span.parentElement : null;
-                if (bar) {
-                    const r = bar.getBoundingClientRect();
-                    if (r && r.width > 0) { left = r.right + 10; top = r.top; }
-                }
-                if (left === null) {
-                    // zoombalk niet zichtbaar (schoon scherm): wiskundig spiegelen om het midden
-                    // (balk = 64+8+35+8+64 + 2x16 padding = 211px → halve balk ~106) + 10 gat
-                    left = Math.round(window.innerWidth / 2 + 106 + 10);
-                    top = 10;
-                }
-                const fw = fbox.offsetWidth || Math.round(90 * M);
-                left = Math.min(left, window.innerWidth - fw - 90);   // klem: 90px vrij voor de rechter zijbalk
-                fbox.style.left = left + 'px';
-                fbox.style.top = top + 'px';
-                fbox.style.bottom = 'auto';
-            } else if (fbox) {
-                // STAAND: niets veranderen — terug naar de vaste plek (linksonder, bottom 175px)
-                fbox.style.left = '';
+            if (fbox) {
+                fbox.style.left = isLandscape ? '' : '12px';
                 fbox.style.top = '';
-                fbox.style.bottom = '175px';
+                fbox.style.bottom = isLandscape ? '' : '175px';
+                fbox.style.transform = '';
             }
         }
 
@@ -5245,8 +5232,9 @@ assign initialcost =
             } else {
                 // ACTIEF (NL/BE): exact aftellen 9→1 + piepen + km-kleuring
                 const n = Math.max(1, Math.min(9, Math.ceil(bestD / 100)));
-                // LIGGEND (v51.1): in honderdtallen aftellen (900→800→…→100), staand het losse cijfer
-                countEl.textContent = window.matchMedia('(orientation: landscape)').matches ? (n * 100) : n;
+                // LIGGEND: in honderdtallen aftellen (900→800→…→100), staand het losse cijfer.
+                // Breedte>hoogte i.p.v. matchMedia (die liep op iOS een tik achter: eerst 7, dan 700).
+                countEl.textContent = (window.innerWidth > window.innerHeight) ? (n * 100) : n;
                 applyFlitserSize();
                 // begin van de melding (n=9, ~900m): 1× beep — fijn voor snelweg
                 if (n === 9 && !flitserBeginBeep[key]) {
