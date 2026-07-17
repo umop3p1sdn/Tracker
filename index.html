@@ -429,7 +429,6 @@
 
         .map-only #plannerToggleBtn { display: none !important; }
         .map-only #plannerGoBtn { display: none !important; }
-        .map-only #headingReadout { top: 60px !important; z-index: 1100 !important; }
 
         .map-only .active-tracking {
             padding: 0 !important;
@@ -607,11 +606,9 @@
             /* Snelheidsbord: zelfde zichtbaarheidsformule als de km-teller (zichtbaar in clean screen).
                Flitser-voorrang: als de body 'flitser-actief' heeft, blijft het bord verborgen. */
             body.map-only:not(.flitser-actief) #speedLimitSign { display: flex !important; }
-            /* v51.2: gespiegeld — RECHTS naast de plus/min van de zoom (balk 211px gecentreerd,
-               rechterrand 50%+105,5px; box-linkerrand op +112px). Past t/m iPhone SE landscape. */
-            #flitserBox { top: 10px !important; bottom: auto !important; left: 50% !important; transform: translateX(112px) !important; }
-            /* Liggend: snelheidsbord ook linksboven, onder de GPS-snelheid. */
-            #speedLimitSign { top: 60px !important; bottom: auto !important; left: 12px !important; }
+            /* v51.7: helemaal naar RECHTS, boven het slotje (slot staat liggend op top 160;
+               de flitser is ~146 hoog → 10-156, dus hij past er precies netjes boven). */
+            #flitserBox { top: 10px !important; bottom: auto !important; left: auto !important; right: 10px !important; transform: none !important; }
             /* Liggend: tag-namenlijst rechts NAAST de ronde knoppen (niet eronder), op hoogte net onder
                de flitsmelder zodat ze niet overlappen. */
             #tagList { top: 95px !important; left: 100px !important; }
@@ -621,13 +618,14 @@
                er netjes boven past. Slot 160-200, menu 208-272 — past op de laagste stand (375). */
             #lockIcon { top: 160px !important; }
             #btnMenuBtn { top: 208px !important; }
-            /* Liggend (v51.6): mic + T iets omhoog en afstand/tijd (remPanel) ERONDER in dezelfde
-               linkerkolom. remPanel ~90 hoog: 8-98; mic 104-182; T 192-270. Bovenlangs: T-bovenrand
-               ligt op 390-hoogte rond 124 — het snelheidsbord (top 60, ~56 hoog) eindigt ~116, dus
-               vrij; alleen op de allerlaagste stand (375) kussen ze elkaar net. */
+            /* Liggend (v51.7): remPanel bleek hoger dan gerekend → mic + T verder omhoog
+               (mic 128-206, T 216-294; remPanel 8-~125 eronder). Het snelheidsbord gaat uit de
+               linkerkolom NAAST de GPS-snelheid (top 10, left 150) — daar is ruimte nu de flitser
+               rechts zit — zodat er boven mic/T niets meer kan botsen, ook niet op 375 hoogte. */
             body.map-only #remPanel { left: 10px !important; right: auto !important; bottom: 8px !important; }
-            #talkBtn { bottom: 104px !important; }
-            #ttsBtn  { bottom: 192px !important; }
+            #talkBtn { bottom: 128px !important; }
+            #ttsBtn  { bottom: 216px !important; }
+            #speedLimitSign { top: 10px !important; bottom: auto !important; left: 150px !important; }
             /* Liggend: play + Plan ook boven FM (kleiner, dus 64px stappen). */
             #plannerGoBtn     { top: auto !important; bottom: 274px !important; }
             #plannerToggleBtn { top: auto !important; bottom: 338px !important; }
@@ -859,7 +857,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v51.6 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v51.7 © Umop3p1sdn</div>
 
             </div>
 
@@ -1386,7 +1384,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v51.6 © Umop3p1sdn
+                HO-ME v51.7 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1747,7 +1745,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v51.6 © Umop3p1sdn
+                HO-ME v51.7 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -3976,7 +3974,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "51.6";
+        const APP_VERSION = "51.7";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -8219,8 +8217,6 @@ assign initialcost =
                     } catch (e) {}
                     heading = (heading + ang + 360) % 360;
                     deviceHeading = heading;
-                    const el = document.getElementById('headingReadout');
-                    if (el) el.textContent = '🧭 ' + Math.round(heading) + '°';
                     applyMapRotation();
                     updateSelfMarkerRotation();
                 }
@@ -8229,14 +8225,6 @@ assign initialcost =
             function startListening() {
                 if (compassStarted) return;
                 compassStarted = true;
-                // Visible heading readout (top-left) to verify accuracy
-                if (!document.getElementById('headingReadout')) {
-                    const el = document.createElement('div');
-                    el.id = 'headingReadout';
-                    el.style.cssText = 'position:fixed;top:90px;left:8px;z-index:1100;background:rgba(0,0,0,0.6);color:#fff;padding:4px 8px;border-radius:6px;font-size:13px;font-family:sans-serif;';
-                    el.textContent = '🧭 –';
-                    document.body.appendChild(el);
-                }
                 if ('ondeviceorientationabsolute' in window) {
                     window.addEventListener('deviceorientationabsolute', handleOrientation, true);
                 }
