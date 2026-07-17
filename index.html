@@ -812,7 +812,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v48.9 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v49.0 © Umop3p1sdn</div>
 
             </div>
 
@@ -1327,7 +1327,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v48.9 © Umop3p1sdn
+                HO-ME v49.0 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1684,7 +1684,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v48.9 © Umop3p1sdn
+                HO-ME v49.0 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -3913,7 +3913,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "48.9";
+        const APP_VERSION = "49.0";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -9538,6 +9538,21 @@ assign initialcost =
 
             currentCode = code;
             currentMode = 'follower';
+            // HOORBARE activatie: de master krijgt "Volg de route" bij GO — de volger had alleen
+            // stille (volume-0) primers, en die activeren de iOS-spraakmotor NIET (bewezen in de
+            // v48.x-zoektocht: alleen een hoorbare utterance in een echte tik wekt de motor).
+            // Het intikken van het 4e teken is die tik: één hoorbaar "Verbonden" — meteen ook een
+            // nette bevestiging dat je in de groep zit. Daarna klinken berichten ook buiten een tik.
+            try {
+                if (typeof unlockAudio === 'function') unlockAudio(false);
+                if ('speechSynthesis' in window) {
+                    const u = new SpeechSynthesisUtterance('Verbonden');
+                    applyVoice(u); u.rate = 1.0; u.volume = 1.0;
+                    window.speechSynthesis.cancel();
+                    window.speechSynthesis.speak(u);
+                    window._speechPrimed = true;
+                }
+            } catch (e) {}
             masterLocations = [];
             trackVisible = false;
             zoomMode = 'self';        // start op IK (eigen positie), niet op Master
