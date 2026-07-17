@@ -2,7 +2,7 @@
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>HO-ME — Live Tracking &amp; Route App</title>
     <link rel="manifest" href="/Tracker/manifest.json">
     <link rel="apple-touch-icon" href="/Tracker/icon-180.png">
@@ -54,6 +54,10 @@
             padding: 0;
             box-sizing: border-box;
         }
+
+        /* Liggend op iPhone: de zones naast de notch (safe areas) waren wit — met viewport-fit=cover
+           tekenen we eronder, en de donkere html-achtergrond kleurt de randen mee. */
+        html { background: #0a0e27; }
 
         body {
             font-family: 'Segoe UI', Tahoma, sans-serif;
@@ -857,7 +861,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v52.2 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v52.3 © Umop3p1sdn</div>
 
             </div>
 
@@ -1385,7 +1389,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v52.2 © Umop3p1sdn
+                HO-ME v52.3 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1747,7 +1751,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v52.2 © Umop3p1sdn
+                HO-ME v52.3 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -3976,7 +3980,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "52.2";
+        const APP_VERSION = "52.3";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
