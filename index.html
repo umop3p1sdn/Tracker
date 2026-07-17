@@ -812,7 +812,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v48.2 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v48.3 © Umop3p1sdn</div>
 
             </div>
 
@@ -1327,7 +1327,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v48.2 © Umop3p1sdn
+                HO-ME v48.3 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1684,7 +1684,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v48.2 © Umop3p1sdn
+                HO-ME v48.3 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -3913,7 +3913,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "48.2";
+        const APP_VERSION = "48.3";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -8551,30 +8551,32 @@ assign initialcost =
         // Keuze in localStorage; geldt voor ALLE spraak (navigatie, flitsers, berichten, lichtkrant).
         // iOS laadt de stemmenlijst soms pas later (voiceschanged) — daarom telkens opnieuw zoeken tot gevonden.
         let voicePref = localStorage.getItem('homeVoicePref') || 'NL';
-        let _beVoice = null;
+        // iOS-valkuil: stem-objecten uit getVoices() kunnen ongeldig raken na een lijst-verversing —
+        // een verouderd object toewijzen = STILLE utterance. Daarom NIET cachen maar per uitspraak
+        // vers opzoeken (getVoices() is synchroon en goedkoop), en alles in try/catch: gaat het
+        // stem-zetten mis, dan speelt de zin gewoon in de standaardstem (nl-NL) — nooit stilte.
         function findBEVoice() {
             try {
                 const vs = ('speechSynthesis' in window) ? window.speechSynthesis.getVoices() : [];
-                _beVoice = vs.find(v => v.lang && v.lang.toLowerCase().replace('_','-').startsWith('nl-be'))
-                        || vs.find(v => v.name && /ellen/i.test(v.name)) || null;
-            } catch (e) { _beVoice = null; }
-        }
-        if ('speechSynthesis' in window) {
-            findBEVoice();
-            window.speechSynthesis.onvoiceschanged = findBEVoice;
+                return vs.find(v => v.lang && v.lang.toLowerCase().replace('_','-').startsWith('nl-be'))
+                    || vs.find(v => v.name && /ellen/i.test(v.name)) || null;
+            } catch (e) { return null; }
         }
         function applyVoice(u) {
-            if (voicePref === 'BE' && !_beVoice) findBEVoice();   // late lader (iOS)
-            if (voicePref === 'BE' && _beVoice) { u.voice = _beVoice; u.lang = _beVoice.lang; }
-            else { u.lang = 'nl-NL'; }                             // BE niet gevonden = nette terugval op NL
+            u.lang = 'nl-NL';                       // altijd eerst een veilige basis
+            if (voicePref !== 'BE') return;
+            try {
+                const v = findBEVoice();            // vers object, nooit een gecachte verwijzing
+                if (v) { u.voice = v; u.lang = v.lang; }
+            } catch (e) { /* terugval: nl-NL basis blijft staan */ }
         }
         function toggleVoicePref() {
             voicePref = (voicePref === 'NL') ? 'BE' : 'NL';
             localStorage.setItem('homeVoicePref', voicePref);
             updateVoicePrefBtn();
-            if (voicePref === 'BE' && !_beVoice) findBEVoice();
+            const v = (voicePref === 'BE') ? findBEVoice() : null;
             const msg = (voicePref === 'BE')
-                ? (_beVoice ? 'Stem: Belgisch (' + _beVoice.name + ')' : 'Stem: BE — niet gevonden, valt terug op NL')
+                ? (v ? 'Stem: Belgisch (' + v.name + ')' : 'Stem: BE — niet gevonden, valt terug op NL')
                 : 'Stem: Nederlands';
             if (typeof showBufferToast === 'function') showBufferToast(msg, '#00BCD4', 2000);
             // Demo-geluidje: random bestaande app-zin in de nieuwe stem (bewuste tik, dus altijd afspelen)
