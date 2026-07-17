@@ -826,7 +826,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v50.7 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v50.8 © Umop3p1sdn</div>
 
             </div>
 
@@ -847,6 +847,7 @@
                             <button id="rotBtnMaster" title="Kaart meedraaien" style="padding: 10px; width: 64px; height: 64px; border-radius: 6px; background: transparent; color: #000; text-shadow: 0 0 2px rgba(255,255,255,0.9); border: 3px solid #000; box-shadow: 0 0 0 2px rgba(255,255,255,0.4); cursor: pointer; display: flex; align-items: center; justify-content: center;" onclick="toggleMapRotation()"><svg width="36" height="36" viewBox="0 0 24 24" fill="currentColor" style="filter: drop-shadow(0 0 2px rgba(255,255,255,0.9));"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm2.19 12.19L6 18l3.81-8.19L18 6l-3.81 8.19z"/></svg></button>
                             <button onclick="toggleFollow()" id="followBtnMaster" title="Center" style="width: 64px; height: 64px; border-radius: 6px; background: #555; color: #fff; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;"><svg width="34" height="34" viewBox="0 0 24 24" fill="currentColor" style="filter: drop-shadow(0 0 2px rgba(255,255,255,0.9));"><path d="M12 8a4 4 0 100 8 4 4 0 000-8zm8.94 3A8.994 8.994 0 0013 3.06V1h-2v2.06A8.994 8.994 0 003.06 11H1v2h2.06A8.994 8.994 0 0011 20.94V23h2v-2.06A8.994 8.994 0 0020.94 13H23v-2h-2.06zM12 19a7 7 0 110-14 7 7 0 010 14z"/></svg></button>
                             <button id="zoomIconMaster" title="Toon: alleen ik / volgers / beide" style="padding: 8px; width: 64px; height: 64px; border-radius: 6px; background: transparent; color: #000; text-shadow: 0 0 2px rgba(255,255,255,0.9); border: 3px solid #000; box-shadow: 0 0 0 2px rgba(255,255,255,0.4); cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;" onclick="toggleZoom()"><svg id="zoomSvgMaster" width="40" height="40" viewBox="0 0 36 36" fill="currentColor" style="filter: drop-shadow(0 0 2px rgba(255,255,255,0.9));"></svg><span id="zoomIconLabelMaster" style="font-size: 0.5em; font-weight: bold; line-height: 1;">IK</span></button>
+                            <button id="tagBtnMaster" onclick="openTagInput()" title="Jouw tag" style="display:none; width: 64px; min-height: 36px; border-radius: 8px; background: rgba(0,0,0,0.4); color: #fff; border: 2px solid #fff; cursor: pointer; font-weight: bold; font-size: 0.8em; word-break: break-word; padding: 4px;">TAG</button>
                             <div id="followerCount" title="Aantal volgers" style="font-size: 1.8em; font-weight: bold; color: #000; text-shadow: 0 0 2px rgba(255,255,255,0.9); text-align: center; line-height: 1.2;">0</div>
                             <button id="folLinesBtn" title="Volger-lijnen tonen/verbergen" onclick="toggleFollowerLines()" style="display:none; padding: 8px; width: 64px; height: 64px; border-radius: 6px; background: transparent; color: #000; text-shadow: 0 0 2px rgba(255,255,255,0.9); border: 3px solid #000; box-shadow: 0 0 0 2px rgba(255,255,255,0.4); cursor: pointer; flex-direction: column; align-items: center; justify-content: center; gap: 2px;">
                                 <svg width="34" height="34" viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 26 Q12 10 20 18 T32 10"/><circle cx="4" cy="26" r="3" fill="currentColor" stroke="none"/><circle cx="32" cy="10" r="3" fill="currentColor" stroke="none"/></svg>
@@ -1344,7 +1345,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v50.7 © Umop3p1sdn
+                HO-ME v50.8 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1704,7 +1705,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v50.7 © Umop3p1sdn
+                HO-ME v50.8 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -3933,7 +3934,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "50.7";
+        const APP_VERSION = "50.8";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -7075,10 +7076,13 @@ assign initialcost =
             const tagBtn = document.getElementById('tagBtn');
             if (!el) return;
             if (currentMode === 'master') {
-                // master: geen kleur-badge (die is voor volger-nummers), wél de TAG-knop —
-                // de master heeft sinds v50.6 ook een tag (gedeeld in z'n locatiebericht)
+                // master: geen kleur-badge, wél een EIGEN TAG-knop in de master-zijbalk.
+                // (v50.6-fout: we toonden tagBtn, maar die zit in #followerMode dat voor de
+                // master verborgen is — vandaar dat Sjoerd 'm nooit zag. v50.8: eigen knop.)
                 el.style.display = 'none';
-                if (tagBtn) { tagBtn.style.display = 'block'; tagBtn.textContent = myTag ? myTag : 'TAG'; }
+                if (tagBtn) tagBtn.style.display = 'none';
+                const mtb = document.getElementById('tagBtnMaster');
+                if (mtb) { mtb.style.display = 'block'; mtb.textContent = myTag ? myTag : 'TAG'; }
                 return;
             }
             if (currentMode !== 'follower' || typeof myFollowerIdx !== 'number') {
