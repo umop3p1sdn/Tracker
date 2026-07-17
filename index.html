@@ -812,7 +812,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v48.5 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v48.6 © Umop3p1sdn</div>
 
             </div>
 
@@ -1327,7 +1327,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v48.5 © Umop3p1sdn
+                HO-ME v48.6 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1684,7 +1684,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v48.5 © Umop3p1sdn
+                HO-ME v48.6 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -3913,7 +3913,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "48.5";
+        const APP_VERSION = "48.6";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -4403,14 +4403,8 @@ assign initialcost =
             talkRecog = null;
             talkBusy = false;
             if (!txt) { vdbg('finishTalk: GEEN tekst herkend'); return; }   // niks herkend → niks sturen
-            // Stem-warm-up ALLEEN als er echt een bericht verstuurd wordt (houdt het iOS-spraakvenster
-            // open zodat het antwoord/eigen bericht straks klinkt). Bij een loze mic-tik gebeurt dit
-            // niet meer — dan blijft achtergrondmuziek gewoon doorspelen.
-            try {
-                const warm = new SpeechSynthesisUtterance(' ');
-                warm.volume = 0; applyVoice(warm);
-                window.speechSynthesis.speak(warm);
-            } catch (e) {}
+            // GEEN warm-up meer nodig: het eigen bericht speelt hieronder DIRECT lokaal af
+            // (echte, hoorbare utterance = de beste activatie van de iOS-motor).
             const ts = Date.now();
             const from = (myTag || (currentMode === 'master' ? 'Master' : 'Rider'));
             vdbg('finishTalk: stuur "' + txt + '" (code ' + currentCode + ')');
@@ -4420,10 +4414,11 @@ assign initialcost =
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ ts, text: txt, from })
             }).then(r => vdbg('PUT klaar: HTTP ' + r.status)).catch(e => vdbg('PUT FOUT: ' + e.message));
-            // GEEN lokaal pad meer: je eigen bericht komt net als bij iedereen via de poll terug van
-            // Firebase. Zo zie je exact wat de groep ziet (incl. de echte heen-en-weer naar Firebase).
-            // lastTalkTs NIET op ts zetten → de poller pikt je eigen bericht gewoon op.
-            // gesprek bezig → snel pollen (en zorg dat de poll loopt)
+            // EIGEN bericht DIRECT lokaal afspelen — zelfde pad als de T-knop (v48.6). De poller
+            // slaat het over via lastTalkTs; anderen krijgen het gewoon via Firebase.
+            lastTalkTs = ts;
+            enqueueVoiceMsg({ text: txt, from });
+            addToHistory(txt, from, ts);
             startVoicePoll();
             bumpVoiceActivity();
         }
@@ -8474,7 +8469,11 @@ assign initialcost =
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ ts, text: txt, from })
             }).catch(() => {});
-            // je eigen bericht komt via de poll terug van Firebase → je ziet/hoort wat de groep ziet
+            // EIGEN bericht DIRECT lokaal afspelen — in de tik, net als Test stem. Zo klinkt hij
+            // altijd (iOS-motor wordt hier meteen geactiveerd) en niet via de poll-omweg.
+            lastTalkTs = ts;                              // poller slaat je eigen bericht over (geen dubbel)
+            enqueueVoiceMsg({ text: txt, from });         // lichtkrant + stem, synchroon vanuit de tik
+            addToHistory(txt, from, ts);
             if (typeof startVoicePoll === 'function') startVoicePoll();
             if (typeof bumpVoiceActivity === 'function') bumpVoiceActivity();
         }
