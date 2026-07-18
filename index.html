@@ -921,7 +921,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v56.4 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v56.6 © Umop3p1sdn</div>
 
             </div>
 
@@ -935,6 +935,21 @@
                 </div>
                 <div id="btnMenuOverlay" style="display:none; position:fixed; inset:0; z-index:2300; background:rgba(0,0,0,0.55);" onclick="closeBtnMenu()"></div>
                 <!-- KAARTSTIJL-KIEZER (v55.1): opent vanuit de KAART-knop in het knoppen-menu → hoort erbóven (2460) -->
+                <!-- CONFIG KOPIEREN/PLAKKEN (v56.6): opent vanuit het ☰ menu (2550) → 2560 -->
+                <div id="configModal" onclick="if (event.target === this) closeConfigModal()" style="display:none; position:fixed; inset:0; z-index:2560; align-items:center; justify-content:center; background:rgba(0,0,0,0.5);">
+                    <div style="background: rgba(226, 231, 245, 0.97); border: 2px solid #00BCD4; border-radius: 16px; padding: 18px; display:flex; flex-direction:column; gap: 12px; width: min(92vw, 380px);">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <div style="font-weight:bold; color:#0a0e27; font-size:1.1em;">Instellingen (config)</div>
+                            <button onclick="closeConfigModal()" style="background:#D32F2F; color:#fff; border:none; border-radius:6px; width:34px; height:34px; font-size:1.1em; cursor:pointer;">✕</button>
+                        </div>
+                        <textarea id="configText" spellcheck="false" style="width:100%; height:180px; font-family:monospace; font-size:0.85em; border:2px solid #000; border-radius:8px; padding:8px; box-sizing:border-box;"></textarea>
+                        <div style="display:flex; gap:10px;">
+                            <button onclick="copyConfigText()" style="flex:1; padding:12px; font-weight:bold; border-radius:8px; border:3px solid #000; background:#fff; color:#0a0e27; cursor:pointer;">Kopieer</button>
+                            <button onclick="saveConfigFromText()" style="flex:1; padding:12px; font-weight:bold; border-radius:8px; border:3px solid #000; background:#00BCD4; color:#fff; cursor:pointer;">Opslaan</button>
+                        </div>
+                        <div id="configHint" style="font-size:0.8em; color:#555;">Kopieer deze tekst als reserve, of plak hier een config van je andere telefoon en tik Opslaan.</div>
+                    </div>
+                </div>
                 <div id="mapStyleChooser" onclick="if (event.target === this) closeMapStyleChooser()" style="display:none; position:fixed; inset:0; z-index:2460; align-items:center; justify-content:center;">
                     <div style="background: rgba(226, 231, 245, 0.97); border: 2px solid #00BCD4; border-radius: 16px; padding: 20px; display:flex; flex-direction:column; gap: 14px; box-shadow: 0 8px 40px rgba(0,0,0,0.7); width: 260px;">
                         <div style="font-weight: bold; color: #0a0e27; text-align: center; font-size: 1.1em;">Kaart kiezen</div>
@@ -1081,6 +1096,7 @@
                 <button class="button-secondary" onclick="toggleNavArrows()" id="navBtnMenu" style="width: 100%;">Navigatie pijlen: AAN</button>
                 <button class="button-secondary" onclick="toggleSpeech()" id="speechBtnMenu" style="width: 100%;">Navigatie stem is aan</button>
                 <button class="button-secondary" onclick="toggleFlitserWarn()" id="flitserBtnMenu" style="width: 100%;">Flitsmelding: ACTIEF</button>
+                <button class="button-secondary" onclick="openConfigModal()" style="width: 100%;">Instellingen kopiëren / plakken</button>
                 <button class="button-secondary" onclick="toggleFlitserStil()" id="flitserStilBtn" style="width: 100%;">Flits geluid is aan</button>
                 <div id="flitserVolRow" style="display:flex; align-items:center; justify-content:space-between; gap:10px; background:#1a2148; padding:8px 12px; border-radius:8px;">
                     <span style="font-size:0.9em; white-space:nowrap;">Flits-volume</span>
@@ -1243,7 +1259,7 @@
             <!-- ═══════════ ALGEMEEN ═══════════ -->
             <h2 style="color: #00BCD4; margin-top: 35px; border-top: 2px solid #00BCD4; padding-top: 22px;">Algemeen (Master &amp; Volger)</h2>
             <p>Deze knoppen en functies werken hetzelfde voor allebei.</p>
-            <p style="background:#e3e7f5; padding:10px 14px; border-radius:8px;"><strong>Knoppen-menu:</strong> de instelknoppen (Draai/kompas, Center, Toon, TAG, LIJN, CREW, COMS, KAART en FM) zitten achter <strong>één menu-knop rechts</strong> op de kaart, onder het slotje. Tik erop voor het menu met de grote knoppen; tik ernaast om te sluiten (na 15 seconden zonder tik sluit het vanzelf). De uitleg per knop hieronder blijft gewoon gelden — je vindt ze alleen in dat menu. Dit geldt trouwens overal: <strong>elk menu of venster sluit je ook door ernaast te tikken</strong> (de rode ✕ blijft ook gewoon werken). De mic- en T-knop staan <strong>standaard uit</strong> — zet ze aan met de <strong>COMS</strong>-knop in het knoppen-menu (groen = aan). Met <strong>KAART</strong> kies je uit 4 kaartstijlen: Standaard, Satelliet, Hoogte (met hoogtelijnen) en Donker (nachtkaart). Bij <strong>elke dag/nacht-overgang</strong> springt de kaart vanzelf (zonsondergang → Donker, zonsopkomst → Standaard, berekend op je eigen positie) — ook als je op Satelliet rijdt. Daarna kun je altijd handmatig een andere kaart kiezen; die blijft staan tot de volgende overgang. Let op: offline tegels vooraf laden werkt voor Standaard én Donker (zelfde kaart, ander jasje); Satelliet verbruikt flink meer data.</p>
+            <p style="background:#e3e7f5; padding:10px 14px; border-radius:8px;"><strong>Knoppen-menu:</strong> de instelknoppen (Draai/kompas, Center, Toon, TAG, LIJN, CREW, COMS, KAART en FM) zitten achter <strong>één menu-knop rechts</strong> op de kaart, onder het slotje. Tik erop voor het menu met de grote knoppen; tik ernaast om te sluiten (na 15 seconden zonder tik sluit het vanzelf). De uitleg per knop hieronder blijft gewoon gelden — je vindt ze alleen in dat menu. Dit geldt trouwens overal: <strong>elk menu of venster sluit je ook door ernaast te tikken</strong> (de rode ✕ blijft ook gewoon werken). De mic- en T-knop staan <strong>standaard uit</strong> — zet ze aan met de <strong>COMS</strong>-knop in het knoppen-menu (groen = aan). Met <strong>KAART</strong> kies je uit 4 kaartstijlen: Standaard, Satelliet, Hoogte (met hoogtelijnen) en Donker (nachtkaart). Bij <strong>elke dag/nacht-overgang</strong> springt de kaart vanzelf (zonsondergang → Donker, zonsopkomst → Standaard, berekend op je eigen positie) — ook als je op Satelliet rijdt. Daarna kun je altijd handmatig een andere kaart kiezen; die blijft staan tot de volgende overgang. Je instellingen (TAG, dagkaart, flitsers, lijndikte enz.) worden op je telefoon bewaard; via <strong>☰ → Instellingen kopiëren / plakken</strong> zet je ze over naar een andere telefoon. Let op: offline tegels vooraf laden werkt voor Standaard én Donker (zelfde kaart, ander jasje); Satelliet verbruikt flink meer data.</p>
 
             <h3 style="color: #00BCD4; margin-top: 20px;">Knoppen op de kaart</h3>
 
@@ -1462,7 +1478,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v56.4 © Umop3p1sdn
+                HO-ME v56.6 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1605,7 +1621,7 @@
             <!-- ═══════════ GENERAL ═══════════ -->
             <h2 style="color: #00BCD4; margin-top: 35px; border-top: 2px solid #00BCD4; padding-top: 22px;">General (Master &amp; Follower)</h2>
             <p>These buttons and functions work the same for both.</p>
-            <p style="background:#e3e7f5; padding:10px 14px; border-radius:8px;"><strong>Button menu:</strong> the setting buttons (rotate/compass, Center, Show, TAG, LIJN, CREW, COMS, KAART and FM) sit behind <strong>one menu button on the right</strong> of the map, below the lock. Tap it for the menu with the big buttons; tap next to it to close (after 15 seconds without a tap it closes by itself). The per-button explanations below still apply — you just find them in that menu. This applies everywhere by the way: <strong>every menu or window also closes by tapping next to it</strong> (the red ✕ keeps working too). The mic and T buttons are <strong>off by default</strong> — enable them with the <strong>COMS</strong> button in the button menu (green = on). With <strong>KAART</strong> you pick from 4 map styles: Standard, Satellite, Terrain (contour lines) and Dark (night map). At <strong>every day/night transition</strong> the map jumps automatically (sunset → Dark, sunrise → Standard, computed at your own position) — even when riding Satellite. After that you can always pick another map manually; it stays until the next transition. Note: offline tile pre-loading works for Standard and Dark (same map, different look); Satellite uses considerably more data.</p>
+            <p style="background:#e3e7f5; padding:10px 14px; border-radius:8px;"><strong>Button menu:</strong> the setting buttons (rotate/compass, Center, Show, TAG, LIJN, CREW, COMS, KAART and FM) sit behind <strong>one menu button on the right</strong> of the map, below the lock. Tap it for the menu with the big buttons; tap next to it to close (after 15 seconds without a tap it closes by itself). The per-button explanations below still apply — you just find them in that menu. This applies everywhere by the way: <strong>every menu or window also closes by tapping next to it</strong> (the red ✕ keeps working too). The mic and T buttons are <strong>off by default</strong> — enable them with the <strong>COMS</strong> button in the button menu (green = on). With <strong>KAART</strong> you pick from 4 map styles: Standard, Satellite, Terrain (contour lines) and Dark (night map). At <strong>every day/night transition</strong> the map jumps automatically (sunset → Dark, sunrise → Standard, computed at your own position) — even when riding Satellite. After that you can always pick another map manually; it stays until the next transition. Your settings (TAG, day map, cameras, line width etc.) are stored on your phone; via <strong>☰ → Instellingen kopiëren / plakken</strong> you can transfer them to another phone. Note: offline tile pre-loading works for Standard and Dark (same map, different look); Satellite uses considerably more data.</p>
 
             <h3 style="color: #00BCD4; margin-top: 20px;">Buttons on the map</h3>
 
@@ -1824,7 +1840,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v56.4 © Umop3p1sdn
+                HO-ME v56.6 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -4055,7 +4071,58 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "56.4";
+        const APP_VERSION = "56.6";
+
+        // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
+        // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
+        // betreffende setter bijgewerkt. Bewust NIET in de config: Spectator (per rit kiezen),
+        // Hide/CREW/volg-standen (horen bij de rit), en de kaartkeuze zelf (auto dag/nacht is de
+        // baas) — wél de VOORKEURS-DAGKAART: bij zonsopkomst springt hij naar jouw dagkaart.
+        function loadConfig() {
+            try { return JSON.parse(localStorage.getItem('homeConfig')) || {}; }
+            catch (e) { return {}; }
+        }
+        const homeConfig = loadConfig();
+        function saveCfg(patch) {
+            try {
+                Object.assign(homeConfig, patch);
+                localStorage.setItem('homeConfig', JSON.stringify(homeConfig));
+            } catch (e) {}
+        }
+        // ── Config kopiëren/plakken (v56.6): export/import via het ☰ menu ──
+        function openConfigModal() {
+            const m = document.getElementById('configModal');
+            const t = document.getElementById('configText');
+            if (t) t.value = JSON.stringify(homeConfig, null, 2);
+            if (m) m.style.display = 'flex';
+        }
+        function closeConfigModal() {
+            const m = document.getElementById('configModal');
+            if (m) m.style.display = 'none';
+        }
+        function copyConfigText() {
+            const t = document.getElementById('configText');
+            if (!t) return;
+            t.select(); t.setSelectionRange(0, 99999);
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(t.value).catch(() => document.execCommand('copy'));
+            } else { document.execCommand('copy'); }
+            const h = document.getElementById('configHint');
+            if (h) h.textContent = 'Gekopieerd! Plak \'m in je notities of op je andere telefoon.';
+        }
+        function saveConfigFromText() {
+            const t = document.getElementById('configText');
+            const h = document.getElementById('configHint');
+            if (!t) return;
+            try {
+                const parsed = JSON.parse(t.value);
+                if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) throw new Error('geen object');
+                localStorage.setItem('homeConfig', JSON.stringify(parsed));
+                if (h) { h.style.color = '#2E7D32'; h.textContent = 'Opgeslagen! Sluit de app volledig af en start opnieuw — dan staat alles goed.'; }
+            } catch (e) {
+                if (h) { h.style.color = '#D32F2F'; h.textContent = 'Dit is geen geldige config — plak precies wat je gekopieerd had.'; }
+            }
+        }
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -4146,7 +4213,7 @@ assign initialcost =
         let masterFollowersTimer = null;
         let followerHeartbeatTimer = null;
         let myFollowerIdx = null;      // this follower's assigned color index (read from Firebase)
-        let myTag = '';                // this follower's tag (max 6 chars)
+        let myTag = (homeConfig.tag || '');   // v56.5: uit config — this follower's tag (max 6 chars)
         let tagOpacity = 70;           // master: opacity % for tag list (0-100, step 5)
         let followInterval = null;
         let trackVisible = false;
@@ -4155,7 +4222,7 @@ assign initialcost =
         let zoomMode = 'self';
         let compassMode = 'device';
         let deviceHeading = 0;
-        let mapRotationEnabled = false;
+        let mapRotationEnabled = (homeConfig.draai === true);   // v56.5: uit config
         let oversizeToken = 0;
         // Marker-positie op het scherm (DRAAI aan). Staand = 0.62 (oude waarde, lager in beeld),
         // liggend = 0.50 (hoger/midden, want minder hoogte). 0.5=midden, hoger getal=lager op scherm.
@@ -4166,7 +4233,7 @@ assign initialcost =
         let masterPos = null;
         let wakeLock = null;
         let zoomLevelValue = 17;
-        let trackLineWidth = 12;
+        let trackLineWidth = (homeConfig.lijndikte >= 1 && homeConfig.lijndikte <= 15) ? homeConfig.lijndikte : 12;   // v56.5: uit config
         let isAutoFollowActive = false;
 
         // ─── BOCHT-DETECTIE (turn detection from GPX points) ───
@@ -4473,15 +4540,16 @@ assign initialcost =
         // ─── FLITSERS ───
         let flitsers = [];               // [{lat,lng,maxspeed}] uit OpenStreetMap (Overpass)
         let flitserMarkers = [];         // kaart-bordjes
-        let flitserSize = 0;             // VAST op klein (geen 3 standen meer)
-        let flitserMode = 2;             // 0=UIT  1=ZONES (FR-legaal, geen exacte meters)  2=ACTIEF (NL/BE)
+        let flitserSize = 0;             // VAST op klein (geen 3 standen meer — dus ook niet in de config)
+        let flitserMode = [0,1,2].includes(homeConfig.flitsmelding) ? homeConfig.flitsmelding : 2;   // v56.5: uit config — 0=UIT 1=ZONES 2=ACTIEF
         let flitserBeeped = {};          // per flitser: al gepiept (1× dubbele piep)
         let flitserGesproken = {};       // per flitser: al "Flitser" geroepen (1× bij n=1)
         let flitserBeginBeep = {};       // per flitser: al begin-beep gehad (1× bij n=9)
         let flitser300 = {};             // per flitser: al 300m-waarschuwing gehad (dubbele beep + spraak)
-        let flitserVolume = 1.0;         // 0..1 — flits-geluid volume (schuif in menu)
+        let flitserVolume = (homeConfig.flitsVolume >= 0 && homeConfig.flitsVolume <= 1) ? homeConfig.flitsVolume : 1.0;   // v56.5: uit config
         function setFlitserVolume(pct) {
             flitserVolume = Math.max(0, Math.min(100, parseInt(pct) || 0)) / 100;
+            saveCfg({ flitsVolume: flitserVolume });   // v56.5
             const v = document.getElementById('flitserVolVal');
             if (v) v.textContent = Math.round(flitserVolume * 100) + '%';
         }
@@ -4905,12 +4973,15 @@ assign initialcost =
             if (lastNightState === null) { lastNightState = night; return; }
             if (night !== lastNightState) {      // overgang dag↔nacht: springen
                 lastNightState = night;
-                setMapStyle(night ? 'dark' : 'std');
+                // dag = jouw voorkeurs-dagkaart uit de config (v56.5) — bijv. Satelliet
+                const dag = MAP_STYLES[homeConfig.dagkaart] ? homeConfig.dagkaart : 'std';
+                setMapStyle(night ? 'dark' : dag);
             }
         }
         setInterval(autoMapCheck, 60000);   // 1x per minuut checken is ruim genoeg
 
-        let mapStyle = isNightNow(52.04, 5.67) ? 'dark' : 'std';   // start: auto (Ede-fallback vóór GPS)
+        let mapStyle = isNightNow(52.04, 5.67) ? 'dark'
+                     : (MAP_STYLES[homeConfig.dagkaart] ? homeConfig.dagkaart : 'std');   // start: auto; dag = jouw dagkaart (v56.5)
         let currentTileLayer = null;
         // Donker-helderheid (v55.4): standaard-Carto is erg donker → filter over de tegels.
         // Nogmaals op Donker tikken = stapje lichter, rondje rond. Getal staat op de knop.
@@ -4929,6 +5000,7 @@ assign initialcost =
         }
         function setMapStyle(key) {
             if (!MAP_STYLES[key] || !mapInstance) return;
+            if (key !== 'dark') saveCfg({ dagkaart: key });   // v56.5: jouw dagkaart-voorkeur
             mapStyle = key;
             if (currentTileLayer) mapInstance.removeLayer(currentTileLayer);
             currentTileLayer = L.tileLayer(MAP_STYLES[key].url, {
@@ -4961,9 +5033,10 @@ assign initialcost =
             if (c) c.style.display = 'none';
         }
 
-        let micVisible = false;  // v52.5: Coms standaard UIT — mic/T aanzetten via de COMS-knop in het knoppen-menu
+        let micVisible = (homeConfig.coms === true);  // v56.5: uit config (standaard UIT, v52.5) — mic/T aanzetten via de COMS-knop in het knoppen-menu
         function toggleComs() {
             micVisible = !micVisible;
+            saveCfg({ coms: micVisible });   // v56.5
             updateComsBtns();
             if (typeof updateTalkUI === 'function') updateTalkUI();
         }
@@ -5561,6 +5634,7 @@ assign initialcost =
         const FLITSER_MODE_LABEL = ['UIT', 'ZONES', 'ACTIEF'];
         function toggleFlitserWarn() {
             flitserMode = (flitserMode + 1) % 3;
+            saveCfg({ flitsmelding: flitserMode });   // v56.5
             const b = document.getElementById('flitserBtnMenu');
             if (b) b.textContent = 'Flitsmelding: ' + FLITSER_MODE_LABEL[flitserMode];
             if (flitserMode === 0) {
@@ -7664,6 +7738,7 @@ assign initialcost =
         function saveTag() {
             const inp = document.getElementById('tagInput');
             myTag = (inp ? inp.value : '').trim().toUpperCase().slice(0, 6);
+            saveCfg({ tag: myTag });   // v56.5
             closeTagInput();
             updateMyColorBadge();
             // write tag to Firebase (PATCH so we don't wipe position/idx)
@@ -8291,6 +8366,7 @@ assign initialcost =
 
         function toggleMapRotation() {
             mapRotationEnabled = !mapRotationEnabled;
+            saveCfg({ draai: mapRotationEnabled });   // v56.5
             [document.getElementById('rotBtnMaster'), document.getElementById('rotBtnFollower')].forEach(b => {
                 if (!b) return;
                 if (mapRotationEnabled) {
@@ -9067,6 +9143,7 @@ assign initialcost =
         function toggleVoicePref() {
             voicePref = (voicePref === 'NL') ? 'BE' : 'NL';
             localStorage.setItem('homeVoicePref', voicePref);
+            saveCfg({ stem: voicePref });   // v56.5: ook in de config
             updateVoicePrefBtn();
             const v = (voicePref === 'BE') ? findBEVoice() : null;
             const msg = (voicePref === 'BE')
@@ -10110,6 +10187,7 @@ assign initialcost =
         // ── KNOPPEN-MENU (v51.5): alle kaart-instelknoppen achter één knop rechts ──
         let _btnMenuTimer = null;
         function openBtnMenu() {
+            if (typeof updateComsBtns === 'function') updateComsBtns();   // v56.5: config-stand tonen
             // FM-knop in de balk van de actieve rol hangen (één DOM-knoop, verhuist mee per rol)
             const bar = document.getElementById(currentMode === 'follower' ? 'followerSideBar' : 'masterSideBar');
             const fm = document.getElementById('fmBtn');
@@ -10425,6 +10503,7 @@ assign initialcost =
             if (trackLineWidth < 15) {
                 trackLineWidth += 1;
                 if (trackLineWidth > 15) trackLineWidth = 15;
+                saveCfg({ lijndikte: trackLineWidth });   // v56.5
                 updateTrackDisplay();
                 redrawAllTracks();
             }
@@ -10434,6 +10513,7 @@ assign initialcost =
             if (trackLineWidth > 3) {
                 trackLineWidth -= 1;
                 if (trackLineWidth < 3) trackLineWidth = 3;
+                saveCfg({ lijndikte: trackLineWidth });   // v56.5
                 updateTrackDisplay();
                 redrawAllTracks();
             }
