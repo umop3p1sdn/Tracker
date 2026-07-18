@@ -921,7 +921,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v56.6 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v56.8 © Umop3p1sdn</div>
 
             </div>
 
@@ -1478,7 +1478,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v56.6 © Umop3p1sdn
+                HO-ME v56.8 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1840,7 +1840,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v56.6 © Umop3p1sdn
+                HO-ME v56.8 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -4071,7 +4071,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "56.6";
+        const APP_VERSION = "56.8";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
@@ -4083,6 +4083,18 @@ assign initialcost =
             catch (e) { return {}; }
         }
         const homeConfig = loadConfig();
+        // v56.7: menu-labels bij het opstarten gelijkzetten met de config (de knoppen hebben
+        // vaste HTML-teksten; zonder deze sync toonden ze de default tot de eerste tik).
+        document.addEventListener('DOMContentLoaded', () => {
+            const f = document.getElementById('flitserBtnMenu');
+            if (f && typeof FLITSER_MODE_LABEL !== 'undefined') f.textContent = 'Flitsmelding: ' + FLITSER_MODE_LABEL[flitserMode];
+            const s = document.getElementById('speechBtnMenu');
+            if (s) s.textContent = speechEnabled ? 'Navigatie stem is aan' : 'Navigatie stem is uit';
+            const v = document.getElementById('flitserVolVal');
+            if (v) v.textContent = Math.round(flitserVolume * 100) + '%';
+            const vs = document.getElementById('flitserVolSlider');
+            if (vs) vs.value = Math.round(flitserVolume * 100);
+        });
         function saveCfg(patch) {
             try {
                 Object.assign(homeConfig, patch);
@@ -4293,7 +4305,7 @@ assign initialcost =
         // v53.8: spectator kies je alleen nog met het vinkje op het startscherm (menuknop +
         // toggleSpectator vervallen op verzoek Sjoerd) — wisselen = STOP en opnieuw joinen.
         let navArrowsEnabled = true;    // menu toggle
-        let speechEnabled = true;       // menu toggle — gesproken afslagen (NL)
+        let speechEnabled = (homeConfig.navStem !== false);   // v56.7: uit config — gesproken afslagen (standaard aan)
         let audioCtx = null;            // Web Audio context (created on unlock)
         // Remember which beep already fired per turn, so each plays once:
         let beepedApproach = {};        // turn.index -> true (1 beep done)
@@ -9195,6 +9207,7 @@ assign initialcost =
         }
         function toggleSpeech() {
             speechEnabled = !speechEnabled;
+            saveCfg({ navStem: speechEnabled });   // v56.7
             const b = document.getElementById('speechBtnMenu');
             if (b) b.textContent = speechEnabled ? 'Navigatie stem is aan' : 'Navigatie stem is uit';
             // Visuele melding (2 sec) i.p.v. gesproken — geluid was te veel, vooral bij OR-wisselen.
