@@ -72,6 +72,7 @@
         #lockIcon, #btnMenuBtn, #flitserBox { margin-top: env(safe-area-inset-top, 0px); }
         .track-width-bar { margin-bottom: env(safe-area-inset-bottom, 0px); }
         #speedometer { padding-bottom: env(safe-area-inset-bottom, 0px); }
+        #plannerPanel { margin-top: env(safe-area-inset-top, 0px); }   /* Plan-menu niet onder de notch/statusbalk (v52.6) */
 
         body {
             font-family: 'Segoe UI', Tahoma, sans-serif;
@@ -650,9 +651,12 @@
             /* Liggend: Hide-knop net ONDER de zoom +/- balk (bovenaan), gecentreerd. */
             .go-button { top: 110px !important; bottom: auto !important; }
         }
-        /* In portrait nooit het landscape-paneel tonen. */
         @media (orientation: portrait) {
-            #remPanel { display: none !important; }
+            /* Staand rijscherm (v52.6): zelfde recept als liggend — smal Afstand/Tijd-blok (remPanel)
+               links onder de mic, en de brede infoBar onderin weg (zelfde info dubbel).
+               Buiten het rijscherm (niet map-only) blijft de infoBar gewoon werken. */
+            body.map-only #remPanel { display: block !important; }
+            body.map-only #infoBar { display: none !important; }
             /* Staand: track-breedte +/- net ONDER de Hide-knop (die op ~285px staat). */
             .track-width-bar { top: auto !important; bottom: 200px !important; }
         }
@@ -875,7 +879,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v52.5 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v52.6 © Umop3p1sdn</div>
 
             </div>
 
@@ -1405,7 +1409,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v52.5 © Umop3p1sdn
+                HO-ME v52.6 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1767,7 +1771,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v52.5 © Umop3p1sdn
+                HO-ME v52.6 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -3996,7 +4000,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "52.5";
+        const APP_VERSION = "52.6";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
