@@ -921,7 +921,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v57.5 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v57.6 © Umop3p1sdn</div>
 
             </div>
 
@@ -1480,7 +1480,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v57.5 © Umop3p1sdn
+                HO-ME v57.6 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1842,7 +1842,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v57.5 © Umop3p1sdn
+                HO-ME v57.6 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -4073,7 +4073,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "57.5";
+        const APP_VERSION = "57.6";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
@@ -4991,6 +4991,7 @@ assign initialcost =
             // dus de sw.js-tegelroute dekt 'm al.
             hyb:  { naam: 'Satelliet + wegen', url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
                     overlay: 'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}',
+                    overlayMaxNative: 14,   // v57.6: dieper heeft Esri hier geen wegen-tegels (melding Sjoerd: voorbij 14 weg) — z14 rekt mee
                     attribution: '© Esri', maxZoom: 19 },
             topo: { naam: 'Hoogte', url: 'https://a.tile.opentopomap.org/{z}/{x}/{y}.png',
                     attribution: '© OpenTopoMap', maxZoom: 17 },
@@ -5054,7 +5055,10 @@ assign initialcost =
             currentTileLayer = L.tileLayer(s.url, { attribution: s.attribution, maxZoom: s.maxZoom }).addTo(mapInstance);
             currentTileLayer.bringToBack();   // routes/sporen/markers blijven erboven (eigen panes)
             if (s.overlay) {
-                currentOverlayLayer = L.tileLayer(s.overlay, { maxZoom: s.maxZoom }).addTo(mapInstance);
+                currentOverlayLayer = L.tileLayer(s.overlay, {
+                    maxZoom: s.maxZoom,
+                    maxNativeZoom: s.overlayMaxNative || s.maxZoom   // dieper = tegels opschalen i.p.v. verdwijnen
+                }).addTo(mapInstance);
                 // ná de basis toegevoegd = erbóven in het tegel-paneel; routes blijven er los boven
             }
             applyDarkBrightness();
