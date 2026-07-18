@@ -617,8 +617,11 @@
             body.map-only #remPanel { display: block !important; }
             /* Liggend: pijlen NAAST de "200m" (met wat ruimte), laag in beeld. */
             #turnDist       { bottom: 30px !important; }
-            #turnArrowLeft  { left: calc(50% - 130px) !important; right: auto !important; bottom: 26px !important; }
-            #turnArrowRight { left: calc(50% + 75px)  !important; right: auto !important; bottom: 26px !important; }
+            /* v52.7: pijl-maten zijn 54 (blauw) / 72 (oranje) / 90 (rood, max). Links eindigde de
+               rode op 50%-40 en overlapte het label (halve breedte ~75). Nu: links -180..-90 en
+               rechts +90..+180 — alle drie de maten vallen vrij van het label, links én rechts. */
+            #turnArrowLeft  { left: calc(50% - 180px) !important; right: auto !important; bottom: 26px !important; }
+            #turnArrowRight { left: calc(50% + 90px)  !important; right: auto !important; bottom: 26px !important; }
             /* Liggend: GPS-snelheid altijd zichtbaar linksboven (flex), vast op left:12px.
                De flitser-melding staat sinds v51.2 RECHTS van de zoom-plus/min (regel hieronder). */
             body.map-only #gpsSpeedBox { display: flex !important; }
@@ -678,7 +681,7 @@
     <div id="turnArrowRight" style="display:none; position: fixed; bottom: 113px; right: 16px; z-index: 2000; width: 24px; height: 24px; border-radius: 6px; align-items: center; justify-content: center; box-shadow: 0 2px 10px rgba(0,0,0,0.5);"><svg width="17" height="17" viewBox="0 0 24 24" fill="#fff"><path d="M4 11h12.17l-5.59-5.59L12 4l8 8-8 8-1.41-1.41L16.17 13H4z"/></svg></div>
     <div id="turnDist" style="display:none; position: fixed; bottom: 118px; left: 50%; transform: translateX(-50%); z-index: 2000; color: #fff; font-weight: bold; font-size: 1.8em; padding: 8px 22px; border-radius: 8px; background: rgba(0,0,0,0.7); font-family: sans-serif;"></div>
     <!-- FLITSER: vlak linksboven tijdens rijden. Wit snelheidsbord + aftel-cijfer (10→1). Tik = 3 groottes. -->
-    <div id="flitserBox" onclick="cycleFlitserSize()" style="display:none; position: fixed; bottom: 175px; right: 12px; z-index: 2050; cursor: pointer; background: rgba(10,14,39,0.78); border-radius: 14px; padding: 10px 8px; box-shadow: 0 3px 14px rgba(0,0,0,0.5); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); text-align: center; font-family: sans-serif;">
+    <div id="flitserBox" onclick="cycleFlitserSize()" style="display:none; position: fixed; bottom: 200px; right: 12px; z-index: 2050; cursor: pointer; background: rgba(10,14,39,0.78); border-radius: 14px; padding: 10px 8px; box-shadow: 0 3px 14px rgba(0,0,0,0.5); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); text-align: center; font-family: sans-serif;">
         <div id="flitserSign" style="margin: 0 auto; border-radius: 50%; background: #fff; border: 6px solid #d32f2f; box-sizing: border-box; display: flex; align-items: center; justify-content: center; font-weight: 900; color: #111;">
             <span id="flitserSpeed">50</span>
         </div>
@@ -789,7 +792,7 @@
     <div id="masterStaleWarn" style="display:none; position: fixed; top: 60px; left: 50%; transform: translateX(-50%); z-index: 1700; background: rgba(220,40,40,0.92); color: #fff; font-family: sans-serif; font-size: 0.85em; font-weight: bold; padding: 8px 16px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.4);"></div>
     <div id="speedometer" style="display:none; position: fixed; bottom: 0; left: 0; right: 0; z-index: 1500; background: rgba(0,0,0,0.85); color: #fff; text-align: center; font-family: sans-serif; padding: 6px 0;"><span id="speedValue" style="font-size: 3em; font-weight: bold; line-height: 1;">0</span><span style="font-size: 1em; opacity: 0.7; margin-left: 4px;">km/u</span></div>
     <!-- Rond snelheidsbord (maximumsnelheid van de huidige weg) — links naast de km-teller -->
-    <div id="speedLimitSign" style="display:none; position: fixed; bottom: 6px; left: 14px; z-index: 2050; width: 66px; height: 66px; border-radius: 50%; background: #fff; border: 7px solid #D32F2F; box-sizing: border-box; align-items: center; justify-content: center; font-family: sans-serif; box-shadow: 0 2px 8px rgba(0,0,0,0.5);"><span id="speedLimitValue" style="color: #111; font-weight: bold; font-size: 1.7em; line-height: 1;">–</span></div>
+    <div id="speedLimitSign" style="display:none; position: fixed; bottom: 200px; right: 122px; z-index: 2050; width: 80px; height: 80px; border-radius: 50%; background: #fff; border: 8px solid #D32F2F; box-sizing: border-box; align-items: center; justify-content: center; font-family: sans-serif; box-shadow: 0 2px 8px rgba(0,0,0,0.5);"><span id="speedLimitValue" style="color: #111; font-weight: bold; font-size: 2.1em; line-height: 1;">–</span></div>
     <div id="tagList" style="display:none; position: fixed; top: 105px; left: 22px; z-index: 1400; display: none; flex-direction: column; gap: 4px; font-family: sans-serif;"></div>
 
     <!-- B2R: terug-naar-route knop. Verschijnt (knipperend) zodra je van de route af bent; één druk =
@@ -879,7 +882,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v52.6 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v52.7 © Umop3p1sdn</div>
 
             </div>
 
@@ -1409,7 +1412,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v52.6 © Umop3p1sdn
+                HO-ME v52.7 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1771,7 +1774,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v52.6 © Umop3p1sdn
+                HO-ME v52.7 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -4000,7 +4003,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "52.6";
+        const APP_VERSION = "52.7";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -5218,7 +5221,7 @@ assign initialcost =
             const B = [ {sign:46, speed:20, count:38}, {sign:62, speed:27, count:52}, {sign:84, speed:37, count:72} ][flitserSize];
             const S = isLandscape
                 ? { sign: Math.round(B.sign * 1.6), speed: Math.round(B.speed * 1.5), count: Math.round(B.count * 1.25) }
-                : B;
+                : { sign: Math.round(B.sign * 1.2), speed: Math.round(B.speed * 1.2), count: Math.round(B.count * 1.2) };   // staand ook iets groter (v52.7)
             sign.style.width = S.sign + 'px';
             sign.style.height = S.sign + 'px';
             sign.style.fontSize = S.speed + 'px';
@@ -5240,7 +5243,7 @@ assign initialcost =
                 fbox.style.left = isLandscape ? '' : 'auto';
                 fbox.style.right = isLandscape ? '' : '12px';
                 fbox.style.top = '';
-                fbox.style.bottom = isLandscape ? '' : '175px';
+                fbox.style.bottom = isLandscape ? '' : '200px';
                 fbox.style.transform = '';
             }
         }
