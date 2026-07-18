@@ -668,8 +668,9 @@
                linkerkolom NAAST de GPS-snelheid (top 10, left 150) — daar is ruimte nu de flitser
                rechts zit — zodat er boven mic/T niets meer kan botsen, ook niet op 375 hoogte. */
             body.map-only #remPanel { left: 10px !important; right: auto !important; bottom: 8px !important; }
-            #talkBtn { bottom: 128px !important; }
-            #ttsBtn  { bottom: 216px !important; }
+            /* v54.1: remPanel is ~45px hoger door het NU-blok (8-~178) → mic 184-262, T 272-350. */
+            #talkBtn { bottom: 184px !important; }
+            #ttsBtn  { bottom: 272px !important; }
             #speedLimitSign { top: 10px !important; bottom: auto !important; left: 150px !important; }
             /* Liggend: play + Plan ook boven FM (kleiner, dus 64px stappen). */
             #plannerGoBtn     { top: auto !important; bottom: 274px !important; }
@@ -905,7 +906,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v54.0 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v54.1 © Umop3p1sdn</div>
 
             </div>
 
@@ -1434,7 +1435,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v54.0 © Umop3p1sdn
+                HO-ME v54.1 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1796,7 +1797,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v54.0 © Umop3p1sdn
+                HO-ME v54.1 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1920,13 +1921,13 @@
     <div id="poiList" style="display:none;"></div>
     <div id="infoBar"></div>
     <!-- #3 Landscape-dashboard: resterende Afstand + Tijd links onder elkaar (alleen liggend + rij-modus) -->
-    <div id="remPanel" style="display:none; position:fixed; left:10px; bottom:267px; z-index:1600; background:rgba(10,14,39,0.82); color:#fff; padding:10px 14px; border-radius:10px; font-family:sans-serif; line-height:1.35;">
+    <div id="remPanel" style="display:none; position:fixed; left:10px; bottom:215px; z-index:1600; background:rgba(10,14,39,0.82); color:#fff; padding:10px 14px; border-radius:10px; font-family:sans-serif; line-height:1.35;">
+        <div style="font-size:0.7em; color:#00BCD4; font-weight:bold; letter-spacing:0.5px;">NU</div>
+        <div id="remNow" style="font-size:1.5em; font-weight:bold; margin-bottom:4px;">–</div>
         <div style="font-size:0.7em; color:#00BCD4; font-weight:bold; letter-spacing:0.5px;">AFSTAND</div>
         <div id="remKm" style="font-size:1.5em; font-weight:bold; margin-bottom:4px;">– km</div>
         <div style="font-size:0.7em; color:#00BCD4; font-weight:bold; letter-spacing:0.5px;">TIJD</div>
-        <div id="remMin" style="font-size:1.5em; font-weight:bold; margin-bottom:4px;">– min</div>
-        <div style="font-size:0.7em; color:#00BCD4; font-weight:bold; letter-spacing:0.5px;">NU</div>
-        <div id="remNow" style="font-size:1.5em; font-weight:bold;">–</div>
+        <div id="remMin" style="font-size:1.5em; font-weight:bold;">– min</div>
     </div>
     <div id="tapMenu" style="display:none; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); z-index:2550; background:#0a0e27; border:2px solid #00BCD4; border-radius:12px; padding:16px; flex-direction:column; gap:8px; box-shadow:0 4px 16px rgba(0,0,0,0.6); min-width:200px;">
         <div style="color:#00BCD4; font-weight:bold; text-align:center; margin-bottom:4px;">Punt toevoegen als:</div>
@@ -4027,7 +4028,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "54.0";
+        const APP_VERSION = "54.1";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -5451,6 +5452,15 @@ assign initialcost =
             const flitserTop = 260 + 20 + Math.round(B.sign * 1.2) + 4 + Math.round(B.count * 1.2);
             rp.style.bottom = Math.max(60, flitserTop - rp.offsetHeight) + 'px';
         }
+
+        // v54.1: NU-klok ook zonder route — het blok is in het rijscherm altijd zichtbaar (CSS),
+        // maar de klok werd alleen op route-ticks gevuld. Elke 5s bijwerken + uitlijning mee.
+        setInterval(() => {
+            const el = document.getElementById('remNow');
+            if (!el || !document.body.classList.contains('map-only')) return;
+            el.textContent = new Date().toTimeString().slice(0, 5);
+            alignRemPanel();
+        }, 5000);
 
         // Tijd netjes formatteren: <60 min → "45 min", anders → "1 u 11 min".
         function fmtTime(min) {
