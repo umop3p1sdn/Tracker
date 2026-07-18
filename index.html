@@ -921,7 +921,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v56.8 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v57.3 © Umop3p1sdn</div>
 
             </div>
 
@@ -939,15 +939,15 @@
                 <div id="configModal" onclick="if (event.target === this) closeConfigModal()" style="display:none; position:fixed; inset:0; z-index:2560; align-items:center; justify-content:center; background:rgba(0,0,0,0.5);">
                     <div style="background: rgba(226, 231, 245, 0.97); border: 2px solid #00BCD4; border-radius: 16px; padding: 18px; display:flex; flex-direction:column; gap: 12px; width: min(92vw, 380px);">
                         <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <div style="font-weight:bold; color:#0a0e27; font-size:1.1em;">Instellingen (config)</div>
+                            <div style="font-weight:bold; color:#0a0e27; font-size:1.1em;">Start up config</div>
                             <button onclick="closeConfigModal()" style="background:#D32F2F; color:#fff; border:none; border-radius:6px; width:34px; height:34px; font-size:1.1em; cursor:pointer;">✕</button>
                         </div>
                         <textarea id="configText" spellcheck="false" style="width:100%; height:180px; font-family:monospace; font-size:0.85em; border:2px solid #000; border-radius:8px; padding:8px; box-sizing:border-box;"></textarea>
                         <div style="display:flex; gap:10px;">
                             <button onclick="copyConfigText()" style="flex:1; padding:12px; font-weight:bold; border-radius:8px; border:3px solid #000; background:#fff; color:#0a0e27; cursor:pointer;">Kopieer</button>
-                            <button onclick="saveConfigFromText()" style="flex:1; padding:12px; font-weight:bold; border-radius:8px; border:3px solid #000; background:#00BCD4; color:#fff; cursor:pointer;">Opslaan</button>
+                            <button onclick="saveConfigFromText()" style="flex:1; padding:12px; font-weight:bold; border-radius:8px; border:3px solid #000; background:#00BCD4; color:#fff; cursor:pointer;">Importeer</button>
                         </div>
-                        <div id="configHint" style="font-size:0.8em; color:#555;">Kopieer deze tekst als reserve, of plak hier een config van je andere telefoon en tik Opslaan.</div>
+                        <div id="configHint" style="font-size:0.8em; color:#555;">Je instellingen worden automatisch onthouden — dit venster is alleen voor overzetten: kopieer als reserve, of plak hier een config van je andere telefoon en tik Importeer.</div>
                     </div>
                 </div>
                 <div id="mapStyleChooser" onclick="if (event.target === this) closeMapStyleChooser()" style="display:none; position:fixed; inset:0; z-index:2460; align-items:center; justify-content:center;">
@@ -1093,11 +1093,11 @@
                         <span id="dataTotalValue" style="color:#00BCD4; font-weight:bold;">… MB</span>
                     </div>
                 </div>
-                <button class="button-secondary" onclick="toggleNavArrows()" id="navBtnMenu" style="width: 100%;">Navigatie pijlen: AAN</button>
-                <button class="button-secondary" onclick="toggleSpeech()" id="speechBtnMenu" style="width: 100%;">Navigatie stem is aan</button>
+                <button class="button-secondary" onclick="toggleNavArrows()" id="navBtnMenu" style="width: 100%;">Navigatie pijlen: ON</button>
+                <button class="button-secondary" onclick="toggleSpeech()" id="speechBtnMenu" style="width: 100%;">Navigatie stem: ON</button>
                 <button class="button-secondary" onclick="toggleFlitserWarn()" id="flitserBtnMenu" style="width: 100%;">Flitsmelding: ACTIEF</button>
-                <button class="button-secondary" onclick="openConfigModal()" style="width: 100%;">Instellingen kopiëren / plakken</button>
-                <button class="button-secondary" onclick="toggleFlitserStil()" id="flitserStilBtn" style="width: 100%;">Flits geluid is aan</button>
+                <button class="button-secondary" onclick="openConfigModal()" style="width: 100%;">Start up config</button>
+                <button class="button-secondary" onclick="toggleFlitserStil()" id="flitserStilBtn" style="width: 100%;">Flits geluid: ON</button>
                 <div id="flitserVolRow" style="display:flex; align-items:center; justify-content:space-between; gap:10px; background:#1a2148; padding:8px 12px; border-radius:8px;">
                     <span style="font-size:0.9em; white-space:nowrap;">Flits-volume</span>
                     <input type="range" id="flitserVolSlider" min="0" max="100" value="100" oninput="setFlitserVolume(this.value)" style="flex:1; accent-color:#00BCD4; cursor:pointer;">
@@ -1118,7 +1118,7 @@
                 <button class="button-secondary" onclick="toggleAppMenu(); toggleGPXMenu();" style="width: 100%;">GPX (routes)</button>
                 <button class="button-secondary" onclick="toggleAppMenu(); toggleHandleiding();" style="width: 100%;">Handleiding</button>
                 <button class="button-secondary" onclick="toggleAppMenu(); toggleHandleidingEN();" style="width: 100%;">Manual (English)</button>
-                <button class="button-secondary" onclick="toggleDevMode()" id="devModeBtn" style="width: 100%;">🔧 Develop mode: UIT</button>
+                <button class="button-secondary" onclick="toggleDevMode()" id="devModeBtn" style="width: 100%;">🔧 Develop mode: OFF</button>
             </div>
         </div>
     </div>
@@ -1259,7 +1259,7 @@
             <!-- ═══════════ ALGEMEEN ═══════════ -->
             <h2 style="color: #00BCD4; margin-top: 35px; border-top: 2px solid #00BCD4; padding-top: 22px;">Algemeen (Master &amp; Volger)</h2>
             <p>Deze knoppen en functies werken hetzelfde voor allebei.</p>
-            <p style="background:#e3e7f5; padding:10px 14px; border-radius:8px;"><strong>Knoppen-menu:</strong> de instelknoppen (Draai/kompas, Center, Toon, TAG, LIJN, CREW, COMS, KAART en FM) zitten achter <strong>één menu-knop rechts</strong> op de kaart, onder het slotje. Tik erop voor het menu met de grote knoppen; tik ernaast om te sluiten (na 15 seconden zonder tik sluit het vanzelf). De uitleg per knop hieronder blijft gewoon gelden — je vindt ze alleen in dat menu. Dit geldt trouwens overal: <strong>elk menu of venster sluit je ook door ernaast te tikken</strong> (de rode ✕ blijft ook gewoon werken). De mic- en T-knop staan <strong>standaard uit</strong> — zet ze aan met de <strong>COMS</strong>-knop in het knoppen-menu (groen = aan). Met <strong>KAART</strong> kies je uit 4 kaartstijlen: Standaard, Satelliet, Hoogte (met hoogtelijnen) en Donker (nachtkaart). Bij <strong>elke dag/nacht-overgang</strong> springt de kaart vanzelf (zonsondergang → Donker, zonsopkomst → Standaard, berekend op je eigen positie) — ook als je op Satelliet rijdt. Daarna kun je altijd handmatig een andere kaart kiezen; die blijft staan tot de volgende overgang. Je instellingen (TAG, dagkaart, flitsers, lijndikte enz.) worden op je telefoon bewaard; via <strong>☰ → Instellingen kopiëren / plakken</strong> zet je ze over naar een andere telefoon. Let op: offline tegels vooraf laden werkt voor Standaard én Donker (zelfde kaart, ander jasje); Satelliet verbruikt flink meer data.</p>
+            <p style="background:#e3e7f5; padding:10px 14px; border-radius:8px;"><strong>Knoppen-menu:</strong> de instelknoppen (Draai/kompas, Center, Toon, TAG, LIJN, CREW, COMS, KAART en FM) zitten achter <strong>één menu-knop rechts</strong> op de kaart, onder het slotje. Tik erop voor het menu met de grote knoppen; tik ernaast om te sluiten (na 15 seconden zonder tik sluit het vanzelf). De uitleg per knop hieronder blijft gewoon gelden — je vindt ze alleen in dat menu. Dit geldt trouwens overal: <strong>elk menu of venster sluit je ook door ernaast te tikken</strong> (de rode ✕ blijft ook gewoon werken). De mic- en T-knop staan <strong>standaard uit</strong> — zet ze aan met de <strong>COMS</strong>-knop in het knoppen-menu (groen = aan). Met <strong>KAART</strong> kies je uit 4 kaartstijlen: Standaard, Satelliet, Hoogte (met hoogtelijnen) en Donker (nachtkaart). Bij <strong>elke dag/nacht-overgang</strong> springt de kaart vanzelf (zonsondergang → Donker, zonsopkomst → Standaard, berekend op je eigen positie) — ook als je op Satelliet rijdt. Daarna kun je altijd handmatig een andere kaart kiezen; die blijft staan tot de volgende overgang. Je instellingen (TAG, dagkaart, flitsers, lijndikte enz.) worden op je telefoon bewaard; via <strong>☰ → Start up config</strong> zet je ze over naar een andere telefoon (eigen instellingen worden automatisch onthouden). Let op: offline tegels vooraf laden werkt voor Standaard én Donker (zelfde kaart, ander jasje); Satelliet verbruikt flink meer data.</p>
 
             <h3 style="color: #00BCD4; margin-top: 20px;">Knoppen op de kaart</h3>
 
@@ -1466,7 +1466,7 @@
             <p>Tik op de kaart → <strong>Vermijden</strong> en vul een straal (km) in. Er verschijnt een rode pin met cirkel: de route gaat daar <strong>altijd</strong> omheen. Blokkeert de zone de enige weg, dan komt er geen route — maak de cirkel dan <strong>kleiner</strong> of verplaats 'm. Tik op de pin om de straal aan te passen of de zone te verwijderen.</p>
 
             <h3 style="color: #00BCD4; margin-top: 25px;">Veerboten &amp; tolwegen</h3>
-            <p>In het <strong>Mode</strong>-menu (bovenin de planner) staan twee schakelaars. <strong>Veerboten: UIT</strong> → de route mijdt veerponten (over water). <strong>Tolwegen: UIT</strong> → de route mijdt betaalde autowegen (over land). Op <strong>AAN</strong> (standaard) zijn ze toegestaan. De route wordt meteen opnieuw berekend.</p>
+            <p>In het <strong>Mode</strong>-menu (bovenin de planner) staan twee schakelaars. <strong>Veerboten: OFF</strong> → de route mijdt veerponten (over water). <strong>Tolwegen: OFF</strong> → de route mijdt betaalde autowegen (over land). Op <strong>ON</strong> (standaard) zijn ze toegestaan. De route wordt meteen opnieuw berekend.</p>
 
             <h3 style="color: #00BCD4; margin-top: 25px;">POI — onderweg iets vinden</h3>
             <p>Open <strong>POI</strong> voor de focus-modus. Kies <strong>Benzine</strong>, <strong>Eten</strong> of <strong>Koffie</strong>, of typ een steekwoord (bv hotel, bakker, supermarkt, uitzicht, pin, wc) of een naam (bv Shell).</p>
@@ -1478,7 +1478,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v56.8 © Umop3p1sdn
+                HO-ME v57.3 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1621,7 +1621,7 @@
             <!-- ═══════════ GENERAL ═══════════ -->
             <h2 style="color: #00BCD4; margin-top: 35px; border-top: 2px solid #00BCD4; padding-top: 22px;">General (Master &amp; Follower)</h2>
             <p>These buttons and functions work the same for both.</p>
-            <p style="background:#e3e7f5; padding:10px 14px; border-radius:8px;"><strong>Button menu:</strong> the setting buttons (rotate/compass, Center, Show, TAG, LIJN, CREW, COMS, KAART and FM) sit behind <strong>one menu button on the right</strong> of the map, below the lock. Tap it for the menu with the big buttons; tap next to it to close (after 15 seconds without a tap it closes by itself). The per-button explanations below still apply — you just find them in that menu. This applies everywhere by the way: <strong>every menu or window also closes by tapping next to it</strong> (the red ✕ keeps working too). The mic and T buttons are <strong>off by default</strong> — enable them with the <strong>COMS</strong> button in the button menu (green = on). With <strong>KAART</strong> you pick from 4 map styles: Standard, Satellite, Terrain (contour lines) and Dark (night map). At <strong>every day/night transition</strong> the map jumps automatically (sunset → Dark, sunrise → Standard, computed at your own position) — even when riding Satellite. After that you can always pick another map manually; it stays until the next transition. Your settings (TAG, day map, cameras, line width etc.) are stored on your phone; via <strong>☰ → Instellingen kopiëren / plakken</strong> you can transfer them to another phone. Note: offline tile pre-loading works for Standard and Dark (same map, different look); Satellite uses considerably more data.</p>
+            <p style="background:#e3e7f5; padding:10px 14px; border-radius:8px;"><strong>Button menu:</strong> the setting buttons (rotate/compass, Center, Show, TAG, LIJN, CREW, COMS, KAART and FM) sit behind <strong>one menu button on the right</strong> of the map, below the lock. Tap it for the menu with the big buttons; tap next to it to close (after 15 seconds without a tap it closes by itself). The per-button explanations below still apply — you just find them in that menu. This applies everywhere by the way: <strong>every menu or window also closes by tapping next to it</strong> (the red ✕ keeps working too). The mic and T buttons are <strong>off by default</strong> — enable them with the <strong>COMS</strong> button in the button menu (green = on). With <strong>KAART</strong> you pick from 4 map styles: Standard, Satellite, Terrain (contour lines) and Dark (night map). At <strong>every day/night transition</strong> the map jumps automatically (sunset → Dark, sunrise → Standard, computed at your own position) — even when riding Satellite. After that you can always pick another map manually; it stays until the next transition. Your settings (TAG, day map, cameras, line width etc.) are stored on your phone; via <strong>☰ → Start up config</strong> you can transfer them to another phone (your own settings are remembered automatically). Note: offline tile pre-loading works for Standard and Dark (same map, different look); Satellite uses considerably more data.</p>
 
             <h3 style="color: #00BCD4; margin-top: 20px;">Buttons on the map</h3>
 
@@ -1828,7 +1828,7 @@
             <p>Tap the map → <strong>Vermijden</strong> (avoid) and enter a radius (km). A red pin with circle appears: the route <strong>always</strong> goes around it. If the zone blocks the only road, no route appears — make the circle <strong>smaller</strong> or move it. Tap the pin to adjust the radius or remove the zone.</p>
 
             <h3 style="color: #00BCD4; margin-top: 25px;">Ferries &amp; toll roads</h3>
-            <p>The <strong>Mode</strong> menu (top of the planner) has two switches. <strong>Veerboten: UIT</strong> (ferries off) → the route avoids ferries (over water). <strong>Tolwegen: UIT</strong> (toll roads off) → the route avoids paid roads (over land). On <strong>AAN</strong> (on, default) they're allowed. The route is recalculated right away.</p>
+            <p>The <strong>Mode</strong> menu (top of the planner) has two switches. <strong>Veerboten: OFF</strong> (ferries off) → the route avoids ferries (over water). <strong>Tolwegen: OFF</strong> (toll roads off) → the route avoids paid roads (over land). On <strong>AAN</strong> (on, default) they're allowed. The route is recalculated right away.</p>
 
             <h3 style="color: #00BCD4; margin-top: 25px;">POI — finding something along the way</h3>
             <p>Open <strong>POI</strong> for focus mode. Choose <strong>Benzine</strong> (fuel), <strong>Eten</strong> (food) or <strong>Koffie</strong> (coffee), or type a keyword (e.g. hotel, bakery, supermarket, viewpoint, ATM, toilet) or a name (e.g. Shell).</p>
@@ -1840,7 +1840,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v56.8 © Umop3p1sdn
+                HO-ME v57.3 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1874,8 +1874,8 @@
                 </div>
                 <!-- veerboten / tolwegen vermijden: hoort bij hoe je reist → in het Mode-menu -->
                 <div style="display:flex; gap:6px; margin-top:8px;">
-                    <button onclick="toggleAvoidFerry()" id="avoidFerryBtn" style="flex:1; padding:8px; border-radius:8px; border:2px solid #00838f; background:#0a0e27; color:#cfeffd; font-weight:bold; font-size:0.78em; cursor:pointer;">Veerboten: AAN</button>
-                    <button onclick="toggleAvoidToll()" id="avoidTollBtn" style="flex:1; padding:8px; border-radius:8px; border:2px solid #00838f; background:#0a0e27; color:#cfeffd; font-weight:bold; font-size:0.78em; cursor:pointer;">Tolwegen: AAN</button>
+                    <button onclick="toggleAvoidFerry()" id="avoidFerryBtn" style="flex:1; padding:8px; border-radius:8px; border:2px solid #00838f; background:#0a0e27; color:#cfeffd; font-weight:bold; font-size:0.78em; cursor:pointer;">Veerboten: ON</button>
+                    <button onclick="toggleAvoidToll()" id="avoidTollBtn" style="flex:1; padding:8px; border-radius:8px; border:2px solid #00838f; background:#0a0e27; color:#cfeffd; font-weight:bold; font-size:0.78em; cursor:pointer;">Tolwegen: ON</button>
                 </div>
             </div>
             <div id="panelRoute" class="panel">
@@ -3476,7 +3476,7 @@ assign initialcost =
                             fLng = mid[0]; fLat = mid[1];
                         }
                         if (ferryRerouteTries >= 3) {   // veiligheidsrem tegen eindeloos herproberen
-                            showInfo('Geen route zonder veerpont mogelijk — zet "Veerboten: AAN" of pas de punten aan.');
+                            showInfo('Geen route zonder veerpont mogelijk — zet "Veerboten: ON" of pas de punten aan.');
                             ferryRerouteTries = 0;
                             return;
                         }
@@ -4071,7 +4071,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "56.8";
+        const APP_VERSION = "57.3";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
@@ -4089,11 +4089,42 @@ assign initialcost =
             const f = document.getElementById('flitserBtnMenu');
             if (f && typeof FLITSER_MODE_LABEL !== 'undefined') f.textContent = 'Flitsmelding: ' + FLITSER_MODE_LABEL[flitserMode];
             const s = document.getElementById('speechBtnMenu');
-            if (s) s.textContent = speechEnabled ? 'Navigatie stem is aan' : 'Navigatie stem is uit';
+            if (s) s.textContent = speechEnabled ? 'Navigatie stem: ON' : 'Navigatie stem: OFF';
             const v = document.getElementById('flitserVolVal');
             if (v) v.textContent = Math.round(flitserVolume * 100) + '%';
             const vs = document.getElementById('flitserVolSlider');
             if (vs) vs.value = Math.round(flitserVolume * 100);
+            const pb = document.getElementById('navBtnMenu');
+            if (pb) pb.textContent = navArrowsEnabled ? 'Navigatie pijlen: ON' : 'Navigatie pijlen: OFF';
+            const ot = ombEnabled ? 'OMB: ON' : 'OMB: OFF';
+            ['ombBtnMaster', 'ombBtnFollower', 'ombBtnMenu'].forEach(id => {
+                const b = document.getElementById(id); if (b) b.textContent = ot;
+            });
+            const cb = document.getElementById('crewBtn');   // crew-kleur = stand (0 kaal / 1 blauw / 2 groen)
+            if (cb && crewMode > 0) {
+                cb.style.background = crewMode === 1 ? '#2196F3' : '#4CAF50';
+                cb.style.color = '#fff';
+                cb.style.borderColor = crewMode === 1 ? '#2196F3' : '#4CAF50';
+            }
+            if (homeConfig.dev === true && !devMode) toggleDevMode();   // v57.2: dev-modus herstellen
+            // v57.2 (verzoek Sjoerd): ALLE waardes meteen in de config zetten, ook onaangeraakte —
+            // de export toont zo altijd het complete plaatje in plaats van alleen wat je ooit wijzigde.
+            saveCfg({
+                tag: myTag,
+                dagkaart: MAP_STYLES[homeConfig.dagkaart] ? homeConfig.dagkaart : 'std',
+                draai: mapRotationEnabled,
+                flitsmelding: flitserMode,
+                flitsVolume: flitserVolume,
+                lijndikte: trackLineWidth,
+                coms: micVisible,
+                stem: localStorage.getItem('homeVoicePref') || 'NL',
+                navStem: speechEnabled,
+                navPijlen: navArrowsEnabled,
+                omb: ombEnabled,
+                crew: crewMode,
+                dev: devMode,
+                zoom: zoomLevelValue
+            });
         });
         function saveCfg(patch) {
             try {
@@ -4130,9 +4161,9 @@ assign initialcost =
                 const parsed = JSON.parse(t.value);
                 if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) throw new Error('geen object');
                 localStorage.setItem('homeConfig', JSON.stringify(parsed));
-                if (h) { h.style.color = '#2E7D32'; h.textContent = 'Opgeslagen! Sluit de app volledig af en start opnieuw — dan staat alles goed.'; }
+                if (h) { h.style.color = '#2E7D32'; h.textContent = 'Geïmporteerd! Sluit de app volledig af en start opnieuw — dan staat alles goed.'; }
             } catch (e) {
-                if (h) { h.style.color = '#D32F2F'; h.textContent = 'Dit is geen geldige config — plak precies wat je gekopieerd had.'; }
+                if (h) { h.style.color = '#D32F2F'; h.textContent = 'Dit is geen geldige config — plak precies wat je gekopieerd had en tik Importeer.'; }
             }
         }
         const firebaseConfig = {
@@ -4244,7 +4275,7 @@ assign initialcost =
         let followerPos = null;
         let masterPos = null;
         let wakeLock = null;
-        let zoomLevelValue = 17;
+        let zoomLevelValue = (homeConfig.zoom >= 10 && homeConfig.zoom <= 20) ? homeConfig.zoom : 17;   // v57.2: uit config
         let trackLineWidth = (homeConfig.lijndikte >= 1 && homeConfig.lijndikte <= 15) ? homeConfig.lijndikte : 12;   // v56.5: uit config
         let isAutoFollowActive = false;
 
@@ -4304,7 +4335,7 @@ assign initialcost =
         }
         // v53.8: spectator kies je alleen nog met het vinkje op het startscherm (menuknop +
         // toggleSpectator vervallen op verzoek Sjoerd) — wisselen = STOP en opnieuw joinen.
-        let navArrowsEnabled = true;    // menu toggle
+        let navArrowsEnabled = (homeConfig.navPijlen !== false);    // v57.2: uit config (standaard aan)
         let speechEnabled = (homeConfig.navStem !== false);   // v56.7: uit config — gesproken afslagen (standaard aan)
         let audioCtx = null;            // Web Audio context (created on unlock)
         // Remember which beep already fired per turn, so each plays once:
@@ -4912,7 +4943,7 @@ assign initialcost =
         function toggleAvoidFerry() {
             avoidFerry = !avoidFerry;
             const b = document.getElementById('avoidFerryBtn');
-            if (b) b.textContent = 'Veerboten: ' + (avoidFerry ? 'UIT' : 'AAN');
+            if (b) b.textContent = 'Veerboten: ' + (avoidFerry ? 'OFF' : 'ON');
             ferryRerouteTries = 0;
             if (!avoidFerry) {
                 // weer toegestaan → ruim de automatisch geplaatste ferry-nogo's op
@@ -4927,7 +4958,7 @@ assign initialcost =
         function toggleAvoidToll() {
             avoidToll = !avoidToll;
             const b = document.getElementById('avoidTollBtn');
-            if (b) b.textContent = 'Tolwegen: ' + (avoidToll ? 'UIT' : 'AAN');
+            if (b) b.textContent = 'Tolwegen: ' + (avoidToll ? 'OFF' : 'ON');
             if (typeof maybeRoute === 'function') maybeRoute();
         }
 
@@ -7526,8 +7557,9 @@ assign initialcost =
 
         function toggleDevMode() {
             devMode = !devMode;
+            saveCfg({ dev: devMode });   // v57.2
             const b = document.getElementById('devModeBtn');
-            if (b) b.textContent = '🔧 Develop mode: ' + (devMode ? 'AAN' : 'UIT');
+            if (b) b.textContent = '🔧 Develop mode: ' + (devMode ? 'ON' : 'OFF');
             if (devMode) {
                 if (mapInstance && !mapInstance._devClickBound) {
                     mapInstance.on('click', devMapClick);
@@ -7973,10 +8005,11 @@ assign initialcost =
 
         // ── CREW (master): jij centraal, volgers eromheen. Dominant over de IK/VOLGERS/BEIDE toggle. ──
         // 0=uit, 1=jij centraal (volgers los eromheen), 2=jij centraal + auto-zoom op de crew.
-        let crewMode = 0;
+        let crewMode = [0, 1, 2].includes(homeConfig.crew) ? homeConfig.crew : 0;   // v57.2: uit config
         function toggleCrew() {
             const prevMode = crewMode;
             crewMode = (crewMode + 1) % 3;
+            saveCfg({ crew: crewMode });   // v57.2
             const btn = document.getElementById('crewBtn');
             if (btn) {
                 if (crewMode === 0) { btn.style.background = 'transparent'; btn.style.color = '#000'; btn.style.borderColor = '#000'; }
@@ -8823,7 +8856,7 @@ assign initialcost =
         let precacheCountdown = 1800; // 30 minutes
         let precacheContainerElement = null;
         let precacheCurrentTimerElement = null;
-        let ombEnabled = true; // Offline Map Buffer on/off
+        let ombEnabled = (homeConfig.omb !== false); // v57.2: uit config — Offline Map Buffer on/off
 
         // ─── Kaart-data verbruik (sessie + totaal) ───────────────────────────
         const BYTES_PER_TILE = 4096;          // ~4 KB per tegel (schatting voor de MB-teller)
@@ -8926,14 +8959,15 @@ assign initialcost =
         
         function toggleAudio() {
             audioEnabled = !audioEnabled;            const b = document.getElementById('audioBtnMenu');
-            if (b) b.textContent = audioEnabled ? 'Audio: AAN' : 'Audio: UIT';
+            if (b) b.textContent = audioEnabled ? 'Audio: ON' : 'Audio: OFF';
             if (audioEnabled) unlockAudio();
         }
 
         function toggleNavArrows() {
             navArrowsEnabled = !navArrowsEnabled;
+            saveCfg({ navPijlen: navArrowsEnabled });   // v57.2
             const b = document.getElementById('navBtnMenu');
-            if (b) b.textContent = navArrowsEnabled ? 'Navigatie pijlen: AAN' : 'Navigatie pijlen: UIT';
+            if (b) b.textContent = navArrowsEnabled ? 'Navigatie pijlen: ON' : 'Navigatie pijlen: OFF';
             if (!navArrowsEnabled) {
                 ['turnArrowLeft','turnArrowRight','turnDist'].forEach(id => {
                     const el = document.getElementById(id); if (el) el.style.display = 'none';
@@ -8972,7 +9006,7 @@ assign initialcost =
         }
         function renderFlitserStil() {
             const b = document.getElementById('flitserStilBtn');
-            if (b) b.textContent = homeFlitserSilent ? 'Flits geluid is uit' : 'Flits geluid is aan';
+            if (b) b.textContent = homeFlitserSilent ? 'Flits geluid: OFF' : 'Flits geluid: ON';
         }
 
         // FM-knop: vraag eerst of alleen Flitsmeister-geluid gewenst is, daarna Flitsmeister openen.
@@ -9209,7 +9243,7 @@ assign initialcost =
             speechEnabled = !speechEnabled;
             saveCfg({ navStem: speechEnabled });   // v56.7
             const b = document.getElementById('speechBtnMenu');
-            if (b) b.textContent = speechEnabled ? 'Navigatie stem is aan' : 'Navigatie stem is uit';
+            if (b) b.textContent = speechEnabled ? 'Navigatie stem: ON' : 'Navigatie stem: OFF';
             // Visuele melding (2 sec) i.p.v. gesproken — geluid was te veel, vooral bij OR-wisselen.
             if (typeof showBufferToast === 'function') {
                 showBufferToast(speechEnabled ? 'Navigatie stem aan' : 'Navigatie stem uit', '#00BCD4', 2000);
@@ -9219,6 +9253,7 @@ assign initialcost =
 
         function toggleOMB() {
             ombEnabled = !ombEnabled;
+            saveCfg({ omb: ombEnabled });   // v57.2
             const text = ombEnabled ? 'OMB: ON' : 'OMB: OFF';
             ['ombBtnMaster', 'ombBtnFollower', 'ombBtnMenu'].forEach(id => {
                 const b = document.getElementById(id);
@@ -9476,6 +9511,10 @@ assign initialcost =
                     maxZoom: MAP_STYLES[mapStyle].maxZoom
                 }).addTo(mapInstance);
                 applyDarkBrightness();   // v55.4: onthouden Donker-stand meteen op helderheid
+                if (devMode && !mapInstance._devClickBound) {   // v57.2: dev uit config hersteld vóór de kaart bestond
+                    mapInstance.on('click', devMapClick);
+                    mapInstance._devClickBound = true;
+                }
 
                 // Add click listener to exit map-only mode
                 mapInstance.on('click', () => {
@@ -10457,6 +10496,7 @@ assign initialcost =
         function zoomIn() {
             if (zoomLevelValue < 20) {
                 zoomLevelValue++;
+                saveCfg({ zoom: zoomLevelValue });   // v57.2: jouw standaard-zoom
                 updateZoomDisplay();
                 applyZoomNow();
             }
@@ -10465,6 +10505,7 @@ assign initialcost =
         function zoomOut() {
             if (zoomLevelValue > 10) {
                 zoomLevelValue--;
+                saveCfg({ zoom: zoomLevelValue });   // v57.2
                 updateZoomDisplay();
                 applyZoomNow();
             }
