@@ -921,7 +921,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v55.9 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v56.0 © Umop3p1sdn</div>
 
             </div>
 
@@ -1462,7 +1462,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v55.9 © Umop3p1sdn
+                HO-ME v56.0 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1824,7 +1824,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v55.9 © Umop3p1sdn
+                HO-ME v56.0 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -4055,7 +4055,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "55.9";
+        const APP_VERSION = "56.0";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -4877,7 +4877,7 @@ assign initialcost =
         // de lichte weg-pixels een fractie uit (optisch dikkere lijnen), contrast klemt de
         // achtergrond terug op zwart en maakt de uitgesmeerde lijnen weer hard.
         // Op het tegel-PANEEL: routes/markers zitten in eigen panelen en blijven vol op sterkte.
-        const DARK_FILTER = 'brightness(2.6) blur(0.5px) contrast(1.8)';
+        const DARK_FILTER = 'brightness(3.0) blur(0.4px) contrast(1.7)';   // de "300": heldere lijnen, zwart blijft zwart
         function applyDarkBrightness() {
             if (!mapInstance) return;
             const pane = mapInstance.getPane('tilePane');
