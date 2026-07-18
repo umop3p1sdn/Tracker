@@ -649,6 +649,11 @@
             /* Liggend: GPS-snelheid altijd zichtbaar linksboven (flex), vast op left:12px.
                De flitser-melding staat sinds v51.2 RECHTS van de zoom-plus/min (regel hieronder). */
             body.map-only #gpsSpeedBox { display: flex !important; }
+            /* v54.3: GPS-snelheid overlapte de T (die staat sinds v54.1 op bottom 272 → bovenrand
+               ~40 op 390-hoogte; de box zat op left 12 = zelfde kolom). Samen met het bord naar
+               rechts, voorbij de T-kolom (0-88): GPS 100-~220, bord 228-308. Zoombalk begint
+               gecentreerd op 50%-105,5 = ~316 op 844 breed — vrij. */
+            #gpsSpeedBox { left: 100px !important; top: 10px !important; }
             /* Snelheidsbord: liggend zelfde formule — zichtbaar in het schone rijscherm (Hide). */
             body.map-only #speedLimitSign { display: flex !important; }
             /* v51.7: helemaal naar RECHTS, boven het slotje (slot staat liggend op top 160;
@@ -671,7 +676,7 @@
             /* v54.1: remPanel is ~45px hoger door het NU-blok (8-~178) → mic 184-262, T 272-350. */
             #talkBtn { bottom: 184px !important; }
             #ttsBtn  { bottom: 272px !important; }
-            #speedLimitSign { top: 10px !important; bottom: auto !important; left: 150px !important; }
+            #speedLimitSign { top: 10px !important; bottom: auto !important; left: 228px !important; }
             /* Liggend: play + Plan ook boven FM (kleiner, dus 64px stappen). */
             #plannerGoBtn     { top: auto !important; bottom: 274px !important; }
             #plannerToggleBtn { top: auto !important; bottom: 338px !important; }
@@ -906,7 +911,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v54.1 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v54.3 © Umop3p1sdn</div>
 
             </div>
 
@@ -1435,7 +1440,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v54.1 © Umop3p1sdn
+                HO-ME v54.3 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1797,7 +1802,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v54.1 © Umop3p1sdn
+                HO-ME v54.3 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1809,7 +1814,7 @@
     <button id="plannerGoBtn" onclick="plannerGoDispatch()" aria-label="Navigeer" style="display:none; position:fixed; bottom:549px; left:10px; z-index:1200; width:54px; height:54px; border-radius:12px; background:#4CAF50; border:2px solid #4CAF50; color:#fff; font-weight:bold; font-size:1.6em; line-height:1; cursor:pointer; box-shadow:0 0 0 2px rgba(255,255,255,0.4);">▶</button>
 
     <!-- Planner-paneel met de echte menu's (Route/Extra/POI) -->
-    <div id="plannerPanel" style="display:none; position:absolute; top:10px; left:10px; z-index:1250; width:300px; max-width:80%;">
+    <div id="plannerPanel" style="display:none; position:absolute; top:10px; left:10px; z-index:2550; width:300px; max-width:80%;">
         <div id="searchWrap" style="position:static; right:auto;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
                 <span style="color:#00BCD4; font-weight:bold; text-shadow:0 1px 3px #000;">Route Planner</span>
@@ -4028,7 +4033,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "54.1";
+        const APP_VERSION = "54.3";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -4968,7 +4973,9 @@ assign initialcost =
                 .some(id => { const m = document.getElementById(id); return m && !m.classList.contains('hidden'); });
             const plannerOpen = (() => { const p = document.getElementById('plannerPanel'); return p && p.style.display !== 'none' && p.style.display !== ''; })();
             const baseShow = currentCode && onMap && !menuOpen && !plannerOpen;
-            const show = baseShow && micVisible;   // Coms (v52.5): mic/T alleen als de COMS-knop aan staat
+            // v54.3: mic/T wisselen mee met de rode Hide-knop (clean scherm = in beeld, eruit =
+            // weg — dan kun je bij Plan/STOP). COMS blijft de hoofdschakelaar (uit = nooit).
+            const show = baseShow && micVisible && document.body.classList.contains('map-only');
             btn.style.display = show ? 'flex' : 'none';
             const tbtn = document.getElementById('ttsBtn');   // T-knop volgt dezelfde zichtbaarheid
             if (tbtn) tbtn.style.display = show ? 'flex' : 'none';
@@ -8408,6 +8415,7 @@ assign initialcost =
             // Hide-wissel = ook de flits-info aan/uit (v53.0, definitief na sparren met Sjoerd):
             // clean scherm → flitser + snelheidsbord zichtbaar; menu's/code lezen/STOP → weg.
             flitserRijden = inFull;
+            if (typeof updateTalkUI === 'function') updateTalkUI();   // v54.3: mic/T wisselen mee
             if (inFull) {
                 unlockAudio(false);
                 if (typeof primeSpeech === 'function') primeSpeech();           // stem ontgrendelen (GO = echte tik)
