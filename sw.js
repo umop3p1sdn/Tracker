@@ -142,8 +142,16 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // UPDATE-CHECK: requests met ?v= (cache-buster) NIET onderscheppen → altijd vers van het
+  // netwerk, zodat de doorlopende versie-check de nieuwe APP_VERSION echt ziet.
+  if (url.includes('?v=')) {
+    return;
+  }
+
   // OPENSTREETMAP TILES - AUTO CACHE
-  if (url.includes('tile.openstreetmap.org') || url.includes('tile.osm.org')) {
+  if (url.includes('tile.openstreetmap.org') || url.includes('tile.osm.org') ||
+      url.includes('arcgisonline.com') || url.includes('opentopomap.org') ||
+      url.includes('basemaps.cartocdn.com')) {   // v55.1: satelliet/hoogte/donker-tegels zelfde route
     event.respondWith(
       fetch(event.request)
         .then((response) => {
