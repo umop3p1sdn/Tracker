@@ -921,7 +921,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v57.3 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v57.4 © Umop3p1sdn</div>
 
             </div>
 
@@ -942,12 +942,13 @@
                             <div style="font-weight:bold; color:#0a0e27; font-size:1.1em;">Start up config</div>
                             <button onclick="closeConfigModal()" style="background:#D32F2F; color:#fff; border:none; border-radius:6px; width:34px; height:34px; font-size:1.1em; cursor:pointer;">✕</button>
                         </div>
-                        <textarea id="configText" spellcheck="false" style="width:100%; height:180px; font-family:monospace; font-size:0.85em; border:2px solid #000; border-radius:8px; padding:8px; box-sizing:border-box;"></textarea>
-                        <div style="display:flex; gap:10px;">
-                            <button onclick="copyConfigText()" style="flex:1; padding:12px; font-weight:bold; border-radius:8px; border:3px solid #000; background:#fff; color:#0a0e27; cursor:pointer;">Kopieer</button>
-                            <button onclick="saveConfigFromText()" style="flex:1; padding:12px; font-weight:bold; border-radius:8px; border:3px solid #000; background:#00BCD4; color:#fff; cursor:pointer;">Importeer</button>
-                        </div>
-                        <div id="configHint" style="font-size:0.8em; color:#555;">Je instellingen worden automatisch onthouden — dit venster is alleen voor overzetten: kopieer als reserve, of plak hier een config van je andere telefoon en tik Importeer.</div>
+                        <div style="font-size:0.8em; color:#555; font-weight:bold;">Huidige instellingen (loopt live mee):</div>
+                        <textarea id="configView" readonly spellcheck="false" style="width:100%; height:150px; font-family:monospace; font-size:0.85em; border:2px solid #000; border-radius:8px; padding:8px; box-sizing:border-box; background:#f4f6fb;"></textarea>
+                        <button onclick="copyConfigText()" style="padding:12px; font-weight:bold; border-radius:8px; border:3px solid #000; background:#fff; color:#0a0e27; cursor:pointer;">Kopieer</button>
+                        <div style="font-size:0.8em; color:#555; font-weight:bold; margin-top:4px;">Config van een andere telefoon overnemen:</div>
+                        <textarea id="configPaste" spellcheck="false" placeholder="Plak hier..." style="width:100%; height:70px; font-family:monospace; font-size:0.85em; border:2px solid #000; border-radius:8px; padding:8px; box-sizing:border-box;"></textarea>
+                        <button onclick="importConfigFromPaste()" style="padding:12px; font-weight:bold; border-radius:8px; border:3px solid #000; background:#00BCD4; color:#fff; cursor:pointer;">Importeer</button>
+                        <div id="configHint" style="font-size:0.8em; color:#555;">Je instellingen worden automatisch onthouden — importeren is alleen nodig bij overzetten.</div>
                     </div>
                 </div>
                 <div id="mapStyleChooser" onclick="if (event.target === this) closeMapStyleChooser()" style="display:none; position:fixed; inset:0; z-index:2460; align-items:center; justify-content:center;">
@@ -1478,7 +1479,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v57.3 © Umop3p1sdn
+                HO-ME v57.4 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1840,7 +1841,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v57.3 © Umop3p1sdn
+                HO-ME v57.4 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -4071,7 +4072,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "57.3";
+        const APP_VERSION = "57.4";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
@@ -4130,21 +4131,32 @@ assign initialcost =
             try {
                 Object.assign(homeConfig, patch);
                 localStorage.setItem('homeConfig', JSON.stringify(homeConfig));
+                if (typeof refreshConfigView === 'function') refreshConfigView();   // v57.4: kijk-vak live
             } catch (e) {}
         }
         // ── Config kopiëren/plakken (v56.6): export/import via het ☰ menu ──
+        // v57.4: twee gescheiden vakken — kijk-vak (alleen-lezen, LIVE mee met elke wijziging)
+        // en een apart plak-vak voor import. Elk vak één taak: geen vlaggen, geen foto-effect.
+        function refreshConfigView() {
+            const m = document.getElementById('configModal');
+            const t = document.getElementById('configView');
+            if (m && t && m.style.display === 'flex') t.value = JSON.stringify(homeConfig, null, 2);
+        }
         function openConfigModal() {
             const m = document.getElementById('configModal');
-            const t = document.getElementById('configText');
-            if (t) t.value = JSON.stringify(homeConfig, null, 2);
             if (m) m.style.display = 'flex';
+            refreshConfigView();
+            const p = document.getElementById('configPaste');
+            if (p) p.value = '';
+            const h = document.getElementById('configHint');
+            if (h) { h.style.color = '#555'; h.textContent = 'Je instellingen worden automatisch onthouden — importeren is alleen nodig bij overzetten.'; }
         }
         function closeConfigModal() {
             const m = document.getElementById('configModal');
             if (m) m.style.display = 'none';
         }
         function copyConfigText() {
-            const t = document.getElementById('configText');
+            const t = document.getElementById('configView');
             if (!t) return;
             t.select(); t.setSelectionRange(0, 99999);
             if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -4153,12 +4165,12 @@ assign initialcost =
             const h = document.getElementById('configHint');
             if (h) h.textContent = 'Gekopieerd! Plak \'m in je notities of op je andere telefoon.';
         }
-        function saveConfigFromText() {
-            const t = document.getElementById('configText');
+        function importConfigFromPaste() {
+            const p = document.getElementById('configPaste');
             const h = document.getElementById('configHint');
-            if (!t) return;
+            if (!p) return;
             try {
-                const parsed = JSON.parse(t.value);
+                const parsed = JSON.parse(p.value);
                 if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) throw new Error('geen object');
                 localStorage.setItem('homeConfig', JSON.stringify(parsed));
                 if (h) { h.style.color = '#2E7D32'; h.textContent = 'Geïmporteerd! Sluit de app volledig af en start opnieuw — dan staat alles goed.'; }
