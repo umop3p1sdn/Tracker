@@ -883,7 +883,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v53.3 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v53.4 © Umop3p1sdn</div>
 
             </div>
 
@@ -1413,7 +1413,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v53.3 © Umop3p1sdn
+                HO-ME v53.4 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1775,7 +1775,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v53.3 © Umop3p1sdn
+                HO-ME v53.4 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -4004,7 +4004,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "53.3";
+        const APP_VERSION = "53.4";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -5436,6 +5436,19 @@ assign initialcost =
             if (typeof clearEaten === 'function') clearEaten();   // route-opeten weg, originele lijn terug
         }
 
+        // v53.4 (verzoek Sjoerd: "afstand/tijd mini beetje te hoog, reken het uit"): de blok-hoogte
+        // hangt van fonts af (em) en was geschat op ~118 — dat week net af. Nu METEN we de echte
+        // hoogte en zetten de bottom zo dat de top exact op de flitser-top valt. De flitser zelf is
+        // wél pure px-opbouw: padding 10 + bord + marge 4 + aftelcijfer + padding 10.
+        function alignRemPanel() {
+            if (window.innerWidth > window.innerHeight) return;   // liggend: eigen CSS-regels
+            const rp = document.getElementById('remPanel');
+            if (!rp || rp.offsetHeight === 0) return;             // (verborgen = niet meetbaar)
+            const B = [ {sign:46, count:38}, {sign:62, count:52}, {sign:84, count:72} ][flitserSize];
+            const flitserTop = 260 + 20 + Math.round(B.sign * 1.2) + 4 + Math.round(B.count * 1.2);
+            rp.style.bottom = Math.max(60, flitserTop - rp.offsetHeight) + 'px';
+        }
+
         // Tijd netjes formatteren: <60 min → "45 min", anders → "1 u 11 min".
         function fmtTime(min) {
             min = Math.max(0, Math.round(min));
@@ -5525,6 +5538,7 @@ assign initialcost =
             const laMin = document.getElementById('remMin');
             if (laKm) laKm.textContent = kmTxt + ' km';
             if (laMin) laMin.innerHTML = timeLabel(remMin);
+            alignRemPanel();   // v53.4: top exact gelijk aan de flitser-top (gemeten, niet geschat)
             // #6 — route opeten: teken gereden (grijs) + te gaan (blauw)
             eatRoute(nearIdx);
         }
