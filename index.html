@@ -469,6 +469,12 @@
         body.btn-menu-open #comsBtnMaster, body.btn-menu-open #comsBtnFollower { order: 8; }
         body.btn-menu-open #crewBtn, body.btn-menu-open #seeEveryoneBtn { order: 9; margin-left: auto !important; }
         body.btn-menu-open #kaartBtnMaster, body.btn-menu-open #kaartBtnFollower { order: 10; }
+        /* v55.3: liggend groeit het paneel in de BREEDTE (4 kolommen: 4x80 + 3x24 = 392, past in
+           440-48 padding) i.p.v. in de hoogte — 10 knoppen = 3 rijen, dus nooit scrollen met
+           handschoenen. Staand blijft 3 kolommen. */
+        @media (orientation: landscape) {
+            body.btn-menu-open #masterSideBar, body.btn-menu-open #followerSideBar { width: 440px !important; }
+        }
 
         .map-only #plannerToggleBtn { display: none !important; }
         .map-only #plannerGoBtn { display: none !important; }
@@ -915,7 +921,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v55.2 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v55.3 © Umop3p1sdn</div>
 
             </div>
 
@@ -1456,7 +1462,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v55.2 © Umop3p1sdn
+                HO-ME v55.3 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1818,7 +1824,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v55.2 © Umop3p1sdn
+                HO-ME v55.3 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -4049,7 +4055,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "55.2";
+        const APP_VERSION = "55.3";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
