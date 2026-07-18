@@ -608,8 +608,10 @@
         body:not(.map-only) #turnDist { display: none !important; }
         /* Tijdens GO (map-only): GROOT + leesbaar op de motor, boven de km/u-teller (~55px). */
         body.map-only #infoBar { bottom: 58px; font-size: 1.35em; padding: 14px 16px; }
-        /* Snelheidsbord zichtbaar in clean screen (portret én landschap), tenzij een flitser actief is. */
-        body.map-only:not(.flitser-actief) #speedLimitSign { display: flex !important; }
+        /* Snelheidsbord ALTIJD zichtbaar tijdens de rit (v52.9: ook buiten het schone scherm —
+           Hide verandert er niks meer aan). Flitser idem (flitserRijden hangt aan de rit).
+           Onbekende snelheid = bord met "–". */
+        body.tracking #speedLimitSign { display: flex !important; }
         /* In liggende stand (landscape): brede infoBar weg; in rij-modus komt het smalle
            remPanel (Afstand + Tijd, aftellend) links onder elkaar in beeld. */
         @media (orientation: landscape) {
@@ -625,9 +627,9 @@
             /* Liggend: GPS-snelheid altijd zichtbaar linksboven (flex), vast op left:12px.
                De flitser-melding staat sinds v51.2 RECHTS van de zoom-plus/min (regel hieronder). */
             body.map-only #gpsSpeedBox { display: flex !important; }
-            /* Snelheidsbord: zelfde zichtbaarheidsformule als de km-teller (zichtbaar in clean screen).
-               Flitser-voorrang: als de body 'flitser-actief' heeft, blijft het bord verborgen. */
-            body.map-only:not(.flitser-actief) #speedLimitSign { display: flex !important; }
+            /* Snelheidsbord: liggend ook altijd in beeld tijdens de rit (v52.9: aan de rit
+               gekoppeld i.p.v. aan het schone scherm). */
+            body.tracking #speedLimitSign { display: flex !important; }
             /* v51.7: helemaal naar RECHTS, boven het slotje (slot staat liggend op top 160;
                de flitser is ~146 hoog → 10-156, dus hij past er precies netjes boven). */
             #flitserBox { top: 10px !important; bottom: auto !important; left: auto !important; right: 10px !important; transform: none !important; }
@@ -882,7 +884,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v52.7 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v52.9 © Umop3p1sdn</div>
 
             </div>
 
@@ -1412,7 +1414,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v52.7 © Umop3p1sdn
+                HO-ME v52.9 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1774,7 +1776,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v52.7 © Umop3p1sdn
+                HO-ME v52.9 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -4003,7 +4005,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "52.7";
+        const APP_VERSION = "52.9";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
@@ -5724,14 +5726,13 @@ assign initialcost =
             }
             renderSpeedSign((best && bestDist < 40) ? best.maxspeed : null);
         }
-        // Vul de waarde van het snelheidsbord en regel de flitser-voorrang. De ZICHTBAARHEID zelf komt
-        // uit CSS (body.map-only), exact zoals de km-teller — dus we zetten hier geen display.
+        // Vul de waarde van het snelheidsbord. De ZICHTBAARHEID zelf komt uit CSS (body.map-only),
+        // exact zoals de km-teller — dus we zetten hier geen display. Sinds v52.8 GEEN flitser-
+        // voorrang meer: het bord blijft ook tijdens een melding staan (flitser kan van een andere
+        // straat zijn); onbekende snelheid toont "–". Bord (right 122) en flitser (right 12) staan
+        // sinds v52.7 naast elkaar, dus samen zichtbaar botst niet.
         function renderSpeedSign(value) {
             const v = document.getElementById('speedLimitValue');
-            const flitser = document.getElementById('flitserBox');
-            const flitserOn = flitser && getComputedStyle(flitser).display !== 'none';
-            // flitser-voorrang via een class op de body (CSS verbergt het bord dan)
-            document.body.classList.toggle('flitser-actief', !!flitserOn);
             if (value) {
                 if (v) v.textContent = value;
                 currentSpeedLimit = value;
@@ -8375,7 +8376,9 @@ assign initialcost =
 
             // Entering fullscreen (GO): audio ontgrendelen (voor spraak) — geen piep meer
             const inFull = container.classList.contains('map-only');
-            flitserRijden = inFull;   // rode GO = schoon scherm → flits-info aan; eruit → uit
+            // v52.9: flitserRijden hangt niet meer aan het schone scherm maar aan de rit
+            // (gezet in startMaster/startFollowing, uit in stopTracking) — flitser + bord
+            // blijven dus ook ná een Hide-wissel gewoon staan, op dezelfde plek.
             if (inFull) {
                 unlockAudio(false);
                 if (typeof primeSpeech === 'function') primeSpeech();           // stem ontgrendelen (GO = echte tik)
@@ -9817,6 +9820,8 @@ assign initialcost =
             currentCode = code;
             currentMode = 'master';
             updateMyColorBadge();   // toont de TAG-knop voor de master (v50.6 gaf 'm die, maar deze aanroep ontbrak)
+            document.body.classList.add('tracking');   // v52.9: flitser + snelheidsbord tijdens hele rit zichtbaar
+            flitserRijden = true;
             masterLocations = [];
             isAutoFollowActive = false;   // Center UIT bij start → je ziet je hele route terwijl je 'm bouwt
             // knop-kleur op grijs (uit-stand)
@@ -9848,6 +9853,8 @@ assign initialcost =
 
             currentCode = code;
             currentMode = 'follower';
+            document.body.classList.add('tracking');   // v52.9: flitser + snelheidsbord tijdens hele rit zichtbaar
+            flitserRijden = true;
             // Spectator-vinkje van het startscherm: VÓÓR het joinen gekozen, zodat er nooit een
             // vliegtuigje verschijnt en de join-fit (master + jij = extreme uitzoomer bij afstand)
             // wordt overgeslagen — de kaart start gewoon op de master, met nette zoom.
@@ -9965,6 +9972,8 @@ assign initialcost =
 
         function stopTracking() {
             closeBtnMenu();   // knoppen-menu dicht (anders blijft de backdrop hangen)
+            document.body.classList.remove('tracking');   // v52.9
+            flitserRijden = false;
             releaseWakeLock();
             // ETA-wissel stoppen (rit voorbij)
             if (typeof stopEtaToggle === 'function') stopEtaToggle();
