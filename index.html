@@ -434,10 +434,12 @@
             z-index: 2400 !important;   /* boven de backdrop (2300); pijlen (2000) en flitser (2050) vallen eronder */
             flex-direction: row !important; flex-wrap: wrap !important;
             justify-content: center !important; align-content: center !important;
-            gap: 12px !important; width: 272px !important; max-height: 84vh !important; overflow-y: auto !important;
+            /* v53.5: ruimer voor handschoenen — grotere onderlinge afstand en een groter vlak.
+               3 kolommen blijft: inhoud 320-2x24 = 272, en 3x64 + 2x24 gap = 240 past, 4 niet. */
+            gap: 24px !important; width: 320px !important; max-height: 88vh !important; overflow-y: auto !important;
             background: rgba(226, 231, 245, 0.97) !important;
             border: 2px solid #00BCD4 !important; border-radius: 16px !important;
-            padding: 16px !important; box-shadow: 0 8px 40px rgba(0,0,0,0.7) !important;
+            padding: 24px !important; box-shadow: 0 8px 40px rgba(0,0,0,0.7) !important;
         }
         body.btn-menu-open #fmBtn {
             display: flex !important; position: static !important;
@@ -883,7 +885,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v53.4 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v53.5 © Umop3p1sdn</div>
 
             </div>
 
@@ -1413,7 +1415,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v53.4 © Umop3p1sdn
+                HO-ME v53.5 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1775,7 +1777,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v53.4 © Umop3p1sdn
+                HO-ME v53.5 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -4004,7 +4006,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "53.4";
+        const APP_VERSION = "53.5";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
