@@ -649,11 +649,11 @@
             /* Liggend: GPS-snelheid altijd zichtbaar linksboven (flex), vast op left:12px.
                De flitser-melding staat sinds v51.2 RECHTS van de zoom-plus/min (regel hieronder). */
             body.map-only #gpsSpeedBox { display: flex !important; }
-            /* v54.3: GPS-snelheid overlapte de T (die staat sinds v54.1 op bottom 272 → bovenrand
-               ~40 op 390-hoogte; de box zat op left 12 = zelfde kolom). Samen met het bord naar
-               rechts, voorbij de T-kolom (0-88): GPS 100-~220, bord 228-308. Zoombalk begint
-               gecentreerd op 50%-105,5 = ~316 op 844 breed — vrij. */
-            #gpsSpeedBox { left: 100px !important; top: 10px !important; }
+            /* v54.4: niet in vaste pixels maar vanaf het MIDDEN gerekend (zoals de zoombalk zelf,
+               linkerrand 50%-105,5): bord eindigt op 50%-112 (6px vóór de min-knop), GPS-box ervoor
+               met 8px gat. Klopt zo op élke schermbreedte — 228px vast raakte de min op smallere/
+               gezoomde schermen. GPS-box begint op 50%-318 = ~88 op 812 breed (net vrij van de T-kolom). */
+            #gpsSpeedBox { left: calc(50% - 318px) !important; top: 10px !important; }
             /* Snelheidsbord: liggend zelfde formule — zichtbaar in het schone rijscherm (Hide). */
             body.map-only #speedLimitSign { display: flex !important; }
             /* v51.7: helemaal naar RECHTS, boven het slotje (slot staat liggend op top 160;
@@ -676,7 +676,7 @@
             /* v54.1: remPanel is ~45px hoger door het NU-blok (8-~178) → mic 184-262, T 272-350. */
             #talkBtn { bottom: 184px !important; }
             #ttsBtn  { bottom: 272px !important; }
-            #speedLimitSign { top: 10px !important; bottom: auto !important; left: 228px !important; }
+            #speedLimitSign { top: 10px !important; bottom: auto !important; left: calc(50% - 192px) !important; }
             /* Liggend: play + Plan ook boven FM (kleiner, dus 64px stappen). */
             #plannerGoBtn     { top: auto !important; bottom: 274px !important; }
             #plannerToggleBtn { top: auto !important; bottom: 338px !important; }
@@ -911,7 +911,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v54.3 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v54.4 © Umop3p1sdn</div>
 
             </div>
 
@@ -1440,7 +1440,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v54.3 © Umop3p1sdn
+                HO-ME v54.4 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1802,7 +1802,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v54.3 © Umop3p1sdn
+                HO-ME v54.4 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -4033,7 +4033,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "54.3";
+        const APP_VERSION = "54.4";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
