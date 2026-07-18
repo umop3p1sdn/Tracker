@@ -63,8 +63,9 @@
            Via margins zodat het niet vecht met de bestaande top/left/right-regels (incl. de
            landscape-!importants): een margin verschuift het vaste element gewoon mee. env() is 0
            op toestellen zonder notch → daar verandert er niks. */
-        #talkBtn, #ttsBtn, #spectFollowBtn, #plannerToggleBtn, #plannerGoBtn,
-        #gpsSpeedBox, #speedLimitSign { margin-left: env(safe-area-inset-left, 0px); }
+        #talkBtn, #ttsBtn, #spectFollowBtn, #plannerToggleBtn, #plannerGoBtn { margin-left: env(safe-area-inset-left, 0px); }
+        /* GPS-box + snelheidsbord horen hier sinds v54.4 NIET meer bij: die staan liggend
+           midden-relatief (calc(50%-...)) en de notch-marge duwde ze op de min-knop (v54.5). */
         body.map-only #remPanel { margin-left: env(safe-area-inset-left, 0px); }
         #lockIcon, #btnMenuBtn, #flitserBox { margin-right: env(safe-area-inset-right, 0px); }
         #flitserBox { margin-left: env(safe-area-inset-left, 0px); }   /* staand links, liggend rechts */
@@ -911,7 +912,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v54.4 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v54.5 © Umop3p1sdn</div>
 
             </div>
 
@@ -1440,7 +1441,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v54.4 © Umop3p1sdn
+                HO-ME v54.5 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1802,7 +1803,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v54.4 © Umop3p1sdn
+                HO-ME v54.5 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -4033,7 +4034,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "54.4";
+        const APP_VERSION = "54.5";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
