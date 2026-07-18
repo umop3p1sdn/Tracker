@@ -434,19 +434,39 @@
             z-index: 2400 !important;   /* boven de backdrop (2300); pijlen (2000) en flitser (2050) vallen eronder */
             flex-direction: row !important; flex-wrap: wrap !important;
             justify-content: center !important; align-content: center !important;
-            /* v53.5: ruimer voor handschoenen — grotere onderlinge afstand en een groter vlak.
-               3 kolommen blijft: inhoud 320-2x24 = 272, en 3x64 + 2x24 gap = 240 past, 4 niet. */
-            gap: 24px !important; width: 320px !important; max-height: 88vh !important; overflow-y: auto !important;
+            /* v53.6: nog ruimer — knoppen 80px, 3 kolommen (3x80 + 2x24 = 288, past in 340-48). */
+            gap: 24px !important; width: 340px !important; max-height: 92vh !important; overflow-y: auto !important;
             background: rgba(226, 231, 245, 0.97) !important;
             border: 2px solid #00BCD4 !important; border-radius: 16px !important;
             padding: 24px !important; box-shadow: 0 8px 40px rgba(0,0,0,0.7) !important;
         }
         body.btn-menu-open #fmBtn {
             display: flex !important; position: static !important;
-            width: 64px !important; height: 64px !important; border-radius: 6px !important;
+            width: 80px !important; height: 80px !important; border-radius: 6px !important;
             bottom: auto !important; left: auto !important;
             border: 3px solid #000 !important; background: transparent !important; box-shadow: none !important;
         }
+        /* v53.6: alle menu-knoppen 80px (handschoen-maat); display bewust NIET geforceerd,
+           anders zouden verborgen knoppen (LIJN zonder volgers) ineens opduiken. */
+        body.btn-menu-open #masterSideBar > *, body.btn-menu-open #followerSideBar > * {
+            width: 80px !important; height: 80px !important; min-height: 80px !important;
+        }
+        body.btn-menu-open #followerCount {
+            display: flex !important; align-items: center !important; justify-content: center !important;
+        }
+        /* v53.6: plaatsing zoals de knoppen vroeger langs de rand stonden (verzoek Sjoerd):
+           rij 1: FM (linksboven) — Toon — DRAAI (rechtsboven)
+           rij 2: TAG/badge — teller/tag — CENTER (rechts, onder Draai)
+           rij 3: LIJN — COMS — CREW (rechtsonder, tegen de rand via margin-left:auto) */
+        body.btn-menu-open #fmBtn { order: 1; }
+        body.btn-menu-open #zoomIconMaster, body.btn-menu-open #zoomIconFollower { order: 2; }
+        body.btn-menu-open #rotBtnMaster, body.btn-menu-open #rotBtnFollower { order: 3; }
+        body.btn-menu-open #tagBtnMaster, body.btn-menu-open #myColorBadge { order: 4; }
+        body.btn-menu-open #followerCount, body.btn-menu-open #tagBtn { order: 5; }
+        body.btn-menu-open #followBtnMaster, body.btn-menu-open #followBtnFollower { order: 6; }
+        body.btn-menu-open #folLinesBtn { order: 7; }
+        body.btn-menu-open #comsBtnMaster, body.btn-menu-open #comsBtnFollower { order: 8; }
+        body.btn-menu-open #crewBtn, body.btn-menu-open #seeEveryoneBtn { order: 9; margin-left: auto !important; }
 
         .map-only #plannerToggleBtn { display: none !important; }
         .map-only #plannerGoBtn { display: none !important; }
@@ -885,7 +905,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v53.5 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v53.6 © Umop3p1sdn</div>
 
             </div>
 
@@ -1415,7 +1435,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v53.5 © Umop3p1sdn
+                HO-ME v53.6 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1777,7 +1797,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v53.5 © Umop3p1sdn
+                HO-ME v53.6 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -4006,7 +4026,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "53.5";
+        const APP_VERSION = "53.6";
         const firebaseConfig = {
             databaseURL: "https://tracker-app-5ab7d-default-rtdb.europe-west1.firebasedatabase.app"
         };
