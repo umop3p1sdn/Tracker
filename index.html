@@ -921,7 +921,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v59.4 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v59.5 © Umop3p1sdn</div>
 
             </div>
 
@@ -1481,7 +1481,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v59.4 © Umop3p1sdn
+                HO-ME v59.5 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1843,7 +1843,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v59.4 © Umop3p1sdn
+                HO-ME v59.5 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -4074,7 +4074,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "59.4";
+        const APP_VERSION = "59.5";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
@@ -4130,22 +4130,14 @@ assign initialcost =
             // zodat de herbouw ook doorgaat als het dev-herstel ooit struikelt.
             const devWasOn = (homeConfig.dev === true);
             const dagkaartWas = MAP_STYLES[homeConfig.dagkaart] ? homeConfig.dagkaart : 'std';   // v58.6: vóór de wis! (v58.4-fout: na de wis was 'ie al weg → dagkaart reset elke start)
-            // v58.8 MIGRATIE (versiestempel cfgV): draai/center alleen overnemen uit een config
-            // die door 58.8+ zelf geschreven is. Alles zonder stempel is legacy (het tijdperk
-            // waarin draai nog los bewaard werd) → beide éénmalig hard op UIT. Daarna geldt de
-            // config-autoriteit van v58.6 gewoon: jouw laatste stand is de start-stand.
-            const gestempeld = (homeConfig.cfgV >= 2);
-            const draaiWas = (gestempeld && homeConfig.draai === true);
-            const centerWas = (gestempeld && homeConfig.center === true);
-            if (!gestempeld) mapRotationEnabled = false;   // ook de al-ingelezen variabele mee
+            // v59.5: draai/center zijn geen config-waardes meer (gebakken: elke start uit);
+            // het versiestempel cfgV blijft voor toekomstige migraties.
             Object.keys(homeConfig).forEach(k => delete homeConfig[k]);
             try { if (devWasOn && !devMode) toggleDevMode(); } catch (e) {}
             saveCfg({
                 cfgV: 2,
                 tag: myTag,
                 dagkaart: dagkaartWas,
-                draai: draaiWas,
-                center: centerWas,
                 flitsmelding: flitserMode,
                 flitsVolume: flitserVolume,
                 lijndikte: trackLineWidth,
@@ -4346,7 +4338,7 @@ assign initialcost =
         let zoomMode = 'self';
         let compassMode = 'device';
         let deviceHeading = 0;
-        let mapRotationEnabled = (homeConfig.cfgV >= 2 && homeConfig.draai === true);   // v58.8: alleen uit een gestempelde config (legacy-waardes tellen niet)
+        let mapRotationEnabled = false;   // v59.5: rit-gereedschap, ALTIJD uit bij elke start (gebakken, keuze Sjoerd)
         let oversizeToken = 0;
         // Marker-positie op het scherm (DRAAI aan). Staand = 0.62 (oude waarde, lager in beeld),
         // liggend = 0.50 (hoger/midden, want minder hoogte). 0.5=midden, hoger getal=lager op scherm.
@@ -8548,7 +8540,6 @@ assign initialcost =
 
         function toggleMapRotation() {
             mapRotationEnabled = !mapRotationEnabled;
-            saveCfg({ draai: mapRotationEnabled });   // v58.6
             [document.getElementById('rotBtnMaster'), document.getElementById('rotBtnFollower')].forEach(b => {
                 if (!b) return;
                 if (mapRotationEnabled) {
@@ -8814,7 +8805,6 @@ assign initialcost =
 
         function toggleFollow() {
             isAutoFollowActive = !isAutoFollowActive;
-            saveCfg({ center: isAutoFollowActive });   // v58.6
             // Icon buttons: cyaan = aan, grijs = uit
             [document.getElementById('followBtnMaster'), document.getElementById('followBtnFollower')].forEach(b => {
                 if (b) b.style.background = isAutoFollowActive ? '#00BCD4' : '#555';
@@ -10298,14 +10288,15 @@ assign initialcost =
             [document.getElementById('followBtnMaster'), document.getElementById('followBtnFollower')].forEach(b => {
                 if (b) b.style.background = '#555';
             });
-            // v58.6 (keuze Sjoerd): Noord en Center staan IN de config — elke start volgt wat
-            // JIJ hebt ingesteld (beide default UIT). Zet je ze uit, dan hoort de app ze uit te
-            // laten; toggle je ze tijdens de rit, dan is dát je nieuwe instelling. CREW blijft
-            // rit-gebonden (hard uit bij elke start).
-            if (mapRotationEnabled !== (homeConfig.draai === true) && typeof toggleMapRotation === 'function') toggleMapRotation();
-            isAutoFollowActive = (homeConfig.center === true);
+            // v59.5 GEBAKKEN (keuze Sjoerd, definitief): voor een mooie vlucht en landing starten
+            // master én volger ALTIJD met noorden boven en Center uit — geen config, geen
+            // uitzonderingen. Draai/Center zijn rit-gereedschap: tijdens de rit vrij te
+            // gebruiken, elke nieuwe start weer neutraal. (De config-omweg van v58.6 was
+            // diagnose-gereedschap in de jacht op de rij-klaar-timer; die is sinds v59.2 dood.)
+            if (mapRotationEnabled && typeof toggleMapRotation === 'function') toggleMapRotation();
+            isAutoFollowActive = false;
             [document.getElementById('followBtnMaster'), document.getElementById('followBtnFollower')].forEach(b => {
-                if (b) b.style.background = isAutoFollowActive ? '#00BCD4' : '#555';
+                if (b) b.style.background = '#555';
             });
             let _crewGuard = 0;
             while (crewMode !== 0 && typeof toggleCrew === 'function' && _crewGuard++ < 3) toggleCrew();
@@ -10376,14 +10367,15 @@ assign initialcost =
             [document.getElementById('followBtnMaster'), document.getElementById('followBtnFollower')].forEach(b => {
                 if (b) b.style.background = '#555';
             });
-            // v58.6 (keuze Sjoerd): Noord en Center staan IN de config — elke start volgt wat
-            // JIJ hebt ingesteld (beide default UIT). Zet je ze uit, dan hoort de app ze uit te
-            // laten; toggle je ze tijdens de rit, dan is dát je nieuwe instelling. CREW blijft
-            // rit-gebonden (hard uit bij elke start).
-            if (mapRotationEnabled !== (homeConfig.draai === true) && typeof toggleMapRotation === 'function') toggleMapRotation();
-            isAutoFollowActive = (homeConfig.center === true);
+            // v59.5 GEBAKKEN (keuze Sjoerd, definitief): voor een mooie vlucht en landing starten
+            // master én volger ALTIJD met noorden boven en Center uit — geen config, geen
+            // uitzonderingen. Draai/Center zijn rit-gereedschap: tijdens de rit vrij te
+            // gebruiken, elke nieuwe start weer neutraal. (De config-omweg van v58.6 was
+            // diagnose-gereedschap in de jacht op de rij-klaar-timer; die is sinds v59.2 dood.)
+            if (mapRotationEnabled && typeof toggleMapRotation === 'function') toggleMapRotation();
+            isAutoFollowActive = false;
             [document.getElementById('followBtnMaster'), document.getElementById('followBtnFollower')].forEach(b => {
-                if (b) b.style.background = isAutoFollowActive ? '#00BCD4' : '#555';
+                if (b) b.style.background = '#555';
             });
             let _crewGuard = 0;
             while (crewMode !== 0 && typeof toggleCrew === 'function' && _crewGuard++ < 3) toggleCrew();
