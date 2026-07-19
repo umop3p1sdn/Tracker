@@ -921,7 +921,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v58.4 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v58.6 © Umop3p1sdn</div>
 
             </div>
 
@@ -1480,7 +1480,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v58.4 © Umop3p1sdn
+                HO-ME v58.6 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1842,7 +1842,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v58.4 © Umop3p1sdn
+                HO-ME v58.6 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -4073,7 +4073,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "58.4";
+        const APP_VERSION = "58.6";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
@@ -4109,11 +4109,16 @@ assign initialcost =
             // (de herbouw zou 'm anders wissen vóór het herstel) en het herstel in een vangnet,
             // zodat de herbouw ook doorgaat als het dev-herstel ooit struikelt.
             const devWasOn = (homeConfig.dev === true);
+            const dagkaartWas = MAP_STYLES[homeConfig.dagkaart] ? homeConfig.dagkaart : 'std';   // v58.6: vóór de wis! (v58.4-fout: na de wis was 'ie al weg → dagkaart reset elke start)
+            const draaiWas = (homeConfig.draai === true);
+            const centerWas = (homeConfig.center === true);
             Object.keys(homeConfig).forEach(k => delete homeConfig[k]);
             try { if (devWasOn && !devMode) toggleDevMode(); } catch (e) {}
             saveCfg({
                 tag: myTag,
-                dagkaart: MAP_STYLES[homeConfig.dagkaart] ? homeConfig.dagkaart : 'std',
+                dagkaart: dagkaartWas,
+                draai: draaiWas,
+                center: centerWas,
                 flitsmelding: flitserMode,
                 flitsVolume: flitserVolume,
                 lijndikte: trackLineWidth,
@@ -4276,7 +4281,7 @@ assign initialcost =
         let zoomMode = 'self';
         let compassMode = 'device';
         let deviceHeading = 0;
-        let mapRotationEnabled = false;   // v57.8: rit-gebonden — bewust NIET in de config (keuze Sjoerd)
+        let mapRotationEnabled = (homeConfig.draai === true);   // v58.6: terug IN de config (keuze Sjoerd — instelbaar, default UIT)
         let oversizeToken = 0;
         // Marker-positie op het scherm (DRAAI aan). Staand = 0.62 (oude waarde, lager in beeld),
         // liggend = 0.50 (hoger/midden, want minder hoogte). 0.5=midden, hoger getal=lager op scherm.
@@ -8469,6 +8474,7 @@ assign initialcost =
 
         function toggleMapRotation() {
             mapRotationEnabled = !mapRotationEnabled;
+            saveCfg({ draai: mapRotationEnabled });   // v58.6
             [document.getElementById('rotBtnMaster'), document.getElementById('rotBtnFollower')].forEach(b => {
                 if (!b) return;
                 if (mapRotationEnabled) {
@@ -8720,6 +8726,7 @@ assign initialcost =
 
         function toggleFollow() {
             isAutoFollowActive = !isAutoFollowActive;
+            saveCfg({ center: isAutoFollowActive });   // v58.6
             // Icon buttons: cyaan = aan, grijs = uit
             [document.getElementById('followBtnMaster'), document.getElementById('followBtnFollower')].forEach(b => {
                 if (b) b.style.background = isAutoFollowActive ? '#00BCD4' : '#555';
@@ -10203,13 +10210,18 @@ assign initialcost =
             [document.getElementById('followBtnMaster'), document.getElementById('followBtnFollower')].forEach(b => {
                 if (b) b.style.background = '#555';
             });
-            // v58.3: rit-gebonden standen hard neutraal bij ELKE start (vergelijking master/volger
-            // op verzoek Sjoerd legde het gat bloot): Draai en CREW bleven binnen één app-sessie
-            // hangen na STOP → volgende rit erfde ze. Reset via de bestaande toggles = knop-kleur,
-            // kaart-transform en opruiming gaan automatisch mee. Eerste rit: beide al 0/uit → doet niks.
-            if (mapRotationEnabled && typeof toggleMapRotation === 'function') toggleMapRotation();
+            // v58.6 (keuze Sjoerd): Noord en Center staan IN de config — elke start volgt wat
+            // JIJ hebt ingesteld (beide default UIT). Zet je ze uit, dan hoort de app ze uit te
+            // laten; toggle je ze tijdens de rit, dan is dát je nieuwe instelling. CREW blijft
+            // rit-gebonden (hard uit bij elke start).
+            if (mapRotationEnabled !== (homeConfig.draai === true) && typeof toggleMapRotation === 'function') toggleMapRotation();
+            isAutoFollowActive = (homeConfig.center === true);
+            [document.getElementById('followBtnMaster'), document.getElementById('followBtnFollower')].forEach(b => {
+                if (b) b.style.background = isAutoFollowActive ? '#00BCD4' : '#555';
+            });
             let _crewGuard = 0;
             while (crewMode !== 0 && typeof toggleCrew === 'function' && _crewGuard++ < 3) toggleCrew();
+            landingDone = false; landingInProgress = false;   // v58.5: landingsvlucht PER RIT, niet per app-lading
 
             document.getElementById('modeSelect').classList.add('hidden');
             if (typeof stopHomeUpdateChecks === 'function') stopHomeUpdateChecks();
@@ -10276,13 +10288,18 @@ assign initialcost =
             [document.getElementById('followBtnMaster'), document.getElementById('followBtnFollower')].forEach(b => {
                 if (b) b.style.background = '#555';
             });
-            // v58.3: rit-gebonden standen hard neutraal bij ELKE start (vergelijking master/volger
-            // op verzoek Sjoerd legde het gat bloot): Draai en CREW bleven binnen één app-sessie
-            // hangen na STOP → volgende rit erfde ze. Reset via de bestaande toggles = knop-kleur,
-            // kaart-transform en opruiming gaan automatisch mee. Eerste rit: beide al 0/uit → doet niks.
-            if (mapRotationEnabled && typeof toggleMapRotation === 'function') toggleMapRotation();
+            // v58.6 (keuze Sjoerd): Noord en Center staan IN de config — elke start volgt wat
+            // JIJ hebt ingesteld (beide default UIT). Zet je ze uit, dan hoort de app ze uit te
+            // laten; toggle je ze tijdens de rit, dan is dát je nieuwe instelling. CREW blijft
+            // rit-gebonden (hard uit bij elke start).
+            if (mapRotationEnabled !== (homeConfig.draai === true) && typeof toggleMapRotation === 'function') toggleMapRotation();
+            isAutoFollowActive = (homeConfig.center === true);
+            [document.getElementById('followBtnMaster'), document.getElementById('followBtnFollower')].forEach(b => {
+                if (b) b.style.background = isAutoFollowActive ? '#00BCD4' : '#555';
+            });
             let _crewGuard = 0;
             while (crewMode !== 0 && typeof toggleCrew === 'function' && _crewGuard++ < 3) toggleCrew();
+            landingDone = false; landingInProgress = false;   // v58.5: landingsvlucht PER RIT, niet per app-lading
 
             document.getElementById('modeSelect').classList.add('hidden');
             if (typeof stopHomeUpdateChecks === 'function') stopHomeUpdateChecks();
