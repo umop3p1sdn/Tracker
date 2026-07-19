@@ -921,7 +921,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v59.3 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v59.4 © Umop3p1sdn</div>
 
             </div>
 
@@ -1481,7 +1481,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v59.3 © Umop3p1sdn
+                HO-ME v59.4 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1843,7 +1843,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v59.3 © Umop3p1sdn
+                HO-ME v59.4 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -4074,7 +4074,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "59.3";
+        const APP_VERSION = "59.4";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
@@ -5126,8 +5126,17 @@ assign initialcost =
             if (landingDone || !mapInstance || typeof lat !== 'number' || typeof lng !== 'number') return;
             landingDone = true;
             landingInProgress = true;
+            // v59.4 (melding Sjoerd): lijndikte is in schermpixels — op Europa-zoom vult een
+            // lokale route dus het hele beeld tijdens de duik. Daarom de lijn-lagen (rood/blauw/
+            // navi) verbergen tot de landing klaar is; alles wat de polls intussen tekenen komt
+            // dan in één keer netjes tevoorschijn op de plek van bestemming.
+            const lijnLagen = ['hmRedPane', 'hmBluePane', 'hmNaviPane'];
+            lijnLagen.forEach(p => { const el = mapInstance.getPane(p); if (el) el.style.visibility = 'hidden'; });
             mapInstance.flyTo([lat, lng], zoomLevelValue, { duration: 2.5 });
-            setTimeout(() => { landingInProgress = false; }, 3000);
+            setTimeout(() => {
+                landingInProgress = false;
+                lijnLagen.forEach(p => { const el = mapInstance && mapInstance.getPane(p); if (el) el.style.visibility = ''; });
+            }, 3000);
         }
         function setTileLayers(key) {
             if (!mapInstance || !MAP_STYLES[key]) return;
