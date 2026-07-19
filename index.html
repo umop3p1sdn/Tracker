@@ -921,7 +921,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v59.0 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v59.1 © Umop3p1sdn</div>
 
             </div>
 
@@ -1481,7 +1481,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v59.0 © Umop3p1sdn
+                HO-ME v59.1 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1843,7 +1843,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v59.0 © Umop3p1sdn
+                HO-ME v59.1 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -4074,7 +4074,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "59.0";
+        const APP_VERSION = "59.1";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
@@ -4086,6 +4086,24 @@ assign initialcost =
             catch (e) { return {}; }
         }
         const homeConfig = loadConfig();
+        // v59.1: momentopname van de RUWE opslag op het allereerste leesmoment — vóór elke
+        // herbouw of schrijfactie. Onderscheidt "opslag bevatte al true" van "iets schreef true".
+        let bootConfigSnap = null;
+        try { bootConfigSnap = JSON.parse(localStorage.getItem('homeConfig') || 'null'); } catch (e) {}
+        // v59.1: schrijf-dagboek — elke config-schrijfactie met tijd, draai/center-waarde en de
+        // code-regel die 'm deed (uit de stack). Laatste 12, af te lezen in het config-venster.
+        const cfgJournal = [];
+        function cfgLog(bron) {
+            try {
+                let regel = '';
+                const st = (new Error()).stack || '';
+                const r = st.split('\n')[2] || '';
+                regel = r.replace(/^.*?(\d+):\d+\)?\s*$/, ':$1').slice(-14);
+                cfgJournal.push(new Date().toTimeString().slice(0, 8) + ' ' + bron + regel
+                    + ' d=' + (homeConfig.draai === true) + ' c=' + (homeConfig.center === true));
+                if (cfgJournal.length > 12) cfgJournal.shift();
+            } catch (e) {}
+        }
         // v56.7: menu-labels bij het opstarten gelijkzetten met de config (de knoppen hebben
         // vaste HTML-teksten; zonder deze sync toonden ze de default tot de eerste tik).
         document.addEventListener('DOMContentLoaded', () => {
@@ -4143,6 +4161,7 @@ assign initialcost =
             try {
                 Object.assign(homeConfig, patch);
                 localStorage.setItem('homeConfig', JSON.stringify(homeConfig));
+                cfgLog('save');   // v59.1
                 if (typeof refreshConfigView === 'function') refreshConfigView();   // v57.4: kijk-vak live
             } catch (e) {}
         }
@@ -4154,7 +4173,7 @@ assign initialcost =
         // nogmaals schrijven — dat geeft WebKit een flush-moment vóór de suspend, en wegvegen
         // gebeurt per definitie vanuit de achtergrond.
         function persistConfigNow() {
-            try { localStorage.setItem('homeConfig', JSON.stringify(homeConfig)); } catch (e) {}
+            try { localStorage.setItem('homeConfig', JSON.stringify(homeConfig)); cfgLog('flush'); } catch (e) {}
         }
         window.addEventListener('pagehide', persistConfigNow);
         document.addEventListener('visibilitychange', () => {
@@ -4173,9 +4192,15 @@ assign initialcost =
             const s = document.getElementById('configStatus');
             if (s) {
                 const bg = id => { const b = document.getElementById(id); return b ? (b.style.background || 'html-default') : '-'; };
+                const boot = bootConfigSnap
+                    ? ('boot: d=' + (bootConfigSnap.draai === true) + ' c=' + (bootConfigSnap.center === true) + ' cfgV=' + (bootConfigSnap.cfgV || '-'))
+                    : 'boot: LEEG';
                 s.textContent = 'v' + APP_VERSION
                     + ' | draai=' + mapRotationEnabled + ' center=' + isAutoFollowActive
-                    + ' | rotKnop=' + bg('rotBtnFollower') + ' centerKnop=' + bg('followBtnFollower');
+                    + ' | rotKnop=' + bg('rotBtnFollower') + ' centerKnop=' + bg('followBtnFollower')
+                    + '\n' + boot
+                    + '\n── schrijf-dagboek ──\n' + (cfgJournal.length ? cfgJournal.join('\n') : '(nog geen schrijfacties)');
+                s.style.whiteSpace = 'pre-wrap';
             }
         }
         function openConfigModal() {
