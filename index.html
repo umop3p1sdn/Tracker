@@ -921,7 +921,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v58.8 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v58.9 © Umop3p1sdn</div>
 
             </div>
 
@@ -1481,7 +1481,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v58.8 © Umop3p1sdn
+                HO-ME v58.9 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1843,7 +1843,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v58.8 © Umop3p1sdn
+                HO-ME v58.9 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -4074,7 +4074,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "58.8";
+        const APP_VERSION = "58.9";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
@@ -8535,6 +8535,20 @@ assign initialcost =
             // SPECTATOR (v50.5): draai de kaart met de rijrichting van wie je VOLGT — jij zit op de
             // bank en hebt zelf geen rijrichting, dus "Zodat ik echt iemand volg zoals hij rijdt
             // en het ziet" (Sjoerd). Volg-knop op een volger = zijn heading; anders master-heading.
+            // v58.9 DE POORT (volledige leesbeurt op verzoek Sjoerd vond het lek): de kompas-
+            // handler roept deze functie bij ELKE kompas-tik aan en deze functie checkte de
+            // Draai-schakelaar zelf NIET — de kaart draaide dus altijd mee zodra er kompas-
+            // toestemming was, wat de knop ook zei ("uitzetten helpt niet"). En omdat iOS die
+            // toestemming per toestel vraagt, LEEK het een master/volger-verschil: toestel mét
+            // toestemming draait, toestel zonder blijft stil. Eén poort hier dekt alle
+            // aanroepers (kompas-handler, spectator-poll, oversize-flow) in één keer.
+            if (!mapRotationEnabled) {
+                if (mapInstance) {
+                    const el0 = mapInstance.getContainer();
+                    if (el0 && el0.style.transform) el0.style.transform = '';   // uit = kaart recht, noord boven
+                }
+                return;
+            }
             let h = deviceHeading;
             if (spectatorMode) {
                 if (spectFollowTarget && masterFollowersData[spectFollowTarget]) {
