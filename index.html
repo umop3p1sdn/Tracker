@@ -921,7 +921,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v57.9 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v58.0 © Umop3p1sdn</div>
 
             </div>
 
@@ -1480,7 +1480,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v57.9 © Umop3p1sdn
+                HO-ME v58.0 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1842,7 +1842,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v57.9 © Umop3p1sdn
+                HO-ME v58.0 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -4073,7 +4073,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "57.9";
+        const APP_VERSION = "58.0";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
@@ -5041,6 +5041,20 @@ assign initialcost =
                      : (MAP_STYLES[homeConfig.dagkaart] ? homeConfig.dagkaart : 'std');   // start: auto; dag = jouw dagkaart (v56.5)
         let currentTileLayer = null;
         let currentOverlayLayer = null;   // v57.5: transparante wegen-laag bij de hybride stijl
+        // ── LANDINGSVLUCHT (v58.0, gesparred met Sjoerd): eenmalige vloeiende flyTo van het
+        // Europa-startbeeld naar de eerste bekende positie (master: eerste GPS-fix; volger én
+        // spectator: eerste master-positie). Daarna NOOIT meer — geen Center, geen volgen, alleen
+        // afleveren. Zit de gebruiker vóór die tijd zelf al aan de kaart (slepen/zoomen), dan
+        // slaan we de vlucht over — je wordt niet uit je handen getrokken. ──
+        let landingDone = false;
+        let landingInProgress = false;
+        function landingFlight(lat, lng) {
+            if (landingDone || !mapInstance || typeof lat !== 'number' || typeof lng !== 'number') return;
+            landingDone = true;
+            landingInProgress = true;
+            mapInstance.flyTo([lat, lng], zoomLevelValue, { duration: 2.5 });
+            setTimeout(() => { landingInProgress = false; }, 3000);
+        }
         function setTileLayers(key) {
             if (!mapInstance || !MAP_STYLES[key]) return;
             if (currentTileLayer) mapInstance.removeLayer(currentTileLayer);
@@ -5289,6 +5303,7 @@ assign initialcost =
             }
         }
         function updateSpeed(lat, lng) {
+            landingFlight(lat, lng);   // v58.0: eenmalig — daarna doet deze regel niets meer
             alignGpsSpeedBox();
             const now = Date.now();
             if (lastSpeedSample) {
@@ -9534,6 +9549,9 @@ assign initialcost =
                 }, true);
 
                 setTileLayers(mapStyle);   // v57.5: basis + evt. wegen-overlay (incl. Donker-filter)
+                mapInstance.on('dragstart zoomstart', () => {   // v58.0: zelf aan de kaart = geen landingsvlucht meer
+                    if (!landingDone && !landingInProgress) landingDone = true;
+                });
                 if (devMode && !mapInstance._devClickBound) {   // v57.2: dev uit config hersteld vóór de kaart bestond
                     mapInstance.on('click', devMapClick);
                     mapInstance._devClickBound = true;
@@ -9575,6 +9593,7 @@ assign initialcost =
                             const { latitude, longitude } = position.coords;
                             if (position.coords.heading !== null && !isNaN(position.coords.heading) && position.coords.speed > 0.5) gpsHeading = position.coords.heading; else gpsHeading = null;
                             masterPos = { lat: latitude, lng: longitude };
+                            landingFlight(latitude, longitude);   // v58.0
                             lastGps = { lat: latitude, lng: longitude };   // huidige positie bijhouden (o.a. voor POI-zoek)
                             updateSpeed(latitude, longitude);
                             checkUpcomingTurn(latitude, longitude);
@@ -9721,6 +9740,7 @@ assign initialcost =
                         }
                         if (location) {
                             masterPos = { lat: location.lat, lng: location.lng };
+                            landingFlight(location.lat, location.lng);   // v58.0
                             if (typeof location.heading === 'number') masterHeadingShared = location.heading;
                             if (location.tag) masterTagShared = location.tag;
                             if (spectatorMode && mapRotationEnabled) applyMapRotation();   // bank-rotatie draait op poll-data
