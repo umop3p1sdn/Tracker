@@ -921,7 +921,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v58.9 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v59.0 © Umop3p1sdn</div>
 
             </div>
 
@@ -1481,7 +1481,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v58.9 © Umop3p1sdn
+                HO-ME v59.0 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1843,7 +1843,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v58.9 © Umop3p1sdn
+                HO-ME v59.0 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -4074,7 +4074,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "58.9";
+        const APP_VERSION = "59.0";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
@@ -4146,6 +4146,20 @@ assign initialcost =
                 if (typeof refreshConfigView === 'function') refreshConfigView();   // v57.4: kijk-vak live
             } catch (e) {}
         }
+        // v59.0 — DE ECHTE DADER (vingerafdruk via het meetlint van Sjoerd): iOS/WebKit schrijft
+        // localStorage VERTRAAGD naar schijf; veeg je de PWA kort na een wijziging weg, dan gaat
+        // de schrijfactie verloren en leest de herstart de VORIGE stand terug (bij Sjoerd:
+        // draai/center true uit de lek-periode). Vandaar "uitzetten hield niet": wijzigen →
+        // meteen wegvegen = schrijf kwijt. Fix: bij elk naar-achtergrond-moment de config
+        // nogmaals schrijven — dat geeft WebKit een flush-moment vóór de suspend, en wegvegen
+        // gebeurt per definitie vanuit de achtergrond.
+        function persistConfigNow() {
+            try { localStorage.setItem('homeConfig', JSON.stringify(homeConfig)); } catch (e) {}
+        }
+        window.addEventListener('pagehide', persistConfigNow);
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden') persistConfigNow();
+        });
         // ── Config kopiëren/plakken (v56.6): export/import via het ☰ menu ──
         // v57.4: twee gescheiden vakken — kijk-vak (alleen-lezen, LIVE mee met elke wijziging)
         // en een apart plak-vak voor import. Elk vak één taak: geen vlaggen, geen foto-effect.
