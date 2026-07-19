@@ -921,7 +921,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v58.6 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v58.7 © Umop3p1sdn</div>
 
             </div>
 
@@ -944,6 +944,7 @@
                         </div>
                         <div style="font-size:0.8em; color:#555; font-weight:bold;">Huidige instellingen (loopt live mee):</div>
                         <textarea id="configView" readonly spellcheck="false" style="width:100%; height:150px; font-family:monospace; font-size:0.85em; border:2px solid #000; border-radius:8px; padding:8px; box-sizing:border-box; background:#f4f6fb;"></textarea>
+                        <div id="configStatus" style="font-size:0.75em; font-family:monospace; color:#0a0e27; background:#e8f4f8; border:1px solid #00BCD4; border-radius:6px; padding:6px;">—</div>
                         <button onclick="copyConfigText()" style="padding:12px; font-weight:bold; border-radius:8px; border:3px solid #000; background:#fff; color:#0a0e27; cursor:pointer;">Kopieer</button>
                         <div style="font-size:0.8em; color:#555; font-weight:bold; margin-top:4px;">Config van een andere telefoon overnemen:</div>
                         <textarea id="configPaste" spellcheck="false" placeholder="Plak hier..." style="width:100%; height:70px; font-family:monospace; font-size:0.85em; border:2px solid #000; border-radius:8px; padding:8px; box-sizing:border-box;"></textarea>
@@ -1480,7 +1481,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v58.6 © Umop3p1sdn
+                HO-ME v58.7 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1842,7 +1843,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v58.6 © Umop3p1sdn
+                HO-ME v58.7 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -4073,7 +4074,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "58.6";
+        const APP_VERSION = "58.7";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
@@ -4144,7 +4145,17 @@ assign initialcost =
         function refreshConfigView() {
             const m = document.getElementById('configModal');
             const t = document.getElementById('configView');
-            if (m && t && m.style.display === 'flex') t.value = JSON.stringify(homeConfig, null, 2);
+            if (!m || m.style.display !== 'flex') return;
+            if (t) t.value = JSON.stringify(homeConfig, null, 2);
+            // v58.7: levende systeemregel — wat draait en staat er op DIT toestel écht?
+            // (versie + variabele-waardes + de werkelijke knopkleuren; kleurverschil = verver-bug)
+            const s = document.getElementById('configStatus');
+            if (s) {
+                const bg = id => { const b = document.getElementById(id); return b ? (b.style.background || 'html-default') : '-'; };
+                s.textContent = 'v' + APP_VERSION
+                    + ' | draai=' + mapRotationEnabled + ' center=' + isAutoFollowActive
+                    + ' | rotKnop=' + bg('rotBtnFollower') + ' centerKnop=' + bg('followBtnFollower');
+            }
         }
         function openConfigModal() {
             const m = document.getElementById('configModal');
