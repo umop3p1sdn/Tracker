@@ -921,7 +921,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v58.2 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v58.3 © Umop3p1sdn</div>
 
             </div>
 
@@ -1480,7 +1480,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v58.2 © Umop3p1sdn
+                HO-ME v58.3 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1842,7 +1842,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v58.2 © Umop3p1sdn
+                HO-ME v58.3 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -4073,7 +4073,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "58.2";
+        const APP_VERSION = "58.3";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
@@ -10199,6 +10199,13 @@ assign initialcost =
             [document.getElementById('followBtnMaster'), document.getElementById('followBtnFollower')].forEach(b => {
                 if (b) b.style.background = '#555';
             });
+            // v58.3: rit-gebonden standen hard neutraal bij ELKE start (vergelijking master/volger
+            // op verzoek Sjoerd legde het gat bloot): Draai en CREW bleven binnen één app-sessie
+            // hangen na STOP → volgende rit erfde ze. Reset via de bestaande toggles = knop-kleur,
+            // kaart-transform en opruiming gaan automatisch mee. Eerste rit: beide al 0/uit → doet niks.
+            if (mapRotationEnabled && typeof toggleMapRotation === 'function') toggleMapRotation();
+            let _crewGuard = 0;
+            while (crewMode !== 0 && typeof toggleCrew === 'function' && _crewGuard++ < 3) toggleCrew();
 
             document.getElementById('modeSelect').classList.add('hidden');
             if (typeof stopHomeUpdateChecks === 'function') stopHomeUpdateChecks();
@@ -10265,6 +10272,13 @@ assign initialcost =
             [document.getElementById('followBtnMaster'), document.getElementById('followBtnFollower')].forEach(b => {
                 if (b) b.style.background = '#555';
             });
+            // v58.3: rit-gebonden standen hard neutraal bij ELKE start (vergelijking master/volger
+            // op verzoek Sjoerd legde het gat bloot): Draai en CREW bleven binnen één app-sessie
+            // hangen na STOP → volgende rit erfde ze. Reset via de bestaande toggles = knop-kleur,
+            // kaart-transform en opruiming gaan automatisch mee. Eerste rit: beide al 0/uit → doet niks.
+            if (mapRotationEnabled && typeof toggleMapRotation === 'function') toggleMapRotation();
+            let _crewGuard = 0;
+            while (crewMode !== 0 && typeof toggleCrew === 'function' && _crewGuard++ < 3) toggleCrew();
 
             document.getElementById('modeSelect').classList.add('hidden');
             if (typeof stopHomeUpdateChecks === 'function') stopHomeUpdateChecks();
