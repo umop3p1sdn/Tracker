@@ -102,6 +102,11 @@
         .header {
             text-align: center;
             margin-bottom: 20px;
+            /* v60.1 (melding Sjoerd): het bewegende logo zat onder de camera-uitsparing —
+               safe-area-inset-top duwt het hele startscherm (logo, Let's ride, code) onder
+               de camera; op toestellen zonder uitsparing is het gewoon +16px ademruimte.
+               viewport-fit=cover staat al aan, dus env() werkt. */
+            padding-top: calc(env(safe-area-inset-top, 0px) + 16px);
             padding-bottom: 15px;
             border-bottom: 2px solid rgba(0,188,212,0.4);
         }
@@ -925,7 +930,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v60.0 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v60.1 © Umop3p1sdn</div>
 
             </div>
 
@@ -1486,7 +1491,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v60.0 © Umop3p1sdn
+                HO-ME v60.1 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1848,7 +1853,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v60.0 © Umop3p1sdn
+                HO-ME v60.1 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -4079,7 +4084,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "60.0";
+        const APP_VERSION = "60.1";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
