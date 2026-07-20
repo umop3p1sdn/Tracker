@@ -853,12 +853,14 @@
         <div id="installScreen" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; text-align: center;">
             
             <div style="max-width: 300px;">
-                <svg width="110" height="110" viewBox="0 0 100 100" style="margin-bottom: 20px;">
-                    <path d="M50 8 L94 86 L6 86 Z" fill="#FFC107" stroke="#FFA000" stroke-width="3" stroke-linejoin="round"/>
-                    <rect x="45.5" y="34" width="9" height="28" rx="4" fill="#0a0e27"/>
-                    <circle cx="50" cy="73" r="5" fill="#0a0e27"/>
+                <!-- v60.4 (onderzoek + keuze Sjoerd): waarschuwingsdriehoek eruit — eerste indruk
+                     moet uitnodigen, niet waarschuwen. Zwevend vliegtuigje (bestaande planeFloat-
+                     animatie) + voordeel-tekst i.p.v. instructie. -->
+                <svg width="110" height="110" viewBox="0 0 24 24" style="margin-bottom: 16px; animation: planeFloat 3s ease-in-out infinite; filter: drop-shadow(0 0 14px rgba(0,188,212,0.55));">
+                    <path d="M12 2 L21 21 L12 16.5 L3 21 Z" fill="#00BCD4" stroke="#ffffff" stroke-width="1.1" stroke-linejoin="round"/>
                 </svg>
-                <h1 style="font-size: 1.5em; margin-bottom: 30px; color: #fff; line-height: 1.4;">Add this app to your home screen for the best experience!</h1>
+                <h1 style="font-size: 1.9em; margin-bottom: 12px; color: #fff; line-height: 1.2;">Rij je mee?</h1>
+                <p style="font-size: 1em; margin-bottom: 30px; color: rgba(255,255,255,0.85); line-height: 1.5;">Zie je vrienden live op de kaart.<br>Zet <span style="white-space:nowrap;">HO-ME</span> op je beginscherm en je staat er altijd één tik vandaan.</p>
 
                 <button onclick="skipInstall()" class="button button-master">
                     Let's go!
@@ -930,7 +932,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v60.3 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v60.6 © Umop3p1sdn</div>
 
             </div>
 
@@ -1491,7 +1493,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v60.3 © Umop3p1sdn
+                HO-ME v60.6 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1853,7 +1855,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v60.3 © Umop3p1sdn
+                HO-ME v60.6 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -4084,7 +4086,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "60.3";
+        const APP_VERSION = "60.6";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
