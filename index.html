@@ -925,7 +925,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v59.8 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v59.9 © Umop3p1sdn</div>
 
             </div>
 
@@ -1486,7 +1486,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v59.8 © Umop3p1sdn
+                HO-ME v59.9 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1848,7 +1848,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v59.8 © Umop3p1sdn
+                HO-ME v59.9 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -4079,7 +4079,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "59.8";
+        const APP_VERSION = "59.9";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
@@ -8125,6 +8125,27 @@ assign initialcost =
                 if (everyoneMode === 0) { btn.style.background = 'transparent'; btn.style.color = '#000'; btn.style.borderColor = '#000'; }
                 else if (everyoneMode === 1) { btn.style.background = '#2196F3'; btn.style.color = '#fff'; btn.style.borderColor = '#2196F3'; }
                 else { btn.style.background = '#4CAF50'; btn.style.color = '#fff'; btn.style.borderColor = '#4CAF50'; }  // functie 2 = groen
+            }
+            // v59.9 (pariteit, melding Sjoerd "volger kan volgers zien — dus zeker niet master
+            // only"): dezelfde RIJ-STAND-koppeling als de master-CREW (v59.8). Blauw/groen zet
+            // Noord en Center mee aan; kaal zet weer uit wat deze knop zelf aanzette. Zelfde
+            // bewapen-vlaggen als de master-kant — één rol per toestel per rit, dus veilig te
+            // delen, en de start-reset ontwapent ze al als no-op.
+            if (everyoneMode === 1) {           // 0 → 1: bewapenen
+                crewArmedCenter = false;
+                if (!mapRotationEnabled) {
+                    crewArmedRot = true;
+                    const centerWasUit = !isAutoFollowActive;
+                    toggleMapRotation();        // Draai aan; keten zet Center mee aan als die uit was
+                    if (centerWasUit && isAutoFollowActive) crewArmedCenter = true;
+                } else {
+                    crewArmedRot = false;       // Draai was al van jou
+                    if (!isAutoFollowActive) { crewArmedCenter = true; toggleFollow(); }
+                }
+            } else if (everyoneMode === 0) {    // 2 → 0: ontwapenen
+                if (crewArmedRot && mapRotationEnabled) toggleMapRotation();
+                if (crewArmedCenter && isAutoFollowActive) toggleFollow();
+                crewArmedRot = false; crewArmedCenter = false;
             }
             if (showEveryone) {
                 if (currentCode) updateFollowerMarkers(currentCode);
