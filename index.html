@@ -925,7 +925,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v59.9 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v60.0 © Umop3p1sdn</div>
 
             </div>
 
@@ -1486,7 +1486,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v59.9 © Umop3p1sdn
+                HO-ME v60.0 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1848,7 +1848,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v59.9 © Umop3p1sdn
+                HO-ME v60.0 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -4079,7 +4079,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "59.9";
+        const APP_VERSION = "60.0";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
@@ -9286,7 +9286,9 @@ assign initialcost =
         }
         function ttsPlayInput() {
             const inp = document.getElementById('ttsInput');
-            if (inp) ttsSpeak(inp.value);
+            if (!inp || !inp.value.trim()) return;
+            ttsSpeak(inp.value);
+            inp.value = '';   // v60.0 (keuze Sjoerd, "we gaan voor simpel"): na zenden leeg — zoals elke messenger
         }
         function ttsAddInput() {
             const inp = document.getElementById('ttsInput');
