@@ -822,7 +822,11 @@
     <div id="lockIcon" style="display:none; position: fixed; top: 20px; right: 20px; z-index: 1600; width: 40px; height: 40px; cursor: pointer; align-items: center; justify-content: center;">
         <svg width="32" height="32" viewBox="0 0 24 24" fill="#000"><path d="M12 1a5 5 0 00-5 5v2H6a2 2 0 00-2 2v9a2 2 0 002 2h12a2 2 0 002-2v-9a2 2 0 00-2-2h-7V6a3 3 0 016 0h2a5 5 0 00-5-5zm0 11a2 2 0 011 3.73V18a1 1 0 01-2 0v-2.27A2 2 0 0112 12z"/></svg>
     </div>
-    <div id="lockOverlay" style="display:none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 5000; background: rgba(0,0,0,0.02);">
+    <!-- v59.7: lock-overlay ABSOLUUT bovenaan (was 5000, maar buffer-toast z10000 en dev-paneel
+         z100000 konden eroverheen liggen en het ontgrendel-gebaar afvangen — melding Sjoerd; de
+         hybride-lagen maakten de buffer-toast bovendien veel frequenter). Vergrendeld = niets
+         anders aanraakbaar, dus deze laag hoort boven alles. -->
+    <div id="lockOverlay" style="display:none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 200000; background: rgba(0,0,0,0.02);">
         <div id="lockClosedBtn" style="position: absolute; top: 12px; right: 12px; width: 56px; height: 56px; cursor: pointer; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.45); border-radius: 12px;">
             <svg width="38" height="38" viewBox="0 0 24 24" fill="#fff"><path d="M12 1a5 5 0 00-5 5v2H6a2 2 0 00-2 2v9a2 2 0 002 2h12a2 2 0 002-2v-9a2 2 0 00-2-2h-1V6a4 4 0 00-4-4zm-3 7V6a3 3 0 016 0v2H9zm3 4a2 2 0 011 3.73V18a1 1 0 01-2 0v-2.27A2 2 0 0112 12z"/></svg>
         </div>
@@ -921,7 +925,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v59.6 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v59.8 © Umop3p1sdn</div>
 
             </div>
 
@@ -1147,7 +1151,7 @@
             <p>Geen route nodig, gewoon elkaar zien? Dat kan ook zónder master:</p>
             <ul style="margin: 10px 0; padding-left: 20px;">
                 <li>Spreek samen een 4-cijferige code af en typ 'm allemaal in het <strong>"Enter code"</strong>-veld.</li>
-                <li>Druk op <strong>CREW</strong> — je ziet elkaar op de kaart, elk met eigen kleur, tag en lijn.</li>
+                <li>Druk op <strong>CREW</strong> — je ziet elkaar op de kaart, elk met eigen kleur, tag en lijn. CREW is een rij-stand: blauw (volgers zichtbaar) en groen (volgers-zoom) zetten Noord en Center automatisch mee aan; CREW weer uit (kaal) zet ze ook weer uit — behalve wat je zelf al aan had staan.</li>
                 <li>Ready to go! In de auto, op de fiets, samen in de stad of verspreid over een festival.</li>
             </ul>
             <p>Wil je wél een route? Laat dan één iemand als <strong>master</strong> starten en deel zíjn code — de rest volgt.</p>
@@ -1482,7 +1486,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v59.6 © Umop3p1sdn
+                HO-ME v59.8 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1508,7 +1512,7 @@
             <p>No route needed, just seeing each other? That works without a master too:</p>
             <ul style="margin: 10px 0; padding-left: 20px;">
                 <li>Agree on a 4-digit code together and all type it in the <strong>"Enter code"</strong> field.</li>
-                <li>Tap <strong>CREW</strong> — you see each other on the map, each with their own colour, tag and line.</li>
+                <li>Tap <strong>CREW</strong> — you see each other on the map, each with their own colour, tag and line. CREW is a riding mode: blue (followers visible) and green (followers zoom) automatically switch North and Center on too; CREW off (plain) switches them back off — except anything you had switched on yourself.</li>
                 <li>Ready to go! In the car, on the bike, together in town or spread out across a festival.</li>
             </ul>
             <p>Do you want a route after all? Then have one person start as <strong>master</strong> and share their code — the rest follow.</p>
@@ -1844,7 +1848,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v59.6 © Umop3p1sdn
+                HO-ME v59.8 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -4075,7 +4079,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "59.6";
+        const APP_VERSION = "59.8";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
@@ -8146,6 +8150,10 @@ assign initialcost =
         // ── CREW (master): jij centraal, volgers eromheen. Dominant over de IK/VOLGERS/BEIDE toggle. ──
         // 0=uit, 1=jij centraal (volgers los eromheen), 2=jij centraal + auto-zoom op de crew.
         let crewMode = 0;   // v57.8: rit-gebonden — bewust NIET in de config (keuze Sjoerd)
+        // v59.8: onthoudt wat CREW zelf aanzette, zodat CREW-uit alleen dát weer uitzet
+        // (stond Draai of Center al aan door jouw eigen druk, dan blijft die van jou).
+        let crewArmedRot = false;
+        let crewArmedCenter = false;
         function toggleCrew() {
             const prevMode = crewMode;
             crewMode = (crewMode + 1) % 3;
@@ -8164,6 +8172,26 @@ assign initialcost =
                     zoomLevelValue = _savedManualZoom;
                     updateZoomDisplay();   // terug naar de handmatige waarde in de display
                 }
+            }
+            // v59.8 (keuze Sjoerd): CREW is een RIJ-STAND — blauw (volgers zichtbaar) en groen
+            // (volgers-zoom) zetten Noord en Center mee aan; terug naar kaal (0) zet weer uit
+            // wat CREW zelf aanzette. De bestaande keten in toggleMapRotation (aan → Center mee)
+            // doet het meeste werk; hier alleen bijhouden wie de aanzetter was.
+            if (prevMode === 0 && crewMode === 1) {
+                crewArmedCenter = false;
+                if (!mapRotationEnabled) {
+                    crewArmedRot = true;
+                    const centerWasUit = !isAutoFollowActive;
+                    toggleMapRotation();   // Draai aan; keten zet Center mee aan als die uit was
+                    if (centerWasUit && isAutoFollowActive) crewArmedCenter = true;
+                } else {
+                    crewArmedRot = false;   // Draai was al van jou
+                    if (!isAutoFollowActive) { crewArmedCenter = true; toggleFollow(); }
+                }
+            } else if (crewMode === 0) {
+                if (crewArmedRot && mapRotationEnabled) toggleMapRotation();   // uit-tak raakt Center niet
+                if (crewArmedCenter && isAutoFollowActive) toggleFollow();
+                crewArmedRot = false; crewArmedCenter = false;
             }
             if (crewMode > 0) applyCrewView(true);
             // Zichtbaarheid meteen bijwerken: CREW aan → volgers tonen (ook op "IK"); CREW uit → terug
