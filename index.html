@@ -800,7 +800,7 @@
     </div>
     <!-- SPRAAKBERICHT lichtkrant: tekst scrolt 1× van rechts naar links, transparant met zwarte rand -->
     <div id="voiceMarquee" style="display:none; position:fixed; top:18%; left:0; right:0; z-index:1240; pointer-events:none; overflow:hidden; height:135px;">
-        <span id="voiceMarqueeText" style="position:absolute; top:0; white-space:nowrap; font-family:sans-serif; font-weight:900; font-size:96px; line-height:135px; color:rgba(255,255,255,0.12); -webkit-text-stroke:4.5px #000; text-stroke:4.5px #000; paint-order:stroke fill; will-change:transform;"></span>
+        <span id="voiceMarqueeText" style="position:absolute; top:0; white-space:nowrap; font-family:sans-serif; font-weight:900; font-size:96px; line-height:135px; color:rgba(255,255,255,0.12); -webkit-text-stroke:4.5px #000; text-stroke:4.5px #000; paint-order:stroke fill; text-shadow:0 0 6px rgba(255,255,255,0.95), 0 0 16px rgba(255,255,255,0.75), 0 0 28px rgba(255,255,255,0.5); will-change:transform;"></span>
     </div>
     <!-- WOORDENLIJST: kant-en-klare zinnen (Words-modus). Tik zin = versturen, tik naast lijst = sluiten. -->
     <div id="wordsOverlay" style="display:none; position:fixed; inset:0; z-index:2550; background:rgba(0,0,0,0.55);" onclick="closeWordsList(event)">
@@ -825,7 +825,7 @@
     </div>
     <!-- SCREEN LOCK: open lock icon (top-right) + full overlay when locked -->
     <div id="lockIcon" style="display:none; position: fixed; top: 20px; right: 20px; z-index: 1600; width: 40px; height: 40px; cursor: pointer; align-items: center; justify-content: center;">
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="#000"><path d="M12 1a5 5 0 00-5 5v2H6a2 2 0 00-2 2v9a2 2 0 002 2h12a2 2 0 002-2v-9a2 2 0 00-2-2h-7V6a3 3 0 016 0h2a5 5 0 00-5-5zm0 11a2 2 0 011 3.73V18a1 1 0 01-2 0v-2.27A2 2 0 0112 12z"/></svg>
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="#000" style="filter: drop-shadow(0 0 2px rgba(255,255,255,0.95)) drop-shadow(0 0 5px rgba(255,255,255,0.7));"><path d="M12 1a5 5 0 00-5 5v2H6a2 2 0 00-2 2v9a2 2 0 002 2h12a2 2 0 002-2v-9a2 2 0 00-2-2h-7V6a3 3 0 016 0h2a5 5 0 00-5-5zm0 11a2 2 0 011 3.73V18a1 1 0 01-2 0v-2.27A2 2 0 0112 12z"/></svg>
     </div>
     <!-- v59.7: lock-overlay ABSOLUUT bovenaan (was 5000, maar buffer-toast z10000 en dev-paneel
          z100000 konden eroverheen liggen en het ontgrendel-gebaar afvangen — melding Sjoerd; de
@@ -930,7 +930,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v60.1 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v60.2 © Umop3p1sdn</div>
 
             </div>
 
@@ -1491,7 +1491,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v60.1 © Umop3p1sdn
+                HO-ME v60.2 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1853,7 +1853,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v60.1 © Umop3p1sdn
+                HO-ME v60.2 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -4084,7 +4084,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "60.1";
+        const APP_VERSION = "60.2";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
@@ -7675,7 +7675,7 @@ assign initialcost =
                 const row = document.createElement('div');
                 row.style.cssText = 'display:flex; align-items:center; gap:6px;';
                 row.innerHTML = `<div style="width:22px; height:22px; border-radius:50%; background:${hexToRgba('#FF1744',0.55)}; border:2px solid #000;"></div>`
-                    + `<span style="color:#000; font-weight:bold; font-size:1.1em;">${masterTagShared}</span>`;
+                    + `<span style="color:#000; font-weight:bold; font-size:1.1em; text-shadow:0 0 4px #fff, 0 0 9px rgba(255,255,255,0.9), 0 0 14px rgba(255,255,255,0.6);">${masterTagShared}</span>`;
                 el.appendChild(row);
             }
             ids.forEach(id => {
@@ -7686,7 +7686,7 @@ assign initialcost =
                 const row = document.createElement('div');
                 row.style.cssText = 'display:flex; align-items:center; gap:6px;';
                 row.innerHTML = `<div style="width:22px; height:22px; border-radius:50%; background:${hexToRgba(color,0.55)}; border:2px solid #000;"></div>`
-                    + `<span style="color:#000; font-weight:bold; font-size:1.1em;">${label}</span>`;
+                    + `<span style="color:#000; font-weight:bold; font-size:1.1em; text-shadow:0 0 4px #fff, 0 0 9px rgba(255,255,255,0.9), 0 0 14px rgba(255,255,255,0.6);">${label}</span>`;
                 el.appendChild(row);
             });
             el.style.opacity = (tagOpacity / 100).toString();
