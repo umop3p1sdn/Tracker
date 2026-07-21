@@ -840,6 +840,16 @@
         </div>
         <div id="lockHint" style="position: absolute; top: calc(env(safe-area-inset-top, 0px) + 92px); right: 12px; color: #fff; font-family: sans-serif; font-size: 0.75em; background: rgba(0,0,0,0.5); padding: 4px 8px; border-radius: 6px;">1 sec vasthouden om te ontgrendelen</div>
     </div>
+    <!-- v61.4 (ontwerp Sjoerd): hoogte-schuif — menu-knop opent alleen deze schuif + het beeld,
+         schuiven verplaatst bord/flitser/rem live, ernaast tikken = sluiten én opslaan. -->
+    <div id="stackSliderOverlay" onclick="closeStackSlider()" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; z-index:2580; background:transparent;"></div>
+    <div id="stackSliderPanel" style="display:none; position:fixed; right:10px; top:50%; transform:translateY(-50%); z-index:2581; background:rgba(10,14,39,0.88); border:2px solid #00BCD4; border-radius:14px; padding:16px 12px; flex-direction:column; align-items:center; gap:8px;">
+        <span style="color:#fff; font-family:sans-serif; font-size:0.75em;">hoog</span>
+        <input id="stackSlider" type="range" min="-150" max="150" step="5" value="0"
+               oninput="stackSliderInput(this.value)"
+               style="-webkit-appearance: slider-vertical; appearance: slider-vertical; width: 40px; height: 44vh;">
+        <span style="color:#fff; font-family:sans-serif; font-size:0.75em;">laag</span>
+    </div>
     <div id="masterStaleWarn" style="display:none; position: fixed; top: 60px; left: 50%; transform: translateX(-50%); z-index: 1700; background: rgba(220,40,40,0.92); color: #fff; font-family: sans-serif; font-size: 0.85em; font-weight: bold; padding: 8px 16px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.4);"></div>
     <div id="speedometer" style="display:none; position: fixed; bottom: 0; left: 0; right: 0; z-index: 1500; background: rgba(0,0,0,0.85); color: #fff; text-align: center; font-family: sans-serif; padding: 6px 0;"><span id="speedValue" style="font-size: 3em; font-weight: bold; line-height: 1;">0</span><span style="font-size: 1em; opacity: 0.7; margin-left: 4px;">km/u</span></div>
     <!-- Rond snelheidsbord (maximumsnelheid van de huidige weg) — links naast de km-teller -->
@@ -935,7 +945,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v61.2 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v61.4 © Umop3p1sdn</div>
 
             </div>
 
@@ -1115,6 +1125,7 @@
                 <button class="button-secondary" onclick="toggleSpeech()" id="speechBtnMenu" style="width: 100%;">Navigatie stem: ON</button>
                 <button class="button-secondary" onclick="toggleFlitserWarn()" id="flitserBtnMenu" style="width: 100%;">Flitsmelding: ACTIEF</button>
                 <button class="button-secondary" onclick="openConfigModal()" style="width: 100%;">Start up config</button>
+                <button class="button-secondary" onclick="openStackSlider()" style="width: 100%;">Hoogte rij-paneel</button>
                 <button class="button-secondary" onclick="toggleFlitserStil()" id="flitserStilBtn" style="width: 100%;">Flits geluid: ON</button>
                 <div id="flitserVolRow" style="display:flex; align-items:center; justify-content:space-between; gap:10px; background:#1a2148; padding:8px 12px; border-radius:8px;">
                     <span style="font-size:0.9em; white-space:nowrap;">Flits-volume</span>
@@ -1497,7 +1508,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v61.2 © Umop3p1sdn
+                HO-ME v61.4 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1860,7 +1871,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v61.2 © Umop3p1sdn
+                HO-ME v61.4 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -4091,7 +4102,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "61.2";
+        const APP_VERSION = "61.4";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
@@ -4148,6 +4159,7 @@ assign initialcost =
             // zodat de herbouw ook doorgaat als het dev-herstel ooit struikelt.
             const devWasOn = (homeConfig.dev === true);
             const dagkaartWas = MAP_STYLES[homeConfig.dagkaart] ? homeConfig.dagkaart : 'std';   // v58.6: vóór de wis! (v58.4-fout: na de wis was 'ie al weg → dagkaart reset elke start)
+            const paneelWas = (() => { const v = parseInt(homeConfig.paneelOffset, 10); return (!isNaN(v) && v >= -150 && v <= 150) ? v : 0; })();   // v61.4
             // v59.5: draai/center zijn geen config-waardes meer (gebakken: elke start uit);
             // het versiestempel cfgV blijft voor toekomstige migraties.
             Object.keys(homeConfig).forEach(k => delete homeConfig[k]);
@@ -4156,6 +4168,7 @@ assign initialcost =
                 cfgV: 2,
                 tag: myTag,
                 dagkaart: dagkaartWas,
+                paneelOffset: paneelWas,
                 flitsmelding: flitserMode,
                 flitsVolume: flitserVolume,
                 lijndikte: trackLineWidth,
@@ -5888,13 +5901,38 @@ assign initialcost =
         // Alleen staand — liggend heeft eigen CSS-regels met !important (rooster-les 1).
         const DESIGN_H = 874;
         let rideBottomCorr = 1;
+        // v61.4: persoonlijke hoogte-instelling (schuif in het ☰-menu, ontwerp Sjoerd:
+        // "zoiets stel je één keer in") — px bovenop de automatische correctie, per toestel
+        // bewaard in de config (paneelOffset). Positief = hoger, negatief = lager.
+        let paneelOffset = (() => { const v = parseInt(homeConfig.paneelOffset, 10); return (!isNaN(v) && v >= -150 && v <= 150) ? v : 0; })();
+        function openStackSlider() {
+            const m = document.getElementById('appMenuModal');
+            if (m) { m.classList.add('hidden'); m.style.display = 'none'; }   // menu dicht: alleen schuif + beeld
+            const s = document.getElementById('stackSlider');
+            if (s) s.value = paneelOffset;
+            const ov = document.getElementById('stackSliderOverlay');
+            const p = document.getElementById('stackSliderPanel');
+            if (ov) ov.style.display = 'block';
+            if (p) p.style.display = 'flex';
+        }
+        function stackSliderInput(v) {
+            const n = parseInt(v, 10);
+            if (!isNaN(n)) { paneelOffset = Math.max(-150, Math.min(150, n)); applyScreenCorrection(); }   // live meebewegen
+        }
+        function closeStackSlider() {
+            const ov = document.getElementById('stackSliderOverlay');
+            const p = document.getElementById('stackSliderPanel');
+            if (ov) ov.style.display = 'none';
+            if (p) p.style.display = 'none';
+            saveCfg({ paneelOffset: paneelOffset });   // ernaast tikken = sluiten én opslaan
+        }
         function applyScreenCorrection() {
             const staand = window.innerHeight >= window.innerWidth;
             // v61.2 (Sjoerd: "mag nog lager op Android"): machts-curve i.p.v. lineair — het
             // referentie-scherm blijft exact 1 (iPhone onveranderd), maar kortere schermen
             // worden stérker omlaag gedrukt. Exponent = de kracht-knop van de correctie.
             const ratio = Math.min(1, window.innerHeight / DESIGN_H);
-            rideBottomCorr = staand ? Math.max(0.6, Math.pow(ratio, 1.8)) : 1;
+            rideBottomCorr = staand ? Math.max(0.6, Math.pow(ratio, 2.4)) : 1;   // v61.3: kracht-knop 1,8 → 2,4 ("mag nog iets naar beneden")
             ['flitserBox', 'speedLimitSign'].forEach(id => {
                 const el = document.getElementById(id);
                 if (!el) return;
@@ -5903,7 +5941,7 @@ assign initialcost =
                     if (isNaN(b)) return;
                     el.dataset.origBottom = String(b);
                 }
-                el.style.bottom = Math.round(parseInt(el.dataset.origBottom, 10) * rideBottomCorr) + 'px';
+                el.style.bottom = Math.max(4, Math.round(parseInt(el.dataset.origBottom, 10) * rideBottomCorr) + paneelOffset) + 'px';
             });
             if (typeof alignRemPanel === 'function') alignRemPanel();   // rem-paneel rekent met dezelfde basis mee
         }
@@ -5915,7 +5953,7 @@ assign initialcost =
             const rp = document.getElementById('remPanel');
             if (!rp || rp.offsetHeight === 0) return;             // (verborgen = niet meetbaar)
             const B = [ {sign:46, count:38}, {sign:62, count:52}, {sign:84, count:72} ][flitserSize];
-            const flitserTop = Math.round(260 * rideBottomCorr) + 20 + Math.round(B.sign * 1.2) + 4 + Math.round(B.count * 1.2);   // v61.1: zelfde basis als de gecorrigeerde flitser
+            const flitserTop = Math.max(4, Math.round(260 * rideBottomCorr) + paneelOffset) + 20 + Math.round(B.sign * 1.2) + 4 + Math.round(B.count * 1.2);   // v61.1/61.4: gecorrigeerde flitser-basis + persoonlijke hoogte
             rp.style.bottom = Math.max(60, flitserTop - rp.offsetHeight) + 'px';
         }
 
