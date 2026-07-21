@@ -851,7 +851,10 @@
     <!-- v62.4 (Sjoerd): bediening bovenin het midden — daar plaats je nooit iconen, dus de
          blokken onderin/opzij blijven vrij zichtbaar tijdens het richten. Onder de safe-area
          (rooster-regel: interactief bovenin = altijd onder de camera-zone). -->
-    <div id="stackSliderPanel" style="display:none; position:fixed; left:50%; top:calc(env(safe-area-inset-top, 0px) + 14px); transform:translateX(-50%); z-index:2581; background:rgba(10,14,39,0.35); border:2px solid rgba(0,188,212,0.7); border-radius:14px; padding:12px; flex-direction:column; align-items:center; gap:8px; font-family:sans-serif;">
+    <!-- v62.8 (Sjoerd, liggend: "kan niet bij de reset-knop"): paneel iets hoger (8px) én
+         een maximale hoogte met scrollen — op korte liggende schermen past de hele kolom
+         nooit, dus het paneel begrenst zichzelf op de schermhoogte en de rest scrolt. -->
+    <div id="stackSliderPanel" style="display:none; position:fixed; left:50%; top:calc(env(safe-area-inset-top, 0px) + 8px); transform:translateX(-50%); z-index:2581; background:rgba(10,14,39,0.35); border:2px solid rgba(0,188,212,0.7); border-radius:14px; padding:10px 12px; flex-direction:column; align-items:center; gap:6px; font-family:sans-serif; max-height:calc(100vh - env(safe-area-inset-top, 0px) - 16px); overflow-y:auto;">
         <!-- v62.2 SCREEN ADJUST 2.0 (ontwerp Sjoerd): blok kiezen → met 4 pijlen verplaatsen,
              grootte-schuif eronder, reset per blok. Staand en liggend hebben elk hun eigen
              opgeslagen standen; ernaast tikken = opslaan + dicht. -->
@@ -964,7 +967,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v62.7 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v62.8 © Umop3p1sdn</div>
 
             </div>
 
@@ -1527,7 +1530,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v62.7 © Umop3p1sdn
+                HO-ME v62.8 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1890,7 +1893,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v62.7 © Umop3p1sdn
+                HO-ME v62.8 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -4121,7 +4124,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "62.7";
+        const APP_VERSION = "62.8";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
