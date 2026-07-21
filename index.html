@@ -847,26 +847,28 @@
          NU-grootte, Pijl-hoogte. Zelfde gedrag: auto-Hide, live meebewegen, ernaast tikken =
          opslaan + dicht. Oefenpijl tijdens het afstellen zodat je ook zonder route kunt richten. -->
     <div id="stackSliderPanel" style="display:none; position:fixed; right:10px; top:50%; transform:translateY(-50%); z-index:2581; background:rgba(10,14,39,0.88); border:2px solid #00BCD4; border-radius:14px; padding:14px 10px; flex-direction:row; align-items:stretch; gap:8px;">
-        <div style="display:flex; flex-direction:column; align-items:center; gap:6px;">
-            <span style="color:#fff; font-family:sans-serif; font-size:0.68em;">Paneel</span>
+        <!-- v61.7: dikkere schuiven (46px, makkelijker te pakken), Grootte schaalt óók pijlen/
+             bord/flitser, en per schuif een reset-knop (Sjoerd: "na testen druk ik gewoon op reset"). -->
+        <div style="display:flex; flex-direction:column; align-items:center; gap:8px;">
+            <span style="color:#fff; font-family:sans-serif; font-size:0.7em;">Paneel</span>
             <input id="stackSlider" type="range" min="-150" max="150" step="5" value="0"
                    oninput="stackSliderInput(this.value)"
-                   style="-webkit-appearance: slider-vertical; appearance: slider-vertical; width: 32px; height: 40vh;">
-            <span style="color:#fff; font-family:sans-serif; font-size:0.68em;">&#8597;</span>
+                   style="-webkit-appearance: slider-vertical; appearance: slider-vertical; width: 46px; height: 34vh; touch-action: none;">
+            <button onclick="resetAdjust('paneel')" style="width: 46px; height: 36px; border-radius: 8px; border: 1px solid #00BCD4; background: transparent; color: #00BCD4; font-size: 1.15em; cursor: pointer;">&#8634;</button>
         </div>
-        <div style="display:flex; flex-direction:column; align-items:center; gap:6px;">
-            <span style="color:#fff; font-family:sans-serif; font-size:0.68em;">NU</span>
+        <div style="display:flex; flex-direction:column; align-items:center; gap:8px;">
+            <span style="color:#fff; font-family:sans-serif; font-size:0.7em;">Grootte</span>
             <input id="remSlider" type="range" min="60" max="100" step="5" value="100"
                    oninput="remSliderInput(this.value)"
-                   style="-webkit-appearance: slider-vertical; appearance: slider-vertical; width: 32px; height: 40vh;">
-            <span style="color:#fff; font-family:sans-serif; font-size:0.68em;">%</span>
+                   style="-webkit-appearance: slider-vertical; appearance: slider-vertical; width: 46px; height: 34vh; touch-action: none;">
+            <button onclick="resetAdjust('grootte')" style="width: 46px; height: 36px; border-radius: 8px; border: 1px solid #00BCD4; background: transparent; color: #00BCD4; font-size: 1.15em; cursor: pointer;">&#8634;</button>
         </div>
-        <div style="display:flex; flex-direction:column; align-items:center; gap:6px;">
-            <span style="color:#fff; font-family:sans-serif; font-size:0.68em;">Pijl</span>
+        <div style="display:flex; flex-direction:column; align-items:center; gap:8px;">
+            <span style="color:#fff; font-family:sans-serif; font-size:0.7em;">Pijl</span>
             <input id="arrowSlider" type="range" min="-150" max="150" step="5" value="0"
                    oninput="arrowSliderInput(this.value)"
-                   style="-webkit-appearance: slider-vertical; appearance: slider-vertical; width: 32px; height: 40vh;">
-            <span style="color:#fff; font-family:sans-serif; font-size:0.68em;">&#8597;</span>
+                   style="-webkit-appearance: slider-vertical; appearance: slider-vertical; width: 46px; height: 34vh; touch-action: none;">
+            <button onclick="resetAdjust('pijl')" style="width: 46px; height: 36px; border-radius: 8px; border: 1px solid #00BCD4; background: transparent; color: #00BCD4; font-size: 1.15em; cursor: pointer;">&#8634;</button>
         </div>
     </div>
     <div id="masterStaleWarn" style="display:none; position: fixed; top: 60px; left: 50%; transform: translateX(-50%); z-index: 1700; background: rgba(220,40,40,0.92); color: #fff; font-family: sans-serif; font-size: 0.85em; font-weight: bold; padding: 8px 16px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.4);"></div>
@@ -964,7 +966,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v61.6 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v61.7 © Umop3p1sdn</div>
 
             </div>
 
@@ -1527,7 +1529,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v61.6 © Umop3p1sdn
+                HO-ME v61.7 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1890,7 +1892,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v61.6 © Umop3p1sdn
+                HO-ME v61.7 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -4121,7 +4123,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "61.6";
+        const APP_VERSION = "61.7";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
@@ -5939,6 +5941,12 @@ assign initialcost =
             const n = parseInt(v, 10);
             if (!isNaN(n)) { pijlOffset = Math.max(-150, Math.min(150, n)); applyScreenCorrection(); }
         }
+        function resetAdjust(which) {   // v61.7: per schuif terug naar de standaard (opslaan gebeurt bij het sluiten)
+            if (which === 'paneel') { paneelOffset = 0; const s = document.getElementById('stackSlider'); if (s) s.value = 0; }
+            if (which === 'grootte') { remSchaal = 100; const s = document.getElementById('remSlider'); if (s) s.value = 100; }
+            if (which === 'pijl') { pijlOffset = 0; const s = document.getElementById('arrowSlider'); if (s) s.value = 0; }
+            applyScreenCorrection();
+        }
         let _sliderForcedHide = false;   // v61.5: onthouden of WIJ Hide aanzetten (dan bij sluiten weer terug)
         let _adjustForcedArrow = [];     // v61.6: welke oefenpijl-elementen wij toonden
         function openStackSlider() {
@@ -5962,14 +5970,23 @@ assign initialcost =
             // afstellen tonen we er tijdelijk één (+ afstandstekst), zodat je zonder route
             // kunt richten. Alleen forceren wat nu verborgen is; bij sluiten weer weg.
             _adjustForcedArrow = [];
-            [['turnArrowRight', 'flex'], ['turnDist', 'block']].forEach(([id, disp]) => {
-                const el = document.getElementById(id);
-                if (el && window.getComputedStyle(el).display === 'none') {
-                    el.style.display = disp;
-                    _adjustForcedArrow.push(id);
-                    if (id === 'turnDist' && !el.textContent) el.textContent = '150 m';
-                }
-            });
+            const oefR = document.getElementById('turnArrowRight');
+            if (oefR && window.getComputedStyle(oefR).display === 'none') {
+                // v61.7 (Sjoerd: "grote rode pijlen in adjust mode, zodat je weet waar je aan
+                // werkt"): oefenpijl in de echte dichtbij-stand — 90px, rood, grote svg. Echte
+                // navigatie zet maat/kleur toch bij elke tik opnieuw, dus niets te herstellen.
+                oefR.style.width = '90px'; oefR.style.height = '90px'; oefR.style.background = '#FF1744';
+                const sv = oefR.querySelector('svg');
+                if (sv) { sv.setAttribute('width', 63); sv.setAttribute('height', 63); }
+                oefR.style.display = 'flex';
+                _adjustForcedArrow.push('turnArrowRight');
+            }
+            const oefD = document.getElementById('turnDist');
+            if (oefD && window.getComputedStyle(oefD).display === 'none') {
+                if (!oefD.textContent) oefD.textContent = '150 m';
+                oefD.style.display = 'block';
+                _adjustForcedArrow.push('turnDist');
+            }
             const ov = document.getElementById('stackSliderOverlay');
             const p = document.getElementById('stackSliderPanel');
             if (ov) ov.style.display = 'block';
@@ -6013,11 +6030,22 @@ assign initialcost =
                 el.style.bottom = Math.max(4, Math.round(parseInt(el.dataset.origBottom, 10) * rideBottomCorr) + paneelOffset) + 'px';
             });
             if (typeof alignRemPanel === 'function') alignRemPanel();   // rem-paneel rekent met dezelfde basis mee
-            // v61.6 Screen adjust: NU-blok schalen (origin links-onder = onderrand blijft liggen)
-            const rp = document.getElementById('remPanel');
-            if (rp) {
-                rp.style.transformOrigin = 'left bottom';
-                rp.style.transform = (remSchaal < 100) ? ('scale(' + (remSchaal / 100) + ')') : '';
+            // v61.6/61.7 Screen adjust: Grootte schaalt de hele rij-set — NU-blok, snelheids-
+            // bord, flitser en de pijlen (Sjoerd: "met kleiner maken ook de pijlen, borden en
+            // flits melder"). Origin per element op de eigen verankerde hoek, zodat alles op
+            // z'n plek blijft liggen en naar binnen krimpt.
+            const schaal = (remSchaal < 100) ? ('scale(' + (remSchaal / 100) + ')') : '';
+            [['remPanel', 'left bottom'], ['speedLimitSign', 'right bottom'], ['flitserBox', 'right bottom'],
+             ['turnArrowLeft', 'left bottom'], ['turnArrowRight', 'right bottom']].forEach(([id, origin]) => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                el.style.transformOrigin = origin;
+                el.style.transform = schaal;
+            });
+            const td = document.getElementById('turnDist');
+            if (td) {   // turnDist centreert zichzelf met translateX — schaal komt erbovenop
+                td.style.transformOrigin = 'center bottom';
+                td.style.transform = 'translateX(-50%)' + (schaal ? ' ' + schaal : '');
             }
             // Pijlen + afstandstekst op/neer — alleen staand (liggend winnen de CSS-!important-regels, rooster-les 1)
             ['turnArrowLeft', 'turnArrowRight', 'turnDist'].forEach(id => {
