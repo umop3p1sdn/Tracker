@@ -935,7 +935,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v61.0 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v61.1 © Umop3p1sdn</div>
 
             </div>
 
@@ -1497,7 +1497,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v61.0 © Umop3p1sdn
+                HO-ME v61.1 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1860,7 +1860,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v61.0 © Umop3p1sdn
+                HO-ME v61.1 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -4091,7 +4091,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "61.0";
+        const APP_VERSION = "61.1";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
@@ -4133,6 +4133,7 @@ assign initialcost =
             if (v) v.textContent = Math.round(flitserVolume * 100) + '%';
             const vs = document.getElementById('flitserVolSlider');
             if (vs) vs.value = Math.round(flitserVolume * 100);
+            if (typeof applyScreenCorrection === 'function') applyScreenCorrection();   // v61.1
             const pb = document.getElementById('navBtnMenu');
             if (pb) pb.textContent = navArrowsEnabled ? 'Navigatie pijlen: ON' : 'Navigatie pijlen: OFF';
             const ot = ombEnabled ? 'OMB: ON' : 'OMB: OFF';
@@ -4233,6 +4234,7 @@ assign initialcost =
                             + ' dpr=' + (window.devicePixelRatio || 1)
                             + (window.innerHeight >= window.innerWidth ? ' staand' : ' liggend')
                             + ' safe=' + saTop + '/' + saBot
+                            + ' corr=' + (typeof rideBottomCorr === 'number' ? rideBottomCorr.toFixed(2) : '-')
                             + '\ntops: bord=' + top('speedLimitSign') + ' flitser=' + top('flitserBox') + ' rem=' + top('remPanel') + ' teller=' + top('speedometer');
                     } catch (e) {}
                 }
@@ -5877,12 +5879,39 @@ assign initialcost =
         // hangt van fonts af (em) en was geschat op ~118 — dat week net af. Nu METEN we de echte
         // hoogte en zetten de bottom zo dat de top exact op de flitser-top valt. De flitser zelf is
         // wél pure px-opbouw: padding 10 + bord + marge 4 + aftelcijfer + padding 10.
+        // ── v61.1 DYNAMISCHE SCHERM-CORRECTIE (ontwerp Sjoerd: "goed meten en alleen bij
+        // afwijkende schermen aanpassen — soort correctie"). Referentie = 874 px hoog (Sjoerds
+        // iPhone, dáár is de rij-stapel op afgesteld; meetlint-bewijs: iPhone 402x874, S22
+        // 360x730). Kortere schermen schalen de onder-ankers mee (factor h/874, ondergrens
+        // 0,7) zodat bord/flitser relatief op dezelfde plek blijven en de vliegtuig-zone
+        // (het midden) vrij blijft. Referentie-scherm of groter: factor 1 = niets verandert.
+        // Alleen staand — liggend heeft eigen CSS-regels met !important (rooster-les 1).
+        const DESIGN_H = 874;
+        let rideBottomCorr = 1;
+        function applyScreenCorrection() {
+            const staand = window.innerHeight >= window.innerWidth;
+            rideBottomCorr = staand ? Math.max(0.7, Math.min(1, window.innerHeight / DESIGN_H)) : 1;
+            ['flitserBox', 'speedLimitSign'].forEach(id => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                if (!el.dataset.origBottom) {
+                    const b = parseInt(el.style.bottom, 10);
+                    if (isNaN(b)) return;
+                    el.dataset.origBottom = String(b);
+                }
+                el.style.bottom = Math.round(parseInt(el.dataset.origBottom, 10) * rideBottomCorr) + 'px';
+            });
+            if (typeof alignRemPanel === 'function') alignRemPanel();   // rem-paneel rekent met dezelfde basis mee
+        }
+        window.addEventListener('resize', applyScreenCorrection);
+        window.addEventListener('orientationchange', () => setTimeout(applyScreenCorrection, 250));
+
         function alignRemPanel() {
             if (window.innerWidth > window.innerHeight) return;   // liggend: eigen CSS-regels
             const rp = document.getElementById('remPanel');
             if (!rp || rp.offsetHeight === 0) return;             // (verborgen = niet meetbaar)
             const B = [ {sign:46, count:38}, {sign:62, count:52}, {sign:84, count:72} ][flitserSize];
-            const flitserTop = 260 + 20 + Math.round(B.sign * 1.2) + 4 + Math.round(B.count * 1.2);
+            const flitserTop = Math.round(260 * rideBottomCorr) + 20 + Math.round(B.sign * 1.2) + 4 + Math.round(B.count * 1.2);   // v61.1: zelfde basis als de gecorrigeerde flitser
             rp.style.bottom = Math.max(60, flitserTop - rp.offsetHeight) + 'px';
         }
 
