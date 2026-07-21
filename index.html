@@ -963,7 +963,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v62.4 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v62.5 © Umop3p1sdn</div>
 
             </div>
 
@@ -1526,7 +1526,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v62.4 © Umop3p1sdn
+                HO-ME v62.5 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1889,7 +1889,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v62.4 © Umop3p1sdn
+                HO-ME v62.5 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -4120,7 +4120,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "62.4";
+        const APP_VERSION = "62.5";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
@@ -4163,11 +4163,11 @@ assign initialcost =
             const vs = document.getElementById('flitserVolSlider');
             if (vs) vs.value = Math.round(flitserVolume * 100);
             if (typeof applyScreenCorrection === 'function') applyScreenCorrection();   // v61.1
-            if (typeof bindHoldRepeat === 'function') {   // v62.2: 4-pijlen-pad (tik = 5px, vasthouden = doorschuiven)
-                bindHoldRepeat(document.getElementById('adjUp'),    () => adjustMove(0, -5));
-                bindHoldRepeat(document.getElementById('adjDown'),  () => adjustMove(0, 5));
-                bindHoldRepeat(document.getElementById('adjLeft'),  () => adjustMove(-5, 0));
-                bindHoldRepeat(document.getElementById('adjRight'), () => adjustMove(5, 0));
+            if (typeof bindHoldRepeat === 'function') {   // v62.2/62.5: 4-pijlen-pad, vasthouden versnelt
+                bindHoldRepeat(document.getElementById('adjUp'),    (n) => adjustMove(0, -adjustStap(n)));
+                bindHoldRepeat(document.getElementById('adjDown'),  (n) => adjustMove(0, adjustStap(n)));
+                bindHoldRepeat(document.getElementById('adjLeft'),  (n) => adjustMove(-adjustStap(n), 0));
+                bindHoldRepeat(document.getElementById('adjRight'), (n) => adjustMove(adjustStap(n), 0));
             }
             const pb = document.getElementById('navBtnMenu');
             if (pb) pb.textContent = navArrowsEnabled ? 'Navigatie pijlen: ON' : 'Navigatie pijlen: OFF';
@@ -5983,9 +5983,12 @@ assign initialcost =
             if (sz) sz.value = adjustVal(blok).s || 100;
         }
         function adjustMove(dx, dy) {
+            // v62.5 (Sjoerd: "graag maximaal beweegruimte" — pijlen bovenin onder de zoom,
+            // afstand/tijd boven de T, of naar de overkant): begrenzer van ±250 naar ±1200,
+            // ruim genoeg voor elk scherm in elke richting. Reset dit blok = altijd terug.
             const v = adjustVal(adjustSel);
-            v.x = Math.max(-250, Math.min(250, (v.x || 0) + dx));
-            v.y = Math.max(-250, Math.min(250, (v.y || 0) + dy));
+            v.x = Math.max(-1200, Math.min(1200, (v.x || 0) + dx));
+            v.y = Math.max(-1200, Math.min(1200, (v.y || 0) + dy));
             applyAdjust();
         }
         function adjustSize(val) {
@@ -6000,15 +6003,18 @@ assign initialcost =
             applyAdjust();
             adjustSelect(adjustSel);
         }
-        function bindHoldRepeat(el, fn) {   // tik = stapje van 5px, vasthouden = doorschuiven
+        function bindHoldRepeat(el, fn) {   // tik = stapje, vasthouden = doorschuiven met VERSNELLING (v62.5)
             if (!el) return;
-            let t = null, iv = null;
-            const stop = () => { if (t) clearTimeout(t); if (iv) clearInterval(iv); t = iv = null; };
-            const start = (e) => { e.preventDefault(); fn(); t = setTimeout(() => { iv = setInterval(fn, 110); }, 400); };
+            let t = null, iv = null, n = 0;
+            const stop = () => { if (t) clearTimeout(t); if (iv) clearInterval(iv); t = iv = null; n = 0; };
+            const start = (e) => { e.preventDefault(); n = 0; fn(0); t = setTimeout(() => { iv = setInterval(() => fn(++n), 110); }, 400); };
             el.addEventListener('contextmenu', (e) => e.preventDefault());
             el.addEventListener('touchstart', start, { passive: false });
             el.addEventListener('mousedown', start);
             ['touchend', 'touchcancel', 'mouseup', 'mouseleave'].forEach(ev => el.addEventListener(ev, stop));
+        }
+        function adjustStap(n) {   // v62.5: losse tik 5px; vasthouden na ~1s 15px, na ~3s 30px per stap
+            return (n < 8) ? 5 : (n < 24) ? 15 : 30;
         }
         let _sliderForcedHide = false;   // v61.5: onthouden of WIJ Hide aanzetten (dan bij sluiten weer terug)
         let _adjustForcedArrow = [];     // v61.6: welke oefenpijl-elementen wij toonden
