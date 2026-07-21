@@ -858,19 +858,25 @@
         <!-- v62.2 SCREEN ADJUST 2.0 (ontwerp Sjoerd): blok kiezen → met 4 pijlen verplaatsen,
              grootte-schuif eronder, reset per blok. Staand en liggend hebben elk hun eigen
              opgeslagen standen; ernaast tikken = opslaan + dicht. -->
-        <button id="adjSel_pijlen"  onclick="adjustSelect('pijlen')"  style="width: 150px; padding: 9px 6px; border-radius: 8px; border: 1px solid #00BCD4; background: transparent; color: #00BCD4; font-size: 0.85em; cursor: pointer;">Pijlen + afstand</button>
-        <button id="adjSel_rem"     onclick="adjustSelect('rem')"     style="width: 150px; padding: 9px 6px; border-radius: 8px; border: 1px solid #00BCD4; background: transparent; color: #00BCD4; font-size: 0.85em; cursor: pointer;">Afstand / tijd</button>
-        <button id="adjSel_bord"    onclick="adjustSelect('bord')"    style="width: 150px; padding: 9px 6px; border-radius: 8px; border: 1px solid #00BCD4; background: transparent; color: #00BCD4; font-size: 0.85em; cursor: pointer;">Verkeersbord</button>
-        <button id="adjSel_flitser" onclick="adjustSelect('flitser')" style="width: 150px; padding: 9px 6px; border-radius: 8px; border: 1px solid #00BCD4; background: transparent; color: #00BCD4; font-size: 0.85em; cursor: pointer;">Flitser-bord</button>
-        <button id="adjSel_snelheid" onclick="adjustSelect('snelheid')" style="width: 150px; padding: 9px 6px; border-radius: 8px; border: 1px solid #00BCD4; background: transparent; color: #00BCD4; font-size: 0.85em; cursor: pointer;">GPS-snelheid</button>
-        <div style="display:grid; grid-template-columns: 48px 48px 48px; grid-template-rows: 48px 48px 48px; gap: 4px; margin-top: 2px;">
-            <span></span><button id="adjUp" style="border-radius: 10px; border: 1px solid #00BCD4; background: rgba(0,188,212,0.12); color: #fff; font-size: 1.3em; cursor: pointer;">&#9650;</button><span></span>
-            <button id="adjLeft" style="border-radius: 10px; border: 1px solid #00BCD4; background: rgba(0,188,212,0.12); color: #fff; font-size: 1.3em; cursor: pointer;">&#9664;</button><span></span><button id="adjRight" style="border-radius: 10px; border: 1px solid #00BCD4; background: rgba(0,188,212,0.12); color: #fff; font-size: 1.3em; cursor: pointer;">&#9654;</button>
-            <span></span><button id="adjDown" style="border-radius: 10px; border: 1px solid #00BCD4; background: rgba(0,188,212,0.12); color: #fff; font-size: 1.3em; cursor: pointer;">&#9660;</button><span></span>
+        <!-- v62.9: twee kolommen — staand onder elkaar (smal), liggend naast elkaar (breed):
+             blokken links, pijlen-pad + grootte + reset rechts (wens Sjoerd). -->
+        <div style="display:flex; flex-direction:column; align-items:center; gap:6px;">
+            <button id="adjSel_pijlen"  onclick="adjustSelect('pijlen')"  style="width: 150px; padding: 9px 6px; border-radius: 8px; border: 1px solid #00BCD4; background: transparent; color: #00BCD4; font-size: 0.85em; cursor: pointer;">Pijlen + afstand</button>
+            <button id="adjSel_rem"     onclick="adjustSelect('rem')"     style="width: 150px; padding: 9px 6px; border-radius: 8px; border: 1px solid #00BCD4; background: transparent; color: #00BCD4; font-size: 0.85em; cursor: pointer;">Afstand / tijd</button>
+            <button id="adjSel_bord"    onclick="adjustSelect('bord')"    style="width: 150px; padding: 9px 6px; border-radius: 8px; border: 1px solid #00BCD4; background: transparent; color: #00BCD4; font-size: 0.85em; cursor: pointer;">Verkeersbord</button>
+            <button id="adjSel_flitser" onclick="adjustSelect('flitser')" style="width: 150px; padding: 9px 6px; border-radius: 8px; border: 1px solid #00BCD4; background: transparent; color: #00BCD4; font-size: 0.85em; cursor: pointer;">Flitser-bord</button>
+            <button id="adjSel_snelheid" onclick="adjustSelect('snelheid')" style="width: 150px; padding: 9px 6px; border-radius: 8px; border: 1px solid #00BCD4; background: transparent; color: #00BCD4; font-size: 0.85em; cursor: pointer;">GPS-snelheid</button>
         </div>
-        <input id="adjSizeSlider" type="range" min="50" max="140" step="5" value="100" oninput="adjustSize(this.value)"
-               style="width: 150px; touch-action: none; margin-top: 2px;">
-        <button onclick="adjustReset()" style="width: 150px; padding: 8px 6px; border-radius: 8px; border: 1px solid #FF9800; background: transparent; color: #FF9800; font-size: 0.85em; cursor: pointer;">&#8634; Reset dit blok</button>
+        <div style="display:flex; flex-direction:column; align-items:center; gap:6px;">
+            <div style="display:grid; grid-template-columns: 48px 48px 48px; grid-template-rows: 48px 48px 48px; gap: 4px;">
+                <span></span><button id="adjUp" style="border-radius: 10px; border: 1px solid #00BCD4; background: rgba(0,188,212,0.12); color: #fff; font-size: 1.3em; cursor: pointer;">&#9650;</button><span></span>
+                <button id="adjLeft" style="border-radius: 10px; border: 1px solid #00BCD4; background: rgba(0,188,212,0.12); color: #fff; font-size: 1.3em; cursor: pointer;">&#9664;</button><span></span><button id="adjRight" style="border-radius: 10px; border: 1px solid #00BCD4; background: rgba(0,188,212,0.12); color: #fff; font-size: 1.3em; cursor: pointer;">&#9654;</button>
+                <span></span><button id="adjDown" style="border-radius: 10px; border: 1px solid #00BCD4; background: rgba(0,188,212,0.12); color: #fff; font-size: 1.3em; cursor: pointer;">&#9660;</button><span></span>
+            </div>
+            <input id="adjSizeSlider" type="range" min="50" max="140" step="5" value="100" oninput="adjustSize(this.value)"
+                   style="width: 150px; touch-action: none;">
+            <button onclick="adjustReset()" style="width: 150px; padding: 8px 6px; border-radius: 8px; border: 1px solid #FF9800; background: transparent; color: #FF9800; font-size: 0.85em; cursor: pointer;">&#8634; Reset dit blok</button>
+        </div>
     </div>
     <div id="masterStaleWarn" style="display:none; position: fixed; top: 60px; left: 50%; transform: translateX(-50%); z-index: 1700; background: rgba(220,40,40,0.92); color: #fff; font-family: sans-serif; font-size: 0.85em; font-weight: bold; padding: 8px 16px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.4);"></div>
     <div id="speedometer" style="display:none; position: fixed; bottom: 0; left: 0; right: 0; z-index: 1500; background: rgba(0,0,0,0.85); color: #fff; text-align: center; font-family: sans-serif; padding: 6px 0;"><span id="speedValue" style="font-size: 3em; font-weight: bold; line-height: 1;">0</span><span style="font-size: 1em; opacity: 0.7; margin-left: 4px;">km/u</span></div>
@@ -967,7 +973,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v62.8 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v62.9 © Umop3p1sdn</div>
 
             </div>
 
@@ -1530,7 +1536,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v62.8 © Umop3p1sdn
+                HO-ME v62.9 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1893,7 +1899,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v62.8 © Umop3p1sdn
+                HO-ME v62.9 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -4124,7 +4130,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "62.8";
+        const APP_VERSION = "62.9";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
@@ -6070,7 +6076,12 @@ assign initialcost =
             const ov = document.getElementById('stackSliderOverlay');
             const p = document.getElementById('stackSliderPanel');
             if (ov) ov.style.display = 'block';
-            if (p) p.style.display = 'flex';
+            if (p) {
+                p.style.display = 'flex';
+                // v62.9: staand = smalle kolom, liggend = breed (blokken | bediening naast elkaar)
+                p.style.flexDirection = (window.innerHeight >= window.innerWidth) ? 'column' : 'row';
+                p.style.alignItems = (window.innerHeight >= window.innerWidth) ? 'center' : 'flex-start';
+            }
         }
         function closeStackSlider() {
             const ov = document.getElementById('stackSliderOverlay');
@@ -6123,7 +6134,11 @@ assign initialcost =
             // CSS + scherm-correctie.
             if (typeof applyAdjust === 'function') applyAdjust();
             const _sp = document.getElementById('stackSliderPanel');
-            if (_sp && _sp.style.display === 'flex' && typeof adjustSelect === 'function') adjustSelect(adjustSel);
+            if (_sp && _sp.style.display === 'flex' && typeof adjustSelect === 'function') {
+                _sp.style.flexDirection = staand ? 'column' : 'row';   // v62.9: breed liggend
+                _sp.style.alignItems = staand ? 'center' : 'flex-start';
+                adjustSelect(adjustSel);
+            }
         }
         window.addEventListener('resize', applyScreenCorrection);
         window.addEventListener('orientationchange', () => setTimeout(applyScreenCorrection, 250));
