@@ -966,7 +966,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v61.7 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v61.9 © Umop3p1sdn</div>
 
             </div>
 
@@ -1529,7 +1529,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v61.7 © Umop3p1sdn
+                HO-ME v61.9 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1892,7 +1892,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v61.7 © Umop3p1sdn
+                HO-ME v61.9 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -4123,7 +4123,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "61.7";
+        const APP_VERSION = "61.9";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
@@ -5720,8 +5720,18 @@ assign initialcost =
                 fbox.style.left = isLandscape ? '' : 'auto';
                 fbox.style.right = isLandscape ? '' : '12px';
                 fbox.style.top = '';
-                fbox.style.bottom = isLandscape ? '' : '260px';
-                fbox.style.transform = '';
+                // v61.8 (melding Sjoerd: "flitser springt boven een bepaalde lijn uit, schuift
+                // niet mee"): deze regel zette de flitser bij elke maat/orientatie-verversing
+                // HARD terug op de vaste 260 — dwars door scherm-correctie en Paneel-schuif heen.
+                // Liggend: leegmaken zodat de CSS-regels winnen; staand: de gecorrigeerde stand
+                // opnieuw laten toepassen (zelfde formule, één bron van waarheid).
+                if (isLandscape) fbox.style.bottom = '';
+                else if (typeof applyScreenCorrection === 'function') applyScreenCorrection();
+                else fbox.style.bottom = '260px';
+                // v61.9 (melding Sjoerd: "flitser heeft ook een vaste waarde in grootte"): de
+                // transform niet meer leegvegen — daar woont sinds v61.7 de Grootte-schaal.
+                // Liggend mag wél (CSS heeft daar toch transform:none !important, regel 672).
+                if (isLandscape) fbox.style.transform = '';
             }
         }
 
