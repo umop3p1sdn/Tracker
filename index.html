@@ -935,7 +935,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v61.1 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v61.2 © Umop3p1sdn</div>
 
             </div>
 
@@ -1497,7 +1497,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v61.1 © Umop3p1sdn
+                HO-ME v61.2 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1860,7 +1860,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v61.1 © Umop3p1sdn
+                HO-ME v61.2 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -4091,7 +4091,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "61.1";
+        const APP_VERSION = "61.2";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
@@ -5890,7 +5890,11 @@ assign initialcost =
         let rideBottomCorr = 1;
         function applyScreenCorrection() {
             const staand = window.innerHeight >= window.innerWidth;
-            rideBottomCorr = staand ? Math.max(0.7, Math.min(1, window.innerHeight / DESIGN_H)) : 1;
+            // v61.2 (Sjoerd: "mag nog lager op Android"): machts-curve i.p.v. lineair — het
+            // referentie-scherm blijft exact 1 (iPhone onveranderd), maar kortere schermen
+            // worden stérker omlaag gedrukt. Exponent = de kracht-knop van de correctie.
+            const ratio = Math.min(1, window.innerHeight / DESIGN_H);
+            rideBottomCorr = staand ? Math.max(0.6, Math.pow(ratio, 1.8)) : 1;
             ['flitserBox', 'speedLimitSign'].forEach(id => {
                 const el = document.getElementById(id);
                 if (!el) return;
