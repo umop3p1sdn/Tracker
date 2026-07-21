@@ -935,7 +935,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v60.9 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v61.0 © Umop3p1sdn</div>
 
             </div>
 
@@ -1497,7 +1497,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v60.9 © Umop3p1sdn
+                HO-ME v61.0 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1860,7 +1860,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v60.9 © Umop3p1sdn
+                HO-ME v61.0 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -4091,7 +4091,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "60.9";
+        const APP_VERSION = "61.0";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
@@ -4215,6 +4215,26 @@ assign initialcost =
                         : 'boot: LEEG';
                     tekst += '\n' + boot
                         + '\n── schrijf-dagboek (dev) ──\n' + (cfgJournal.length ? cfgJournal.join('\n') : '(nog geen schrijfacties)');
+                    // v61.0: SCHERMMETING (vraag Sjoerd: "kun je meten wat voor scherm het is?" —
+                    // S22 zet bord/rem-paneel hoger dan de iPhone). Meet viewport, pixeldichtheid,
+                    // safe-area's (via een probe-element, env() is niet direct uitleesbaar) en de
+                    // ECHTE top-posities van de rij-elementen. Twee aflezingen naast elkaar = diagnose.
+                    try {
+                        const top = id => { const el = document.getElementById(id); if (!el) return '-'; const st = window.getComputedStyle(el); if (st.display === 'none') return 'uit'; return Math.round(el.getBoundingClientRect().top); };
+                        const probe = document.createElement('div');
+                        probe.style.cssText = 'position:fixed;top:0;left:-9999px;width:1px;height:env(safe-area-inset-top,0px);';
+                        document.body.appendChild(probe);
+                        const saTop = probe.offsetHeight;
+                        probe.style.height = 'env(safe-area-inset-bottom,0px)';
+                        const saBot = probe.offsetHeight;
+                        probe.remove();
+                        const toestel = /Android/i.test(navigator.userAgent) ? 'Android' : (/iPhone|iPad/i.test(navigator.userAgent) ? 'iPhone' : '?');
+                        tekst += '\n── scherm (dev) ──\n' + toestel + ' ' + window.innerWidth + 'x' + window.innerHeight
+                            + ' dpr=' + (window.devicePixelRatio || 1)
+                            + (window.innerHeight >= window.innerWidth ? ' staand' : ' liggend')
+                            + ' safe=' + saTop + '/' + saBot
+                            + '\ntops: bord=' + top('speedLimitSign') + ' flitser=' + top('flitserBox') + ' rem=' + top('remPanel') + ' teller=' + top('speedometer');
+                    } catch (e) {}
                 }
                 s.textContent = tekst;
                 s.style.whiteSpace = 'pre-wrap';
