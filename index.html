@@ -945,7 +945,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v61.4 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v61.5 © Umop3p1sdn</div>
 
             </div>
 
@@ -1508,7 +1508,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v61.4 © Umop3p1sdn
+                HO-ME v61.5 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1871,7 +1871,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v61.4 © Umop3p1sdn
+                HO-ME v61.5 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -4102,7 +4102,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "61.4";
+        const APP_VERSION = "61.5";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
@@ -5905,9 +5905,18 @@ assign initialcost =
         // "zoiets stel je één keer in") — px bovenop de automatische correctie, per toestel
         // bewaard in de config (paneelOffset). Positief = hoger, negatief = lager.
         let paneelOffset = (() => { const v = parseInt(homeConfig.paneelOffset, 10); return (!isNaN(v) && v >= -150 && v <= 150) ? v : 0; })();
+        let _sliderForcedHide = false;   // v61.5: onthouden of WIJ Hide aanzetten (dan bij sluiten weer terug)
         function openStackSlider() {
             const m = document.getElementById('appMenuModal');
             if (m) { m.classList.add('hidden'); m.style.display = 'none'; }   // menu dicht: alleen schuif + beeld
+            // v61.5 (verzoek Sjoerd): automatisch naar Hide (clean scherm) — dáár leven bord,
+            // flitser en rem-paneel, dus dan zie je wat je verplaatst. Stond Hide al aan, dan
+            // veranderen we niks (en zetten we 'm bij sluiten dus ook niet uit).
+            _sliderForcedHide = false;
+            if (!document.body.classList.contains('map-only') && typeof toggleMapOnly === 'function') {
+                toggleMapOnly();
+                _sliderForcedHide = true;
+            }
             const s = document.getElementById('stackSlider');
             if (s) s.value = paneelOffset;
             const ov = document.getElementById('stackSliderOverlay');
@@ -5925,6 +5934,10 @@ assign initialcost =
             if (ov) ov.style.display = 'none';
             if (p) p.style.display = 'none';
             saveCfg({ paneelOffset: paneelOffset });   // ernaast tikken = sluiten én opslaan
+            if (_sliderForcedHide && document.body.classList.contains('map-only') && typeof toggleMapOnly === 'function') {
+                toggleMapOnly();   // v61.5: alleen terug-wisselen als wíj Hide aanzetten — "alles weer normaal"
+            }
+            _sliderForcedHide = false;
         }
         function applyScreenCorrection() {
             const staand = window.innerHeight >= window.innerWidth;
