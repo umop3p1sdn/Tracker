@@ -966,7 +966,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v61.9 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v62.0 © Umop3p1sdn</div>
 
             </div>
 
@@ -1529,7 +1529,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v61.9 © Umop3p1sdn
+                HO-ME v62.0 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1892,7 +1892,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v61.9 © Umop3p1sdn
+                HO-ME v62.0 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -4123,7 +4123,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "61.9";
+        const APP_VERSION = "62.0";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
@@ -9114,6 +9114,16 @@ assign initialcost =
             // Hide-wissel = ook de flits-info aan/uit (v53.0, definitief na sparren met Sjoerd):
             // clean scherm → flitser + snelheidsbord zichtbaar; menu's/code lezen/STOP → weg.
             flitserRijden = inFull;
+            // v62.0 (melding Sjoerd: "als het snelheidsbord weg is, dan ook het flitser-bord"):
+            // het snelheidsbord schakelt via CSS en verdwijnt dus DIRECT met de Hide-wissel,
+            // maar de flitser werd pas verstopt bij z'n eerstvolgende eigen controle-tik —
+            // stilstaand bleef hij hangen. Nu meteen mee-verstoppen bij het verlaten van het
+            // clean scherm (checkFlitsers zet 'm bij terugkeer vanzelf weer aan als er een
+            // flitser in de buurt is).
+            if (!inFull) {
+                const _fb = document.getElementById('flitserBox');
+                if (_fb) _fb.style.display = 'none';
+            }
             if (typeof updateTalkUI === 'function') updateTalkUI();   // v54.3: mic/T wisselen mee
             if (inFull) {
                 unlockAudio(false);
