@@ -832,10 +832,13 @@
          hybride-lagen maakten de buffer-toast bovendien veel frequenter). Vergrendeld = niets
          anders aanraakbaar, dus deze laag hoort boven alles. -->
     <div id="lockOverlay" style="display:none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 200000; background: rgba(0,0,0,0.02);">
-        <div id="lockClosedBtn" style="position: absolute; top: 12px; right: 12px; width: 56px; height: 56px; cursor: pointer; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.45); border-radius: 12px;">
+        <!-- v60.9: knop stond op top:12 — ín de statusbalk/camera-zone, waar iOS aanrakingen
+             half inpikt (zelfde les als het startscherm-logo, v60.1). Nu onder de safe-area,
+             groter raakvlak, en lang-druk-verharding (geen callout/selectie/scroll). -->
+        <div id="lockClosedBtn" style="position: absolute; top: calc(env(safe-area-inset-top, 0px) + 14px); right: 12px; width: 68px; height: 68px; cursor: pointer; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.45); border-radius: 12px; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; touch-action: none;">
             <svg width="38" height="38" viewBox="0 0 24 24" fill="#fff"><path d="M12 1a5 5 0 00-5 5v2H6a2 2 0 00-2 2v9a2 2 0 002 2h12a2 2 0 002-2v-9a2 2 0 00-2-2h-1V6a4 4 0 00-4-4zm-3 7V6a3 3 0 016 0v2H9zm3 4a2 2 0 011 3.73V18a1 1 0 01-2 0v-2.27A2 2 0 0112 12z"/></svg>
         </div>
-        <div id="lockHint" style="position: absolute; top: 76px; right: 12px; color: #fff; font-family: sans-serif; font-size: 0.75em; background: rgba(0,0,0,0.5); padding: 4px 8px; border-radius: 6px;">1 sec vasthouden om te ontgrendelen</div>
+        <div id="lockHint" style="position: absolute; top: calc(env(safe-area-inset-top, 0px) + 92px); right: 12px; color: #fff; font-family: sans-serif; font-size: 0.75em; background: rgba(0,0,0,0.5); padding: 4px 8px; border-radius: 6px;">1 sec vasthouden om te ontgrendelen</div>
     </div>
     <div id="masterStaleWarn" style="display:none; position: fixed; top: 60px; left: 50%; transform: translateX(-50%); z-index: 1700; background: rgba(220,40,40,0.92); color: #fff; font-family: sans-serif; font-size: 0.85em; font-weight: bold; padding: 8px 16px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.4);"></div>
     <div id="speedometer" style="display:none; position: fixed; bottom: 0; left: 0; right: 0; z-index: 1500; background: rgba(0,0,0,0.85); color: #fff; text-align: center; font-family: sans-serif; padding: 6px 0;"><span id="speedValue" style="font-size: 3em; font-weight: bold; line-height: 1;">0</span><span style="font-size: 1em; opacity: 0.7; margin-left: 4px;">km/u</span></div>
@@ -932,7 +935,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v60.6 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v60.9 © Umop3p1sdn</div>
 
             </div>
 
@@ -1151,6 +1154,7 @@
             <p>De app draait om één <strong>Master</strong> en zijn <strong>Volgers</strong>:</p>
             <ul style="margin: 10px 0; padding-left: 20px;">
                 <li>De <strong>Master</strong> zet de route uit, rijdt voorop en deelt een 4-cijferige code. Hij ziet al zijn volgers als vliegtuigje op de kaart, elk met een eigen <strong>tag</strong> (naam), en linksboven wie er verbonden is.</li>
+                <li>Bij elke start opent de kaart <strong>uitgezoomd op Europa</strong> en maakt hij één vloeiende <strong>landingsvlucht</strong> naar de eerste bekende positie (jouw GPS, of als volger de Master); daarna is de kaart van jou — elke rit begint met <strong>noorden boven, Center uit en CREW uit</strong>, en met de rijstand (CREW/"iedereen tonen" op blauw of groen) zet je Noord en Center in één druk aan.</li>
                 <li>De <strong>Volgers</strong> typen de code in en volgen de Master: ze zien zijn positie en zijn <strong>werkelijke spoor</strong> (de rode lijn) — exact welke weg hij rijdt, inclusief afwijkingen. Met de <strong>CREW</strong>-knop kunnen volgers ook elkaar zien (met hun lijnen).</li>
             </ul>
             <p style="background:#e3e7f5; padding:10px 14px; border-radius:8px;">Hieronder eerst het deel <strong>voor de Master</strong>, dan <strong>voor de Volger</strong>, en daarna <strong>Algemeen</strong> (geldt voor allebei). De Route Planner staat onderaan.</p>
@@ -1274,7 +1278,7 @@
             <!-- ═══════════ ALGEMEEN ═══════════ -->
             <h2 style="color: #00BCD4; margin-top: 35px; border-top: 2px solid #00BCD4; padding-top: 22px;">Algemeen (Master &amp; Volger)</h2>
             <p>Deze knoppen en functies werken hetzelfde voor allebei.</p>
-            <p style="background:#e3e7f5; padding:10px 14px; border-radius:8px;"><strong>Knoppen-menu:</strong> de instelknoppen (Draai/kompas, Center, Toon, TAG, LIJN, CREW, COMS, KAART en FM) zitten achter <strong>één menu-knop rechts</strong> op de kaart, onder het slotje. Tik erop voor het menu met de grote knoppen; tik ernaast om te sluiten (na 15 seconden zonder tik sluit het vanzelf). De uitleg per knop hieronder blijft gewoon gelden — je vindt ze alleen in dat menu. Dit geldt trouwens overal: <strong>elk menu of venster sluit je ook door ernaast te tikken</strong> (de rode ✕ blijft ook gewoon werken). De mic- en T-knop staan <strong>standaard uit</strong> — zet ze aan met de <strong>COMS</strong>-knop in het knoppen-menu (groen = aan). Met <strong>KAART</strong> kies je uit 5 kaartstijlen: Standaard, Satelliet, Satelliet + wegen (foto mét getekende wegen en namen — zijwegen zichtbaar), Hoogte (met hoogtelijnen) en Donker (nachtkaart). Bij <strong>elke dag/nacht-overgang</strong> springt de kaart vanzelf (zonsondergang → Donker, zonsopkomst → Standaard, berekend op je eigen positie) — ook als je op Satelliet rijdt. Daarna kun je altijd handmatig een andere kaart kiezen; die blijft staan tot de volgende overgang. Je instellingen (TAG, dagkaart, flitsers, lijndikte enz.) worden op je telefoon bewaard; via <strong>☰ → Start up config</strong> zet je ze over naar een andere telefoon (eigen instellingen worden automatisch onthouden). Let op: offline tegels vooraf laden werkt voor Standaard én Donker (zelfde kaart, ander jasje); Satelliet verbruikt flink meer data.</p>
+            <p style="background:#e3e7f5; padding:10px 14px; border-radius:8px;"><strong>Knoppen-menu:</strong> de instelknoppen (Draai/kompas, Center, Toon, TAG, LIJN, CREW, COMS, KAART en FM) zitten achter <strong>één menu-knop rechts</strong> op de kaart, onder het slotje. Tik erop voor het menu met de grote knoppen; tik ernaast om te sluiten (na 15 seconden zonder tik sluit het vanzelf). De uitleg per knop hieronder blijft gewoon gelden — je vindt ze alleen in dat menu. Dit geldt trouwens overal: <strong>elk menu of venster sluit je ook door ernaast te tikken</strong> (de rode ✕ blijft ook gewoon werken). De mic- en T-knop staan <strong>standaard uit</strong> — zet ze aan met de <strong>COMS</strong>-knop in het knoppen-menu (groen = aan). Met <strong>KAART</strong> kies je uit 6 kaartstijlen: Standaard, Satelliet, Satelliet + wegen (foto mét getekende wegen en namen — zijwegen zichtbaar), Satelliet + wegen 2 (zelfde idee, andere wegenlaag met meer detail op diep inzoomen — testversie, werkt alleen online), Hoogte (met hoogtelijnen) en Donker (nachtkaart). Bij <strong>elke dag/nacht-overgang</strong> springt de kaart vanzelf (zonsondergang → Donker, zonsopkomst → Standaard, berekend op je eigen positie) — ook als je op Satelliet rijdt. Daarna kun je altijd handmatig een andere kaart kiezen; die blijft staan tot de volgende overgang. Je instellingen (TAG, dagkaart, flitsers, lijndikte enz.) worden op je telefoon bewaard; via <strong>☰ → Start up config</strong> zet je ze over naar een andere telefoon (eigen instellingen worden automatisch onthouden). Let op: offline tegels vooraf laden werkt voor Standaard én Donker (zelfde kaart, ander jasje); Satelliet verbruikt flink meer data.</p>
 
             <h3 style="color: #00BCD4; margin-top: 20px;">Knoppen op de kaart</h3>
 
@@ -1493,7 +1497,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v60.6 © Umop3p1sdn
+                HO-ME v60.9 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1512,6 +1516,7 @@
             <p>The app revolves around one <strong>Master</strong> and their <strong>Followers</strong>:</p>
             <ul style="margin: 10px 0; padding-left: 20px;">
                 <li>The <strong>Master</strong> sets out the route, rides up front and shares a 4-digit code. They see all followers as a small plane on the map, each with its own <strong>tag</strong> (name), and who's connected in the top left.</li>
+                <li>At every start the map opens <strong>zoomed out on Europe</strong> and makes one smooth <strong>landing flight</strong> to the first known position (your GPS, or as a follower the Master); after that the map is yours — every ride starts with <strong>north up, Center off and CREW off</strong>, and the riding mode (CREW/"show everyone" on blue or green) switches North and Center on in one tap.</li>
                 <li>The <strong>Followers</strong> type in the code and follow the Master: they see the Master's position and <strong>actual track</strong> (the red line) — exactly which road is ridden, including detours. With the <strong>CREW</strong> button followers can also see each other (with their lines).</li>
             </ul>
             <p style="background:#e3e7f5; padding:10px 14px; border-radius:8px;">Below: first the part <strong>for the Master</strong>, then <strong>for the Follower</strong>, then <strong>General</strong> (applies to both). The Route Planner is at the bottom.</p>
@@ -1636,7 +1641,7 @@
             <!-- ═══════════ GENERAL ═══════════ -->
             <h2 style="color: #00BCD4; margin-top: 35px; border-top: 2px solid #00BCD4; padding-top: 22px;">General (Master &amp; Follower)</h2>
             <p>These buttons and functions work the same for both.</p>
-            <p style="background:#e3e7f5; padding:10px 14px; border-radius:8px;"><strong>Button menu:</strong> the setting buttons (rotate/compass, Center, Show, TAG, LIJN, CREW, COMS, KAART and FM) sit behind <strong>one menu button on the right</strong> of the map, below the lock. Tap it for the menu with the big buttons; tap next to it to close (after 15 seconds without a tap it closes by itself). The per-button explanations below still apply — you just find them in that menu. This applies everywhere by the way: <strong>every menu or window also closes by tapping next to it</strong> (the red ✕ keeps working too). The mic and T buttons are <strong>off by default</strong> — enable them with the <strong>COMS</strong> button in the button menu (green = on). With <strong>KAART</strong> you pick from 5 map styles: Standard, Satellite, Satellite + roads (imagery with drawn roads and names — side roads visible), Terrain (contour lines) and Dark (night map). At <strong>every day/night transition</strong> the map jumps automatically (sunset → Dark, sunrise → Standard, computed at your own position) — even when riding Satellite. After that you can always pick another map manually; it stays until the next transition. Your settings (TAG, day map, cameras, line width etc.) are stored on your phone; via <strong>☰ → Start up config</strong> you can transfer them to another phone (your own settings are remembered automatically). Note: offline tile pre-loading works for Standard and Dark (same map, different look); Satellite uses considerably more data.</p>
+            <p style="background:#e3e7f5; padding:10px 14px; border-radius:8px;"><strong>Button menu:</strong> the setting buttons (rotate/compass, Center, Show, TAG, LIJN, CREW, COMS, KAART and FM) sit behind <strong>one menu button on the right</strong> of the map, below the lock. Tap it for the menu with the big buttons; tap next to it to close (after 15 seconds without a tap it closes by itself). The per-button explanations below still apply — you just find them in that menu. This applies everywhere by the way: <strong>every menu or window also closes by tapping next to it</strong> (the red ✕ keeps working too). The mic and T buttons are <strong>off by default</strong> — enable them with the <strong>COMS</strong> button in the button menu (green = on). With <strong>KAART</strong> you pick from 6 map styles: Standard, Satellite, Satellite + roads (imagery with drawn roads and names — side roads visible), Satellite + roads 2 (same idea, different road layer with more deep-zoom detail — test version, online only), Terrain (contour lines) and Dark (night map). At <strong>every day/night transition</strong> the map jumps automatically (sunset → Dark, sunrise → Standard, computed at your own position) — even when riding Satellite. After that you can always pick another map manually; it stays until the next transition. Your settings (TAG, day map, cameras, line width etc.) are stored on your phone; via <strong>☰ → Start up config</strong> you can transfer them to another phone (your own settings are remembered automatically). Note: offline tile pre-loading works for Standard and Dark (same map, different look); Satellite uses considerably more data.</p>
 
             <h3 style="color: #00BCD4; margin-top: 20px;">Buttons on the map</h3>
 
@@ -1855,7 +1860,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v60.6 © Umop3p1sdn
+                HO-ME v60.9 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -4086,7 +4091,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "60.6";
+        const APP_VERSION = "60.9";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
@@ -7904,6 +7909,7 @@ assign initialcost =
                 el.style.transform = '';
                 if (t) { clearTimeout(t); t = null; }
             };
+            el.addEventListener('contextmenu', (e) => e.preventDefault());   // v60.9: Android lang-druk-menu uit
             el.addEventListener('touchstart', start, { passive: false });
             el.addEventListener('mousedown', start);
             el.addEventListener('touchend', cancel);
@@ -8992,8 +8998,16 @@ assign initialcost =
             // ongeacht de IK/VOLGERS/BEIDE toggle.
             if (currentMode === 'master' && crewMode > 0) { applyCrewView(); return; }
 
-            // CREW (volger) functie 2 is dominant: jij centraal + auto-zoom, ongeacht de IK/MASTER/BEIDE toggle.
+            // v60.8 (principe Sjoerd: "groen/blauw = Center op de app-gebruiker"): de rijstand is
+            // bij de volger nu op BEIDE standen dominant, gespiegeld aan de master — blauw = jij
+            // centraal op jouw zoom, groen = jij centraal + auto-groepszoom (de spiegel-techniek
+            // in fitEveryoneInView hield je daar al gegarandeerd in het midden). De Toon-knop
+            // (IK/MASTER/BEIDE) geldt alleen buiten de rijstand om.
             if (currentMode === 'follower' && everyoneMode === 2) { fitEveryoneInView(); return; }
+            if (currentMode === 'follower' && everyoneMode === 1 && followerPos && typeof followerPos.lat === 'number') {
+                mapInstance.setView([followerPos.lat, followerPos.lng], zoomLevelValue, { animate: false });
+                return;
+            }
 
             // SPECTATOR volg-cam: kaart plakt aan de gekozen rijder (eigen zoom). Doel weggevallen → master.
             if (currentMode === 'follower' && spectatorMode && spectFollowTarget) {
