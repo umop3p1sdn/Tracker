@@ -973,7 +973,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v62.9 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.0 © Umop3p1sdn</div>
 
             </div>
 
@@ -1536,7 +1536,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v62.9 © Umop3p1sdn
+                HO-ME v63.0 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1899,7 +1899,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v62.9 © Umop3p1sdn
+                HO-ME v63.0 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -4130,7 +4130,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "62.9";
+        const APP_VERSION = "63.0";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
@@ -5970,6 +5970,11 @@ assign initialcost =
         function applyAdjust() {
             const ori = adjustOri();
             Object.keys(ADJUST_BLOCKS).forEach(blok => {
+                if (blok === 'snelheid' && ori === 'staand') {   // v63.0 (Sjoerd): GPS-snelheid alleen liggend instelbaar
+                    const g = document.getElementById('gpsSpeedBox');
+                    if (g) g.style.removeProperty('transform');
+                    return;
+                }
                 const v = (adjustCfg[ori] && adjustCfg[ori][blok]) ? adjustCfg[ori][blok] : { x: 0, y: 0, s: 100 };
                 const delen = [];
                 if (v.x || v.y) delen.push('translate(' + (v.x || 0) + 'px,' + (v.y || 0) + 'px)');
@@ -6031,6 +6036,7 @@ assign initialcost =
         let _sliderForcedHide = false;   // v61.5: onthouden of WIJ Hide aanzetten (dan bij sluiten weer terug)
         let _adjustForcedArrow = [];     // v61.6: welke oefenpijl-elementen wij toonden
         function openStackSlider() {
+            const staandNu = (window.innerHeight >= window.innerWidth);   // v63.0: bovenin — wordt door oefenweergave én paneel gebruikt
             const m = document.getElementById('appMenuModal');
             if (m) { m.classList.add('hidden'); m.style.display = 'none'; }   // menu dicht: alleen schuif + beeld
             // v61.5 (verzoek Sjoerd): automatisch naar Hide (clean scherm) — dáár leven bord,
@@ -6066,8 +6072,8 @@ assign initialcost =
                 oefD.style.display = 'block';
                 _adjustForcedArrow.push('turnDist');
             }
-            const oefG = document.getElementById('gpsSpeedBox');   // v62.7: GPS-snelheid als oefenblok
-            if (oefG && window.getComputedStyle(oefG).display === 'none') {
+            const oefG = document.getElementById('gpsSpeedBox');   // v62.7: GPS-snelheid als oefenblok (v63.0: alleen liggend)
+            if (!staandNu && oefG && window.getComputedStyle(oefG).display === 'none') {
                 const gv = document.getElementById('gpsSpeedVal');
                 if (gv && gv.textContent === '0') gv.textContent = '88';
                 oefG.style.display = 'flex';
@@ -6079,9 +6085,13 @@ assign initialcost =
             if (p) {
                 p.style.display = 'flex';
                 // v62.9: staand = smalle kolom, liggend = breed (blokken | bediening naast elkaar)
-                p.style.flexDirection = (window.innerHeight >= window.innerWidth) ? 'column' : 'row';
-                p.style.alignItems = (window.innerHeight >= window.innerWidth) ? 'center' : 'flex-start';
+                p.style.flexDirection = staandNu ? 'column' : 'row';
+                p.style.alignItems = staandNu ? 'center' : 'flex-start';
             }
+            // v63.0 (Sjoerd): GPS-snelheid alleen bij liggend meenemen — staand geen kiezer-knop
+            const snBtn = document.getElementById('adjSel_snelheid');
+            if (snBtn) snBtn.style.display = staandNu ? 'none' : '';
+            if (staandNu && adjustSel === 'snelheid') adjustSelect('pijlen');
         }
         function closeStackSlider() {
             const ov = document.getElementById('stackSliderOverlay');
@@ -6137,6 +6147,9 @@ assign initialcost =
             if (_sp && _sp.style.display === 'flex' && typeof adjustSelect === 'function') {
                 _sp.style.flexDirection = staand ? 'column' : 'row';   // v62.9: breed liggend
                 _sp.style.alignItems = staand ? 'center' : 'flex-start';
+                const _sn = document.getElementById('adjSel_snelheid');   // v63.0: alleen liggend
+                if (_sn) _sn.style.display = staand ? 'none' : '';
+                if (staand && adjustSel === 'snelheid') adjustSel = 'pijlen';
                 adjustSelect(adjustSel);
             }
         }
