@@ -1016,7 +1016,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.11 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.13 © Umop3p1sdn</div>
 
             </div>
 
@@ -1605,7 +1605,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.11 © Umop3p1sdn
+                HO-ME v63.13 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1968,7 +1968,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.11 © Umop3p1sdn
+                HO-ME v63.13 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -4199,7 +4199,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "63.11";
+        const APP_VERSION = "63.13";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
@@ -6107,7 +6107,14 @@ assign initialcost =
         function openStackSlider() {
             const staandNu = (window.innerHeight >= window.innerWidth);   // v63.0: bovenin — wordt door oefenweergave én paneel gebruikt
             const m = document.getElementById('appMenuModal');
-            if (m) { m.classList.add('hidden'); m.style.display = 'none'; }   // menu dicht: alleen schuif + beeld
+            if (m) { m.classList.add('hidden'); m.style.display = 'none'; }   // menu dicht: alleen schuif +
+            // v63.12 (Sjoerd: zelfde regel als vanouds — de menu's sluiten zodat je vrij zicht
+            // hebt om het scherm te adjusten): sinds fase 2 zit Screen adjust in het Options-vak,
+            // dus dat groepsvak (en Config, voor de zekerheid) moet óók dicht.
+            ['optionsModal', 'configGroupModal'].forEach(id => {
+                const g = document.getElementById(id);
+                if (g) { g.classList.add('hidden'); g.style.display = 'none'; }
+            });
             // v61.5 (verzoek Sjoerd): automatisch naar Hide (clean scherm) — dáár leven bord,
             // flitser en rem-paneel, dus dan zie je wat je verplaatst. Stond Hide al aan, dan
             // veranderen we niks (en zetten we 'm bij sluiten dus ook niet uit).
