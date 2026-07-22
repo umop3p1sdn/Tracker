@@ -884,6 +884,43 @@
         </button>
     </div>
 
+    <div id="stackSliderOverlay" onclick="closeStackSlider()" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; z-index:2580; background:transparent;"></div>
+    <!-- v61.6 SCREEN ADJUST (naam Sjoerd): drie slanke schuiven naast elkaar — Paneel-hoogte,
+         NU-grootte, Pijl-hoogte. Zelfde gedrag: auto-Hide, live meebewegen, ernaast tikken =
+         opslaan + dicht. Oefenpijl tijdens het afstellen zodat je ook zonder route kunt richten. -->
+    <!-- v62.3 (Sjoerd: "bediening meer transparant, soms zit er iets achter"): doorzichtig
+         paneel zodat je de blokken erachter ziet liggen tijdens het richten. -->
+    <!-- v62.4 (Sjoerd): bediening bovenin het midden — daar plaats je nooit iconen, dus de
+         blokken onderin/opzij blijven vrij zichtbaar tijdens het richten. Onder de safe-area
+         (rooster-regel: interactief bovenin = altijd onder de camera-zone). -->
+    <!-- v62.8 (Sjoerd, liggend: "kan niet bij de reset-knop"): paneel iets hoger (8px) én
+         een maximale hoogte met scrollen — op korte liggende schermen past de hele kolom
+         nooit, dus het paneel begrenst zichzelf op de schermhoogte en de rest scrolt. -->
+    <div id="stackSliderPanel" style="display:none; position:fixed; left:50%; top:calc(env(safe-area-inset-top, 0px) + 8px); transform:translateX(-50%); z-index:2581; background:rgba(10,14,39,0.35); border:2px solid rgba(0,188,212,0.7); border-radius:14px; padding:10px 12px; flex-direction:column; align-items:center; gap:6px; font-family:sans-serif; max-height:calc(100vh - env(safe-area-inset-top, 0px) - 16px); overflow-y:auto;">
+        <!-- v62.2 SCREEN ADJUST 2.0 (ontwerp Sjoerd): blok kiezen → met 4 pijlen verplaatsen,
+             grootte-schuif eronder, reset per blok. Staand en liggend hebben elk hun eigen
+             opgeslagen standen; ernaast tikken = opslaan + dicht. -->
+        <!-- v62.9: twee kolommen — staand onder elkaar (smal), liggend naast elkaar (breed):
+             blokken links, pijlen-pad + grootte + reset rechts (wens Sjoerd). -->
+        <div style="display:flex; flex-direction:column; align-items:center; gap:6px;">
+            <button id="adjSel_pijlen"  onclick="adjustSelect('pijlen')"  style="width: 150px; padding: 9px 6px; border-radius: 8px; border: 1px solid #00BCD4; background: transparent; color: #00BCD4; font-size: 0.85em; cursor: pointer;">Pijlen + afstand</button>
+            <button id="adjSel_rem"     onclick="adjustSelect('rem')"     style="width: 150px; padding: 9px 6px; border-radius: 8px; border: 1px solid #00BCD4; background: transparent; color: #00BCD4; font-size: 0.85em; cursor: pointer;">Afstand / tijd</button>
+            <button id="adjSel_bord"    onclick="adjustSelect('bord')"    style="width: 150px; padding: 9px 6px; border-radius: 8px; border: 1px solid #00BCD4; background: transparent; color: #00BCD4; font-size: 0.85em; cursor: pointer;">Verkeersbord</button>
+            <button id="adjSel_flitser" onclick="adjustSelect('flitser')" style="width: 150px; padding: 9px 6px; border-radius: 8px; border: 1px solid #00BCD4; background: transparent; color: #00BCD4; font-size: 0.85em; cursor: pointer;">Flitser-bord</button>
+            <button id="adjSel_snelheid" onclick="adjustSelect('snelheid')" style="width: 150px; padding: 9px 6px; border-radius: 8px; border: 1px solid #00BCD4; background: transparent; color: #00BCD4; font-size: 0.85em; cursor: pointer;">GPS-snelheid</button>
+        </div>
+        <div style="display:flex; flex-direction:column; align-items:center; gap:6px;">
+            <div style="display:grid; grid-template-columns: 48px 48px 48px; grid-template-rows: 48px 48px 48px; gap: 4px;">
+                <span></span><button id="adjUp" style="border-radius: 10px; border: 1px solid #00BCD4; background: rgba(0,188,212,0.12); color: #fff; font-size: 1.3em; cursor: pointer;">&#9650;</button><span></span>
+                <button id="adjLeft" style="border-radius: 10px; border: 1px solid #00BCD4; background: rgba(0,188,212,0.12); color: #fff; font-size: 1.3em; cursor: pointer;">&#9664;</button><span></span><button id="adjRight" style="border-radius: 10px; border: 1px solid #00BCD4; background: rgba(0,188,212,0.12); color: #fff; font-size: 1.3em; cursor: pointer;">&#9654;</button>
+                <span></span><button id="adjDown" style="border-radius: 10px; border: 1px solid #00BCD4; background: rgba(0,188,212,0.12); color: #fff; font-size: 1.3em; cursor: pointer;">&#9660;</button><span></span>
+            </div>
+            <input id="adjSizeSlider" type="range" min="50" max="140" step="5" value="100" oninput="adjustSize(this.value)"
+                   style="width: 150px; touch-action: none;">
+            <button onclick="adjustReset()" style="width: 150px; padding: 8px 6px; border-radius: 8px; border: 1px solid #FF9800; background: transparent; color: #FF9800; font-size: 0.85em; cursor: pointer;">&#8634; Reset dit blok</button>
+        </div>
+    </div>
+
     <div id="masterStaleWarn" style="display:none; position: fixed; top: 60px; left: 50%; transform: translateX(-50%); z-index: 1700; background: rgba(220,40,40,0.92); color: #fff; font-family: sans-serif; font-size: 0.85em; font-weight: bold; padding: 8px 16px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.4);"></div>
     <div id="speedometer" style="display:none; position: fixed; bottom: 0; left: 0; right: 0; z-index: 1500; background: rgba(0,0,0,0.85); color: #fff; text-align: center; font-family: sans-serif; padding: 6px 0;"><span id="speedValue" style="font-size: 3em; font-weight: bold; line-height: 1;">0</span><span style="font-size: 1em; opacity: 0.7; margin-left: 4px;">km/u</span></div>
     <!-- Rond snelheidsbord (maximumsnelheid van de huidige weg) — links naast de km-teller -->
@@ -979,7 +1016,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.7 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.8 © Umop3p1sdn</div>
 
             </div>
 
@@ -1542,7 +1579,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.7 © Umop3p1sdn
+                HO-ME v63.8 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1905,7 +1942,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.7 © Umop3p1sdn
+                HO-ME v63.8 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -4136,7 +4173,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "63.7";
+        const APP_VERSION = "63.8";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
