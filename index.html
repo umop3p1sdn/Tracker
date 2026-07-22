@@ -474,12 +474,37 @@
         body.btn-menu-open #comsBtnMaster, body.btn-menu-open #comsBtnFollower { order: 8; }
         body.btn-menu-open #crewBtn, body.btn-menu-open #seeEveryoneBtn { order: 9; }   /* v55.5: rechts-duw (margin-left:auto) weg — brak het strakke raster */
         body.btn-menu-open #kaartBtnMaster, body.btn-menu-open #kaartBtnFollower { order: 10; }
+
         /* v55.3: liggend groeit het paneel in de BREEDTE (4 kolommen: 4x80 + 3x24 = 392, past in
            440-48 padding) i.p.v. in de hoogte — 10 knoppen = 3 rijen, dus nooit scrollen met
            handschoenen. Staand blijft 3 kolommen. */
         @media (orientation: landscape) {
             body.btn-menu-open #masterSideBar, body.btn-menu-open #followerSideBar { width: 440px !important; }
         }
+
+        /* v63.7 VLAK 2 — posities EXACT uit Vlak 1's gemeten buitenmaten (geen gok).
+           Vlak 1 gecentreerd op (50%,50%). STAAND buitenhoogte ~336px (halve 168) → Vlak 2
+           eronder op 50%+188 (>=20px gat, nooit overlap ook als knoppen verborgen zijn → Vlak 1
+           korter → gat groter, nooit kleiner). LIGGEND buitenbreedte 492 (halve 246) → Vlak 2
+           rechts op 50%+266 (20px gat). */
+        body.btn-menu-open #menuVlak2 {
+            display: flex !important; position: fixed !important; z-index: 2400 !important;
+            flex-direction: column !important; gap: 12px !important;
+            background: rgba(226, 231, 245, 0.97) !important;
+            border: 2px solid #00BCD4 !important; border-radius: 16px !important;
+            padding: 16px !important; box-shadow: 0 8px 40px rgba(0,0,0,0.7) !important;
+            top: calc(50% + 188px) !important; left: 50% !important;
+            transform: translateX(-50%) !important;
+        }
+        @media (orientation: landscape) {
+            body.btn-menu-open #menuVlak2 {
+                left: calc(50% + 266px) !important; top: 50% !important;
+                transform: translateY(-50%) !important;
+            }
+        }
+
+
+
 
         .map-only #plannerToggleBtn { display: none !important; }
         .map-only #plannerGoBtn { display: none !important; }
@@ -842,42 +867,23 @@
     </div>
     <!-- v61.4 (ontwerp Sjoerd): hoogte-schuif — menu-knop opent alleen deze schuif + het beeld,
          schuiven verplaatst bord/flitser/rem live, ernaast tikken = sluiten én opslaan. -->
-    <div id="stackSliderOverlay" onclick="closeStackSlider()" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; z-index:2580; background:transparent;"></div>
-    <!-- v61.6 SCREEN ADJUST (naam Sjoerd): drie slanke schuiven naast elkaar — Paneel-hoogte,
-         NU-grootte, Pijl-hoogte. Zelfde gedrag: auto-Hide, live meebewegen, ernaast tikken =
-         opslaan + dicht. Oefenpijl tijdens het afstellen zodat je ook zonder route kunt richten. -->
-    <!-- v62.3 (Sjoerd: "bediening meer transparant, soms zit er iets achter"): doorzichtig
-         paneel zodat je de blokken erachter ziet liggen tijdens het richten. -->
-    <!-- v62.4 (Sjoerd): bediening bovenin het midden — daar plaats je nooit iconen, dus de
-         blokken onderin/opzij blijven vrij zichtbaar tijdens het richten. Onder de safe-area
-         (rooster-regel: interactief bovenin = altijd onder de camera-zone). -->
-    <!-- v62.8 (Sjoerd, liggend: "kan niet bij de reset-knop"): paneel iets hoger (8px) én
-         een maximale hoogte met scrollen — op korte liggende schermen past de hele kolom
-         nooit, dus het paneel begrenst zichzelf op de schermhoogte en de rest scrolt. -->
-    <div id="stackSliderPanel" style="display:none; position:fixed; left:50%; top:calc(env(safe-area-inset-top, 0px) + 8px); transform:translateX(-50%); z-index:2581; background:rgba(10,14,39,0.35); border:2px solid rgba(0,188,212,0.7); border-radius:14px; padding:10px 12px; flex-direction:column; align-items:center; gap:6px; font-family:sans-serif; max-height:calc(100vh - env(safe-area-inset-top, 0px) - 16px); overflow-y:auto;">
-        <!-- v62.2 SCREEN ADJUST 2.0 (ontwerp Sjoerd): blok kiezen → met 4 pijlen verplaatsen,
-             grootte-schuif eronder, reset per blok. Staand en liggend hebben elk hun eigen
-             opgeslagen standen; ernaast tikken = opslaan + dicht. -->
-        <!-- v62.9: twee kolommen — staand onder elkaar (smal), liggend naast elkaar (breed):
-             blokken links, pijlen-pad + grootte + reset rechts (wens Sjoerd). -->
-        <div style="display:flex; flex-direction:column; align-items:center; gap:6px;">
-            <button id="adjSel_pijlen"  onclick="adjustSelect('pijlen')"  style="width: 150px; padding: 9px 6px; border-radius: 8px; border: 1px solid #00BCD4; background: transparent; color: #00BCD4; font-size: 0.85em; cursor: pointer;">Pijlen + afstand</button>
-            <button id="adjSel_rem"     onclick="adjustSelect('rem')"     style="width: 150px; padding: 9px 6px; border-radius: 8px; border: 1px solid #00BCD4; background: transparent; color: #00BCD4; font-size: 0.85em; cursor: pointer;">Afstand / tijd</button>
-            <button id="adjSel_bord"    onclick="adjustSelect('bord')"    style="width: 150px; padding: 9px 6px; border-radius: 8px; border: 1px solid #00BCD4; background: transparent; color: #00BCD4; font-size: 0.85em; cursor: pointer;">Verkeersbord</button>
-            <button id="adjSel_flitser" onclick="adjustSelect('flitser')" style="width: 150px; padding: 9px 6px; border-radius: 8px; border: 1px solid #00BCD4; background: transparent; color: #00BCD4; font-size: 0.85em; cursor: pointer;">Flitser-bord</button>
-            <button id="adjSel_snelheid" onclick="adjustSelect('snelheid')" style="width: 150px; padding: 9px 6px; border-radius: 8px; border: 1px solid #00BCD4; background: transparent; color: #00BCD4; font-size: 0.85em; cursor: pointer;">GPS-snelheid</button>
-        </div>
-        <div style="display:flex; flex-direction:column; align-items:center; gap:6px;">
-            <div style="display:grid; grid-template-columns: 48px 48px 48px; grid-template-rows: 48px 48px 48px; gap: 4px;">
-                <span></span><button id="adjUp" style="border-radius: 10px; border: 1px solid #00BCD4; background: rgba(0,188,212,0.12); color: #fff; font-size: 1.3em; cursor: pointer;">&#9650;</button><span></span>
-                <button id="adjLeft" style="border-radius: 10px; border: 1px solid #00BCD4; background: rgba(0,188,212,0.12); color: #fff; font-size: 1.3em; cursor: pointer;">&#9664;</button><span></span><button id="adjRight" style="border-radius: 10px; border: 1px solid #00BCD4; background: rgba(0,188,212,0.12); color: #fff; font-size: 1.3em; cursor: pointer;">&#9654;</button>
-                <span></span><button id="adjDown" style="border-radius: 10px; border: 1px solid #00BCD4; background: rgba(0,188,212,0.12); color: #fff; font-size: 1.3em; cursor: pointer;">&#9660;</button><span></span>
-            </div>
-            <input id="adjSizeSlider" type="range" min="50" max="140" step="5" value="100" oninput="adjustSize(this.value)"
-                   style="width: 150px; touch-action: none;">
-            <button onclick="adjustReset()" style="width: 150px; padding: 8px 6px; border-radius: 8px; border: 1px solid #FF9800; background: transparent; color: #FF9800; font-size: 0.85em; cursor: pointer;">&#8634; Reset dit blok</button>
-        </div>
+
+    <!-- v63.7 VLAK 2 — tweede menu-paneel, verschijnt NAAST/ONDER Vlak 1 als het knoppen-menu
+         open is. Posities EXACT berekend uit Vlak 1's gemeten buitenmaten (staand 392x~336,
+         liggend 492 breed, gecentreerd op 50%): staand eronder met >=20px gat, liggend rechts
+         met 20px gat. Bevat de knop "MENU" (opent Menu 2). Ruimte voor meer knoppen. -->
+    <div id="menuVlak2" style="display: none;">
+        <button id="menuVlak2Btn" onclick="closeBtnMenu(); toggleAppMenu();" title="Menu — instellingen, routes, handleiding"
+                style="width: 80px; height: 80px; border-radius: 6px; background: rgba(0,188,212,0.9); color: #003;
+                       border: 3px solid #00838F; cursor: pointer; display: flex; flex-direction: column;
+                       align-items: center; justify-content: center; gap: 3px;">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"
+                 stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/>
+                 <line x1="4" y1="17" x2="20" y2="17"/></svg>
+            <span style="font-size: 0.62em; font-weight: bold; line-height: 1;">MENU</span>
+        </button>
     </div>
+
     <div id="masterStaleWarn" style="display:none; position: fixed; top: 60px; left: 50%; transform: translateX(-50%); z-index: 1700; background: rgba(220,40,40,0.92); color: #fff; font-family: sans-serif; font-size: 0.85em; font-weight: bold; padding: 8px 16px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.4);"></div>
     <div id="speedometer" style="display:none; position: fixed; bottom: 0; left: 0; right: 0; z-index: 1500; background: rgba(0,0,0,0.85); color: #fff; text-align: center; font-family: sans-serif; padding: 6px 0;"><span id="speedValue" style="font-size: 3em; font-weight: bold; line-height: 1;">0</span><span style="font-size: 1em; opacity: 0.7; margin-left: 4px;">km/u</span></div>
     <!-- Rond snelheidsbord (maximumsnelheid van de huidige weg) — links naast de km-teller -->
@@ -973,7 +979,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.2 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.7 © Umop3p1sdn</div>
 
             </div>
 
@@ -1031,7 +1037,8 @@
                             <button onclick="toggleFollow()" id="followBtnMaster" title="Center" style="width: 64px; height: 64px; border-radius: 6px; background: #555; color: #fff; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;"><svg width="34" height="34" viewBox="0 0 24 24" fill="currentColor" style="filter: drop-shadow(0 0 2px rgba(255,255,255,0.9));"><path d="M12 8a4 4 0 100 8 4 4 0 000-8zm8.94 3A8.994 8.994 0 0013 3.06V1h-2v2.06A8.994 8.994 0 003.06 11H1v2h2.06A8.994 8.994 0 0011 20.94V23h2v-2.06A8.994 8.994 0 0020.94 13H23v-2h-2.06zM12 19a7 7 0 110-14 7 7 0 010 14z"/></svg></button>
                             <button id="zoomIconMaster" title="Toon: alleen ik / volgers / beide" style="padding: 8px; width: 64px; height: 64px; border-radius: 6px; background: transparent; color: #000; text-shadow: 0 0 2px rgba(255,255,255,0.9); border: 3px solid #000; box-shadow: 0 0 0 2px rgba(255,255,255,0.4); cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;" onclick="toggleZoom()"><svg id="zoomSvgMaster" width="40" height="40" viewBox="0 0 36 36" fill="currentColor" style="filter: drop-shadow(0 0 2px rgba(255,255,255,0.9));"></svg><span id="zoomIconLabelMaster" style="font-size: 0.5em; font-weight: bold; line-height: 1;">IK</span></button>
                             <button id="tagBtnMaster" onclick="openTagInput()" title="Jouw tag" style="display:none; width: 64px; min-height: 36px; border-radius: 8px; background: rgba(0,0,0,0.4); color: #fff; border: 2px solid #fff; cursor: pointer; font-weight: bold; font-size: 0.8em; word-break: break-word; padding: 4px;">TAG</button>
-                            <div id="followerCount" title="Aantal volgers" style="font-size: 1.8em; font-weight: bold; color: #000; text-shadow: 0 0 2px rgba(255,255,255,0.9); text-align: center; line-height: 1.2;">0</div>
+                            <div id="followerCount" title="Aantal volgers" style="font-size: 1.8em; font-weight: bold; color: #000; text-shadow: 0 0 2px rgba(255,255,255,0.9); text-align: center; line-height: 1.2;">0
+                        </div>
                             <button id="folLinesBtn" title="Volger-lijnen tonen/verbergen" onclick="toggleFollowerLines()" style="display:none; padding: 8px; width: 64px; height: 64px; border-radius: 6px; background: transparent; color: #000; text-shadow: 0 0 2px rgba(255,255,255,0.9); border: 3px solid #000; box-shadow: 0 0 0 2px rgba(255,255,255,0.4); cursor: pointer; flex-direction: column; align-items: center; justify-content: center; gap: 2px;">
                                 <svg width="34" height="34" viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 26 Q12 10 20 18 T32 10"/><circle cx="4" cy="26" r="3" fill="currentColor" stroke="none"/><circle cx="32" cy="10" r="3" fill="currentColor" stroke="none"/></svg>
                                 <span id="folLinesLabel" style="font-size: 0.5em; font-weight: bold; line-height: 1;">LIJN</span>
@@ -1057,7 +1064,6 @@
                         <div class="info-label">Your Tracking Code</div>
                         <div style="display: flex; align-items: stretch; gap: 10px;">
                             <div class="code-box" id="codeBox" onclick="shareCode()" title="Tik om te delen" style="flex: 1; margin: 0; cursor: pointer;">----</div>
-                            <button onclick="toggleAppMenu()" id="menuBtnMaster" title="Menu" style="width: 64px; border-radius: 8px; background: #1a2148; color: #fff; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;"><svg width="30" height="30" viewBox="0 0 24 24" fill="currentColor" style="filter: drop-shadow(0 0 2px rgba(255,255,255,0.9));"><path d="M3 6h18v2H3V6zm0 5h18v2H3v-2zm0 5h18v2H3v-2z"/></svg></button>
                         </div>
                     </div>
 
@@ -1079,7 +1085,8 @@
                             <button id="rotBtnFollower" title="Kaart meedraaien" style="padding: 10px; width: 64px; height: 64px; border-radius: 6px; background: transparent; color: #000; text-shadow: 0 0 2px rgba(255,255,255,0.9); border: 3px solid #000; box-shadow: 0 0 0 2px rgba(255,255,255,0.4); cursor: pointer; display: flex; align-items: center; justify-content: center;" onclick="toggleMapRotation()"><svg width="36" height="36" viewBox="0 0 24 24" fill="currentColor" style="filter: drop-shadow(0 0 2px rgba(255,255,255,0.9));"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm2.19 12.19L6 18l3.81-8.19L18 6l-3.81 8.19z"/></svg></button>
                             <button onclick="toggleFollow()" id="followBtnFollower" title="Center" style="width: 64px; height: 64px; border-radius: 6px; background: #555; color: #fff; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;"><svg width="34" height="34" viewBox="0 0 24 24" fill="currentColor" style="filter: drop-shadow(0 0 2px rgba(255,255,255,0.9));"><path d="M12 8a4 4 0 100 8 4 4 0 000-8zm8.94 3A8.994 8.994 0 0013 3.06V1h-2v2.06A8.994 8.994 0 003.06 11H1v2h2.06A8.994 8.994 0 0011 20.94V23h2v-2.06A8.994 8.994 0 0020.94 13H23v-2h-2.06zM12 19a7 7 0 110-14 7 7 0 010 14z"/></svg></button>
                             <button id="zoomIconFollower" title="Toon: master / beide / alleen ik" style="padding: 8px; width: 64px; height: 64px; border-radius: 6px; background: transparent; color: #000; text-shadow: 0 0 2px rgba(255,255,255,0.9); border: 3px solid #000; box-shadow: 0 0 0 2px rgba(255,255,255,0.4); cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;" onclick="toggleZoom()"><svg id="zoomSvgFollower" width="40" height="40" viewBox="0 0 36 36" fill="currentColor" style="filter: drop-shadow(0 0 2px rgba(255,255,255,0.9));"></svg><span id="zoomIconLabelFollower" style="font-size: 0.5em; font-weight: bold; line-height: 1;">IK</span></button>
-                            <div id="myColorBadge" title="Jouw kleur" style="display:none; width: 64px; height: 64px; border-radius: 50%; align-items: center; justify-content: center; color: #fff; font-weight: bold; font-size: 1.6em; border: 3px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.4);"></div>
+                            <div id="myColorBadge" title="Jouw kleur" style="display:none; width: 64px; height: 64px; border-radius: 50%; align-items: center; justify-content: center; color: #fff; font-weight: bold; font-size: 1.6em; border: 3px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.4);">
+                        </div>
                             <button id="tagBtn" onclick="openTagInput()" title="Jouw tag" style="display:none; width: 64px; min-height: 36px; border-radius: 8px; background: rgba(0,0,0,0.4); color: #fff; border: 2px solid #fff; cursor: pointer; font-weight: bold; font-size: 0.8em; word-break: break-word; padding: 4px;">TAG</button>
                             <button id="comsBtnFollower" onclick="toggleComs()" title="Coms: mic- en T-knop tonen/verbergen" style="padding: 8px; width: 64px; height: 64px; border-radius: 6px; background: transparent; color: #000; text-shadow: 0 0 2px rgba(255,255,255,0.9); border: 3px solid #000; box-shadow: 0 0 0 2px rgba(255,255,255,0.4); cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;"><svg width="30" height="30" viewBox="0 0 24 24" fill="currentColor" style="filter: drop-shadow(0 0 2px rgba(255,255,255,0.9));"><path d="M12 2a3 3 0 0 1 3 3v6a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3zm-7 9h2a5 5 0 0 0 10 0h2a7 7 0 0 1-6 6.92V21h-2v-3.08A7 7 0 0 1 5 11z"/></svg><span style="font-size: 0.5em; font-weight: bold; line-height: 1;">COMS</span></button>
                             <button id="kaartBtnFollower" onclick="openMapStyleChooser()" title="Kaartstijl kiezen" style="padding: 8px; width: 64px; height: 64px; border-radius: 6px; background: transparent; color: #000; text-shadow: 0 0 2px rgba(255,255,255,0.9); border: 3px solid #000; box-shadow: 0 0 0 2px rgba(255,255,255,0.4); cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;"><svg width="30" height="30" viewBox="0 0 24 24" fill="currentColor" style="filter: drop-shadow(0 0 2px rgba(255,255,255,0.9));"><path d="M20.5 3l-6 2.25L9 3 3.5 5.06a1 1 0 0 0-.5.87V20l6-2.25L14.5 20l5.5-2.06a1 1 0 0 0 .5-.87V3zM14 17.9l-4-1.5V5.1l4 1.5v11.3z"/></svg><span style="font-size: 0.5em; font-weight: bold; line-height: 1;">KAART</span></button>
@@ -1100,7 +1107,6 @@
                     
                     <div class="buttons-controls" style="display: flex; gap: 10px; align-items: stretch;">
                         <button class="button-secondary" onclick="cycleTrackView()" id="trackBtn" style="flex: 1;">GEEN</button>
-                        <button onclick="toggleAppMenu()" id="menuBtnFollower" title="Menu" style="width: 64px; height: 56px; border-radius: 8px; background: #1a2148; color: #fff; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;"><svg width="30" height="30" viewBox="0 0 24 24" fill="currentColor" style="filter: drop-shadow(0 0 2px rgba(255,255,255,0.9));"><path d="M3 6h18v2H3V6zm0 5h18v2H3v-2zm0 5h18v2H3v-2z"/></svg></button>
                     </div>
 
                     <button class="button button-stop" onclick="stopTracking()">STOP</button>
@@ -1536,7 +1542,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.2 © Umop3p1sdn
+                HO-ME v63.7 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1899,7 +1905,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.2 © Umop3p1sdn
+                HO-ME v63.7 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -4130,7 +4136,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "63.2";
+        const APP_VERSION = "63.7";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
