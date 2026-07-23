@@ -73,7 +73,7 @@
         #lockIcon, #btnMenuBtn, #flitserBox { margin-top: env(safe-area-inset-top, 0px); }
         .track-width-bar { margin-bottom: env(safe-area-inset-bottom, 0px); }
         #speedometer { padding-bottom: env(safe-area-inset-bottom, 0px); }
-        #plannerPanel { margin-top: env(safe-area-inset-top, 0px); }   /* Plan-menu niet onder de notch/statusbalk (v52.6) */
+        #plannerPanel { margin-top: env(safe-area-inset-top, 0px); margin-left: env(safe-area-inset-left, 0px); }   /* Plan-menu niet onder de notch/statusbalk (v52.6) + niet onder de camera links (v63.21) */
         /* v63.20 (melding Sjoerd: liggend zit het plan-menu vrij hoog, lastig bij het rode kruisje):
            liggend een stuk lager. Nagerekend op een liggend scherm van 402 px hoog: top 26vh = 105 px,
            dus het kruisje komt van ~7% naar ~30% van bovenaf. Het paneel heeft van zichzelf GEEN
@@ -81,7 +81,12 @@
            de onderkant van het scherm af duwen — daarom hier max-height 70vh (26+70 = 96vh, 16 px
            marge onderin) met overflow-y:auto. Staand verandert er niets. */
         @media (orientation: landscape) {
-            #plannerPanel { top: 26vh !important; max-height: 70vh; overflow-y: auto; }
+            /* v63.21 (Sjoerd: "klein beetje naar rechts ivm camera op mobieltjes"): liggend van
+               10 naar 22 px van de kant. Bovenop de veilige zone links (margin-left hierboven):
+               iPhone meldt daar ±59-62 px, dus die komt op ~81-84 px van de rand en is de camera
+               ruim voorbij; toestellen die geen zone melden (bv. een gaatjes-camera) schuiven met
+               die 22 px toch net vrij. Paneel is 300 px breed op 874 → ruimte zat. */
+            #plannerPanel { top: 26vh !important; left: 22px !important; max-height: 70vh; overflow-y: auto; }
         }
 
         body {
@@ -1058,7 +1063,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.20 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.21 © Umop3p1sdn</div>
 
             </div>
 
@@ -1643,7 +1648,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.20 © Umop3p1sdn
+                HO-ME v63.21 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2006,7 +2011,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.20 © Umop3p1sdn
+                HO-ME v63.21 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -4237,7 +4242,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "63.20";
+        const APP_VERSION = "63.21";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
