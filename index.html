@@ -489,7 +489,9 @@
            rechts op 50%+266 (20px gat). */
         body.btn-menu-open #menuVlak2 {
             display: flex !important; position: fixed !important; z-index: 2400 !important;
-            flex-direction: column !important; gap: 12px !important;
+            flex-direction: row !important; gap: 12px !important;   /* v63.18: STAAND een RIJ — met drie
+               knoppen zou een kolom (300 px hoog vanaf 50%+188) onder het scherm uitlopen; als rij is
+               het 300 breed x 116 hoog en past het ruim. Liggend blijft een kolom (zie mediaquery). */
             background: rgba(226, 231, 245, 0.97) !important;
             border: 2px solid #00BCD4 !important; border-radius: 16px !important;
             padding: 16px !important; box-shadow: 0 8px 40px rgba(0,0,0,0.7) !important;
@@ -500,6 +502,7 @@
             body.btn-menu-open #menuVlak2 {
                 left: calc(50% + 266px) !important; top: 50% !important;
                 transform: translateY(-50%) !important;
+                flex-direction: column !important;   /* v63.18: liggend kolom (116 breed x 300 hoog, past) */
             }
         }
 
@@ -882,6 +885,25 @@
                  <line x1="4" y1="17" x2="20" y2="17"/></svg>
             <span style="font-size: 0.62em; font-weight: bold; line-height: 1;">MENU</span>
         </button>
+        <!-- v63.17 (ontwerp Sjoerd): Next point — gooit de route weg tot en met de eerstvolgende
+             bocht, zodat "2 Route" verderop invoegt. Altijd bereikbaar via Vlak 2. -->
+        <button id="nextPointBtn" onclick="skipToNextTurn()" title="Next point — route tot de volgende bocht weggooien"
+                style="width: 80px; height: 80px; border-radius: 6px; background: rgba(0,188,212,0.9); color: #003;
+                       border: 3px solid #00838F; cursor: pointer; display: flex; flex-direction: column;
+                       align-items: center; justify-content: center; gap: 2px; font-family: sans-serif;">
+            <span style="font-size: 0.62em; font-weight: bold; line-height: 1.1;">NEXT</span>
+            <span style="font-size: 0.62em; font-weight: bold; line-height: 1.1;">POINT</span>
+        </button>
+        <!-- v63.18 (ontwerp Sjoerd): Dead end — deze weg is dicht/doodlopend. Zet een vermijd-zone
+             van 0,05 km op de weg vóór je en laat een nieuwe route rekenen. Rood, want het is een
+             ingreep die de route echt verlegt. -->
+        <button id="deadEndBtn" onclick="deadEnd()" title="Dead end — weg dicht, vermijd deze en reken opnieuw"
+                style="width: 80px; height: 80px; border-radius: 6px; background: rgba(255,23,68,0.9); color: #fff;
+                       border: 3px solid #B0003A; cursor: pointer; display: flex; flex-direction: column;
+                       align-items: center; justify-content: center; gap: 2px; font-family: sans-serif;">
+            <span style="font-size: 0.62em; font-weight: bold; line-height: 1.1;">DEAD</span>
+            <span style="font-size: 0.62em; font-weight: bold; line-height: 1.1;">END</span>
+        </button>
     </div>
 
     <div id="stackSliderOverlay" onclick="closeStackSlider()" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; z-index:2580; background:transparent;"></div>
@@ -931,6 +953,17 @@
          zelfde als "Ja" op de reroute-vraag (route van hier terug naar je route). Stijl = de vierkante
          knoppen: doorzichtig, donkere rand, witte gloed. Onder de grote +/- zoomknoppen. -->
     <style>@keyframes b2rBlink { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }</style>
+    <!-- v63.17: dezelfde Next point-actie, maar dan als pop-up naast "2 Route" zodra je van de
+         route af bent. Plaats wordt GEMETEN uit de rand van de 2 Route-knop (zie placeNextPointPop). -->
+    <button id="nextPointPop" onclick="skipToNextTurn()" title="Next point — route tot de volgende bocht weggooien"
+            style="display:none; position: fixed; top: 85px; left: 10px; z-index: 1250; width: 64px; height: 64px;
+                   border-radius: 6px; background: rgba(0,188,212,0.92); color: #003; border: 3px solid #00838F;
+                   box-shadow: 0 0 0 2px rgba(255,255,255,0.4); cursor: pointer; flex-direction: column;
+                   align-items: center; justify-content: center; gap: 1px; font-family: sans-serif;
+                   -webkit-user-select:none; user-select:none;">
+        <span style="font-size: 0.6em; font-weight: bold; line-height: 1.1;">NEXT</span>
+        <span style="font-size: 0.6em; font-weight: bold; line-height: 1.1;">POINT</span>
+    </button>
     <div id="b2rBtn" onclick="acceptReroute()" style="display:none; position: fixed; top: 85px; left: 50%; transform: translateX(-50%); z-index: 1250; padding: 12px 26px; border-radius: 6px; background: transparent; color: #000; text-shadow: 0 0 2px rgba(255,255,255,0.9); border: 3px solid #000; box-shadow: 0 0 0 2px rgba(255,255,255,0.4); font-weight: bold; font-size: 1.6em; font-family: sans-serif; cursor: pointer; animation: b2rBlink 1s infinite; -webkit-user-select:none; user-select:none;">2 Route</div>
     <div class="container">
         <!-- INSTALL PROMPT SCREEN -->
@@ -1016,7 +1049,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.15 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.18 © Umop3p1sdn</div>
 
             </div>
 
@@ -1601,7 +1634,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.15 © Umop3p1sdn
+                HO-ME v63.18 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1964,7 +1997,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.15 © Umop3p1sdn
+                HO-ME v63.18 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -4195,7 +4228,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "63.15";
+        const APP_VERSION = "63.18";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
@@ -6850,7 +6883,11 @@ assign initialcost =
                     if (d < nearD) { nearD = d; nearIdx = i; }
                 }
                 // mik een klein stukje VÓÓR je op de route (niet terug), zodat je vooruit invoegt
-                const targetIdx = Math.min(activeRoute.length - 1, nearIdx + 3);
+                let targetIdx = Math.min(activeRoute.length - 1, nearIdx + 3);
+                // v63.18: nooit mikken op een punt binnen een vermijd-zone (bv. de dead end die je
+                // net zette) — dan vindt BRouter niets. Schuif door tot buiten de zone.
+                while (targetIdx < activeRoute.length - 1 && typeof inNogo === 'function'
+                       && inNogo(activeRoute[targetIdx][0], activeRoute[targetIdx][1], 20)) targetIdx++;
                 const target = activeRoute[targetIdx];
                 if (typeof showBufferToast === 'function') showBufferToast('Route berekenen…', '#FF9800', 1500);
                 // BRouter: van mij → invoegpunt
@@ -6896,6 +6933,109 @@ assign initialcost =
             rerouteBusy = false;
         }
 
+        // ── v63.17 NEXT POINT (ontwerp Sjoerd): gooit de route weg tot en met de eerstvolgende
+        //    bocht vóór je, zodat "2 Route" een stuk verder op de route invoegt. Nog een druk =
+        //    de bocht daarna. Weg is weg (keuze Sjoerd). De bochten kent de app al (detectedTurns
+        //    met .index in activeRoute). RAAKVLAKKEN die meemoeten (zelfde set als acceptReroute):
+        //    detectedTurns her-indexeren, de op bochtnummer gesleutelde piep/spraak-caches wissen,
+        //    de zichtbare lijn hertekenen, de turn-dots opnieuw zetten en de volger bijwerken.
+        // ── v63.18 DEAD END (ontwerp Sjoerd): "deze weg is dicht/doodlopend". Zet een vermijd-zone
+        //    van 0,05 km (50 m straal) op de weg VÓÓR je en laat een nieuwe route rekenen.
+        //    Waarom vóór je en niet op je eigen plek: sta je zelf in de zone, dan vindt BRouter
+        //    geen route meer vanaf je positie. De richting komt uit de route zelf, dus de zone
+        //    landt op de geblokkeerde weg. Sinds v63.16 stuurt de rit-herberekening de zones mee.
+        function inNogo(lat, lng, margeM) {
+            return (typeof nogoZones !== 'undefined' ? nogoZones : []).some(z =>
+                distMeters([lat, lng], [z.lat, z.lng]) < (z.radius + (margeM || 0)));
+        }
+        function pointAheadOnRoute(me, meters) {
+            if (!activeRoute || activeRoute.length < 2) return null;
+            let nearIdx = 0, nearD = Infinity;
+            for (let i = 0; i < activeRoute.length; i++) {
+                const d = distMeters(me, activeRoute[i]);
+                if (d < nearD) { nearD = d; nearIdx = i; }
+            }
+            let acc = 0;
+            for (let i = nearIdx; i < activeRoute.length - 1; i++) {
+                acc += distMeters(activeRoute[i], activeRoute[i + 1]);
+                if (acc >= meters) return { lat: activeRoute[i + 1][0], lng: activeRoute[i + 1][1] };
+            }
+            const laatste = activeRoute[activeRoute.length - 1];
+            return { lat: laatste[0], lng: laatste[1] };
+        }
+        function deadEnd() {
+            const toast = (t, c) => { if (typeof showBufferToast === 'function') showBufferToast(t, c || '#FF1744', 1800); };
+            const me = (typeof lastGps === 'object' && lastGps) ? [lastGps.lat, lastGps.lng] : null;
+            if (!me) { toast('Geen GPS', '#FF9800'); return; }
+            if (typeof addNogo !== 'function') { toast('Niet beschikbaar', '#FF9800'); return; }
+            const heeftRoute = !!(activeRoute && activeRoute.length > 2);
+            // 80 m vooruit: de zone dekt dan ±30-130 m vóór je, dus jij staat er ruim buiten
+            const plek = heeftRoute ? pointAheadOnRoute(me, 80) : { lat: me[0], lng: me[1] };
+            addNogo(plek.lat, plek.lng, 0.05, true);   // 0,05 km = 50 m straal, geen planner-herberekening
+            toast('Dead end — nieuwe route');
+            if (heeftRoute && typeof acceptReroute === 'function') acceptReroute();
+        }
+
+        // v63.17: de pop-up naast "2 Route" zetten — positie GEMETEN uit de knop zelf (rooster-regel:
+        // relatief plaatsen = rekenen uit gemeten maten). Past hij rechts niet, dan eronder.
+        function placeNextPointPop() {
+            const b2r = document.getElementById('b2rBtn');
+            const pop = document.getElementById('nextPointPop');
+            if (!b2r || !pop) return;
+            const r = b2r.getBoundingClientRect();
+            if (!r.width) return;                       // nog niet zichtbaar → niets te meten
+            const GAP = 10, W = pop.offsetWidth || 64, H = pop.offsetHeight || 64;
+            if (r.right + GAP + W <= window.innerWidth - 8) {
+                pop.style.left = Math.round(r.right + GAP) + 'px';
+                pop.style.top = Math.round(r.top + (r.height - H) / 2) + 'px';
+            } else {                                     // te krap rechts → eronder, gecentreerd
+                pop.style.left = Math.round(r.left + (r.width - W) / 2) + 'px';
+                pop.style.top = Math.round(r.bottom + GAP) + 'px';
+            }
+        }
+        function showNextPointPop(aan) {
+            const pop = document.getElementById('nextPointPop');
+            if (!pop) return;
+            pop.style.display = aan ? 'flex' : 'none';
+            if (aan) placeNextPointPop();
+        }
+        function skipToNextTurn() {
+            const toast = (t, c) => { if (typeof showBufferToast === 'function') showBufferToast(t, c || '#00BCD4', 1600); };
+            if (!activeRoute || activeRoute.length < 3) { toast('Geen route', '#FF9800'); return; }
+            const me = (typeof lastGps === 'object' && lastGps) ? [lastGps.lat, lastGps.lng] : null;
+            if (!me) { toast('Geen GPS', '#FF9800'); return; }
+            // dichtstbijzijnde punt op de route
+            let nearIdx = 0, nearD = Infinity;
+            for (let i = 0; i < activeRoute.length; i++) {
+                const d = distMeters(me, activeRoute[i]);
+                if (d < nearD) { nearD = d; nearIdx = i; }
+            }
+            // eerstvolgende bocht ná dat punt (min-scan: werkt ook als de lijst niet gesorteerd is)
+            let cut = -1;
+            (detectedTurns || []).forEach(t => {
+                if (t && typeof t.index === 'number' && t.index > nearIdx && (cut < 0 || t.index < cut)) cut = t.index;
+            });
+            if (cut < 0) { toast('Geen bocht meer vóór je', '#FF9800'); return; }
+            if (cut > activeRoute.length - 3) { toast('Einde route', '#FF9800'); return; }
+            // knippen
+            activeRoute = activeRoute.slice(cut);
+            detectedTurns = (detectedTurns || [])
+                .filter(t => t && typeof t.index === 'number' && t.index > cut)
+                .map(t => Object.assign({}, t, { index: t.index - cut }));
+            // caches zijn op bochtnummer gesleuteld → wissen, anders zwijgt/piept hij verkeerd
+            beepedApproach = {}; beepedNow = {}; spokenFirst = {}; spokenAt = {}; spokenAtPrev = {};
+            if (typeof drawTurnDots === 'function') drawTurnDots();
+            try {
+                if (routeLine) map.removeLayer(routeLine);
+                const gj = { type:'Feature', geometry:{ type:'LineString', coordinates: activeRoute.map(p => [p[1], p[0]]) } };
+                routeLine = L.geoJSON(gj, { pane:'hmNaviPane', style:{ color:'#00BCD4', weight: trackLineWidth, opacity:0.9 }, interactive:false }).addTo(map);
+            } catch (e) {}
+            if (currentMode === 'master' && typeof sendGPXToFirebase === 'function') {
+                try { sendGPXToFirebase(currentCode, activeRoute, detectedTurns, routeTotalKm, routeTotalMin); } catch (e) {}
+            }
+            toast('Volgende bocht');
+        }
+
         function checkUpcomingTurn(lat, lng) {
             const left = document.getElementById('turnArrowLeft');
             const right = document.getElementById('turnArrowRight');
@@ -6911,6 +7051,7 @@ assign initialcost =
             };
             if (!detectedTurns.length || !activeRoute) {
                 const _b = document.getElementById('b2rBtn'); if (_b) _b.style.display = 'none';   // geen route → geen B2R
+                if (typeof showNextPointPop === 'function') showNextPointPop(false);   // v63.17: pop-up lift mee
                 hideAll(); return;
             }
             if (!navArrowsEnabled) { hideAll(); }
@@ -6929,8 +7070,13 @@ assign initialcost =
             if (typeof checkOffRoute === 'function') checkOffRoute(myDist, lat, lng);   // van de route? → vraag
             // B2R-knop: knippert in beeld zolang je van de route af bent; weg zodra je er weer op zit.
             const b2r = document.getElementById('b2rBtn');
-            if (myDist > 60) { if (b2r) b2r.style.display = 'block'; hideAll(); return; }   // >60m = eraf → B2R aan, pijlen uit
+            if (myDist > 60) {                       // >60m = eraf → B2R aan, pijlen uit
+                if (b2r) b2r.style.display = 'block';
+                if (typeof showNextPointPop === 'function') showNextPointPop(true);   // v63.17: pop-up erbij
+                hideAll(); return;
+            }
             if (b2r) b2r.style.display = 'none';
+            if (typeof showNextPointPop === 'function') showNextPointPop(false);
 
             // De eerstvolgende afslag VÓÓR je op de route (ongeacht afstand — ook 60/120 km op de snelweg).
             // We kiezen de afslag met de laagste route-index die nog vóór je ligt.
@@ -7132,7 +7278,11 @@ assign initialcost =
                 && typeof MODE_PROFILE !== 'undefined' && MODE_PROFILE[planMode]) {
                 prof = MODE_PROFILE[planMode];
             }
-            const url = `https://brouter.de/brouter?lonlats=${lonlats}&profile=${prof}&alternativeidx=0&format=geojson&turnInstructionMode=2`;
+            // v63.16 (gat gevonden bij de dead-end-bouw): de rit-herberekening stuurde de
+            // vermijd-zones NIET mee, dus BRouter stuurde je zo weer een verboden/doodlopend
+            // stuk in. De planner (regel ~2287) deed dit al wél — nu allebei dezelfde bron.
+            const nogos = (typeof nogosParam === 'function') ? nogosParam() : '';
+            const url = `https://brouter.de/brouter?lonlats=${lonlats}&profile=${prof}${nogos}&alternativeidx=0&format=geojson&turnInstructionMode=2`;
             const res = await fetch(url);
             if (!res.ok) throw new Error('BRouter ' + res.status);
             const data = await res.json();
