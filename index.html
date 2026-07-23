@@ -503,7 +503,10 @@
            rechts op 50%+266 (20px gat). */
         body.btn-menu-open #menuVlak3 {
             display: flex !important; position: fixed !important; z-index: 2400 !important;
-            flex-direction: column !important; align-items: center !important; gap: 10px !important;
+            /* v63.28 (wens Sjoerd): STAAND naast elkaar, en code en STOP ver uit elkaar zodat je
+               niet per ongeluk STOP raakt — 48 px tussenruimte. Nagerekend: staand 294x136 in de
+               386x233 boven Vlak 1, liggend 146x232 in 155x386. */
+            flex-direction: row !important; align-items: center !important; gap: 48px !important;
             background: rgba(226, 231, 245, 0.97) !important;
             border: 2px solid #00BCD4 !important; border-radius: 16px !important;
             padding: 16px !important; box-shadow: 0 8px 40px rgba(0,0,0,0.7) !important;
@@ -515,11 +518,12 @@
                 right: calc(50% + 266px) !important; left: auto !important;
                 top: 50% !important; bottom: auto !important;
                 transform: translateY(-50%) !important;
+                flex-direction: column !important;   /* v63.28: liggend onder elkaar, zelfde ruime gap */
             }
         }
-        body.btn-menu-open #vlak2Btns { flex-direction: row; }                      /* v63.24 staand: knoppen naast elkaar */
+        body.btn-menu-open #vlak2Btns { flex-direction: row !important; }                      /* v63.24 staand: knoppen naast elkaar */
         @media (orientation: landscape) {
-            body.btn-menu-open #vlak2Btns { flex-direction: column; }                /* liggend: onder elkaar */
+            body.btn-menu-open #vlak2Btns { flex-direction: column !important; }                /* liggend: onder elkaar */
         }
         body.btn-menu-open #menuVlak2 {
             display: flex !important; position: fixed !important; z-index: 2400 !important;
@@ -916,7 +920,7 @@
          "graag een veld 3 waar de nieuwe knop en code in komt, mooi zichtbaar en groot"), dus de
          knoppen kunnen terug van 64 naar 80 px — met drie knoppen past dat weer in beide standen. -->
     <div id="menuVlak2" style="display: none;">
-        <div id="vlak2Btns" style="display: flex; flex-direction: row; gap: 12px;">
+        <div id="vlak2Btns" style="display: flex; gap: 12px;">
             <button id="menuVlak2Btn" onclick="closeBtnMenu(); toggleAppMenu();" title="Menu — instellingen, routes, handleiding"
                     style="width: 80px; height: 80px; border-radius: 6px; background: rgba(0,188,212,0.9); color: #003;
                            border: 3px solid #00838F; cursor: pointer; display: flex; flex-direction: column;
@@ -949,7 +953,7 @@
          wordt ±134x190 en past staand in 386x233 boven Vlak 1 en liggend in 155x386. -->
     <div id="menuVlak3" style="display: none;">
         <div id="vlak3Code" onclick="menuCodeTap()" title="Trackingcode"
-             style="align-self: stretch; text-align: center; background: rgba(0,188,212,0.15);
+             style="text-align: center; background: rgba(0,188,212,0.15);
                     border: 2px solid #00838F; border-radius: 8px; padding: 8px 12px; cursor: pointer;
                     font-family: sans-serif; font-weight: bold; font-size: 1.7em; letter-spacing: 2px; color: #003;">----</div>
         <button id="vlak3StopBtn" onclick="menuStopTap(this)" title="STOP — rit beëindigen (twee keer tikken)"
@@ -1103,7 +1107,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.26 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.28 © Umop3p1sdn</div>
 
             </div>
 
@@ -1678,7 +1682,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.26 © Umop3p1sdn
+                HO-ME v63.28 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2041,7 +2045,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.26 © Umop3p1sdn
+                HO-ME v63.28 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -4272,7 +4276,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "63.26";
+        const APP_VERSION = "63.28";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
