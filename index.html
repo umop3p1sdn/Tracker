@@ -501,6 +501,22 @@
            eronder op 50%+188 (>=20px gat, nooit overlap ook als knoppen verborgen zijn → Vlak 1
            korter → gat groter, nooit kleiner). LIGGEND buitenbreedte 492 (halve 246) → Vlak 2
            rechts op 50%+266 (20px gat). */
+        body.btn-menu-open #menuVlak3 {
+            display: flex !important; position: fixed !important; z-index: 2400 !important;
+            flex-direction: column !important; align-items: center !important; gap: 10px !important;
+            background: rgba(226, 231, 245, 0.97) !important;
+            border: 2px solid #00BCD4 !important; border-radius: 16px !important;
+            padding: 16px !important; box-shadow: 0 8px 40px rgba(0,0,0,0.7) !important;
+            bottom: calc(50% + 188px) !important; left: 50% !important;
+            transform: translateX(-50%) !important; top: auto !important;
+        }
+        @media (orientation: landscape) {
+            body.btn-menu-open #menuVlak3 {
+                right: calc(50% + 266px) !important; left: auto !important;
+                top: 50% !important; bottom: auto !important;
+                transform: translateY(-50%) !important;
+            }
+        }
         body.btn-menu-open #vlak2Btns { flex-direction: row; }                      /* v63.24 staand: knoppen naast elkaar */
         @media (orientation: landscape) {
             body.btn-menu-open #vlak2Btns { flex-direction: column; }                /* liggend: onder elkaar */
@@ -896,42 +912,52 @@
     <!-- v63.24 VLAK 2 (ontwerp Sjoerd): trackingcode bovenin, daaronder de knoppen. Knoppen van 80
          naar 64 px omdat er een vierde bij komt (STOP): nagerekend past 80 px liggend niet meer
          (kolom zou 436 px worden op 386 px ruimte), 64 px wel (366 px). -->
+    <!-- v63.25 VLAK 2: alleen de rit-knoppen. Code en STOP zijn naar Vlak 3 verhuisd (wens Sjoerd:
+         "graag een veld 3 waar de nieuwe knop en code in komt, mooi zichtbaar en groot"), dus de
+         knoppen kunnen terug van 64 naar 80 px — met drie knoppen past dat weer in beide standen. -->
     <div id="menuVlak2" style="display: none;">
-        <div id="vlak2Code" onclick="menuCodeTap()" title="Trackingcode"
-             style="align-self: stretch; text-align: center; background: rgba(0,188,212,0.12);
-                    border: 2px solid #00838F; border-radius: 6px; padding: 6px 8px; cursor: pointer;
-                    font-family: sans-serif; font-weight: bold; font-size: 1.2em; color: #003;">----</div>
-        <div id="vlak2Btns" style="display: flex; flex-direction: row; gap: 10px;">
+        <div id="vlak2Btns" style="display: flex; flex-direction: row; gap: 12px;">
             <button id="menuVlak2Btn" onclick="closeBtnMenu(); toggleAppMenu();" title="Menu — instellingen, routes, handleiding"
-                    style="width: 64px; height: 64px; border-radius: 6px; background: rgba(0,188,212,0.9); color: #003;
+                    style="width: 80px; height: 80px; border-radius: 6px; background: rgba(0,188,212,0.9); color: #003;
                            border: 3px solid #00838F; cursor: pointer; display: flex; flex-direction: column;
                            align-items: center; justify-content: center; gap: 2px; font-family: sans-serif;">
-                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"
                      stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/>
                      <line x1="4" y1="17" x2="20" y2="17"/></svg>
-                <span style="font-size: 0.52em; font-weight: bold; line-height: 1;">MENU</span>
+                <span style="font-size: 0.58em; font-weight: bold; line-height: 1;">MENU</span>
             </button>
             <button id="nextPointBtn" onclick="skipToNextTurn()" title="Next point — route tot de volgende bocht weggooien"
-                    style="width: 64px; height: 64px; border-radius: 6px; background: rgba(0,188,212,0.9); color: #003;
+                    style="width: 80px; height: 80px; border-radius: 6px; background: rgba(0,188,212,0.9); color: #003;
                            border: 3px solid #00838F; cursor: pointer; display: flex; flex-direction: column;
-                           align-items: center; justify-content: center; gap: 1px; font-family: sans-serif;">
-                <span style="font-size: 0.56em; font-weight: bold; line-height: 1.1;">NEXT</span>
-                <span style="font-size: 0.56em; font-weight: bold; line-height: 1.1;">POINT</span>
+                           align-items: center; justify-content: center; gap: 2px; font-family: sans-serif;">
+                <span style="font-size: 0.62em; font-weight: bold; line-height: 1.1;">NEXT</span>
+                <span style="font-size: 0.62em; font-weight: bold; line-height: 1.1;">POINT</span>
             </button>
             <button id="deadEndBtn" onclick="deadEnd()" title="Dead end — weg dicht, vermijd deze en reken opnieuw"
-                    style="width: 64px; height: 64px; border-radius: 6px; background: rgba(255,23,68,0.9); color: #fff;
+                    style="width: 80px; height: 80px; border-radius: 6px; background: rgba(255,23,68,0.9); color: #fff;
                            border: 3px solid #B0003A; cursor: pointer; display: flex; flex-direction: column;
-                           align-items: center; justify-content: center; gap: 1px; font-family: sans-serif;">
-                <span style="font-size: 0.56em; font-weight: bold; line-height: 1.1;">DEAD</span>
-                <span style="font-size: 0.56em; font-weight: bold; line-height: 1.1;">END</span>
-            </button>
-            <button id="vlak2StopBtn" onclick="menuStopTap(this)" title="STOP — rit beëindigen (twee keer tikken)"
-                    style="width: 64px; height: 64px; border-radius: 6px; background: rgba(120,0,20,0.92); color: #fff;
-                           border: 3px solid #FF1744; cursor: pointer; display: flex; flex-direction: column;
-                           align-items: center; justify-content: center; font-family: sans-serif;">
-                <span id="vlak2StopLabel" style="font-size: 0.6em; font-weight: bold; line-height: 1.1;">STOP</span>
+                           align-items: center; justify-content: center; gap: 2px; font-family: sans-serif;">
+                <span style="font-size: 0.62em; font-weight: bold; line-height: 1.1;">DEAD</span>
+                <span style="font-size: 0.62em; font-weight: bold; line-height: 1.1;">END</span>
             </button>
         </div>
+    </div>
+
+    <!-- v63.25 VLAK 3 (ontwerp Sjoerd): trackingcode en STOP, groot en goed zichtbaar. Staand BOVEN
+         Vlak 1 (bottom:50%+188 → onderrand 20 px boven Vlak 1, spiegelbeeld van Vlak 2 eronder),
+         liggend LINKS ervan (right:50%+266, spiegelbeeld van Vlak 2 rechts). Nagerekend: het vak
+         wordt ±134x190 en past staand in 386x233 boven Vlak 1 en liggend in 155x386. -->
+    <div id="menuVlak3" style="display: none;">
+        <div id="vlak3Code" onclick="menuCodeTap()" title="Trackingcode"
+             style="align-self: stretch; text-align: center; background: rgba(0,188,212,0.15);
+                    border: 2px solid #00838F; border-radius: 8px; padding: 8px 12px; cursor: pointer;
+                    font-family: sans-serif; font-weight: bold; font-size: 1.7em; letter-spacing: 2px; color: #003;">----</div>
+        <button id="vlak3StopBtn" onclick="menuStopTap(this)" title="STOP — rit beëindigen (twee keer tikken)"
+                style="width: 100px; height: 100px; border-radius: 8px; background: rgba(120,0,20,0.92); color: #fff;
+                       border: 3px solid #FF1744; cursor: pointer; display: flex; align-items: center;
+                       justify-content: center; font-family: sans-serif;">
+            <span id="vlak3StopLabel" style="font-size: 1.05em; font-weight: bold; line-height: 1.1;">STOP</span>
+        </button>
     </div>
 
     <div id="stackSliderOverlay" onclick="closeStackSlider()" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; z-index:2580; background:transparent;"></div>
@@ -1077,7 +1103,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.24 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.26 © Umop3p1sdn</div>
 
             </div>
 
@@ -1158,14 +1184,8 @@
                         <button class="go-button show" id="goButtonMaster" onclick="toggleMapOnly('master')">Hide</button>
                     </div>
                     
-                    <div class="info-bottom">
-                        <div class="info-label">Your Tracking Code</div>
-                        <div style="display: flex; align-items: stretch; gap: 10px;">
-                            <div class="code-box" id="codeBox" onclick="shareCode()" title="Tik om te delen" style="flex: 1; margin: 0; cursor: pointer;">----</div>
-                        </div>
-                    </div>
+                    
 
-                    <button class="button button-stop" onclick="stopTracking()">STOP</button>
                 </div>
 
                 <!-- FOLLOWER MODE -->
@@ -1207,11 +1227,8 @@
                         <button class="button-secondary" onclick="cycleTrackView()" id="trackBtn" style="flex: 1;">GEEN</button>
                     </div>
 
-                    <button class="button button-stop" onclick="stopTracking()">STOP</button>
 
                     <div class="info-bottom">
-                        <div class="info-label">Following Code</div>
-                        <div class="code-box" id="followerCodeBox" style="font-size: 1.3em;">----</div>
                         <p class="info-text">Live tracking active</p>
                     </div>
                 </div>
@@ -1661,7 +1678,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.24 © Umop3p1sdn
+                HO-ME v63.26 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2024,7 +2041,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.24 © Umop3p1sdn
+                HO-ME v63.26 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -4255,7 +4272,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "63.24";
+        const APP_VERSION = "63.26";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
@@ -10969,7 +10986,7 @@ assign initialcost =
             if (typeof stopHomeUpdateChecks === 'function') stopHomeUpdateChecks();
             document.getElementById('activeTracking').classList.remove('hidden');
             document.querySelector('.header').classList.add('hidden');
-            document.getElementById('codeBox').textContent = code;
+            const _cb = document.getElementById('codeBox'); if (_cb) _cb.textContent = code;   // v63.25: mag ontbreken (code staat nu in Vlak 3)
             document.getElementById('masterMode').classList.remove('hidden');
             document.getElementById('followerMode').classList.add('hidden');
 
@@ -11048,7 +11065,7 @@ assign initialcost =
             if (typeof stopHomeUpdateChecks === 'function') stopHomeUpdateChecks();
             document.getElementById('activeTracking').classList.remove('hidden');
             document.querySelector('.header').classList.add('hidden');
-            document.getElementById('followerCodeBox').textContent = code;
+            const _fcb = document.getElementById('followerCodeBox'); if (_fcb) _fcb.textContent = code;   // v63.25: mag ontbreken
             document.getElementById('masterMode').classList.add('hidden');
             document.getElementById('followerMode').classList.remove('hidden');
             trackState = 'none';
@@ -11247,7 +11264,7 @@ assign initialcost =
             if (currentMode === 'master' && typeof shareCode === 'function') shareCode();
         }
         function vulMenuCode() {   // v63.24: het code-veld zit nu in Vlak 2
-            const el = document.getElementById('vlak2Code');
+            const el = document.getElementById('vlak3Code');
             if (!el) return;
             el.textContent = currentCode || '----';
             const kanDelen = (currentMode === 'master');   // alleen de master kan delen
@@ -11292,7 +11309,7 @@ assign initialcost =
         // heeft geen gevolgen.
         let _stopArmTimer = null;
         function menuStopTap(btn) {
-            const label = document.getElementById('vlak2StopLabel') || btn;
+            const label = document.getElementById('vlak3StopLabel') || btn;
             if (_stopArmTimer) {                       // tweede tik → echt stoppen
                 clearTimeout(_stopArmTimer); _stopArmTimer = null;
                 label.textContent = 'STOP';
