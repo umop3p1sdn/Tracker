@@ -1114,7 +1114,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.33 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.34 © Umop3p1sdn</div>
 
             </div>
 
@@ -1367,7 +1367,7 @@
             <h3 style="color: #00BCD4; margin-top: 20px;">Starten &amp; delen</h3>
             <ul style="margin: 10px 0; padding-left: 20px;">
                 <li>Klik op <strong>START TRACKING</strong> — je krijgt een 4-cijferige code.</li>
-                <li>Deel de code met je vrienden; jouw locatie wordt in real-time gedeeld.</li>
+                <li>Deel de code met je vrienden; jouw locatie wordt in real-time gedeeld. Tik je op de code in het menu, dan verstuur je een berichtje met een <strong>link waar de code al in zit</strong>: opent je vriend die link, dan rijdt hij meteen mee zonder iets in te tikken. Op Android opent zo'n link vaak direct in de geïnstalleerde app; op een iPhone opent hij in de browser — daarom staat de code ook als tekst in het bericht, zodat hij hem altijd zelf kan intikken.</li>
                 <li>Je gereden lijn (rood spoor) en je route worden met de volgers gedeeld.</li>
             </ul>
 
@@ -1691,7 +1691,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.33 © Umop3p1sdn
+                HO-ME v63.34 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1731,7 +1731,7 @@
             <h3 style="color: #00BCD4; margin-top: 20px;">Starting &amp; sharing</h3>
             <ul style="margin: 10px 0; padding-left: 20px;">
                 <li>Tap <strong>START TRACKING</strong> — you get a 4-digit code.</li>
-                <li>Share the code with your friends; your location is shared in real time.</li>
+                <li>Share the code with your friends; your location is shared in real time. Tap the code in the menu and you send a message containing a <strong>link with the code already in it</strong>: when your friend opens that link they join straight away without typing anything. On Android such a link often opens directly in the installed app; on an iPhone it opens in the browser — which is why the code is also in the message as text, so they can always type it themselves.</li>
                 <li>Your ridden line (red track) and your route are shared with the followers.</li>
             </ul>
 
@@ -2056,7 +2056,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.33 © Umop3p1sdn
+                HO-ME v63.34 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -4287,7 +4287,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "63.33";
+        const APP_VERSION = "63.34";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
@@ -4330,6 +4330,7 @@ assign initialcost =
             const vs = document.getElementById('flitserVolSlider');
             if (vs) vs.value = Math.round(flitserVolume * 100);
             if (typeof applyScreenCorrection === 'function') applyScreenCorrection();   // v61.1
+            joinViaLink();   // v63.34: ?join=CODE uit de deel-link → meteen meerijden
             if (typeof bindHoldRepeat === 'function') {   // v62.2/62.5: 4-pijlen-pad, vasthouden versnelt
                 bindHoldRepeat(document.getElementById('adjUp'),    (n) => adjustMove(0, -adjustStap(n)));
                 bindHoldRepeat(document.getElementById('adjDown'),  (n) => adjustMove(0, adjustStap(n)));
@@ -11011,6 +11012,22 @@ assign initialcost =
             setTimeout(updateTalkUI, 500);
         }
 
+        // v63.34: kwam je binnen via een gedeelde link (.../Tracker/?join=SJRD), dan vullen we de
+        // code in en joinen we meteen. De link wordt daarna uit de adresbalk gehaald, zodat een
+        // herstart je niet ongemerkt opnieuw een oude rit in trekt. Alleen vanaf het startscherm.
+        function joinViaLink() {
+            let code = '';
+            try { code = (new URLSearchParams(location.search).get('join') || '').trim().toUpperCase(); } catch (e) { return; }
+            if (!/^[A-Z0-9]{4}$/.test(code)) return;                     // geen (geldige) code → niets doen
+            try { history.replaceState(null, '', location.pathname); } catch (e) {}   // adresbalk opruimen
+            if (currentMode || currentCode) return;                      // al in een rit → met rust laten
+            const veld = document.getElementById('inputCode');
+            if (!veld) return;
+            veld.value = code;
+            setTimeout(() => {                                           // even wachten tot de app staat
+                if (typeof startFollowing === 'function') startFollowing();
+            }, 300);
+        }
         function startFollowing() {
             const code = document.getElementById('inputCode').value.toUpperCase();
             
@@ -11383,7 +11400,11 @@ assign initialcost =
         // Tik op de code (master) → deel-scherm met code + app-link (WhatsApp etc.).
         function shareCode() {
             if (!currentCode || currentCode === '----') return;   // nog geen code
-            const url = 'https://umop3p1sdn.github.io/Tracker/';
+            // v63.34 (wens Sjoerd): de code in de link, zodat de ontvanger meteen meerijdt.
+            // Android opent zo'n link vaak direct in de geïnstalleerde app (valt binnen scope
+            // /Tracker/); iOS geeft links nooit door aan een PWA en opent Safari — daarom staat
+            // de code ook gewoon als tekst in het bericht, als vangnet om zelf in te tikken.
+            const url = 'https://umop3p1sdn.github.io/Tracker/?join=' + encodeURIComponent(currentCode);
             const text = `Volg me live op HO-ME! Mijn code: ${currentCode}\nOpen: ${url}`;
             if (navigator.share) {
                 navigator.share({ title: 'HO-ME', text: text }).catch(() => {});   // annuleren → stil
