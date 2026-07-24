@@ -842,8 +842,8 @@
         <span style="font-size: 42px; font-weight: 900; color: #000; font-family: sans-serif; filter: drop-shadow(0 0 2px rgba(255,255,255,0.9)); line-height:1;">T</span>
     </div>
     <!-- Tekst-naar-spraak venster: typen, afspelen, eigen lijst, opslaan/laden (als bestand net als GPX) -->
-    <div id="ttsPanel" onclick="if(event.target===this)closeTtsPanel()" style="display:none; position:fixed; inset:0; z-index:3000; background:rgba(0,0,0,0.55); align-items:center; justify-content:center; padding:16px;">
-        <div style="background:#0a0e27; border:2px solid #00BCD4; border-radius:16px; max-width:440px; width:100%; max-height:86vh; overflow-y:auto; box-shadow:0 8px 30px rgba(0,0,0,0.7); padding:16px;">
+    <div id="ttsPanel" onclick="if(event.target===this)closeTtsPanel()" style="display:none; position:fixed; inset:0; z-index:3000; background:transparent; padding-top:calc(18% + 147px); align-items:flex-start; justify-content:center; padding:16px;">
+        <div style="background:#0a0e27; border:2px solid #00BCD4; border-radius:16px; max-width:440px; width:100%; max-height:calc(86vh - 163px); overflow-y:auto; box-shadow:0 8px 30px rgba(0,0,0,0.7); padding:16px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
                 <span style="color:#00BCD4; font-weight:bold; font-size:20px;">Bericht naar de groep</span>
                 <button onclick="closeTtsPanel()" style="width:44px; height:44px; border-radius:10px; background:#FF1744; border:2px solid #fff; color:#fff; font-weight:bold; font-size:1.4em; line-height:1; cursor:pointer;">✕</button>
@@ -876,8 +876,8 @@
         <span id="voiceMarqueeText" style="position:absolute; top:0; white-space:nowrap; font-family:sans-serif; font-weight:900; font-size:96px; line-height:135px; color:rgba(255,255,255,0.12); -webkit-text-stroke:4.5px #000; text-stroke:4.5px #000; paint-order:stroke fill; text-shadow:0 0 10px rgba(255,255,255,0.45); will-change:transform;"></span>
     </div>
     <!-- WOORDENLIJST: kant-en-klare zinnen (Words-modus). Tik zin = versturen, tik naast lijst = sluiten. -->
-    <div id="wordsOverlay" style="display:none; position:fixed; inset:0; z-index:2550; background:rgba(0,0,0,0.55);" onclick="closeWordsList(event)">
-        <div id="wordsListBox" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:88%; max-width:420px; max-height:82vh; overflow-y:auto; -webkit-overflow-scrolling:touch; background:#0a0e27; border:2px solid #00BCD4; border-radius:16px; padding:14px; box-shadow:0 8px 40px rgba(0,0,0,0.6);">
+    <div id="wordsOverlay" style="display:none; position:fixed; inset:0; z-index:2550; background:transparent;" onclick="closeWordsList(event)">
+        <div id="wordsListBox" style="position:absolute; top:calc(18% + 147px); left:50%; transform:translateX(-50%); width:88%; max-width:420px; max-height:calc(82vh - 163px); overflow-y:auto; -webkit-overflow-scrolling:touch; background:#0a0e27; border:2px solid #00BCD4; border-radius:16px; padding:14px; box-shadow:0 8px 40px rgba(0,0,0,0.6);">
             <!-- knoppen worden hier via JS gevuld -->
         </div>
     </div>
@@ -1114,7 +1114,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.34 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.35 © Umop3p1sdn</div>
 
             </div>
 
@@ -1691,7 +1691,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.34 © Umop3p1sdn
+                HO-ME v63.35 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2056,7 +2056,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.34 © Umop3p1sdn
+                HO-ME v63.35 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -4287,7 +4287,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "63.34";
+        const APP_VERSION = "63.35";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
