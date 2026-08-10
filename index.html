@@ -1114,7 +1114,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.38 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.39 © Umop3p1sdn</div>
 
             </div>
 
@@ -1691,7 +1691,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.38 © Umop3p1sdn
+                HO-ME v63.39 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2056,7 +2056,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.38 © Umop3p1sdn
+                HO-ME v63.39 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -4287,7 +4287,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "63.38";
+        const APP_VERSION = "63.39";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
@@ -4806,7 +4806,10 @@ assign initialcost =
             // Rotonde met een ZEKER exit-nummer → noem de afslag ("de 2e afslag"). Anders "de rotonde op".
             if ((turn.cmd === 13 || turn.cmd === 14) && turn.exit) {
                 const rang = { 1:'1e', 2:'2e', 3:'3e', 4:'4e', 5:'5e', 6:'6e', 7:'7e', 8:'8e' }[turn.exit] || (turn.exit + 'e');
-                return 'op de rotonde de ' + rang + ' afslag';
+                // v63.39: nummer + herkende richting ("de 2e afslag, rechtdoor"). Zonder richting alleen het nummer.
+                return turn.exitDir
+                    ? ('op de rotonde de ' + rang + ' afslag, ' + turn.exitDir)
+                    : ('op de rotonde de ' + rang + ' afslag');
             }
             const t = TURN_SPEECH[turn.cmd];
             if (t) return t[when];
@@ -6524,8 +6527,12 @@ assign initialcost =
             let gotExit = false;
             raTurns.forEach(turn => {
                 try {
-                    const exit = computeRoundaboutExit(turn, route, rings, others);
-                    if (exit && exit >= 1 && exit <= 12) { turn.exit = exit; gotExit = true; }
+                    const res = computeRoundaboutExit(turn, route, rings, others);
+                    if (res && res.exit >= 1 && res.exit <= 12) {
+                        turn.exit = res.exit;                 // v63.39: nummer én richting bewaren
+                        turn.exitDir = res.richting;
+                        gotExit = true;
+                    }
                 } catch (e) { /* geen nummer → blijft "de rotonde op" */ }
             });
             if (typeof drawTurnDots === 'function') drawTurnDots();
@@ -6585,13 +6592,30 @@ assign initialcost =
             // 4) tel de exits die je passeert van oprit tot afrit, in rijrichting (NL: linksom = met de klok mee
             //    vanuit het midden gezien nemen de hoeken toe). Reken alles relatief t.o.v. de oprit.
             const norm = a => (a % 360 + 360) % 360;
-            const relExits = uniq.map(a => norm(a - entryAng)).filter(a => a > 5);  // exits ná de oprit
-            const relTarget = norm(exitAng - entryAng);
+            // v63.39 (melding Sjoerd, geverifieerd + nagerekend): in NL rijd je TEGEN DE KLOK IN over
+            // een rotonde, maar t.o.v. het MIDDELPUNT beweeg je dan MET de klok mee (je gaat er rechts
+            // langs). De hoeken hier zijn gemeten vanuit het midden, dus voor het TELLEN loopt de
+            // volgorde met norm(exit − oprit): de oprit-arm ligt op ~0/360° en telt niet mee, de exits
+            // erna krijgen oplopende hoeken in de volgorde waarin je ze passeert.
+            // v63.39 (melding Sjoerd, met echte rotonde-geometrie nagerekend): je RIJDT tegen de klok
+            // in over een NL-rotonde. Vanuit de oprit passeer je de exits in de volgorde van aflopende
+            // kompashoek → norm(oprit − exit) geeft precies die volgorde (kleinste eerst), en de
+            // oprit-arm zelf valt op ~0/360° weg. De 1e exit die je zo tegenkomt is je 1e afslag —
+            // rechtsaf is dus afslag 1, precies zoals het hoort.
+            const relExits = uniq.map(a => norm(entryAng - a)).filter(a => a > 5 && a < 358);
+            const relTarget = norm(entryAng - exitAng);    // jouw afrit in diezelfde volgorde-hoek
             relExits.sort((a, b) => a - b);
-            // de zoveelste exit = aantal exits met hoek <= jouw afrit-hoek (met kleine marge)
             let nr = 0;
             for (const a of relExits) { if (a <= relTarget + 8) nr++; else break; }
-            return (nr >= 1) ? nr : null;
+            if (nr < 1) return null;
+            // Zelfde hoek bepaalt de RICHTING die de rijder voelt: recht vooruit (tegenover de oprit)
+            // is 180°. Cirkel in vier vlakken van 90°: rechtdoor 135–225°, rechtsaf 45–135° (haaks
+            // rechts = 90°, precies het midden van dat vlak), linksaf 225–315°, de rest = omkeren.
+            let richting = 'omkeren';
+            if (relTarget >= 135 && relTarget < 225) richting = 'rechtdoor';
+            else if (relTarget >= 45 && relTarget < 135) richting = 'rechtsaf';
+            else if (relTarget >= 225 && relTarget < 315) richting = 'linksaf';
+            return { exit: nr, richting: richting };
         }
 
         async function loadSpeedLimitsForRoute() {
