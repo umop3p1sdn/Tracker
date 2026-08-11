@@ -1114,7 +1114,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.42 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.46 © Umop3p1sdn</div>
 
             </div>
 
@@ -1692,7 +1692,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.42 © Umop3p1sdn
+                HO-ME v63.46 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2058,7 +2058,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.42 © Umop3p1sdn
+                HO-ME v63.46 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2262,13 +2262,19 @@
                     if (cmd === 1 || cmd === 16) return;            // rechtdoor / rechte lijn overslaan
                     const pt = coords[idx];
                     if (!pt) return;
-                    turns.push({
+                    const _t = {
                         lat: pt[1], lng: pt[0],
                         dir: LEFT.includes(cmd) ? 'L' : 'R',
                         cmd: cmd,                                   // ECHTE type (rotonde/scherp/afrit/...)
                         angle: 90,
                         index: idx
-                    });
+                    };
+                    // v63.43: rotonde-richting nu al uit de route zelf (altijd beschikbaar, ook offline).
+                    if (cmd === 13 || cmd === 14) {
+                        const rd = roundaboutDirFromRoute(route, idx);
+                        if (rd) _t.exitDir = rd;
+                    }
+                    turns.push(_t);
                 });
                 // 3. in de tracker-navigatie zetten (i.p.v. detectTurns-schatting)
                 activeRoute = route;
@@ -4318,7 +4324,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "63.42";
+        const APP_VERSION = "63.46";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
@@ -4835,12 +4841,16 @@ assign initialcost =
         // Val terug op simpel links/rechts als het type onbekend is.
         function turnText(turn, when) {
             // Rotonde met een ZEKER exit-nummer → noem de afslag ("de 2e afslag"). Anders "de rotonde op".
-            if ((turn.cmd === 13 || turn.cmd === 14) && turn.exit) {
+            if (turn.cmd === 13 || turn.cmd === 14) {
                 const rang = { 1:'1e', 2:'2e', 3:'3e', 4:'4e', 5:'5e', 6:'6e', 7:'7e', 8:'8e' }[turn.exit] || (turn.exit + 'e');
-                // v63.39: nummer + herkende richting ("de 2e afslag, rechtdoor"). Zonder richting alleen het nummer.
-                return turn.exitDir
-                    ? ('op de rotonde de ' + rang + ' afslag, ' + turn.exitDir)
-                    : ('op de rotonde de ' + rang + ' afslag');
+                // v63.43: vier gevallen. Nummer is een bonus (Overpass); de richting is er altijd (uit de route).
+                if (turn.exit && turn.exitDir) return 'op de rotonde de ' + rang + ' afslag, ' + turn.exitDir;
+                if (turn.exit)                return 'op de rotonde de ' + rang + ' afslag';
+                if (turn.exitDir === 'rechtdoor') return 'op de rotonde rechtdoor';
+                if (turn.exitDir === 'rechtsaf')  return 'op de rotonde rechtsaf';
+                if (turn.exitDir === 'linksaf')   return 'op de rotonde linksaf';
+                if (turn.exitDir === 'omkeren')   return 'op de rotonde keert u om';
+                return (TURN_SPEECH[turn.cmd] ? TURN_SPEECH[turn.cmd][when] : 'de rotonde op');
             }
             const t = TURN_SPEECH[turn.cmd];
             if (t) return t[when];
@@ -6511,6 +6521,28 @@ assign initialcost =
         let currentSpeedLimit = null;  // laatst getoonde limiet (voorkomt onnodig hertekenen)
 
         // Haal in één Overpass-query alle wegen (met maxspeed) rond de route op, en koppel ze aan de route-punten.
+        // v63.43: richting op een rotonde (rechtdoor/rechtsaf/linksaf) uit de ROUTE zelf, zonder
+        // internet. We kijken ~25 m vóór en ná het rotondepunt naar de rijrichting; het verschil
+        // is de afbuiging. Recht vooruit = rechtdoor; de cirkel in vier vlakken van 90° (rechtsaf
+        // 20..160 met de klok mee, linksaf andersom, en heel scherp terug = omkeren). Deze richting
+        // is er ALTIJD — het exit-nummer uit Overpass blijft een bonus als het lukt.
+        function roundaboutDirFromRoute(route, idx) {
+            if (!route || idx < 1 || idx >= route.length) return null;
+            const LOOK = 25;
+            let b = idx - 1;
+            while (b > 0 && distMeters(route[b], route[idx]) < LOOK) b--;
+            let f = idx + 1;
+            while (f < route.length - 1 && distMeters(route[idx], route[f]) < LOOK) f++;
+            if (b < 0 || f >= route.length) return null;
+            const inB = bearing(route[b], route[idx]);
+            const outB = bearing(route[idx], route[f]);
+            const diff = ((outB - inB + 540) % 360) - 180;   // -180..180, + = rechts, - = links
+            const a = Math.abs(diff);
+            if (a <= 20) return 'rechtdoor';                 // vrijwel recht vooruit
+            if (a >= 160) return 'omkeren';                  // vrijwel terug
+            return diff > 0 ? 'rechtsaf' : 'linksaf';
+        }
+
         // ═══════════ ROTONDE-AFSLAG TELLEN: exit-nummer bepalen uit OSM (junction=roundabout) ═══════════
         // Aanpak A: één Overpass-query voor ALLE rotondes langs de route (bij GO), inclusief de wegen
         // die erop aansluiten (via gedeelde knooppunten). Per rotonde-afslag tellen we hoeveel exits er
@@ -6560,8 +6592,8 @@ assign initialcost =
                 try {
                     const res = computeRoundaboutExit(turn, route, rings, others);
                     if (res && res.exit >= 1 && res.exit <= 12) {
-                        turn.exit = res.exit;                 // v63.39: nummer én richting bewaren
-                        turn.exitDir = res.richting;
+                        turn.exit = res.exit;                 // v63.39: nummer bewaren
+                        if (res.richting) turn.exitDir = res.richting;   // v63.43: alleen overschrijven als Overpass een richting gaf; anders blijft de route-richting staan
                         gotExit = true;
                     }
                 } catch (e) { /* geen nummer → blijft "de rotonde op" */ }
@@ -7238,7 +7270,11 @@ assign initialcost =
             const SPEAK_THRESHOLDS = [1500, 600, 300, 150];
             if (!spokenAt[ti]) spokenAt[ti] = {};
             const prev = (typeof spokenAtPrev[ti] === 'number') ? spokenAtPrev[ti] : Infinity;
+            const isRotonde = (best.cmd === 13 || best.cmd === 14);
             for (const thr of SPEAK_THRESHOLDS) {
+                // v63.46 (wens Sjoerd): bij een rotonde alleen de 600 m-melding + de "nu"-melding.
+                // De 1500 / 300 / 150 m-meldingen vervallen — je hoort anders te veel aftellen.
+                if (isRotonde && thr !== 600) continue;
                 // passage = vorige meting was BOVEN de drempel, nu eronder (en nog niet gezegd)
                 if (prev > thr && bestDist <= thr && bestDist > NOW_AT && !spokenAt[ti][thr]) {
                     const m = bestDist > 1000
