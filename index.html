@@ -1114,7 +1114,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.40 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.42 © Umop3p1sdn</div>
 
             </div>
 
@@ -1375,6 +1375,7 @@
             <ul style="margin: 10px 0; padding-left: 20px;">
                 <li>Elke volger verschijnt als vliegtuigje op je kaart, met zijn <strong>tag</strong> (naam).</li>
                 <li>De teller in de rechter icoonbalk toont <strong>hoeveel</strong> volgers er verbonden zijn.</li>
+                <li>Rijd je zonder route, dan zie je linksonder <strong>SPOOR</strong> met de lengte van je rode gereden lijn (in meters, en vanaf een kilometer in km). Zodra je wél een route maakt verdwijnt dat, want dan staan de afstanden al in het rij-blok.</li>
                 <li>Onder de teller zit de <strong>LIJN</strong>-knop: tik 'm aan om de <strong>gereden sporen van je volgers</strong> te zien (elk in zijn eigen kleur). Handig als een volger een leuke weg weet en even voorrijdt — dan volg je gewoon zijn lijn. Standaard uit, zodat je kaart rustig blijft.</li>
                 <li>Zo weet je in één oogopslag wie achter je rijdt en wie nog stilstaat.</li>
                 <li>Met de <strong>TAG</strong>-knop (rechts) zet je als master ook je eigen naam — die zien spectators op hun volg-knop.</li>
@@ -1691,7 +1692,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.40 © Umop3p1sdn
+                HO-ME v63.42 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1739,6 +1740,7 @@
             <ul style="margin: 10px 0; padding-left: 20px;">
                 <li>Each follower appears as a small plane on your map, with their <strong>tag</strong> (name).</li>
                 <li>The counter in the right icon bar shows <strong>how many</strong> followers are connected.</li>
+                <li>When you ride without a route, the bottom-left shows <strong>SPOOR</strong> (trail) with the length of your red driven line (in metres, and from a kilometre in km). As soon as you do make a route it disappears, since the distances are then already in the ride block.</li>
                 <li>Below the counter is the <strong>LIJN</strong> (line) button: tap it to see the <strong>ridden tracks of your followers</strong> (each in their own colour). Handy when a follower knows a nice road and rides ahead — you simply follow their line. Off by default, so your map stays calm.</li>
                 <li>So at a glance you know who's riding behind you and who's still stationary.</li>
                 <li>With the <strong>TAG</strong> button (right) you as master set your own name too — spectators see it on their follow button.</li>
@@ -2056,7 +2058,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.40 © Umop3p1sdn
+                HO-ME v63.42 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -3140,8 +3142,10 @@ assign initialcost =
             if (!box) return;
             const heeftRoute = !!lastRouteGeo;
             const track = (typeof masterLocations !== 'undefined') ? masterLocations : [];
-            const tracking = (typeof trackState !== 'undefined') && (trackState === 'tracking');
-            if (heeftRoute || !tracking || track.length < 2) { box.style.display = 'none'; return; }
+            // v63.41: de master herken je aan currentMode==='master' (trackState kent geen 'tracking' —
+            //         dat was mijn foute aanname in v63.40, waardoor de box nooit verscheen).
+            const isMasterTracking = (typeof currentMode !== 'undefined') && (currentMode === 'master');
+            if (heeftRoute || !isMasterTracking || track.length < 2) { box.style.display = 'none'; return; }
             let m = 0;
             for (let i = 1; i < track.length; i++) {
                 m += distM4(track[i-1][0], track[i-1][1], track[i][0], track[i][1]);
@@ -4314,7 +4318,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "63.40";
+        const APP_VERSION = "63.42";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
