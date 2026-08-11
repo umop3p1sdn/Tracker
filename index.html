@@ -1114,7 +1114,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.39 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.40 © Umop3p1sdn</div>
 
             </div>
 
@@ -1691,7 +1691,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.39 © Umop3p1sdn
+                HO-ME v63.40 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2056,7 +2056,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.39 © Umop3p1sdn
+                HO-ME v63.40 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2178,6 +2178,12 @@
         </div>
     </div>
     <div id="poiList" style="display:none;"></div>
+    <!-- v63.40 (wens Sjoerd): lengte van de rode gereden lijn van de master. Alleen zichtbaar als
+         hij tracked EN er geen route is (met route zie je afstanden al in het rij-blok). -->
+    <div id="trackLenBox" style="display:none; position:fixed; left:10px; bottom:118px; z-index:1600; background:rgba(10,14,39,0.82); color:#FF1744; padding:6px 12px; border-radius:10px; font-family:sans-serif; font-weight:bold; box-shadow:0 2px 8px rgba(0,0,0,0.5); pointer-events:none;">
+        <span style="font-size:0.7em; color:#00BCD4; letter-spacing:0.5px;">SPOOR</span>
+        <span id="trackLenVal" style="font-size:1.2em; margin-left:6px;">0,0 km</span>
+    </div>
     <div id="infoBar"></div>
     <!-- #3 Landscape-dashboard: resterende Afstand + Tijd links onder elkaar (alleen liggend + rij-modus) -->
     <div id="remPanel" style="display:none; position:fixed; left:10px; bottom:215px; z-index:1600; background:rgba(10,14,39,0.82); color:#fff; padding:10px 14px; border-radius:10px; font-family:sans-serif; line-height:1.35;">
@@ -3127,6 +3133,27 @@ assign initialcost =
         const LEFT_CMDS = [2,3,4,8];     // TL, TSLL, TSHL, KL
         const RIGHT_CMDS = [5,6,7,9];    // TR, TSLR, TSHR, KR
 
+        // v63.40: lengte van de rode gereden lijn (masterLocations) optellen en tonen.
+        // Alleen als de master tracked EN er GEEN route is — met route staan afstanden al in het rij-blok.
+        function updateTrackLength() {
+            const box = document.getElementById('trackLenBox');
+            if (!box) return;
+            const heeftRoute = !!lastRouteGeo;
+            const track = (typeof masterLocations !== 'undefined') ? masterLocations : [];
+            const tracking = (typeof trackState !== 'undefined') && (trackState === 'tracking');
+            if (heeftRoute || !tracking || track.length < 2) { box.style.display = 'none'; return; }
+            let m = 0;
+            for (let i = 1; i < track.length; i++) {
+                m += distM4(track[i-1][0], track[i-1][1], track[i][0], track[i][1]);
+            }
+            const val = document.getElementById('trackLenVal');
+            if (val) {
+                val.textContent = (m < 1000)
+                    ? (Math.round(m) + ' m')
+                    : ((m/1000).toFixed(1).replace('.', ',') + ' km');   // NL komma
+            }
+            box.style.display = 'block';
+        }
         function distM4(aLat, aLng, bLat, bLng) {
             const dLat = (bLat - aLat) * 111000;
             const dLng = (bLng - aLng) * 111000 * Math.cos(aLat * Math.PI / 180);
@@ -4287,7 +4314,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "63.39";
+        const APP_VERSION = "63.40";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
@@ -10438,6 +10465,7 @@ assign initialcost =
 
                             // createDirectionMarker(latitude, longitude, deviceHeading, false);
                             masterLocations.push([latitude, longitude]);
+                            updateTrackLength();   // v63.40: spoorlengte bijwerken
 
                             if (masterLocations.length > 1) {
                                 if (trackingPolyline) {
@@ -11298,6 +11326,7 @@ assign initialcost =
             gpxPolyline = null;
             gpxRoute = [];
             trackingPolyline = null;
+            { const _b = document.getElementById('trackLenBox'); if (_b) _b.style.display = 'none'; }   // v63.40
             followerTrackingPolyline = null;
             followerPos = null;
             masterPos = null;
