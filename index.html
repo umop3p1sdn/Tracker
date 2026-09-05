@@ -1114,7 +1114,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.48 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.49 © Umop3p1sdn</div>
 
             </div>
 
@@ -1692,7 +1692,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.48 © Umop3p1sdn
+                HO-ME v63.49 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2058,7 +2058,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.48 © Umop3p1sdn
+                HO-ME v63.49 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -4324,7 +4324,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "63.48";
+        const APP_VERSION = "63.49";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
@@ -4616,7 +4616,6 @@ assign initialcost =
         let trackVisible = false;
         let allTrackVisible = false;
         let trackState = 'none'; // 'none', 'view', 'all'
-        let _autoNaviDone = false;   // v63.48: de volger schakelt maar ÉÉN keer automatisch naar M NAVI
         let zoomMode = 'self';
         let compassMode = 'device';
         let deviceHeading = 0;
@@ -10669,23 +10668,15 @@ assign initialcost =
                                 }).addTo(mapInstance);
                             }
 
-                            // v63.48 (melding Sjoerd: "de volger ziet mijn route niet — hij hoort wel
-                            // links/rechts maar ziet geen lijn"): de volger stond op GEEN en de knop om
-                            // naar M NAVI te wisselen zit in een scherm dat sinds de menu-verbouwing
-                            // verborgen is, dus hij kón er niet eens bij. Nu schakelt hij zichzelf één
-                            // keer automatisch naar M NAVI zodra hij de master ziet ÉN die een route
-                            // heeft. Alleen vanuit 'none' — zet de volger het later zelf op iets anders,
-                            // dan laten we dat met rust.
-                            if (currentMode === 'follower' && trackState === 'none' && !_autoNaviDone) {
-                                try {
-                                    const r = await fetchGPXRoute(code);
-                                    if (r && r.length > 0) {
-                                        _autoNaviDone = true;
-                                        trackState = 'all';
-                                        const _tb = document.getElementById('trackBtn');
-                                        if (_tb) _tb.textContent = 'M NAVI';
-                                    }
-                                } catch (e) {}
+                            // v63.49 (Sjoerd: "route = route, dus M NAVI altijd van kracht"): voor de
+                            // VOLGER staat de weergavestand vast op M NAVI. De knop die dit kon wisselen
+                            // zit in een scherm dat sinds de menu-verbouwing verborgen is, dus niemand kon
+                            // er nog bij — en zolang de stand op GEEN stond werd de route wél geladen
+                            // (punten, afstand, pijlen en stem werkten) maar niet getekend.
+                            if (currentMode === 'follower' && trackState !== 'all') {
+                                trackState = 'all';
+                                const _tb = document.getElementById('trackBtn');
+                                if (_tb) _tb.textContent = 'M NAVI';
                             }
 
                             // Fetch and display Master's GPX route if ALL TRACK is enabled
@@ -10725,6 +10716,22 @@ assign initialcost =
                                         opacity: 0.8,
                                         dashArray: '2, 5'
                                     }).addTo(mapInstance);
+                                }
+
+                                // v63.49 VANGNET: staat er wél een route maar (om welke reden dan ook)
+                                // geen lijn op de kaart, teken 'm dan alsnog. Het tekenen hierboven hangt
+                                // aan followerLoadedGpxRoute en aan een geslaagde fetch; die kunnen stil
+                                // falen terwijl de navigatie zelf gewoon werkt — precies wat Sjoerd zag.
+                                if (currentMode === 'follower' && !gpxPolyline) {
+                                    try {
+                                        let _r = (gpxRoute && gpxRoute.length > 0) ? gpxRoute : null;
+                                        if (!_r) { const _f = await fetchGPXRoute(code); if (_f && _f.length > 0) { gpxRoute = _f; _r = _f; } }
+                                        if (_r && _r.length > 1) {
+                                            gpxPolyline = L.polyline(_r, { pane: 'hmNaviPane',
+                                                color: '#00BCD4', weight: trackLineWidth, opacity: 0.85, dashArray: '2, 5'
+                                            }).addTo(mapInstance);
+                                        }
+                                    } catch (e) {}
                                 }
 
                                 // PLUS het offroad-spoor van de master (paars, kaal) — komt mee met de
@@ -11213,7 +11220,6 @@ assign initialcost =
             document.getElementById('masterMode').classList.add('hidden');
             document.getElementById('followerMode').classList.remove('hidden');
             trackState = 'none';
-            _autoNaviDone = false;   // v63.48: volgende rit mag weer automatisch schakelen
             document.getElementById('trackBtn').textContent = 'GEEN';
 
             requestWakeLock();
@@ -11394,7 +11400,6 @@ assign initialcost =
             trackVisible = false;
             allTrackVisible = false;
             trackState = 'none';
-            _autoNaviDone = false;   // v63.48: volgende rit mag weer automatisch schakelen
             isAutoFollowActive = false;
 
             document.getElementById('activeTracking').classList.add('hidden');
