@@ -330,6 +330,11 @@
                maakt een nieuw referentiekader voor alles wat position:fixed is, en dat zijn er 45
                in deze app — zo blijft elke zwevende knop staan waar hij staat. */
             .map {
+                /* v63.54: de kaart stond links tegen de rand. Oorzaak: de basisregel zet
+                   `width: 100%`, en met een VASTE breedte doet de rechter marge niets — de
+                   linker negatieve marge schoof hem dan alleen naar links. Met `width: auto`
+                   rekken beide marges hem symmetrisch op, dus hij vult én staat gecentreerd. */
+                width: auto;
                 margin-left: calc(-50vw + 50% + 12px);
                 margin-right: calc(-50vw + 50% + 12px);
                 max-width: none;
@@ -1139,7 +1144,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.53 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.54 © Umop3p1sdn</div>
 
             </div>
 
@@ -1718,7 +1723,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.53 © Umop3p1sdn
+                HO-ME v63.54 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2085,7 +2090,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.53 © Umop3p1sdn
+                HO-ME v63.54 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -4351,7 +4356,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "63.53";
+        const APP_VERSION = "63.54";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
