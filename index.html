@@ -323,15 +323,18 @@
            Leaflet hermeet zichzelf al bij venster-wijziging (handleViewportChange), dus het
            schalen loopt vanzelf goed. */
         @media (min-width: 1000px) {
-            .map-container {
-                width: calc(100vw - 40px);
-                margin-left: calc(-50vw + 50% + 20px);
+            /* v63.53: de vorige regel richtte zich op .map-container — die klasse staat WEL in de
+               CSS maar NERGENS in de HTML (de kaart zit in een kale relatief-gepositioneerde laag),
+               dus de breedte deed niets terwijl de hoogte wél werkte (die zat op .map). Nu direct
+               op .map zelf. Negatieve marges links én rechts i.p.v. een transform: een transform
+               maakt een nieuw referentiekader voor alles wat position:fixed is, en dat zijn er 45
+               in deze app — zo blijft elke zwevende knop staan waar hij staat. */
+            .map {
+                margin-left: calc(-50vw + 50% + 12px);
+                margin-right: calc(-50vw + 50% + 12px);
+                max-width: none;
+                min-height: calc(100vh - 130px);
             }
-            /* Ondergrens i.p.v. de vaste 600 px: de flex-keten (body 100vh → container →
-               map-container → map, allemaal flex:1) rekt de kaart al tot onderaan, maar deze
-               vloer garandeert het ook als er ooit iets in die keten verandert. 200 px is de
-               ruimte erboven: body-padding 40 + kop ~60 + GO-balk 76. */
-            .map { min-height: calc(100vh - 200px); }
         }
 
         .info-bottom {
@@ -1136,7 +1139,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.51 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.53 © Umop3p1sdn</div>
 
             </div>
 
@@ -1715,7 +1718,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.51 © Umop3p1sdn
+                HO-ME v63.53 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2082,7 +2085,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.51 © Umop3p1sdn
+                HO-ME v63.53 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -4348,7 +4351,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "63.51";
+        const APP_VERSION = "63.53";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
