@@ -1144,7 +1144,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.54 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.55 © Umop3p1sdn</div>
 
             </div>
 
@@ -1723,7 +1723,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.54 © Umop3p1sdn
+                HO-ME v63.55 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2090,7 +2090,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.54 © Umop3p1sdn
+                HO-ME v63.55 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -4356,7 +4356,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "63.54";
+        const APP_VERSION = "63.55";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
@@ -6559,20 +6559,45 @@ assign initialcost =
         // 20..160 met de klok mee, linksaf andersom, en heel scherp terug = omkeren). Deze richting
         // is er ALTIJD — het exit-nummer uit Overpass blijft een bonus als het lukt.
         function roundaboutDirFromRoute(route, idx) {
-            if (!route || idx < 1 || idx >= route.length) return null;
-            const LOOK = 25;
+            // v63.55 (melding Sjoerd, rotonde eind Schaapsweg Ede: "3e afslag = links maar hij zegt
+            // rechtsaf"): de v63.43-versie mat 25 m VOOR en 25 m NA het bochtpunt. Dat punt is de
+            // OPRIT, en 25 m verder zit je nog op de ring — die eerste beweging is altijd naar rechts.
+            // Hij mat dus het oprijden i.p.v. waar je uitkomt. Nu meet hij van vóór de oprit tot NA de
+            // afrit: vooruit lopen tot de koers stabiel is (= van de ring af) en die vergelijken met je
+            // aankomstrichting. Geen internet nodig.
+            // De koers moet 30 m STABIEL BLIJVEN, anders klikt hij vast op de overgang van ring naar
+            // afrit — daar lijkt de koers even rustig terwijl je nog draait (gemeten op een rotonde van
+            // 45 m: hij koos daar 50° terwijl de afrit 90° was, en zei linksaf i.p.v. rechtdoor).
+            if (!route || idx < 1 || idx >= route.length - 1) return null;
+            const LOOK = 25, MAXVOOR = 300, DREMPEL = 10, STABIEL_EIS = 30;
             let b = idx - 1;
             while (b > 0 && distMeters(route[b], route[idx]) < LOOK) b--;
-            let f = idx + 1;
-            while (f < route.length - 1 && distMeters(route[idx], route[f]) < LOOK) f++;
-            if (b < 0 || f >= route.length) return null;
-            const inB = bearing(route[b], route[idx]);
-            const outB = bearing(route[idx], route[f]);
-            const diff = ((outB - inB + 540) % 360) - 180;   // -180..180, + = rechts, - = links
-            const a = Math.abs(diff);
-            if (a <= 20) return 'rechtdoor';                 // vrijwel recht vooruit
-            if (a >= 160) return 'omkeren';                  // vrijwel terug
-            return diff > 0 ? 'rechtsaf' : 'linksaf';
+            if (b < 0) return null;
+            const inB = bearing(route[b], route[idx]);          // aankomstrichting
+            let j = idx + 1, afgelegd = 0, stabielVanaf = null;
+            while (j < route.length - 1 && afgelegd < MAXVOOR) {
+                afgelegd += distMeters(route[j-1], route[j]);
+                let k = j, d2 = 0;
+                while (k < route.length - 1 && d2 < LOOK) { d2 += distMeters(route[k], route[k+1]); k++; }
+                if (d2 < LOOK * 0.6) break;                      // te weinig route over → onbekend
+                const h1 = bearing(route[j], route[k]);
+                let k2 = k, d3 = 0;
+                while (k2 < route.length - 1 && d3 < LOOK) { d3 += distMeters(route[k2], route[k2+1]); k2++; }
+                const h2 = (d3 >= LOOK * 0.6) ? bearing(route[k], route[k2]) : h1;
+                const verschil = Math.abs(((h2 - h1 + 540) % 360) - 180);
+                if (verschil < DREMPEL && afgelegd > 10) {
+                    if (stabielVanaf === null) stabielVanaf = { h: h1, vanaf: afgelegd };
+                    if (afgelegd - stabielVanaf.vanaf >= STABIEL_EIS) {
+                        const diff = ((stabielVanaf.h - inB + 540) % 360) - 180;   // + = rechts, − = links
+                        const a = Math.abs(diff);
+                        if (a <= 20) return 'rechtdoor';
+                        if (a >= 160) return 'omkeren';
+                        return diff > 0 ? 'rechtsaf' : 'linksaf';
+                    }
+                } else stabielVanaf = null;                      // toch weer draaien → opnieuw
+                j++;
+            }
+            return null;                                          // niet zeker → liever niets zeggen
         }
 
         // ═══════════ ROTONDE-AFSLAG TELLEN: exit-nummer bepalen uit OSM (junction=roundabout) ═══════════
