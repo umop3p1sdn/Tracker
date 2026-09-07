@@ -312,6 +312,28 @@
             width: 100%;
         }
 
+        /* v63.51 (wens Sjoerd, pc = routes maken): op een BREED scherm mag alleen het KAARTVLAK
+           groter — naar links, rechts en onder. De app zit in .container met max-width:900px, en
+           op een telefoon valt die grens samen met het scherm; op een pc bleef de kaart daardoor
+           900 breed hangen terwijl er 510 px aan élke kant leeg was. Hier breekt alleen de
+           kaart uit dat omhulsel (volle vensterbreedte min de body-padding) en mag hij tot
+           onderaan doorlopen. BOVEN verandert niets: de kop, de planner-balk en de knoppen
+           blijven staan waar ze staan. Onder de 1000 px (telefoon, ook liggend) geldt niets
+           hiervan, dus de gemeten posities van Vlak 1/2/3 blijven ongemoeid.
+           Leaflet hermeet zichzelf al bij venster-wijziging (handleViewportChange), dus het
+           schalen loopt vanzelf goed. */
+        @media (min-width: 1000px) {
+            .map-container {
+                width: calc(100vw - 40px);
+                margin-left: calc(-50vw + 50% + 20px);
+            }
+            /* Ondergrens i.p.v. de vaste 600 px: de flex-keten (body 100vh → container →
+               map-container → map, allemaal flex:1) rekt de kaart al tot onderaan, maar deze
+               vloer garandeert het ook als er ooit iets in die keten verandert. 200 px is de
+               ruimte erboven: body-padding 40 + kop ~60 + GO-balk 76. */
+            .map { min-height: calc(100vh - 200px); }
+        }
+
         .info-bottom {
             background: rgba(15, 23, 42, 0.95);
             padding: 12px;
@@ -1114,7 +1136,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.49 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.51 © Umop3p1sdn</div>
 
             </div>
 
@@ -1375,6 +1397,7 @@
             <ul style="margin: 10px 0; padding-left: 20px;">
                 <li>Elke volger verschijnt als vliegtuigje op je kaart, met zijn <strong>tag</strong> (naam).</li>
                 <li>De teller in de rechter icoonbalk toont <strong>hoeveel</strong> volgers er verbonden zijn.</li>
+                <li>Bij een <strong>rotonde</strong> hoor je welke afslag én welke kant: "op de rotonde de 2e afslag, rechtdoor". Om je niet te overladen komt daar maar één waarschuwing vooraf (op 600 meter) en dan de afslag zelf vlak voor de rotonde.</li>
                 <li>Rijd je zonder route, dan zie je linksonder <strong>SPOOR</strong> met de lengte van je rode gereden lijn (in meters, en vanaf een kilometer in km). Zodra je wél een route maakt verdwijnt dat, want dan staan de afstanden al in het rij-blok.</li>
                 <li>Onder de teller zit de <strong>LIJN</strong>-knop: tik 'm aan om de <strong>gereden sporen van je volgers</strong> te zien (elk in zijn eigen kleur). Handig als een volger een leuke weg weet en even voorrijdt — dan volg je gewoon zijn lijn. Standaard uit, zodat je kaart rustig blijft.</li>
                 <li>Zo weet je in één oogopslag wie achter je rijdt en wie nog stilstaat.</li>
@@ -1692,7 +1715,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.49 © Umop3p1sdn
+                HO-ME v63.51 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1740,6 +1763,7 @@
             <ul style="margin: 10px 0; padding-left: 20px;">
                 <li>Each follower appears as a small plane on your map, with their <strong>tag</strong> (name).</li>
                 <li>The counter in the right icon bar shows <strong>how many</strong> followers are connected.</li>
+                <li>At a <strong>roundabout</strong> you hear both the exit and the direction: "op de rotonde de 2e afslag, rechtdoor" (take the 2nd exit, straight on). To avoid overloading you there is only one warning beforehand (at 600 metres) and then the exit itself just before the roundabout.</li>
                 <li>When you ride without a route, the bottom-left shows <strong>SPOOR</strong> (trail) with the length of your red driven line (in metres, and from a kilometre in km). As soon as you do make a route it disappears, since the distances are then already in the ride block.</li>
                 <li>Below the counter is the <strong>LIJN</strong> (line) button: tap it to see the <strong>ridden tracks of your followers</strong> (each in their own colour). Handy when a follower knows a nice road and rides ahead — you simply follow their line. Off by default, so your map stays calm.</li>
                 <li>So at a glance you know who's riding behind you and who's still stationary.</li>
@@ -2058,7 +2082,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.49 © Umop3p1sdn
+                HO-ME v63.51 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -4324,7 +4348,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "63.49";
+        const APP_VERSION = "63.51";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
