@@ -1144,7 +1144,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.55 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.56 © Umop3p1sdn</div>
 
             </div>
 
@@ -1723,7 +1723,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.55 © Umop3p1sdn
+                HO-ME v63.56 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2090,7 +2090,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.55 © Umop3p1sdn
+                HO-ME v63.56 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -4356,7 +4356,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "63.55";
+        const APP_VERSION = "63.56";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
@@ -4462,6 +4462,8 @@ assign initialcost =
         }
         window.addEventListener('pagehide', persistConfigNow);
         document.addEventListener('visibilitychange', () => {
+            // v63.56: terug uit de achtergrond = precies het moment dat de landings-timer gemist is
+            if (typeof checkLandingLayers === 'function') checkLandingLayers();
             if (document.visibilityState === 'hidden') persistConfigNow();
         });
         // ── Config kopiëren/plakken (v56.6): export/import via het ☰ menu ──
@@ -5443,10 +5445,35 @@ assign initialcost =
         // slaan we de vlucht over — je wordt niet uit je handen getrokken. ──
         let landingDone = false;
         let landingInProgress = false;
+        let landingStart = 0;             // v63.56: tijdstempel i.p.v. alleen een timer (zie onder)
+        // v63.56 (melding Sjoerd: "volger op iPhone ziet geen route EN geen rode lijn van de master"):
+        // de landingsvlucht verbergt de drie lijn-lagen, en tot nu was de setTimeout hieronder de
+        // ENIGE plek die ze weer zichtbaar maakte. Op iOS worden timers bevroren zodra de app naar
+        // de achtergrond gaat — dimt het scherm in die 2,5 s, of kijk je even weg, dan vuurt die
+        // setTimeout nooit en blijven rood/blauw/navi PERMANENT onzichtbaar. De lijnen worden dan
+        // wel getekend, maar in een onzichtbare laag; alles daarbuiten (afstand, tijd, pijlen, stem,
+        // afslagstippen) werkt gewoon — precies wat Sjoerd zag. Deze functie is nu het ene punt dat
+        // herstelt, en wordt vanaf vier kanten aangeroepen: de timer (snelst), het einde van de
+        // vlucht zelf, de poll-lussen op TIJDSTEMPEL (overleeft een bevroren timer) en de terugkeer
+        // uit de achtergrond.
+        function restoreLineLayers() {
+            if (!mapInstance) return;
+            landingInProgress = false;
+            ['hmRedPane', 'hmBluePane', 'hmNaviPane'].forEach(p => {
+                const el = mapInstance.getPane(p);
+                if (el && el.style.visibility === 'hidden') el.style.visibility = '';
+            });
+        }
+        // Vangnet op tijdstempel: roep dit vanuit een lus die toch al draait. Werkt ook als de
+        // app precies tijdens de vlucht bevroren was, want het rekent met de klok, niet met timers.
+        function checkLandingLayers() {
+            if (landingStart && Date.now() - landingStart > 3500) restoreLineLayers();
+        }
         function landingFlight(lat, lng) {
             if (landingDone || !mapInstance || typeof lat !== 'number' || typeof lng !== 'number') return;
             landingDone = true;
             landingInProgress = true;
+            landingStart = Date.now();
             // v59.4 (melding Sjoerd): lijndikte is in schermpixels — op Europa-zoom vult een
             // lokale route dus het hele beeld tijdens de duik. Daarom de lijn-lagen (rood/blauw/
             // navi) verbergen tot de landing klaar is; alles wat de polls intussen tekenen komt
@@ -5454,10 +5481,10 @@ assign initialcost =
             const lijnLagen = ['hmRedPane', 'hmBluePane', 'hmNaviPane'];
             lijnLagen.forEach(p => { const el = mapInstance.getPane(p); if (el) el.style.visibility = 'hidden'; });
             mapInstance.flyTo([lat, lng], zoomLevelValue, { duration: 2.5 });
-            setTimeout(() => {
-                landingInProgress = false;
-                lijnLagen.forEach(p => { const el = mapInstance && mapInstance.getPane(p); if (el) el.style.visibility = ''; });
-            }, 3000);
+            // v63.56: drie onafhankelijke paden naar hetzelfde herstel.
+            try { mapInstance.once('moveend', restoreLineLayers); } catch (e) {}   // vlucht klaar
+            setTimeout(restoreLineLayers, 3000);                                    // snelste pad
+            setTimeout(restoreLineLayers, 6000);                                    // tweede net
         }
         function setTileLayers(key) {
             if (!mapInstance || !MAP_STYLES[key]) return;
@@ -10542,6 +10569,7 @@ assign initialcost =
                             if (position.coords.heading !== null && !isNaN(position.coords.heading) && position.coords.speed > 0.5) gpsHeading = position.coords.heading; else gpsHeading = null;
                             masterPos = { lat: latitude, lng: longitude };
                             landingFlight(latitude, longitude);   // v58.0
+                            checkLandingLayers();   // v63.56: lijn-lagen terug, ook na een bevroren timer
                             lastGps = { lat: latitude, lng: longitude };   // huidige positie bijhouden (o.a. voor POI-zoek)
                             updateSpeed(latitude, longitude);
                             checkUpcomingTurn(latitude, longitude);
@@ -10690,6 +10718,7 @@ assign initialcost =
                         if (location) {
                             masterPos = { lat: location.lat, lng: location.lng };
                             landingFlight(location.lat, location.lng);   // v58.0
+                            checkLandingLayers();   // v63.56: lijn-lagen terug, ook na een bevroren timer
                             if (typeof location.heading === 'number') masterHeadingShared = location.heading;
                             if (location.tag) masterTagShared = location.tag;
                             if (spectatorMode && mapRotationEnabled) applyMapRotation();   // bank-rotatie draait op poll-data
@@ -10734,6 +10763,11 @@ assign initialcost =
                                 trackState = 'all';
                                 const _tb = document.getElementById('trackBtn');
                                 if (_tb) _tb.textContent = 'M NAVI';
+                                // v63.56: deze forcering haalde de 1200 ms-automaat in startFollowing
+                                // buitenspel (die slaat over zodra de stand al 'all' is), en díe riep
+                                // ook unlockAudio aan voor de volger. Dat gedrag hier terugzetten,
+                                // zodat de volger zijn stem niet stil verliest door mijn v63.49-fix.
+                                if (typeof unlockAudio === 'function') { try { unlockAudio(false); } catch (e) {} }
                             }
 
                             // Fetch and display Master's GPX route if ALL TRACK is enabled
