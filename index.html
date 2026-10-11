@@ -72,6 +72,17 @@
         #zoomBarMaster, #zoomBarFollower, #b2rBtn, #masterStaleWarn, #gpsSpeedBox, #speedLimitSign,
         #lockIcon, #btnMenuBtn, #flitserBox { margin-top: env(safe-area-inset-top, 0px); }
         .track-width-bar { margin-bottom: env(safe-area-inset-bottom, 0px); }
+        /* v63.67 (wens Sjoerd: "bij 2 Route, Reroute, zoom +/− en lijndikte graag de tekst en de − en + duidelijk
+           naast het zwart ook wit, zodat je de knoppen op de nachtkaart beter ziet"): de oude gloed (0 0 2px wit 90%)
+           viel op een donkere kaart weg. Nu een strak wit randje (8 kanten, 1,5 px) + zachte gloed om de ZWARTE
+           tekst/tekens. Alleen deze vier: 2 Route, Reroute (ook "Zeker?"), zoombalk master/volger en lijndikte. */
+        #b2rBtn, #reroutePop,
+        #zoomBarMaster > button, #zoomBarMaster > span,
+        #zoomBarFollower > button, #zoomBarFollower > span,
+        .track-width-bar > button, .track-width-bar > span {
+            text-shadow: -1.5px -1.5px 0 #fff, 1.5px -1.5px 0 #fff, -1.5px 1.5px 0 #fff, 1.5px 1.5px 0 #fff,
+                         0 -1.5px 0 #fff, 0 1.5px 0 #fff, -1.5px 0 0 #fff, 1.5px 0 0 #fff, 0 0 4px #fff !important;
+        }
         #speedometer { padding-bottom: env(safe-area-inset-bottom, 0px); }
         #plannerPanel { margin-top: env(safe-area-inset-top, 0px); margin-left: env(safe-area-inset-left, 0px); }   /* Plan-menu niet onder de notch/statusbalk (v52.6) + niet onder de camera links (v63.21) */
         /* v63.20 (melding Sjoerd: liggend zit het plan-menu vrij hoog, lastig bij het rode kruisje):
@@ -476,7 +487,7 @@
         .map-only .button-stop {
             display: none !important;
         }
-        /* Schoon scherm (rode GO): Plan- + groene GO-knop weg + graden lager (alles komt erboven). */
+        /* Schoon scherm (rode GO): Plan-knop weg + graden lager (alles komt erboven). Groene play: zie v63.66. */
         /* ── KNOPPEN-MENU (v51.5): de rechter knoppenbalken staan niet meer op de kaart — alles
               zit achter de menu-knop. Balk van de actieve rol wordt bij openen een gecentreerd
               paneel (raster van grote knoppen); de verkeerde rol blijft vanzelf weg omdat zijn
@@ -585,7 +596,8 @@
 
 
         .map-only #plannerToggleBtn { display: none !important; }
-        .map-only #plannerGoBtn { display: none !important; }
+        /* v63.66 (wens Sjoerd): de groene play-knop mag óók in het schone scherm (Hide) — updateGoBtn bepaalt
+           of hij er staat (route klaar en nog niet gestart), placeGoBtn zet 'm op een gemeten vrije plek. */
 
         .map-only .active-tracking {
             padding: 0 !important;
@@ -1178,7 +1190,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.65 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.67 © Umop3p1sdn</div>
 
             </div>
 
@@ -1710,6 +1722,7 @@
                 <li><strong>📍-knop:</strong> springt naar je eigen locatie en opent hetzelfde menu (meestal kies je dan Start).</li>
                 <li><strong>Op de kaart tikken:</strong> opent een menu — kies Start, Tussen (slim ingevoegd), Achteraan, Finish of Vermijden.</li>
                 <li><strong>Punt verwijderen/verzetten:</strong> tik op een punt op de kaart.</li>
+                <li><strong>Groene play (▶, links):</strong> verschijnt zodra je route van start naar finish klaar is — ook met Hide aan en terwijl Plan open is — en blijft staan tot je er één keer op drukt. Dan is je route actief, en dat blijft hij tot je <strong>Wis route</strong> doet.</li>
                 <li><strong>Live aanpassen:</strong> rijd je de route al (na de groene play), dan is elke wijziging meteen live — de lijn, de pijlen en stem, en je volgers krijgen de nieuwe route direct. Geen play meer nodig. Alleen de eerste start, en een geladen GPX, gaan met play.</li>
             </ul>
 
@@ -1759,7 +1772,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.65 © Umop3p1sdn
+                HO-ME v63.67 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2079,6 +2092,7 @@
                 <li><strong>📍 button:</strong> jumps to your own location and opens the same menu (usually you pick Start).</li>
                 <li><strong>Tapping the map:</strong> opens a menu — choose Start, Via (smartly inserted), At the end, Finish or Avoid.</li>
                 <li><strong>Remove/move a point:</strong> tap a point on the map.</li>
+                <li><strong>Green play (▶, left):</strong> appears as soon as your route from start to finish is ready — also with Hide on and while Plan is open — and stays until you tap it once. Then your route is active, and it stays active until you tap <strong>Wis route</strong> (clear route).</li>
                 <li><strong>Live editing:</strong> already riding the route (after the green play)? Then every change is live straight away — the line, the arrows and voice, and your followers get the new route immediately. No need to press play again. Only the first start, and a loaded GPX, go with play.</li>
             </ul>
 
@@ -2128,7 +2142,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.65 © Umop3p1sdn
+                HO-ME v63.67 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2289,7 +2303,7 @@
             plannerSetMapClick(true);                  // tik-op-kaart → planner-tikmenu AAN
             document.getElementById('plannerPanel').style.display = 'block';
             var b = document.getElementById('plannerToggleBtn'); if (b) b.style.display = 'none';
-            var g = document.getElementById('plannerGoBtn'); if (g) g.style.display = 'none';  // GO weg tijdens plannen
+            if (typeof updateGoBtn === 'function') updateGoBtn();   // v63.66: play blijft staan tijdens plannen (als de route klaar is)
         }
         function plannerClose() {
             plannerSetMapClick(false);                 // tik-handler weer UIT (tracker-kaart vrij)
@@ -2299,15 +2313,56 @@
         }
         // Toon de groene play-knop alleen als er een echte berekende route ligt (of een geladen route klaarstaat).
         // Zo kun je 'm niet drukken zonder route ("maak eerst een route").
+        // v63.66 (wens Sjoerd: "zodra je een route hebt van start naar finish graag direct de play-knop links in
+        // beeld, ook al is Hide actief, en die blijft tot je er 1 keer op hebt gedrukt; daarna is je route
+        // geactiveerd tot je de route wist — en geactiveerd kun je live werken"). Dus: zichtbaar zolang er een
+        // planner-route klaarligt die nog niet de actieve (live) route is, of een geladen GPX klaarstaat.
+        // Niet meer verborgen tijdens plannen of in het schone scherm. Na de eerste druk: weg (de route is
+        // dan live, zie v63.62) tot je Wis route doet en een nieuwe maakt.
+        let goGpxPlanGeo = null;   // v63.66: planner-route die er al lag toen je een GPX startte
         function updateGoBtn() {
             const g = document.getElementById('plannerGoBtn');
             if (!g) return;
             if (currentMode === 'follower') { g.style.display = 'none'; return; }
-            const hasRoute = !!lastRouteGeo || g.dataset.loaded === '1';
-            const planning = document.getElementById('plannerPanel') &&
-                             document.getElementById('plannerPanel').style.display === 'block';
-            g.style.display = (hasRoute && !planning) ? 'block' : 'none';
+            // gestart = de planner-route is al de actieve route, óf je rijdt een geladen GPX en de planner-route
+            // is sindsdien niet veranderd (anders zou play na het starten van de GPX meteen terugkomen)
+            const gestart = (plannerLive && !!activeRoute) || (!!activeRoute && !!lastRouteGeo && lastRouteGeo === goGpxPlanGeo);
+            const klaar = (!!lastRouteGeo && !gestart) || g.dataset.loaded === '1';
+            g.style.display = klaar ? 'block' : 'none';
+            if (klaar) placeGoBtn();
         }
+        // Plek GEMETEN: eerst de gewone plek (links); valt die over iets heen (plan-paneel, mic/T, namen, ...),
+        // dan de dichtstbijzijnde vrije plek (omhoog/omlaag, of iets naar rechts — opzij telt zwaarder).
+        // Elke seconde opnieuw zolang hij zichtbaar is: het plan-paneel groeit/krimpt met tabs en zoekresultaten.
+        const GO_BUREN = ['plannerPanel', 'plannerToggleBtn', 'talkBtn', 'ttsBtn', 'tagList', 'remPanel', 'gpsSpeedBox',
+            'speedLimitSign', 'flitserBox', 'zoomBarMaster', 'goButtonMaster', 'btnMenuBtn', 'lockIcon', 'b2rBtn', 'reroutePop',
+            'trackLenBox', 'results', 'tapMenu', 'infoBar', 'speedometer', 'viaVraag', 'veerTolVraag'];
+        function placeGoBtn() {
+            const g = document.getElementById('plannerGoBtn');
+            if (!g || g.style.display === 'none') return;
+            const oud = g.style.transform;
+            g.style.transform = '';                               // eerst de gewone plek meten
+            const r = g.getBoundingClientRect();
+            if (!r.width) { g.style.transform = oud; return; }
+            const W = r.width, H = r.height, RUIM = 6;
+            const buren = GO_BUREN.map(id => document.getElementById(id))
+                .filter(e => e && e.getClientRects().length)
+                .map(e => e.getBoundingClientRect())
+                .filter(q => q.width && q.height);
+            const overlap = (x, y) => buren.reduce((s, q) =>
+                s + Math.max(0, Math.min(x + W, q.right + RUIM) - Math.max(x, q.left - RUIM))
+                  * Math.max(0, Math.min(y + H, q.bottom + RUIM) - Math.max(y, q.top - RUIM)), 0);
+            const inBeeld = (x, y) => x >= 4 && y >= 4 && x + W <= window.innerWidth - 4 && y + H <= window.innerHeight - 4;
+            if (inBeeld(r.left, r.top) && overlap(r.left, r.top) === 0) return;   // gewone plek is vrij
+            let best = null, bestKost = Infinity;
+            for (let dy = -240; dy <= 320; dy += 4) for (let dx = 0; dx <= 160; dx += 4) {
+                const kost = Math.abs(dy) + 1.5 * dx;
+                if (kost >= bestKost) continue;
+                if (inBeeld(r.left + dx, r.top + dy) && overlap(r.left + dx, r.top + dy) === 0) { bestKost = kost; best = { dx, dy }; }
+            }
+            if (best) g.style.transform = 'translate(' + best.dx + 'px, ' + best.dy + 'px)';
+        }
+        setInterval(placeGoBtn, 1000);
         function plannerShowToggle() {
             var b = document.getElementById('plannerToggleBtn'); if (b) b.style.display = 'block';
         }
@@ -4522,7 +4577,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "63.65";
+        const APP_VERSION = "63.67";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
@@ -8238,6 +8293,7 @@ assign initialcost =
             if (!L_ || !L_.route || L_.route.length < 2) { showError('Geen geladen route'); return; }
             activeRoute = L_.route;
             if (typeof plannerLive !== 'undefined') plannerLive = false;   // v63.62: GPX-rit → planner niet live
+            if (typeof goGpxPlanGeo !== 'undefined') goGpxPlanGeo = lastRouteGeo;   // v63.66: play pas terug bij een NIEUWE planner-route
             detectedTurns = L_.turns || [];
             beepedApproach = {}; beepedNow = {}; spokenFirst = {}; spokenAt = {}; spokenAtPrev = {};   // nieuwe route → flags schoon
             routeTotalKm = L_.km || 0;
