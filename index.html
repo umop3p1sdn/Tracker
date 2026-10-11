@@ -1158,7 +1158,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.61 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.62 © Umop3p1sdn</div>
 
             </div>
 
@@ -1690,6 +1690,7 @@
                 <li><strong>📍-knop:</strong> gebruikt je huidige GPS-locatie als startpunt.</li>
                 <li><strong>Op de kaart tikken:</strong> opent een menu — kies Start, Tussen (slim ingevoegd), Achteraan, Finish of Vermijden.</li>
                 <li><strong>Punt verwijderen/verzetten:</strong> tik op een punt op de kaart.</li>
+                <li><strong>Live aanpassen:</strong> rijd je de route al (na de groene play), dan is elke wijziging meteen live — de lijn, de pijlen en stem, en je volgers krijgen de nieuwe route direct. Geen play meer nodig. Alleen de eerste start, en een geladen GPX, gaan met play.</li>
             </ul>
 
             <h3 style="color: #00BCD4; margin-top: 25px;">Lange routes &amp; tussenpunten</h3>
@@ -1737,7 +1738,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.61 © Umop3p1sdn
+                HO-ME v63.62 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2057,6 +2058,7 @@
                 <li><strong>📍 button:</strong> uses your current GPS location as the starting point.</li>
                 <li><strong>Tapping the map:</strong> opens a menu — choose Start, Via (smartly inserted), At the end, Finish or Avoid.</li>
                 <li><strong>Remove/move a point:</strong> tap a point on the map.</li>
+                <li><strong>Live editing:</strong> already riding the route (after the green play)? Then every change is live straight away — the line, the arrows and voice, and your followers get the new route immediately. No need to press play again. Only the first start, and a loaded GPX, go with play.</li>
             </ul>
 
             <h3 style="color: #00BCD4; margin-top: 25px;">Long routes &amp; via points</h3>
@@ -2104,7 +2106,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.61 © Umop3p1sdn
+                HO-ME v63.62 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2292,8 +2294,20 @@
 
         // ─── GO: van plannen naar RIJDEN ───
         // Geeft de geplande route + ECHTE afslagen (voicehints) door aan de tracker-navigatie.
-        function plannerGo() {
-            if (!lastRouteGeo) { alert('Maak eerst een route.'); return; }
+        // v63.62 LIVE (wens Sjoerd: "elke keer als ik iets verander moet ik op play drukken — doe maar, dan
+        // is alles live wat ik doe"). GEMETEN oorzaak: elke wijziging werd wél berekend en getekend, maar
+        // zolang er al een route actief was, verstopte het rijscherm (eatRoute, elke GPS-tik) de nieuwe
+        // lijn achter de oude grijs/blauwe. Nu: na de eerste GO van een planner-route is elke nieuwe
+        // berekening meteen de actieve route (lijn, pijlen/stem, volger) — plannerGo(true) = stil: geen
+        // "Volg de route", planner blijft open, geen melding. Eerste start en een geladen GPX: met play.
+        let plannerLive = false;
+        function plannerLiveApply() {
+            if (!plannerLive || currentMode !== 'master' || !activeRoute) return;
+            if (typeof rerouteFinishBusy !== 'undefined' && rerouteFinishBusy) return;   // REROUTE doet zijn eigen GO
+            plannerGo(true);
+        }
+        function plannerGo(live) {
+            if (!lastRouteGeo) { if (!live) alert('Maak eerst een route.'); return; }
             try {
                 const feat = lastRouteGeo.features[0];
                 const coords = feat.geometry.coordinates;           // [ [lng,lat,ele], ... ]
@@ -2341,13 +2355,15 @@
                     gpxRoute = route;
                     sendGPXToFirebase(currentCode, route, turns, routeTotalKm, routeTotalMin);
                 }
+                if (live) return;                    // v63.62: live bijgewerkt — stil, planner blijft open
+                if (currentMode === 'master') plannerLive = true;   // vanaf nu is elke wijziging live
                 speak('Volg de route');
                 // 4. planner sluiten → rij-modus, kaart vrij
                 plannerClose();
                 if (typeof showBufferToast === 'function') showBufferToast('Route geladen — GO!', '#4CAF50', 2500);
             } catch (e) {
                 console.error('GO failed', e);
-                alert('Route laden mislukt.');
+                if (!live) alert('Route laden mislukt.');
             }
         }
         // Tik-op-kaart aan/uit: alleen actief als de planner open is, zodat de tracker-kaart
@@ -3737,6 +3753,9 @@ assign initialcost =
                 // Veerpont vermijden: als de schakelaar UIT staat en de route een pont pakt,
                 // zet automatisch een nogo op de pont en herbereken (nee = nee, gegarandeerd eromheen).
                 if (avoidFerry) await checkFerryAndReroute(data);
+                // v63.62: rijd je al een planner-route, dan is deze nieuwe berekening meteen live.
+                // Alleen de nieuwste keten (pont-omweg / lange route rekenen genest opnieuw → die passen toe).
+                if (myGen === routeGen && typeof plannerLiveApply === 'function') plannerLiveApply();
             } catch (e) {
                 console.error('route failed', e);
                 if (myGen !== routeGen) return;   // oude keten → niet ingrijpen
@@ -4370,7 +4389,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "63.61";
+        const APP_VERSION = "63.62";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
@@ -8056,6 +8075,7 @@ assign initialcost =
             const L_ = window._gpxLoaded;
             if (!L_ || !L_.route || L_.route.length < 2) { showError('Geen geladen route'); return; }
             activeRoute = L_.route;
+            if (typeof plannerLive !== 'undefined') plannerLive = false;   // v63.62: GPX-rit → planner niet live
             detectedTurns = L_.turns || [];
             beepedApproach = {}; beepedNow = {}; spokenFirst = {}; spokenAt = {}; spokenAtPrev = {};   // nieuwe route → flags schoon
             routeTotalKm = L_.km || 0;
