@@ -1063,16 +1063,16 @@
     <style>@keyframes b2rBlink { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }</style>
     <!-- v63.60 (wens Sjoerd): naast/bij "2 Route" staat nu REROUTE (helemaal nieuwe route naar je finish)
          i.p.v. Next point — Next point staat alleen nog onderin bij de navigatie. Twee keer tikken
-         (ZEKER?), net als STOP. Plaats wordt GEMETEN zodat hij nergens overheen valt (zie placeReroutePop). -->
+         (Zeker?), net als STOP. Plaats wordt GEMETEN zodat hij nergens overheen valt (zie placeReroutePop).
+         v63.61 (wens Sjoerd: "zelfde looks als de knop erboven, transparant-achtig en net zo groot"):
+         stijl van 2 Route; breedte/hoogte worden in placeReroutePop GEMETEN van 2 Route en overgenomen.
+         Hij knippert bewust niet: 2 Route blijft de snelle hoofdknop. -->
     <button id="reroutePop" onclick="rerouteTap(this)" title="Reroute — nieuwe route van hier naar je finish (twee keer tikken)"
-            style="display:none; position: fixed; top: 85px; left: 10px; z-index: 1250; width: 64px; height: 64px;
-                   border-radius: 6px; background: rgba(0,188,212,0.92); color: #003; border: 3px solid #00838F;
-                   box-shadow: 0 0 0 2px rgba(255,255,255,0.4); cursor: pointer; flex-direction: column;
-                   align-items: center; justify-content: center; gap: 1px; font-family: sans-serif;
-                   -webkit-user-select:none; user-select:none;">
-        <span style="font-size: 0.85em; font-weight: bold; line-height: 1.1;">RE</span>
-        <span style="font-size: 0.85em; font-weight: bold; line-height: 1.1;">ROUTE</span>
-    </button>
+            style="display:none; position: fixed; top: 85px; left: 10px; z-index: 1250; box-sizing: border-box;
+                   width: 152px; height: 59px; padding: 0; border-radius: 6px; background: transparent; color: #000;
+                   text-shadow: 0 0 2px rgba(255,255,255,0.9); border: 3px solid #000; box-shadow: 0 0 0 2px rgba(255,255,255,0.4);
+                   font-weight: bold; font-size: 1.6em; font-family: sans-serif; cursor: pointer; white-space: nowrap;
+                   align-items: center; justify-content: center; -webkit-user-select:none; user-select:none;">Reroute</button>
     <div id="b2rBtn" onclick="acceptReroute()" style="display:none; position: fixed; top: 85px; left: 50%; transform: translateX(-50%); z-index: 1250; padding: 12px 26px; border-radius: 6px; background: transparent; color: #000; text-shadow: 0 0 2px rgba(255,255,255,0.9); border: 3px solid #000; box-shadow: 0 0 0 2px rgba(255,255,255,0.4); font-weight: bold; font-size: 1.6em; font-family: sans-serif; cursor: pointer; animation: b2rBlink 1s infinite; -webkit-user-select:none; user-select:none;">2 Route</div>
     <div class="container">
         <!-- INSTALL PROMPT SCREEN -->
@@ -1158,7 +1158,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.60 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.61 © Umop3p1sdn</div>
 
             </div>
 
@@ -1567,7 +1567,7 @@
                 <li><strong>Hide</strong> (onderaan) — verbergt alle knoppen, alleen de kaart blijft over.</li>
                 <li><strong>Snelheid (km/u)</strong> — tijdens GO onderaan in beeld (staand scherm).</li>
                 <li><strong>Snelheidsbord</strong> — een rond bord (wit met rode rand) naast de snelheid toont de <strong>maximumsnelheid van de weg</strong> waar je op rijdt. De app leest die uit OpenStreetMap: <strong>met een route</strong> haalt 'ie de snelheden vooraf op langs je route; <strong>zonder route</strong> leest 'ie tijdens het rijden de weg onder je (het bepaalt slim op welke weg je zit via je positie én rijrichting, zodat 'ie ook bij parallelle wegen de juiste pakt). De snelheid blijft staan zolang je op die weg rijdt, en wisselt mee bij een overgang (bv. snelweg 100 → 130) of als je afslaat. In clean screen staat het bord altijd in beeld naast de km/u; is de snelheid onbekend, dan toont 'ie een streepje (–). Let op: de app moet even <strong>bewegen</strong> om je rijrichting te weten. Nadert er een flitser, dan neemt de flitsermelding tijdelijk de plek over. <strong>Let altijd op de echte borden langs de weg</strong> — het bord in de app is een hulpmiddel, geen vervanging.</li>
-                <li><strong>2 Route</strong> — rijd je met een route en raak je ervan af (stop, omweggetje), dan knippert bovenin de knop <strong>2 Route</strong>. Eén tik: de app berekent een route van waar je bent terug naar je route — de rest van je route blijft gewoon staan. Ben je weer op de route, dan verdwijnt de knop vanzelf. Direct eronder staat <strong>Reroute</strong>: liever een helemaal nieuwe route naar je finish? Tik die twee keer (ZEKER?). Jij bepaalt dus zelf wanneer je terug wilt. Dit geldt voor de Master; als volger rijd je achter de Master aan en krijg je deze knop niet.</li>
+                <li><strong>2 Route</strong> — rijd je met een route en raak je ervan af (stop, omweggetje), dan knippert bovenin de knop <strong>2 Route</strong>. Eén tik: de app berekent een route van waar je bent terug naar je route — de rest van je route blijft gewoon staan. Ben je weer op de route, dan verdwijnt de knop vanzelf. Rijd je een rondrit, dan voegt hij in waar je gebleven was — niet bij het eind van de rit, ook al ligt dat vlak bij huis. Direct eronder staat <strong>Reroute</strong> (zelfde uiterlijk): liever een helemaal nieuwe route naar je finish? Tik die twee keer (Zeker?). Jij bepaalt dus zelf wanneer je terug wilt. Dit geldt voor de Master; als volger rijd je achter de Master aan en krijg je deze knop niet.</li>
             </ul>
             <p style="background:#e3e7f5; padding:10px 14px; border-radius:8px;"><strong>Tip (liggend scherm):</strong> ligt je telefoon op z'n kant en staan <strong>CENTER én draaien aan</strong>, dan kun je het vliegtuigje (jezelf) mooi in beeld zetten door de kaart omhoog/omlaag te pannen — zo zie je meer van de weg vóór je.</p>
 
@@ -1737,7 +1737,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.60 © Umop3p1sdn
+                HO-ME v63.61 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1934,7 +1934,7 @@
                 <li><strong>Hide</strong> (at the bottom) — hides all buttons, only the map remains.</li>
                 <li><strong>Speed (km/h)</strong> — during GO shown at the bottom (portrait).</li>
                 <li><strong>Speed sign</strong> — a round sign (white with red edge) next to the speed shows the <strong>speed limit of the road</strong> you're on. The app reads it from OpenStreetMap: <strong>with a route</strong> it fetches the limits ahead along your route; <strong>without a route</strong> it reads the road beneath you while riding (it smartly determines which road you're on using your position <em>and</em> heading, so it picks the right one even with parallel roads). The limit stays as long as you're on that road, and changes at a transition (e.g. motorway 100 → 130) or when you turn off. In clean screen the sign is always shown next to the km/h; if the limit is unknown it shows a dash (–). Note: the app needs a bit of <strong>movement</strong> to know your heading. When a speed camera is near, the camera warning temporarily takes its place. <strong>Always watch the real signs along the road</strong> — the sign in the app is an aid, not a replacement.</li>
-                <li><strong>2 Route</strong> — riding with a route and you get off it (stop, small detour)? Then the <strong>2 Route</strong> button flashes at the top. One tap: the app calculates a route from where you are back to your route — the rest of your route stays as it is. Once you're back on the route, the button disappears by itself. Right below it sits <strong>Reroute</strong>: rather have a completely new route to your finish? Tap that one twice (ZEKER?). So you decide when you want to go back. This is for the Master; as a follower you ride behind the Master and don't get this button.</li>
+                <li><strong>2 Route</strong> — riding with a route and you get off it (stop, small detour)? Then the <strong>2 Route</strong> button flashes at the top. One tap: the app calculates a route from where you are back to your route — the rest of your route stays as it is. Once you're back on the route, the button disappears by itself. On a round trip it rejoins where you left off — not at the end of the trip, even when that is close to home. Right below it sits <strong>Reroute</strong> (same look): rather have a completely new route to your finish? Tap that one twice (Zeker? = sure?). So you decide when you want to go back. This is for the Master; as a follower you ride behind the Master and don't get this button.</li>
             </ul>
             <p style="background:#e3e7f5; padding:10px 14px; border-radius:8px;"><strong>Tip (landscape):</strong> with your phone on its side and <strong>CENTER plus rotation on</strong>, you can position the plane (yourself) nicely by panning the map up/down — so you see more of the road ahead.</p>
 
@@ -2104,7 +2104,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.60 © Umop3p1sdn
+                HO-ME v63.61 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -4370,7 +4370,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "63.60";
+        const APP_VERSION = "63.61";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
@@ -7112,6 +7112,63 @@ assign initialcost =
             offRouteSince = 0;
             rerouteCooldownUntil = Date.now() + REROUTE_COOLDOWN_MS;   // niet blijven zeuren
         }
+        // v63.61 (melding Sjoerd: "2 Route maakte een nieuwe route naar de finish — 2 Route was juist de
+        // snelste weg terug naar de route waar hij was gebleven"). NAGEBOOTST met de echte code: een
+        // rondrit (of route die bij huis eindigt) heeft het EINDE vlak bij huis. Thuis getest koos
+        // "dichtstbijzijnde routepunt" dan de finish: rondrit 21,8 km, 80 m naast huis aan de kant van
+        // de terugweg → invoegen bij punt 546/546 = 0 km route over. Zo oud als 2 Route zelf.
+        // Nu: eerst het oude antwoord (dichtstbijzijnde punt). Alleen als dat een groot stuk route
+        // OVERSLAAT dat je nog niet reed (of ver TERUG gaat in wat je al reed), kijkt hij bij het stuk
+        // waar je gebleven was (eerste stuk dat je rode spoor nog niet raakte) en neemt daar het
+        // dichtstbijzijnde punt — maar alleen als dat ongeveer even dichtbij ligt (≤ 500 m of ≤ 3× zo
+        // ver). Gewone gevallen (omweg, pont, bewust afsnijden) blijven precies zoals ze waren.
+        function rejoinIdx(me) {
+            const R = activeRoute;
+            let nearIdx = 0, nearD = Infinity;
+            for (let i = 0; i < R.length; i++) {
+                const d = distMeters(me, R[i]);
+                if (d < nearD) { nearD = d; nearIdx = i; }
+            }
+            const spoor = (typeof masterLocations !== 'undefined' && masterLocations) ? masterLocations : [];
+            if (spoor.length < 2 || R.length < 3) return nearIdx;            // geen spoor → oud gedrag
+            const cum = [0];                                                  // afstand langs de route
+            for (let i = 1; i < R.length; i++) cum.push(cum[i - 1] + distMeters(R[i - 1], R[i]));
+            const totaal = cum[cum.length - 1];
+            // spoor in vakjes van 0,001° (~70×110 m) → snel "ben ik hier al geweest?" (binnen 50 m)
+            const vakken = new Map();
+            spoor.forEach(p => {
+                const k = Math.floor(p[0] * 1000) + ':' + Math.floor(p[1] * 1000);
+                if (!vakken.has(k)) vakken.set(k, []);
+                vakken.get(k).push(p);
+            });
+            const gereden = p => {
+                const a = Math.floor(p[0] * 1000), b = Math.floor(p[1] * 1000);
+                for (let x = -1; x <= 1; x++) for (let y = -1; y <= 1; y++) {
+                    const l = vakken.get((a + x) + ':' + (b + y));
+                    if (l && l.some(q => distMeters(p, q) < 50)) return true;
+                }
+                return false;
+            };
+            // waar was je gebleven: eerste routepunt waarna de volgende ~300 m grotendeels nog niet gereden is
+            let open = R.length - 1;
+            for (let i = 0; i < R.length; i++) {
+                if (gereden(R[i])) continue;
+                let n = 0, niet = 0;
+                for (let j = i; j < R.length && cum[j] - cum[i] <= 300; j++) { n++; if (!gereden(R[j])) niet++; }
+                if (niet >= 0.6 * n) { open = i; break; }
+            }
+            const OVERSLAAN = Math.max(5000, 0.3 * totaal), TERUG = 2000;
+            const sprong = cum[nearIdx] - cum[open];
+            if (sprong <= OVERSLAAN && sprong >= -TERUG) return nearIdx;      // gewoon geval: ongewijzigd
+            let bi = -1, bd = Infinity;
+            for (let i = 0; i < R.length; i++) {
+                const s = cum[i] - cum[open];
+                if (s < -TERUG || s > OVERSLAAN) continue;
+                const d = distMeters(me, R[i]);
+                if (d < bd) { bd = d; bi = i; }
+            }
+            return (bi >= 0 && bd <= Math.max(500, 3 * nearD)) ? bi : nearIdx;
+        }
         // "Ja" → bereken via BRouter een route van je huidige positie naar het dichtstbijzijnde punt
         // dat VÓÓR je op de route ligt, en ga die rijden. Bij geen bereik: nette melding.
         async function acceptReroute() {
@@ -7121,12 +7178,8 @@ assign initialcost =
             try {
                 const me = (typeof lastGps === 'object' && lastGps) ? [lastGps.lat, lastGps.lng] : null;
                 if (!me || !activeRoute || !activeRoute.length) { rerouteBusy = false; return; }
-                // dichtstbijzijnde route-index
-                let nearIdx = 0, nearD = Infinity;
-                for (let i = 0; i < activeRoute.length; i++) {
-                    const d = distMeters(me, activeRoute[i]);
-                    if (d < nearD) { nearD = d; nearIdx = i; }
-                }
+                // dichtstbijzijnde route-index (v63.61: met "waar was je gebleven"-check, zie rejoinIdx)
+                const nearIdx = rejoinIdx(me);
                 // mik een klein stukje VÓÓR je op de route (niet terug), zodat je vooruit invoegt
                 let targetIdx = Math.min(activeRoute.length - 1, nearIdx + 3);
                 // v63.18: nooit mikken op een punt binnen een vermijd-zone (bv. de dead end die je
@@ -7316,13 +7369,16 @@ assign initialcost =
         }
 
         // v63.60 (melding Sjoerd: "next point staat naast 2 route, en door de menuknop heen"): bij 2 Route
-        // staat nu REROUTE. Plek GEMETEN, niet gegokt: drie kandidaten (eronder, rechts, links) en de
-        // eerste die nergens overheen valt wint — anders die met de kleinste overlap. Gemeten op een
-        // iPhone-scherm (402x874, veilige rand 62): rechts botst staand op de menuknop (328-392) en
-        // de zoombalk loopt tot 307, links zitten zoombalk en tags → staand komt hij er direct onder.
-        // Liggend in het menu-scherm staat Hide onder 2 Route → dan wijkt hij opzij uit (rechts, 11 px
-        // omlaag zodat hij vrij blijft van de zoombalk).
-        const REROUTE_POP_BUREN = ['btnMenuBtn', 'lockIcon', 'zoomBarMaster', 'tagList', 'flitserBox',
+        // staat nu REROUTE. Plek GEMETEN, niet gegokt: drie basisplekken (eronder, rechts, links) en
+        // rond elke basis de dichtstbijzijnde plek die NERGENS overheen valt (max 60 px schuiven;
+        // zijwaarts schuiven telt zwaarder dan omlaag, en rechts/links kosten iets meer dan eronder).
+        // Lukt dat nergens, dan de basis met de kleinste overlap. Gemeten op een iPhone-scherm (402x874,
+        // veilige rand 62): rechts botst staand op de menuknop (328-392), links op zoombalk en tags →
+        // staand direct ONDER 2 Route. Liggend in het menu-scherm staat Hide onder 2 Route → dan rechts
+        // ernaast, iets omlaag (vrij van de zoombalk). Op een scherm zonder veilige rand (S22) met 3
+        // tags schuift hij iets omlaag, onder de namen langs.
+        // v63.61 (wens Sjoerd): zelfde uiterlijk als 2 Route en NET ZO GROOT — maat gemeten en overgenomen.
+        const REROUTE_POP_BUREN = ['b2rBtn', 'btnMenuBtn', 'lockIcon', 'zoomBarMaster', 'tagList', 'flitserBox',
             'speedLimitSign', 'gpsSpeedBox', 'goButtonMaster', 'masterStaleWarn'];
         function placeReroutePop() {
             const b2r = document.getElementById('b2rBtn');
@@ -7330,11 +7386,13 @@ assign initialcost =
             if (!b2r || !pop) return;
             const r = b2r.getBoundingClientRect();
             if (!r.width) return;                       // nog niet zichtbaar → niets te meten
-            const GAP = 10, RUIM = 4, W = pop.offsetWidth || 64, H = pop.offsetHeight || 64;
-            const kand = [
-                { x: r.left + (r.width - W) / 2, y: r.bottom + GAP },          // eronder
-                { x: r.right + GAP, y: r.top + (r.height - H) / 2 },            // rechts
-                { x: r.left - GAP - W, y: r.top + (r.height - H) / 2 }          // links
+            const GAP = 10, RUIM = 4, W = Math.round(r.width), H = Math.round(r.height);
+            pop.style.width = W + 'px';                  // net zo groot als 2 Route (gemeten)
+            pop.style.height = H + 'px';
+            const basis = [
+                { x: r.left + (r.width - W) / 2, y: r.bottom + GAP, straf: 0 },     // eronder
+                { x: r.right + GAP, y: r.top + (r.height - H) / 2, straf: 10 },     // rechts
+                { x: r.left - GAP - W, y: r.top + (r.height - H) / 2, straf: 10 }   // links
             ];
             const buren = REROUTE_POP_BUREN.map(id => document.getElementById(id))
                 .filter(e => e && e.getClientRects().length)
@@ -7344,17 +7402,20 @@ assign initialcost =
                 s + Math.max(0, Math.min(k.x + W, q.right + RUIM) - Math.max(k.x, q.left - RUIM))
                   * Math.max(0, Math.min(k.y + H, q.bottom + RUIM) - Math.max(k.y, q.top - RUIM)), 0);
             const inBeeld = k => k.x >= 8 && k.y >= 8 && k.x + W <= window.innerWidth - 8 && k.y + H <= window.innerHeight - 8;
-            let beste = null, besteO = Infinity;
-            const probeer = k => {
-                if (!inBeeld(k)) return false;
-                const o = overlap(k);
-                if (o < besteO) { besteO = o; beste = k; }
-                return o === 0;
-            };
-            let vrij = kand.some(probeer);
-            // steekt er net iets boven uit (zoombalk: liggend 7 px), schuif een zij-plek dan iets omlaag (max 24 px)
-            for (let d = 2; !vrij && d <= 24; d += 2) vrij = [kand[1], kand[2]].some(k => probeer({ x: k.x, y: k.y + d }));
-            if (!beste) beste = kand[0];
+            let beste = null, besteKost = Infinity;
+            basis.forEach(k => {
+                for (let dy = 0; dy <= 60; dy += 2) for (let dx = -60; dx <= 60; dx += 2) {
+                    const kost = dy + 1.5 * Math.abs(dx) + k.straf;
+                    if (kost >= besteKost) continue;
+                    const c = { x: k.x + dx, y: k.y + dy };
+                    if (inBeeld(c) && overlap(c) === 0) { besteKost = kost; beste = c; }
+                }
+            });
+            if (!beste) {                                // nergens vrij → de basis met de minste overlap
+                let minst = Infinity;
+                basis.forEach(k => { if (!inBeeld(k)) return; const o = overlap(k); if (o < minst) { minst = o; beste = k; } });
+            }
+            if (!beste) beste = basis[0];
             pop.style.left = Math.round(beste.x) + 'px';
             pop.style.top = Math.round(beste.y) + 'px';
         }
@@ -7381,7 +7442,8 @@ assign initialcost =
             }
             if (btn._label === undefined) btn._label = btn.innerHTML;
             btn.dataset.armTot = String(Date.now() + 4000);
-            btn.innerHTML = '<span style="font-size: 0.85em; font-weight: bold; line-height: 1.1;">ZEKER?</span>';
+            btn.innerHTML = (btn.id === 'reroutePop') ? 'Zeker?'
+                : '<span style="font-size: 0.85em; font-weight: bold; line-height: 1.1;">ZEKER?</span>';
             if (btn.id === 'rerouteBtn' && typeof resetBtnMenuTimer === 'function') resetBtnMenuTimer();   // menu open voor de 2e tik
             setTimeout(() => { if (+(btn.dataset.armTot || 0) <= Date.now()) rerouteDisarm(btn); }, 4100);
         }
