@@ -873,6 +873,15 @@
             <button onclick="viaVraagAntwoord(false)" style="flex:1; padding:14px; border-radius:10px; border:2px solid #9E9E9E; background:transparent; color:#ccc; font-weight:bold; font-size:17px; cursor:pointer;">Nee</button>
         </div>
     </div>
+    <!-- v63.64 veerboot/tol-vraag na het bouwen van een route: "Use ferry?" / "Use toll road?" -->
+    <div id="veerTolVraag" style="display:none; position:fixed; left:50%; bottom:150px; transform:translateX(-50%); z-index:2600; background:rgba(10,14,39,0.95); border:2px solid #FF9800; border-radius:14px; padding:14px 16px; box-shadow:0 4px 18px rgba(0,0,0,0.6); font-family:sans-serif; width:300px; max-width:calc(100vw - 32px); box-sizing:border-box; text-align:center;">
+        <div id="veerTolTitel" style="color:#fff; font-weight:bold; font-size:17px; margin-bottom:4px;">Use ferry?</div>
+        <div id="veerTolSub" style="color:#ccc; font-size:13px; margin-bottom:12px;">Yes = route zo laten · No = andere route</div>
+        <div style="display:flex; gap:10px;">
+            <button onclick="veerTolAntwoord(true)" style="flex:1; padding:14px; border-radius:10px; border:none; background:#4CAF50; color:#fff; font-weight:bold; font-size:17px; cursor:pointer;">Yes</button>
+            <button onclick="veerTolAntwoord(false)" style="flex:1; padding:14px; border-radius:10px; border:2px solid #9E9E9E; background:transparent; color:#ccc; font-weight:bold; font-size:17px; cursor:pointer;">No</button>
+        </div>
+    </div>
     <!-- FM-vraag: "Alleen FM geluid?" (dempt HO-ME's eigen flitser-meldingen) -->
     <div id="fmAskPanel" style="display:none; position:fixed; left:50%; bottom:150px; transform:translateX(-50%); z-index:2600; background:rgba(10,14,39,0.95); border:2px solid #00BCD4; border-radius:14px; padding:14px 16px; box-shadow:0 4px 18px rgba(0,0,0,0.6); font-family:sans-serif; max-width:320px; text-align:center;">
         <div id="fmAskText" style="color:#fff; font-weight:bold; font-size:17px; margin-bottom:12px;">Alleen FM geluid?</div>
@@ -1167,7 +1176,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.63 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.64 © Umop3p1sdn</div>
 
             </div>
 
@@ -1736,6 +1745,7 @@
 
             <h3 style="color: #00BCD4; margin-top: 25px;">Veerboten &amp; tolwegen</h3>
             <p>In het <strong>Mode</strong>-menu (bovenin de planner) staan twee schakelaars. <strong>Veerboten: OFF</strong> → de route mijdt veerponten (over water). <strong>Tolwegen: OFF</strong> → de route mijdt betaalde autowegen (over land). Op <strong>ON</strong> (standaard) zijn ze toegestaan. De route wordt meteen opnieuw berekend.</p>
+            <p>Zit er een veerboot of tolweg in je route terwijl die nog op <strong>ON</strong> staat, dan vraagt de app na het bouwen <strong>Use ferry?</strong> of <strong>Use toll road?</strong> (bij tol met het aantal km). <strong>Yes</strong> = route zo laten — voor die plek vraagt hij het niet nog eens. <strong>No</strong> = de schakelaar gaat op OFF en je krijgt meteen een route zonder; zo zie je direct het verschil. Ook tijdens de rit (Reroute, live aanpassen). Tol wordt alleen gevraagd bij <strong>Road</strong>, en wegen die voor motoren gratis zijn tellen niet mee. Ernaast tikken = alleen sluiten.</p>
 
             <h3 style="color: #00BCD4; margin-top: 25px;">POI — onderweg iets vinden</h3>
             <p>Open <strong>POI</strong> voor de focus-modus. Kies <strong>Benzine</strong>, <strong>Eten</strong> of <strong>Koffie</strong>, of typ een steekwoord (bv hotel, bakker, supermarkt, uitzicht, pin, wc) of een naam (bv Shell).</p>
@@ -1747,7 +1757,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.63 © Umop3p1sdn
+                HO-ME v63.64 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2103,7 +2113,8 @@
             <p>Tap the map → <strong>Vermijden</strong> (avoid) and enter a radius (km). A red pin with circle appears: the route <strong>always</strong> goes around it. If the zone blocks the only road, no route appears — make the circle <strong>smaller</strong> or move it. Tap the pin to adjust the radius or remove the zone.</p>
 
             <h3 style="color: #00BCD4; margin-top: 25px;">Ferries &amp; toll roads</h3>
-            <p>The <strong>Mode</strong> menu (top of the planner) has two switches. <strong>Veerboten: OFF</strong> (ferries off) → the route avoids ferries (over water). <strong>Tolwegen: OFF</strong> (toll roads off) → the route avoids paid roads (over land). On <strong>AAN</strong> (on, default) they're allowed. The route is recalculated right away.</p>
+            <p>The <strong>Mode</strong> menu (top of the planner) has two switches. <strong>Veerboten: OFF</strong> (ferries off) → the route avoids ferries (over water). <strong>Tolwegen: OFF</strong> (toll roads off) → the route avoids paid roads (over land). On <strong>ON</strong> (default) they're allowed. The route is recalculated right away.</p>
+            <p>If your route uses a ferry or toll road while that switch is still <strong>ON</strong>, the app asks after building <strong>Use ferry?</strong> or <strong>Use toll road?</strong> (for toll with the number of km). <strong>Yes</strong> = keep the route — it won't ask again for that spot. <strong>No</strong> = the switch goes to OFF and you get a route without it straight away, so you see the difference immediately. Also while riding (Reroute, live editing). Toll is only asked in <strong>Road</strong>, and roads that are free for motorcycles don't count. Tap beside it = just close.</p>
 
             <h3 style="color: #00BCD4; margin-top: 25px;">POI — finding something along the way</h3>
             <p>Open <strong>POI</strong> for focus mode. Choose <strong>Benzine</strong> (fuel), <strong>Eten</strong> (food) or <strong>Koffie</strong> (coffee), or type a keyword (e.g. hotel, bakery, supermarket, viewpoint, ATM, toilet) or a name (e.g. Shell).</p>
@@ -2115,7 +2126,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.63 © Umop3p1sdn
+                HO-ME v63.64 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -3765,6 +3776,8 @@ assign initialcost =
                 // v63.62: rijd je al een planner-route, dan is deze nieuwe berekening meteen live.
                 // Alleen de nieuwste keten (pont-omweg / lange route rekenen genest opnieuw → die passen toe).
                 if (myGen === routeGen && typeof plannerLiveApply === 'function') plannerLiveApply();
+                // v63.64: veerboot of tolweg in deze route (en nog toegestaan)? → vragen
+                if (myGen === routeGen && typeof veerTolVraag === 'function') veerTolVraag(lastRouteGeo);
             } catch (e) {
                 console.error('route failed', e);
                 if (myGen !== routeGen) return;   // oude keten → niet ingrijpen
@@ -3820,6 +3833,83 @@ assign initialcost =
                 ferryRerouteTries = 0;   // geen pont (meer) → reset
             } catch (e) { console.error('ferry check failed', e); }
         }
+
+        // v63.64 VEERBOOT / TOL-VRAAG (wens Sjoerd: "als er een veerboot of tolweg wordt gebruikt: de route
+        // bouwen en dan vragen — Use ferry? / Use toll road? — yes: route zo laten, no: andere route. Zo zie
+        // je direct het verschil. De optie zit al in het plan-menu, dus het is een toggle."). Herkenning uit
+        // BRouter's messages-tabel (zelfde bron als checkFerryAndReroute): WayTags route=ferry = veerboot;
+        // toll=yes (GEMETEN in BRouter's lookups.dat: toll, toll:motorcycle, barrier=toll_booth bestaan) =
+        // tolweg, maar NIET als toll:motorcycle=no (voor de motor gratis); een tolpoort-knoop telt ook.
+        // Alleen vragen als die optie nog AAN staat (toegestaan); tol alleen bij Road (avoid_toll werkt
+        // alleen in de auto-profielen: car-fast = car-vario met vmax 160, GEMETEN in BRouter's script).
+        // Yes = deze plek(ken) onthouden, daar niet opnieuw vragen. No = de bestaande schakelaar om
+        // (Veerboten/Tolwegen: OFF) → die rekent meteen een andere route. Ernaast tikken = alleen sluiten.
+        const veerTolOk = { ferry: [], toll: [] };
+        let veerTolOpen = null;
+        function routeVeerTol(geo) {
+            const uit = { ferry: [], toll: [], tolM: 0 };
+            try {
+                const msgs = geo.features[0].properties.messages;
+                if (!msgs || msgs.length < 2) return uit;
+                const kop = msgs[0].map(h => String(h).toLowerCase());
+                const wayCol = kop.findIndex(h => h.includes('waytags')), nodeCol = kop.findIndex(h => h.includes('nodetags'));
+                const lonCol = kop.findIndex(h => h === 'longitude'), latCol = kop.findIndex(h => h === 'latitude');
+                const distCol = kop.findIndex(h => h === 'distance');
+                if (wayCol < 0 || lonCol < 0 || latCol < 0) return uit;
+                const erbij = (lijst, p) => { const l = lijst[lijst.length - 1]; if (!l || distMeters(l, p) > 300) lijst.push(p); };
+                for (let i = 1; i < msgs.length; i++) {
+                    const r = msgs[i];
+                    const p = [parseFloat(r[latCol]) / 1e6, parseFloat(r[lonCol]) / 1e6];
+                    if (!isFinite(p[0]) || !isFinite(p[1])) continue;
+                    const way = ' ' + String(r[wayCol] || '').toLowerCase() + ' ';
+                    const node = nodeCol >= 0 ? ' ' + String(r[nodeCol] || '').toLowerCase() + ' ' : ' ';
+                    if (way.includes(' route=ferry ')) erbij(uit.ferry, p);
+                    const tolWeg = /\stoll=(yes|true)\s/.test(way) && !way.includes(' toll:motorcycle=no ');
+                    if (tolWeg || node.includes(' barrier=toll_booth ')) {
+                        erbij(uit.toll, p);
+                        if (tolWeg && distCol >= 0) uit.tolM += parseFloat(r[distCol]) || 0;
+                    }
+                }
+            } catch (e) {}
+            return uit;
+        }
+        function veerTolVraag(geo) {
+            const paneel = document.getElementById('veerTolVraag');
+            if (!paneel || !geo) return;
+            const v = routeVeerTol(geo);
+            const nieuw = (lijst, ok) => lijst.some(p => !ok.some(q => distMeters(p, q) < 1500));
+            let vraag = null;
+            if (!avoidFerry && v.ferry.length && nieuw(v.ferry, veerTolOk.ferry)) {
+                vraag = { soort: 'ferry', plekken: v.ferry };
+            } else if (!avoidToll && (typeof planMode === 'undefined' || planMode === 'road')
+                       && v.toll.length && nieuw(v.toll, veerTolOk.toll)) {
+                vraag = { soort: 'toll', plekken: v.toll, km: v.tolM / 1000 };
+            }
+            veerTolOpen = vraag;
+            if (!vraag) { paneel.style.display = 'none'; return; }
+            document.getElementById('veerTolTitel').textContent = vraag.soort === 'ferry' ? 'Use ferry?' : 'Use toll road?';
+            document.getElementById('veerTolSub').textContent = vraag.soort === 'ferry'
+                ? 'Yes = route zo laten · No = route zonder veerboot'
+                : (vraag.km >= 0.1 ? vraag.km.toFixed(1).replace('.', ',') + ' km tolweg · ' : '') + 'Yes = route zo laten · No = route zonder tol';
+            paneel.style.display = 'block';
+        }
+        function veerTolAntwoord(ja) {
+            const paneel = document.getElementById('veerTolVraag');
+            if (paneel) paneel.style.display = 'none';
+            const v = veerTolOpen; veerTolOpen = null;
+            if (!v) return;
+            if (ja) {
+                v.plekken.forEach(p => veerTolOk[v.soort].push(p));
+                veerTolVraag(lastRouteGeo);                 // zelfde route: nog iets (tol na de veerboot)?
+                return;
+            }
+            if (v.soort === 'ferry') { if (!avoidFerry && typeof toggleAvoidFerry === 'function') toggleAvoidFerry(); }
+            else if (!avoidToll && typeof toggleAvoidToll === 'function') toggleAvoidToll();
+        }
+        document.addEventListener('click', (e) => {    // ernaast tikken = sluiten (capture: vóór de knoppen)
+            const p = document.getElementById('veerTolVraag');
+            if (p && p.style.display && p.style.display !== 'none' && !p.contains(e.target)) { p.style.display = 'none'; veerTolOpen = null; }
+        }, true);
 
         // BRouter voice-hint command codes → leesbare NL richting
         const TURN_NAMES = {
@@ -4398,7 +4488,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "63.63";
+        const APP_VERSION = "63.64";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
