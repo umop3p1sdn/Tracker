@@ -675,6 +675,7 @@
             flex-direction: column; gap: 6px; pointer-events: auto;
         }
         #searchBar {
+            min-width: 0;   /* v63.65: 📍 staat nu óók in deze rij → zoekveld moet kunnen krimpen (net als liggend sinds v63.32) */
             display: flex; align-items: center; gap: 8px;
             background: #0a0e27; border: 2px solid #00BCD4; border-radius: 10px;
             padding: 8px 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.4);
@@ -683,6 +684,7 @@
         #searchInput {
             flex: 1; border: none; background: transparent; color: #fff;
             font-size: 1em; outline: none;
+            min-width: 0; width: 100%;   /* v63.65: invoerveld heeft anders een vaste eigen breedte en duwt "Wis route" eruit */
         }
         #searchInput::placeholder { color: #889; }
         #results {
@@ -1176,7 +1178,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.64 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.65 © Umop3p1sdn</div>
 
             </div>
 
@@ -1695,7 +1697,7 @@
             <h3 style="color: #00BCD4; margin-top: 25px;">De menu-knoppen</h3>
             <p>Bij het openen zie je de tabs. Je klapt zelf uit wat je nodig hebt — zo blijft de kaart vrij.</p>
             <ul style="margin: 10px 0; padding-left: 20px;">
-                <li><strong>Route</strong> — zoekbalk + Start/Tussen/Finish/📍 + de profielen.</li>
+                <li><strong>Route</strong> — zoekbalk + 📍 + Wis route + de profielen.</li>
                 <li><strong>Extra</strong> — omweg- én rondrit-generator (wisselknop Omrit/Rondrit).</li>
                 <li><strong>POI</strong> — opent de focus-modus: alle andere menu's verdwijnen voor maximaal zicht op de kaart. Knoppen onderin, lijst linksboven. Sluiten met de rode ✕.</li>
                 <li><strong>Mode</strong> — kies hoe je reist: Road, Offroad, Bike, Race bike of Walk. Zie de sectie <em>Mode</em> hieronder.</li>
@@ -1704,8 +1706,8 @@
 
             <h3 style="color: #00BCD4; margin-top: 25px;">Een route maken</h3>
             <ul style="margin: 10px 0; padding-left: 20px;">
-                <li><strong>Zoeken:</strong> typ een adres of plaats. Kies eerst of het je <strong>Start</strong>, een <strong>Tussen</strong>punt of de <strong>Finish</strong> is.</li>
-                <li><strong>📍-knop:</strong> gebruikt je huidige GPS-locatie als startpunt.</li>
+                <li><strong>Zoeken:</strong> typ een adres of plaats en tik op een resultaat. De kaart springt erheen, prikt er een speld op en het menu <strong>Punt toevoegen als</strong> komt op: kies Start, Tussen (slim), Achteraan, Finish of Vermijden.</li>
+                <li><strong>📍-knop:</strong> springt naar je eigen locatie en opent hetzelfde menu (meestal kies je dan Start).</li>
                 <li><strong>Op de kaart tikken:</strong> opent een menu — kies Start, Tussen (slim ingevoegd), Achteraan, Finish of Vermijden.</li>
                 <li><strong>Punt verwijderen/verzetten:</strong> tik op een punt op de kaart.</li>
                 <li><strong>Live aanpassen:</strong> rijd je de route al (na de groene play), dan is elke wijziging meteen live — de lijn, de pijlen en stem, en je volgers krijgen de nieuwe route direct. Geen play meer nodig. Alleen de eerste start, en een geladen GPX, gaan met play.</li>
@@ -1757,7 +1759,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.64 © Umop3p1sdn
+                HO-ME v63.65 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2064,7 +2066,7 @@
             <h3 style="color: #00BCD4; margin-top: 25px;">The menu buttons</h3>
             <p>On opening you see the tabs. You expand what you need yourself — keeping the map clear.</p>
             <ul style="margin: 10px 0; padding-left: 20px;">
-                <li><strong>Route</strong> — search bar + Start/Via/Finish/📍 + the profiles.</li>
+                <li><strong>Route</strong> — search bar + 📍 + Wis route (clear route) + the profiles.</li>
                 <li><strong>Extra</strong> — detour and roundtrip generator (toggle Omrit/Rondrit = detour/roundtrip).</li>
                 <li><strong>POI</strong> — opens focus mode: all other menus disappear for maximum view of the map. Buttons at the bottom, list top left. Close with the red ✕.</li>
                 <li><strong>Mode</strong> — choose how you travel: Road, Offroad, Bike, Race bike or Walk. See the <em>Mode</em> section below.</li>
@@ -2073,8 +2075,8 @@
 
             <h3 style="color: #00BCD4; margin-top: 25px;">Making a route</h3>
             <ul style="margin: 10px 0; padding-left: 20px;">
-                <li><strong>Search:</strong> type an address or place. First choose whether it's your <strong>Start</strong>, a <strong>Via</strong> point or the <strong>Finish</strong>.</li>
-                <li><strong>📍 button:</strong> uses your current GPS location as the starting point.</li>
+                <li><strong>Search:</strong> type an address or place and tap a result. The map jumps there, drops a pin and the <strong>Punt toevoegen als</strong> menu (add point as) pops up: choose Start, Tussen (via, smart), Achteraan (at the end), Finish or Vermijden (avoid).</li>
+                <li><strong>📍 button:</strong> jumps to your own location and opens the same menu (usually you pick Start).</li>
                 <li><strong>Tapping the map:</strong> opens a menu — choose Start, Via (smartly inserted), At the end, Finish or Avoid.</li>
                 <li><strong>Remove/move a point:</strong> tap a point on the map.</li>
                 <li><strong>Live editing:</strong> already riding the route (after the green play)? Then every change is live straight away — the line, the arrows and voice, and your followers get the new route immediately. No need to press play again. Only the first start, and a loaded GPX, go with play.</li>
@@ -2126,7 +2128,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.64 © Umop3p1sdn
+                HO-ME v63.65 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2168,15 +2170,12 @@
                 <div style="display:flex; gap:6px; align-items:stretch;">
                     <div id="searchBar" style="flex:1;">
                         <svg id="searchIcon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#00BCD4" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/></svg>
-                        <input id="searchInput" type="text" placeholder="Zoek adres of straat..." autocomplete="off">
+                        <input id="searchInput" type="text" placeholder="Zoek adres of plaats..." autocomplete="off">
                     </div>
+                    <!-- v63.65 (ontwerp Sjoerd): Start/Tussen/Finish-knoppen vervallen — zoeken en 📍 openen het
+                         menu "Punt toevoegen als" (zelfde als op de kaart tikken). 📍 staat nu naast de zoekbalk. -->
+                    <button id="useGps" onclick="useMyLocation()" title="Mijn locatie" style="flex:0 0 auto; padding:0 12px; background:#0a0e27; border:2px solid #4CAF50; border-radius:10px; color:#4CAF50; font-size:1.1em; line-height:1; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.4);">📍</button>
                     <button onclick="clearAll()" title="Wis route" style="flex:0 0 auto; padding:0 12px; background:#0a0e27; border:2px solid #FF1744; border-radius:10px; color:#FF1744; font-weight:bold; font-size:0.8em; line-height:1; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.4); white-space:nowrap;">Wis route</button>
-                </div>
-                <div id="modeRow">
-                    <button class="mode-btn active" id="modeStart" onclick="setSearchMode('start')">Start</button>
-                    <button class="mode-btn" id="modeVia" onclick="setSearchMode('via')">Tussen</button>
-                    <button class="mode-btn" id="modeDest" onclick="setSearchMode('dest')">Finish</button>
-                    <button class="mode-btn" id="useGps" onclick="useMyLocation()" style="flex:0 0 auto; border-color:#4CAF50; color:#4CAF50;">📍</button>
                 </div>
                 <div id="profileRow">
                     <button class="prof-btn active" data-profile="car-fast" onclick="setProfile(this)">Snel</button>
@@ -2266,6 +2265,7 @@
     </div>
     <div id="tapMenu" style="display:none; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); z-index:2550; background:#0a0e27; border:2px solid #00BCD4; border-radius:12px; padding:16px; flex-direction:column; gap:8px; box-shadow:0 4px 16px rgba(0,0,0,0.6); min-width:200px;">
         <div style="color:#00BCD4; font-weight:bold; text-align:center; margin-bottom:4px;">Punt toevoegen als:</div>
+        <div id="tapMenuLabel" style="display:none; color:#ccc; font-size:0.8em; text-align:center; margin:-4px 0 2px; max-width:240px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></div>
         <button onclick="tapChoose('start')" style="padding:12px; border-radius:8px; border:2px solid #9E9E9E; background:transparent; color:#bbb; font-weight:bold; font-size:1em; cursor:pointer;">Start</button>
         <button onclick="tapChoose('via')" style="padding:12px; border-radius:8px; border:2px solid #9C27B0; background:transparent; color:#ce93d8; font-weight:bold; font-size:1em; cursor:pointer;">Tussen (slim)</button>
         <button onclick="tapChoose('achteraan')" style="padding:12px; border-radius:8px; border:2px solid #9C27B0; background:transparent; color:#ce93d8; font-weight:bold; font-size:1em; cursor:pointer;">Achteraan</button>
@@ -2404,7 +2404,6 @@
         let nogoZones = [];         // [{lat,lng,radius,marker,circle}] te vermijden gebieden
         let viaMarkers = [];
         let startMarker = null, destMarker = null, routeLine = null;
-        let searchMode = 'start';   // which point the search fills: start | dest | via
         let searchTimer = null;
         let selectedProfile = 'car-fast';   // UI-keuze: car-fast | rustig | bochtig
         let offroadMode = false;            // Offroad aan/uit. Aan = mtb-profiel (verkiest onverhard).
@@ -2571,15 +2570,66 @@ assign initialcost =
         }
 
         function onMapTap(e) {
+            zoekPinWeg();                                // v63.65: tik op de kaart = nieuw punt, zoek-speld weg
             pendingTap = { lat: e.latlng.lat, lng: e.latlng.lng };
             document.getElementById('tapMenu').style.display = 'flex';
         }
+        // v63.65 (ontwerp Sjoerd: "maken van een route is lastig — hij staat op start en springt naar finish.
+        // Gebruik het menu dat opkomt als je op de kaart drukt: Punt toevoegen als. Adres intypen → hij prikt
+        // het op de kaart en het menu komt op. Het pinnetje ook. De knoppen Start/Tussen/Finish mogen weg").
+        // kiesPunt: kaart springt naar het punt, cyaan zoek-speld erop, menu open met het adres erin. De
+        // kaart schuift zó dat de speld NAAST het menu te zien is (gemeten: vrije plek op de kaart die niet
+        // onder het menu, het plan-paneel of de knoppen ligt, zo dicht mogelijk bij het midden).
+        let zoekPin = null;
+        function zoekPinWeg() {
+            if (zoekPin) { try { map.removeLayer(zoekPin); } catch (e) {} zoekPin = null; }
+            const lab = document.getElementById('tapMenuLabel');
+            if (lab) { lab.textContent = ''; lab.style.display = 'none'; }
+        }
+        function kiesPunt(lat, lng, label, gps) {
+            zoekPinWeg();
+            pendingTap = { lat, lng, label: label || '', gps: !!gps };
+            const lab = document.getElementById('tapMenuLabel');
+            if (lab && label) { lab.textContent = label; lab.style.display = 'block'; }
+            document.getElementById('tapMenu').style.display = 'flex';
+            try { zoekPin = L.marker([lat, lng], { icon: pinIcon('#00BCD4'), interactive: false }).addTo(map); } catch (e) {}
+            try { zoekPinInBeeld(lat, lng); } catch (e) {}
+        }
+        function zoekPinInBeeld(lat, lng) {
+            const z = (map.getZoom && map.getZoom()) || 14;
+            map.setView([lat, lng], Math.max(z, 14), { animate: false });
+            const k = map.getContainer().getBoundingClientRect();
+            const box = { left: Math.max(k.left, 0), top: Math.max(k.top, 0),                 // alleen wat je ZIET
+                          right: Math.min(k.right, window.innerWidth), bottom: Math.min(k.bottom, window.innerHeight) };
+            box.width = box.right - box.left; box.height = box.bottom - box.top;
+            const buren = ['tapMenu', 'plannerPanel', 'zoomBarMaster', 'zoomBarFollower', 'btnMenuBtn', 'lockIcon',
+                           'results', 'plannerGoBtn', 'plannerToggleBtn', 'infoBar']
+                .map(id => document.getElementById(id))
+                .filter(e => e && e.getClientRects().length)
+                .map(e => e.getBoundingClientRect())
+                .filter(q => q.width && q.height);
+            const R = 22;   // speld is 30x40, punt = onderkant: ruimte eromheen (en 40 px erboven)
+            const vrij = (x, y) => x >= box.left + R && x <= box.right - R && y >= box.top + 46 && y <= box.bottom - 10
+                && !buren.some(q => x > q.left - R && x < q.right + R && y > q.top - 10 && y < q.bottom + 46);
+            const mx = k.left + k.width / 2, my = k.top + k.height / 2;          // hier staat het punt nu
+            const cx = box.left + box.width / 2, cy = box.top + box.height / 2;  // midden van wat je ziet
+            if (vrij(mx, my)) return;                    // punt staat al vrij in beeld → klaar
+            let best = null, bd = Infinity;
+            for (let y = box.top; y <= box.bottom; y += 10) for (let x = box.left; x <= box.right; x += 10) {
+                if (!vrij(x, y)) continue;
+                const d = (x - cx) * (x - cx) + (y - cy) * (y - cy);
+                if (d < bd) { bd = d; best = { x, y }; }
+            }
+            if (best) map.panBy([mx - best.x, my - best.y], { animate: false });
+        }
         function tapChoose(kind) {
             document.getElementById('tapMenu').style.display = 'none';
-            if (!pendingTap) return;
+            if (!pendingTap) { zoekPinWeg(); return; }
             const { lat, lng } = pendingTap;
-            const label = `(${lat.toFixed(4)}, ${lng.toFixed(4)})`;
-            if (kind === 'start') setStart(lat, lng, label, false);
+            const label = pendingTap.label || `(${lat.toFixed(4)}, ${lng.toFixed(4)})`;
+            const gps = !!pendingTap.gps;
+            zoekPinWeg();
+            if (kind === 'start') setStart(lat, lng, label, gps);
             else if (kind === 'dest') setDest(lat, lng, label);
             else if (kind === 'via') addVia(lat, lng, label, true);       // slim
             else if (kind === 'achteraan') addVia(lat, lng, label, false); // achteraan
@@ -2593,6 +2643,7 @@ assign initialcost =
         function tapCancel() {
             document.getElementById('tapMenu').style.display = 'none';
             pendingTap = null;
+            zoekPinWeg();
         }
 
         function setProfile(btn) {
@@ -2674,16 +2725,9 @@ assign initialcost =
         function syncOffroadUI() { /* vervangen door setMode; bewust leeg */ }
         function syncWalkUI() { /* vervangen door setMode; bewust leeg */ }
 
-        function setSearchMode(mode) {
-            searchMode = mode;
-            document.getElementById('modeStart').classList.toggle('active', mode === 'start');
-            document.getElementById('modeVia').classList.toggle('active', mode === 'via');
-            document.getElementById('modeDest').classList.toggle('active', mode === 'dest');
-            const ph = mode === 'start' ? 'Zoek startadres...'
-                     : mode === 'via' ? 'Zoek tussenpunt...'
-                     : 'Zoek bestemming...';
-            document.getElementById('searchInput').placeholder = ph;
-        }
+        // v63.65: geen zoekmodus meer (Start/Tussen/Finish-knoppen vervallen) — het menu "Punt toevoegen
+        // als" kiest de rol. Lege functie blijft bestaan omdat clearAll 'm nog aanroept.
+        function setSearchMode() {}
 
         // ─── Address search via Photon (free OSM geocoder) ───
         // searchInput/resultsEl bestaan pas als de planner-HTML geladen is → lui koppelen.
@@ -2900,15 +2944,7 @@ assign initialcost =
                 }
             } catch (e) { /* bij twijfel: origineel punt */ }
             if (resultsEl) resultsEl.style.display = 'none';
-            if (searchMode === 'start') {
-                setStart(snapped.lat, snapped.lng, label, false);
-                setSearchMode('dest');
-            } else if (searchMode === 'via') {
-                addVia(snapped.lat, snapped.lng, label, true);   // zoeken = slim invoegen
-            } else {
-                setDest(snapped.lat, snapped.lng, label);
-            }
-            maybeRoute();
+            kiesPunt(snapped.lat, snapped.lng, label, false);   // v63.65: kaart springt erheen + menu "Punt toevoegen als"
         }
 
         function setStart(lat, lng, label) {
@@ -3624,9 +3660,7 @@ assign initialcost =
                 pos => {
                     const { latitude, longitude } = pos.coords;
                     lastGps = { lat: latitude, lng: longitude };
-                    setStart(latitude, longitude, 'Mijn locatie', true);
-                    setSearchMode('dest');
-                    maybeRoute();
+                    kiesPunt(latitude, longitude, 'Mijn locatie', true);   // v63.65: zelfde menu (bv. Start)
                 },
                 () => alert('Locatie ophalen mislukt'),
                 { enableHighAccuracy: true, timeout: 10000 }
@@ -4488,7 +4522,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "63.64";
+        const APP_VERSION = "63.65";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
