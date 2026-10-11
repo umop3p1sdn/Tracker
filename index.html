@@ -743,7 +743,8 @@
            navigatie-logica ze vanzelf weer correct neer. */
         body:not(.map-only) #turnArrowLeft,
         body:not(.map-only) #turnArrowRight,
-        body:not(.map-only) #turnDist { display: none !important; }
+        body:not(.map-only) #turnDist,
+        body:not(.map-only) #nextPointNav { display: none !important; }   /* v63.58 */
         /* Tijdens GO (map-only): GROOT + leesbaar op de motor, boven de km/u-teller (~55px). */
         body.map-only #infoBar { bottom: 58px; font-size: 1.35em; padding: 14px 16px; }
         /* Snelheidsbord zichtbaar in het schone rijscherm, wisselt mee met de Hide-knop
@@ -757,6 +758,7 @@
             body.map-only #remPanel { display: block !important; }
             /* Liggend: pijlen NAAST de "200m" (met wat ruimte), laag in beeld. */
             #turnDist       { bottom: 30px !important; }
+            #nextPointNav   { bottom: 126px !important; }   /* v63.58: boven pijlen (26+90) en afstand */
             /* v52.7: pijl-maten zijn 54 (blauw) / 72 (oranje) / 90 (rood, max). Links eindigde de
                rode op 50%-40 en overlapte het label (halve breedte ~75). Nu: links -180..-90 en
                rechts +90..+180 — alle drie de maten vallen vrij van het label, links én rechts. */
@@ -826,6 +828,17 @@
     <!-- Turn arrows: left-top and right-top, below the +/- bar -->
     <div id="turnArrowLeft" style="display:none; position: fixed; bottom: 113px; left: 16px; z-index: 2000; width: 24px; height: 24px; border-radius: 6px; align-items: center; justify-content: center; box-shadow: 0 2px 10px rgba(0,0,0,0.5);"><svg width="17" height="17" viewBox="0 0 24 24" fill="#fff"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20z"/></svg></div>
     <div id="turnArrowRight" style="display:none; position: fixed; bottom: 113px; right: 16px; z-index: 2000; width: 24px; height: 24px; border-radius: 6px; align-items: center; justify-content: center; box-shadow: 0 2px 10px rgba(0,0,0,0.5);"><svg width="17" height="17" viewBox="0 0 24 24" fill="#fff"><path d="M4 11h12.17l-5.59-5.59L12 4l8 8-8 8-1.41-1.41L16.17 13H4z"/></svg></div>
+    <!-- v63.58 (wens Sjoerd): Next point uit het menu, nu onderin bij de navigatie, boven de afstand
+         en de pijlen. Staand bottom 215 (grootste pijl reikt tot 113+90=203), liggend 126 (tot 26+90=116).
+         Alleen master + actieve route; alleen in het rijscherm (zelfde regel als de pijlen). -->
+    <button id="nextPointNav" onclick="skipToNextTurn()" title="Next point — route tot de volgende bocht weggooien"
+            style="display:none; position: fixed; bottom: 215px; left: 50%; transform: translateX(-50%); z-index: 2000;
+                   width: 72px; height: 72px; border-radius: 8px; background: rgba(0,188,212,0.9); color: #003;
+                   border: 3px solid #00838F; cursor: pointer; flex-direction: column; align-items: center;
+                   justify-content: center; gap: 2px; font-family: sans-serif; box-shadow: 0 2px 8px rgba(0,0,0,0.5);">
+        <span style="font-size: 0.85em; font-weight: bold; line-height: 1.1;">NEXT</span>
+        <span style="font-size: 0.85em; font-weight: bold; line-height: 1.1;">POINT</span>
+    </button>
     <div id="turnDist" style="display:none; position: fixed; bottom: 118px; left: 50%; transform: translateX(-50%); z-index: 2000; color: #fff; font-weight: bold; font-size: 1.8em; padding: 8px 22px; border-radius: 8px; background: rgba(0,0,0,0.7); font-family: sans-serif;"></div>
     <!-- FLITSER: vlak linksboven tijdens rijden. Wit snelheidsbord + aftel-cijfer (10→1). Tik = 3 groottes. -->
     <div id="flitserBox" onclick="cycleFlitserSize()" style="display:none; position: fixed; bottom: 260px; right: 12px; z-index: 2050; cursor: pointer; background: rgba(10,14,39,0.78); border-radius: 14px; padding: 10px 8px; box-shadow: 0 3px 14px rgba(0,0,0,0.5); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); text-align: center; font-family: sans-serif;">
@@ -967,12 +980,12 @@
                      <line x1="4" y1="17" x2="20" y2="17"/></svg>
                 <span style="font-size: 0.85em; font-weight: bold; line-height: 1;">MENU</span>
             </button>
-            <button id="nextPointBtn" onclick="skipToNextTurn()" title="Next point — route tot de volgende bocht weggooien"
+            <button id="rerouteBtn" onclick="rerouteToFinish()" title="Reroute — nieuwe route van hier naar je finish"
                     style="width: 80px; height: 80px; border-radius: 6px; background: rgba(0,188,212,0.9); color: #003;
                            border: 3px solid #00838F; cursor: pointer; display: flex; flex-direction: column;
                            align-items: center; justify-content: center; gap: 2px; font-family: sans-serif;">
-                <span style="font-size: 0.9em; font-weight: bold; line-height: 1.1;">NEXT</span>
-                <span style="font-size: 0.9em; font-weight: bold; line-height: 1.1;">POINT</span>
+                <span style="font-size: 0.9em; font-weight: bold; line-height: 1.1;">RE</span>
+                <span style="font-size: 0.9em; font-weight: bold; line-height: 1.1;">ROUTE</span>
             </button>
             <button id="deadEndBtn" onclick="deadEnd()" title="Dead end — weg dicht, vermijd deze en reken opnieuw"
                     style="width: 80px; height: 80px; border-radius: 6px; background: rgba(255,23,68,0.9); color: #fff;
@@ -1144,7 +1157,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.56 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.59 © Umop3p1sdn</div>
 
             </div>
 
@@ -1449,12 +1462,12 @@
                 <li>Je ziet de Master direct op de kaart!</li>
             </ul>
 
-            <h3 style="color: #00BCD4; margin-top: 25px;">Track-knop</h3>
-            <p>Tik om te wisselen wat je van de Master op je kaart ziet:</p>
+            <h3 style="color: #00BCD4; margin-top: 25px;">Route van de Master</h3>
+            <p>Je hoeft niets in te stellen: zodra je verbonden bent zie je vanzelf alles van de Master op je kaart.</p>
             <ul style="margin: 5px 0; padding-left: 30px;">
-                <li><strong>GEEN</strong> — niets extra's op de kaart.</li>
-                <li><strong>M SPOOR</strong> — de rode gereden lijn van de Master (volgen).</li>
-                <li><strong>M NAVI</strong> — de route van de Master (navigeren). Je ziet hier <strong>beide</strong> lijnen: de navi-route én een eventueel offroad-spoor van de Master.</li>
+                <li><strong>Blauwe lijn</strong> — de route van de Master. Die zie je meteen, ook als je pas joint nadat de route al gemaakt is. Je krijgt er pijlen, afstand en gesproken afslagen bij.</li>
+                <li><strong>Rode lijn</strong> — het spoor dat de Master al gereden heeft. Die verschijnt zodra de Master een stukje heeft gereden.</li>
+                <li><strong>Paarse lijn</strong> — een eventueel offroad-spoor van de Master.</li>
             </ul>
             <p style="background:#e3e7f5; padding:10px 14px; border-radius:8px;">Je volgt de Master en laadt/maakt zelf geen routes — anders zou je "solo" gaan rijden. Wil je zelf een route plannen? Start dan als Master.</p>
 
@@ -1502,7 +1515,7 @@
             <!-- ═══════════ ALGEMEEN ═══════════ -->
             <h2 style="color: #00BCD4; margin-top: 35px; border-top: 2px solid #00BCD4; padding-top: 22px;">Algemeen (Master &amp; Volger)</h2>
             <p>Deze knoppen en functies werken hetzelfde voor allebei.</p>
-            <p style="background:#e3e7f5; padding:10px 14px; border-radius:8px;"><strong>Knoppen-menu:</strong> de instelknoppen (Draai/kompas, Center, Toon, TAG, LIJN, CREW, COMS, KAART en FM) zitten achter <strong>één menu-knop rechts</strong> op de kaart, onder het slotje. Tik erop voor het menu met de grote knoppen; tik ernaast om te sluiten (na 4 seconden zonder tik sluit het vanzelf). Naast dat knoppen-menu verschijnt een tweede vakje met drie knoppen. <strong>Menu</strong> opent het instellingen-menu, netjes verdeeld in <strong>GPX</strong> (routes), <strong>Options</strong> (alles wat je ziet en hoort: navigatiepijlen, stem, flitsmelding, Screen adjust) en <strong>Config</strong> (Start up config, data-gebruik, OMB, Develop mode), met de handleidingen eronder. <strong>Next point</strong> gooit de route weg tot en met de eerstvolgende bocht vóór je — handig als je verderop weer wilt invoegen in plaats van terug te moeten; nog een druk pakt de bocht daarna. Deze knop verschijnt ook vanzelf naast <strong>2 Route</strong> zodra je van de route af bent. <strong>Dead end</strong> gebruik je als de weg dicht of doodlopend is: hij zet een vermijd-gebied van 50 meter op de weg vóór je en berekent meteen een nieuwe route eromheen. Aan de andere kant verschijnt een <strong>derde vakje</strong> met je <strong>trackingcode</strong> groot in beeld — tik erop om hem te delen — en de <strong>STOP</strong>-knop. STOP vraagt altijd een tweede tik ter bevestiging, zodat je hem nooit per ongeluk indrukt. Code en STOP staan daarom niet meer op het rijscherm zelf. De uitleg per knop hieronder blijft gewoon gelden — je vindt ze alleen in dat menu. Dit geldt trouwens overal: <strong>elk menu of venster sluit je ook door ernaast te tikken</strong> (de rode ✕ blijft ook gewoon werken). De mic- en T-knop staan <strong>standaard uit</strong> — zet ze aan met de <strong>COMS</strong>-knop in het knoppen-menu (groen = aan). Met <strong>KAART</strong> kies je uit 6 kaartstijlen: Standaard, Satelliet, Satelliet + wegen (foto mét getekende wegen en namen — zijwegen zichtbaar), Satelliet + wegen 2 (zelfde idee, andere wegenlaag met meer detail op diep inzoomen — testversie, werkt alleen online), Hoogte (met hoogtelijnen) en Donker (nachtkaart). Bij <strong>elke dag/nacht-overgang</strong> springt de kaart vanzelf (zonsondergang → Donker, zonsopkomst → Standaard, berekend op je eigen positie) — ook als je op Satelliet rijdt. Daarna kun je altijd handmatig een andere kaart kiezen; die blijft staan tot de volgende overgang. Je instellingen (TAG, dagkaart, flitsers, lijndikte enz.) worden op je telefoon bewaard; via <strong>Menu → Config → Start up config</strong> zet je ze over naar een andere telefoon (eigen instellingen worden automatisch onthouden). Met <strong>Menu → Options → Screen adjust</strong> maak je het rijscherm passend voor jóuw toestel: kies een blok (pijlen + afstand, afstand/tijd, verkeersbord, flitser-bord — en liggend ook de GPS-snelheid), verplaats het met de vier pijlen (tikken = klein stapje, vasthouden = steeds sneller; liggend staat de bediening breed naast de blok-keuze), maak het groter of kleiner met de schuif eronder, en tik naast het paneel om op te slaan. Staand en liggend hebben elk hun <strong>eigen</strong> instellingen, per blok is er een reset-knop, en tijdens het afstellen zie je twee grote rode oefenpijlen zodat je precies weet waar je aan werkt. Let op: offline tegels vooraf laden werkt voor Standaard én Donker (zelfde kaart, ander jasje); Satelliet verbruikt flink meer data.</p>
+            <p style="background:#e3e7f5; padding:10px 14px; border-radius:8px;"><strong>Knoppen-menu:</strong> de instelknoppen (Draai/kompas, Center, Toon, TAG, LIJN, CREW, COMS, KAART en FM) zitten achter <strong>één menu-knop rechts</strong> op de kaart, onder het slotje. Tik erop voor het menu met de grote knoppen; tik ernaast om te sluiten (na 4 seconden zonder tik sluit het vanzelf). Naast dat knoppen-menu verschijnt een tweede vakje met drie knoppen. <strong>Menu</strong> opent het instellingen-menu, netjes verdeeld in <strong>GPX</strong> (routes), <strong>Options</strong> (alles wat je ziet en hoort: navigatiepijlen, stem, flitsmelding, Screen adjust) en <strong>Config</strong> (Start up config, data-gebruik, OMB, Develop mode), met de handleidingen eronder. <strong>Reroute</strong> (alleen de Master) maakt in één tik een nieuwe route van waar je nú bent naar je finish en start hem meteen — handig als je een andere weg nam (bv. de brug in plaats van het pontje) en de oude route aan de verkeerde kant blijft liggen. Tussenpunten die nog vóór je liggen blijven erin; punten waar je al langs kwam of die achter je liggen vallen weg. Je vermijd-gebieden (Dead end) blijven gelden en de volgers krijgen de nieuwe route vanzelf. Lukt het even niet (geen bereik), dan rijd je gewoon verder op de oude route. <strong>Next point</strong> staat niet in dat vakje maar tijdens het rijden <strong>onderin, boven de pijlen en de afstand</strong> (alleen voor de Master met een route). Hij gooit de route weg tot en met de eerstvolgende bocht vóór je — handig als je verderop weer wilt invoegen in plaats van terug te moeten; nog een druk pakt de bocht daarna. Hij verschijnt ook naast <strong>2 Route</strong> zodra je van de route af bent, en schuift mee als je het pijlen-blok met Screen adjust verplaatst. <strong>Dead end</strong> gebruik je als de weg dicht of doodlopend is: hij zet een vermijd-gebied van 50 meter op de weg vóór je en berekent meteen een nieuwe route eromheen. Aan de andere kant verschijnt een <strong>derde vakje</strong> met je <strong>trackingcode</strong> groot in beeld — tik erop om hem te delen — en de <strong>STOP</strong>-knop. STOP vraagt altijd een tweede tik ter bevestiging, zodat je hem nooit per ongeluk indrukt. Code en STOP staan daarom niet meer op het rijscherm zelf. De uitleg per knop hieronder blijft gewoon gelden — je vindt ze alleen in dat menu. Dit geldt trouwens overal: <strong>elk menu of venster sluit je ook door ernaast te tikken</strong> (de rode ✕ blijft ook gewoon werken). De mic- en T-knop staan <strong>standaard uit</strong> — zet ze aan met de <strong>COMS</strong>-knop in het knoppen-menu (groen = aan). Met <strong>KAART</strong> kies je uit 6 kaartstijlen: Standaard, Satelliet, Satelliet + wegen (foto mét getekende wegen en namen — zijwegen zichtbaar), Satelliet + wegen 2 (zelfde idee, andere wegenlaag met meer detail op diep inzoomen — testversie, werkt alleen online), Hoogte (met hoogtelijnen) en Donker (nachtkaart). Bij <strong>elke dag/nacht-overgang</strong> springt de kaart vanzelf (zonsondergang → Donker, zonsopkomst → Standaard, berekend op je eigen positie) — ook als je op Satelliet rijdt. Daarna kun je altijd handmatig een andere kaart kiezen; die blijft staan tot de volgende overgang. Je instellingen (TAG, dagkaart, flitsers, lijndikte enz.) worden op je telefoon bewaard; via <strong>Menu → Config → Start up config</strong> zet je ze over naar een andere telefoon (eigen instellingen worden automatisch onthouden). Met <strong>Menu → Options → Screen adjust</strong> maak je het rijscherm passend voor jóuw toestel: kies een blok (pijlen + afstand, afstand/tijd, verkeersbord, flitser-bord — en liggend ook de GPS-snelheid), verplaats het met de vier pijlen (tikken = klein stapje, vasthouden = steeds sneller; liggend staat de bediening breed naast de blok-keuze), maak het groter of kleiner met de schuif eronder, en tik naast het paneel om op te slaan. Staand en liggend hebben elk hun <strong>eigen</strong> instellingen, per blok is er een reset-knop, en tijdens het afstellen zie je twee grote rode oefenpijlen zodat je precies weet waar je aan werkt. Let op: offline tegels vooraf laden werkt voor Standaard én Donker (zelfde kaart, ander jasje); Satelliet verbruikt flink meer data.</p>
 
             <h3 style="color: #00BCD4; margin-top: 20px;">Knoppen op de kaart</h3>
 
@@ -1553,7 +1566,7 @@
                 <li><strong>Hide</strong> (onderaan) — verbergt alle knoppen, alleen de kaart blijft over.</li>
                 <li><strong>Snelheid (km/u)</strong> — tijdens GO onderaan in beeld (staand scherm).</li>
                 <li><strong>Snelheidsbord</strong> — een rond bord (wit met rode rand) naast de snelheid toont de <strong>maximumsnelheid van de weg</strong> waar je op rijdt. De app leest die uit OpenStreetMap: <strong>met een route</strong> haalt 'ie de snelheden vooraf op langs je route; <strong>zonder route</strong> leest 'ie tijdens het rijden de weg onder je (het bepaalt slim op welke weg je zit via je positie én rijrichting, zodat 'ie ook bij parallelle wegen de juiste pakt). De snelheid blijft staan zolang je op die weg rijdt, en wisselt mee bij een overgang (bv. snelweg 100 → 130) of als je afslaat. In clean screen staat het bord altijd in beeld naast de km/u; is de snelheid onbekend, dan toont 'ie een streepje (–). Let op: de app moet even <strong>bewegen</strong> om je rijrichting te weten. Nadert er een flitser, dan neemt de flitsermelding tijdelijk de plek over. <strong>Let altijd op de echte borden langs de weg</strong> — het bord in de app is een hulpmiddel, geen vervanging.</li>
-                <li><strong>2 Route</strong> — rijd je met een route en raak je ervan af (stop, omweggetje), dan knippert bovenin de knop <strong>2 Route</strong>. Eén tik: de app berekent een route van waar je bent terug naar je route — de rest van je route blijft gewoon staan. Ben je weer op de route, dan verdwijnt de knop vanzelf. Jij bepaalt dus zelf wanneer je terug wilt.</li>
+                <li><strong>2 Route</strong> — rijd je met een route en raak je ervan af (stop, omweggetje), dan knippert bovenin de knop <strong>2 Route</strong>. Eén tik: de app berekent een route van waar je bent terug naar je route — de rest van je route blijft gewoon staan. Ben je weer op de route, dan verdwijnt de knop vanzelf. Jij bepaalt dus zelf wanneer je terug wilt. Dit geldt voor de Master; als volger rijd je achter de Master aan en krijg je deze knop niet.</li>
             </ul>
             <p style="background:#e3e7f5; padding:10px 14px; border-radius:8px;"><strong>Tip (liggend scherm):</strong> ligt je telefoon op z'n kant en staan <strong>CENTER én draaien aan</strong>, dan kun je het vliegtuigje (jezelf) mooi in beeld zetten door de kaart omhoog/omlaag te pannen — zo zie je meer van de weg vóór je.</p>
 
@@ -1723,7 +1736,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.56 © Umop3p1sdn
+                HO-ME v63.59 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1816,12 +1829,12 @@
                 <li>You see the Master on the map right away!</li>
             </ul>
 
-            <h3 style="color: #00BCD4; margin-top: 25px;">Track button</h3>
-            <p>Tap to switch what you see of the Master on your map:</p>
+            <h3 style="color: #00BCD4; margin-top: 25px;">The Master's route</h3>
+            <p>Nothing to set up: as soon as you are connected, everything of the Master appears on your map by itself.</p>
             <ul style="margin: 5px 0; padding-left: 30px;">
-                <li><strong>GEEN</strong> (none) — nothing extra on the map.</li>
-                <li><strong>M SPOOR</strong> (track) — the Master's red ridden line (following).</li>
-                <li><strong>M NAVI</strong> — the Master's route (navigating). Here you see <strong>both</strong> lines: the navi route and any offroad track of the Master.</li>
+                <li><strong>Blue line</strong> — the Master's route. You see it straight away, even if you join after the route was made. It comes with arrows, distance and spoken turns.</li>
+                <li><strong>Red line</strong> — the track the Master has already ridden. It appears as soon as the Master has ridden a bit.</li>
+                <li><strong>Purple line</strong> — any offroad track of the Master.</li>
             </ul>
             <p style="background:#e3e7f5; padding:10px 14px; border-radius:8px;">You follow the Master and don't load/make routes yourself — otherwise you'd start riding "solo". Want to plan your own route? Then start as Master.</p>
 
@@ -1869,7 +1882,7 @@
             <!-- ═══════════ GENERAL ═══════════ -->
             <h2 style="color: #00BCD4; margin-top: 35px; border-top: 2px solid #00BCD4; padding-top: 22px;">General (Master &amp; Follower)</h2>
             <p>These buttons and functions work the same for both.</p>
-            <p style="background:#e3e7f5; padding:10px 14px; border-radius:8px;"><strong>Button menu:</strong> the setting buttons (rotate/compass, Center, Show, TAG, LIJN, CREW, COMS, KAART and FM) sit behind <strong>one menu button on the right</strong> of the map, below the lock. Tap it for the menu with the big buttons; tap next to it to close (after 4 seconds without a tap it closes by itself). Next to that button menu a second little panel appears with three buttons. <strong>Menu</strong> opens the settings menu, tidily split into <strong>GPX</strong> (routes), <strong>Options</strong> (everything you see and hear: navigation arrows, voice, speed camera warning, Screen adjust) and <strong>Config</strong> (Start up config, data usage, OMB, Develop mode), with the manuals below. <strong>Next point</strong> discards the route up to and including the next bend ahead of you — useful when you want to rejoin further along instead of riding back; press again for the bend after that. This button also appears automatically next to <strong>2 Route</strong> as soon as you are off the route. Use <strong>Dead end</strong> when the road is closed or a dead end: it drops a 50 metre avoid area on the road ahead of you and immediately calculates a new route around it. On the other side a <strong>third panel</strong> appears with your <strong>tracking code</strong> shown large — tap it to share — and the <strong>STOP</strong> button. STOP always asks for a second tap to confirm, so you can never hit it by accident. That is why the code and STOP are no longer on the riding screen itself. The per-button explanations below still apply — you just find them in that menu. This applies everywhere by the way: <strong>every menu or window also closes by tapping next to it</strong> (the red ✕ keeps working too). The mic and T buttons are <strong>off by default</strong> — enable them with the <strong>COMS</strong> button in the button menu (green = on). With <strong>KAART</strong> you pick from 6 map styles: Standard, Satellite, Satellite + roads (imagery with drawn roads and names — side roads visible), Satellite + roads 2 (same idea, different road layer with more deep-zoom detail — test version, online only), Terrain (contour lines) and Dark (night map). At <strong>every day/night transition</strong> the map jumps automatically (sunset → Dark, sunrise → Standard, computed at your own position) — even when riding Satellite. After that you can always pick another map manually; it stays until the next transition. Your settings (TAG, day map, cameras, line width etc.) are stored on your phone; via <strong>Menu → Config → Start up config</strong> you can transfer them to another phone (your own settings are remembered automatically). With <strong>Menu → Options → Screen adjust</strong> you fit the riding screen to your device: pick a block (arrows + distance, distance/time, speed sign, camera sign — and in landscape also the GPS speed), move it with the four arrows (tap = small step, hold = increasingly faster; in landscape the controls sit wide next to the block chooser), resize it with the slider below, and tap beside the panel to save. Portrait and landscape each keep their <strong>own</strong> settings, every block has a reset button, and while adjusting you see two big red practice arrows so you know exactly what you are placing. Note: offline tile pre-loading works for Standard and Dark (same map, different look); Satellite uses considerably more data.</p>
+            <p style="background:#e3e7f5; padding:10px 14px; border-radius:8px;"><strong>Button menu:</strong> the setting buttons (rotate/compass, Center, Show, TAG, LIJN, CREW, COMS, KAART and FM) sit behind <strong>one menu button on the right</strong> of the map, below the lock. Tap it for the menu with the big buttons; tap next to it to close (after 4 seconds without a tap it closes by itself). Next to that button menu a second little panel appears with three buttons. <strong>Menu</strong> opens the settings menu, tidily split into <strong>GPX</strong> (routes), <strong>Options</strong> (everything you see and hear: navigation arrows, voice, speed camera warning, Screen adjust) and <strong>Config</strong> (Start up config, data usage, OMB, Develop mode), with the manuals below. <strong>Reroute</strong> (Master only) makes, in one tap, a new route from where you are right now to your finish and starts it straight away — handy when you took another road (e.g. the bridge instead of the ferry) and the old route stays on the wrong side. Via points still ahead of you are kept; points you already passed or that lie behind you are dropped. Your avoid areas (Dead end) still apply and followers get the new route automatically. If it fails for a moment (no signal), you simply keep riding the old route. <strong>Next point</strong> is not in that panel but sits <strong>at the bottom while riding, above the arrows and the distance</strong> (only for the Master with a route). It discards the route up to and including the next bend ahead of you — useful when you want to rejoin further along instead of riding back; press again for the bend after that. It also appears next to <strong>2 Route</strong> as soon as you are off the route, and moves along when you shift the arrows block with Screen adjust. Use <strong>Dead end</strong> when the road is closed or a dead end: it drops a 50 metre avoid area on the road ahead of you and immediately calculates a new route around it. On the other side a <strong>third panel</strong> appears with your <strong>tracking code</strong> shown large — tap it to share — and the <strong>STOP</strong> button. STOP always asks for a second tap to confirm, so you can never hit it by accident. That is why the code and STOP are no longer on the riding screen itself. The per-button explanations below still apply — you just find them in that menu. This applies everywhere by the way: <strong>every menu or window also closes by tapping next to it</strong> (the red ✕ keeps working too). The mic and T buttons are <strong>off by default</strong> — enable them with the <strong>COMS</strong> button in the button menu (green = on). With <strong>KAART</strong> you pick from 6 map styles: Standard, Satellite, Satellite + roads (imagery with drawn roads and names — side roads visible), Satellite + roads 2 (same idea, different road layer with more deep-zoom detail — test version, online only), Terrain (contour lines) and Dark (night map). At <strong>every day/night transition</strong> the map jumps automatically (sunset → Dark, sunrise → Standard, computed at your own position) — even when riding Satellite. After that you can always pick another map manually; it stays until the next transition. Your settings (TAG, day map, cameras, line width etc.) are stored on your phone; via <strong>Menu → Config → Start up config</strong> you can transfer them to another phone (your own settings are remembered automatically). With <strong>Menu → Options → Screen adjust</strong> you fit the riding screen to your device: pick a block (arrows + distance, distance/time, speed sign, camera sign — and in landscape also the GPS speed), move it with the four arrows (tap = small step, hold = increasingly faster; in landscape the controls sit wide next to the block chooser), resize it with the slider below, and tap beside the panel to save. Portrait and landscape each keep their <strong>own</strong> settings, every block has a reset button, and while adjusting you see two big red practice arrows so you know exactly what you are placing. Note: offline tile pre-loading works for Standard and Dark (same map, different look); Satellite uses considerably more data.</p>
 
             <h3 style="color: #00BCD4; margin-top: 20px;">Buttons on the map</h3>
 
@@ -1920,7 +1933,7 @@
                 <li><strong>Hide</strong> (at the bottom) — hides all buttons, only the map remains.</li>
                 <li><strong>Speed (km/h)</strong> — during GO shown at the bottom (portrait).</li>
                 <li><strong>Speed sign</strong> — a round sign (white with red edge) next to the speed shows the <strong>speed limit of the road</strong> you're on. The app reads it from OpenStreetMap: <strong>with a route</strong> it fetches the limits ahead along your route; <strong>without a route</strong> it reads the road beneath you while riding (it smartly determines which road you're on using your position <em>and</em> heading, so it picks the right one even with parallel roads). The limit stays as long as you're on that road, and changes at a transition (e.g. motorway 100 → 130) or when you turn off. In clean screen the sign is always shown next to the km/h; if the limit is unknown it shows a dash (–). Note: the app needs a bit of <strong>movement</strong> to know your heading. When a speed camera is near, the camera warning temporarily takes its place. <strong>Always watch the real signs along the road</strong> — the sign in the app is an aid, not a replacement.</li>
-                <li><strong>2 Route</strong> — riding with a route and you get off it (stop, small detour)? Then the <strong>2 Route</strong> button flashes at the top. One tap: the app calculates a route from where you are back to your route — the rest of your route stays as it is. Once you're back on the route, the button disappears by itself. So you decide when you want to go back.</li>
+                <li><strong>2 Route</strong> — riding with a route and you get off it (stop, small detour)? Then the <strong>2 Route</strong> button flashes at the top. One tap: the app calculates a route from where you are back to your route — the rest of your route stays as it is. Once you're back on the route, the button disappears by itself. So you decide when you want to go back. This is for the Master; as a follower you ride behind the Master and don't get this button.</li>
             </ul>
             <p style="background:#e3e7f5; padding:10px 14px; border-radius:8px;"><strong>Tip (landscape):</strong> with your phone on its side and <strong>CENTER plus rotation on</strong>, you can position the plane (yourself) nicely by panning the map up/down — so you see more of the road ahead.</p>
 
@@ -2090,7 +2103,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.56 © Umop3p1sdn
+                HO-ME v63.59 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -4356,7 +4369,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "63.56";
+        const APP_VERSION = "63.59";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
@@ -6210,13 +6223,13 @@ assign initialcost =
         // (rooster-les 1), adjust is een verschuiving in SCHERM-richting: pijl omhoog =
         // omhoog op het scherm, in elke stand.
         const ADJUST_BLOCKS = {
-            pijlen:   ['turnArrowLeft', 'turnArrowRight', 'turnDist'],
+            pijlen:   ['turnArrowLeft', 'turnArrowRight', 'turnDist', 'nextPointNav'],   // v63.58: Next point schuift mee
             rem:      ['remPanel'],
             bord:     ['speedLimitSign'],
             flitser:  ['flitserBox'],
             snelheid: ['gpsSpeedBox']   // v62.7 (verzoek Sjoerd): GPS-snelheid ook verplaatsbaar
         };
-        const ADJUST_ORIGIN = { turnArrowLeft: 'left bottom', turnArrowRight: 'right bottom', turnDist: 'center bottom',
+        const ADJUST_ORIGIN = { turnArrowLeft: 'left bottom', turnArrowRight: 'right bottom', turnDist: 'center bottom', nextPointNav: 'center bottom',
                                 remPanel: 'left bottom', speedLimitSign: 'right bottom', flitserBox: 'right bottom',
                                 gpsSpeedBox: 'left top' };   // v62.7: hangt linksboven, dus krimpt naar die hoek
         let adjustCfg = (homeConfig.adjust && typeof homeConfig.adjust === 'object') ? homeConfig.adjust : {};
@@ -6243,7 +6256,7 @@ assign initialcost =
                 ADJUST_BLOCKS[blok].forEach(id => {
                     const el = document.getElementById(id);
                     if (!el) return;
-                    const basis = (id === 'turnDist') ? 'translateX(-50%)' : '';
+                    const basis = (id === 'turnDist' || id === 'nextPointNav') ? 'translateX(-50%)' : '';   // v63.58: ook gecentreerd
                     const t = (basis + ' ' + delen.join(' ')).trim();
                     el.style.transformOrigin = ADJUST_ORIGIN[id] || 'center bottom';
                     if (t) el.style.setProperty('transform', t, 'important');   // wint ook van de liggend-CSS
@@ -7207,6 +7220,100 @@ assign initialcost =
             if (heeftRoute && typeof acceptReroute === 'function') acceptReroute();
         }
 
+        // v63.59 REROUTE (ontwerp Sjoerd, na de pont-ervaring: "start vervangen en go!"): één tik =
+        // start op je huidige GPS-positie, finish blijft, nieuwe route berekenen en meteen GO.
+        // Hergebruikt de gewone planner-stappen (setStart → maybeRoute → plannerGo), dus dead end-
+        // zones, profiel, veerpont-keuze blijven, en de volger krijgt de nieuwe route vanzelf.
+        // Tussenpunten (Sjoerd: "naar de dichtstbijzijnde, logisch op je route"): alleen de punten die
+        // nog VÓÓR je op de route liggen blijven. Weg vallen: punten achter je, punten waar je rode
+        // spoor al langs kwam (beschermt rondritten: bij thuiskomst op dezelfde weg als de heenweg zou
+        // "dichtstbijzijnde routepunt" anders het begin kunnen zijn → hele rondje opnieuw), en punten
+        // die niet bij deze route horen (oude planner-punten naast een geladen GPX).
+        // Finish = de planner-finish als die bij het einde van de gevolgde route ligt, anders het
+        // eindpunt van de gevolgde route zelf (geladen GPX).
+        let rerouteFinishBusy = false;
+        async function rerouteToFinish() {
+            const toast = (t, c) => { if (typeof showBufferToast === 'function') showBufferToast(t, c || '#00BCD4', 1800); };
+            if (currentMode !== 'master') return;
+            if (rerouteFinishBusy) return;
+            const me = (lastGps && typeof lastGps.lat === 'number') ? [lastGps.lat, lastGps.lng] : null;
+            if (!me) { toast('Nog geen GPS-positie', '#FF9800'); return; }
+            const R = activeRoute;
+            if (!R || R.length < 2) { toast('Geen route actief', '#FF9800'); return; }
+            if (typeof closeBtnMenu === 'function') closeBtnMenu();
+            rerouteFinishBusy = true;
+            try {
+                map = mapInstance;            // planner werkt op de rijkaart (zoals plannerOpen)
+                hasFitOnce = true;            // niet uitzoomen naar de hele route tijdens het rijden
+                // snelle meters voor het zoeken (lange route × lang spoor), exacte afstand alleen voor de winnaar
+                const kx = Math.cos(me[0] * Math.PI / 180);
+                const ruw = (a, b) => { const dy = a[0] - b[0], dx = (a[1] - b[1]) * kx; return Math.sqrt(dx * dx + dy * dy) * 111195; };
+                const dichtste = (p, van) => {
+                    let bi = van, bd = Infinity;
+                    for (let i = van; i < R.length; i++) {
+                        const d = ruw(p, R[i]);
+                        if (d < bd) { bd = d; bi = i; }
+                    }
+                    return { idx: bi, d: distMeters(p, R[bi]) };
+                };
+                // 1. finish
+                const eind = R[R.length - 1];
+                if (!destPoint || distMeters([destPoint.lat, destPoint.lng], eind) > 1000) {
+                    setDest(eind[0], eind[1], 'Finish');
+                }
+                // 2. tussenpunten op de route plaatsen, in volgorde (elk punt ná het vorige)
+                const spoor = (typeof masterLocations !== 'undefined' && masterLocations) ? masterLocations : [];
+                let van = 0;
+                const info = viaPoints.map(v => {
+                    const pv = [v.lat, v.lng];
+                    const m = dichtste(pv, van);
+                    const opRoute = m.d <= 500;
+                    if (opRoute) van = m.idx;
+                    const pr = R[m.idx];
+                    const bezocht = opRoute && spoor.some(p =>
+                        (Math.abs(p[0] - pv[0]) < 0.002 && Math.abs(p[1] - pv[1]) < 0.004 && distMeters(p, pv) < 100) ||
+                        (Math.abs(p[0] - pr[0]) < 0.002 && Math.abs(p[1] - pr[1]) < 0.004 && distMeters(p, pr) < 60));   // eerst grof vak (~220 m) = snel
+                    return { v, idx: m.idx, opRoute, bezocht };
+                });
+                // 3. waar ben ik? Liggen er twee stukken route even dichtbij (heen en terug over dezelfde
+                //    weg), dan beslist je rijrichting (uit je spoor).
+                const best = dichtste(me, 0);
+                let mijnIdx = best.idx, koers = null;
+                for (let k = spoor.length - 1; k >= 0; k--) {
+                    if (distMeters(spoor[k], me) >= 30) { koers = bearing(spoor[k], me); break; }
+                }
+                if (koers !== null) {
+                    let besteHoek = Infinity;
+                    for (let i = 0; i < R.length - 1; i++) {
+                        if (ruw(me, R[i]) > best.d + 40) continue;
+                        const hoek = Math.abs(((bearing(R[i], R[i + 1]) - koers + 540) % 360) - 180);
+                        if (hoek < besteHoek) { besteHoek = hoek; mijnIdx = i; }
+                    }
+                }
+                const houden = [];
+                info.forEach(x => {
+                    if (x.opRoute && !x.bezocht && x.idx > mijnIdx) houden.push(x.v);
+                    else if (x.v.marker) { try { map.removeLayer(x.v.marker); } catch (e) {} }
+                });
+                viaPoints = houden;
+                // 4. start = hier, rekenen, GO
+                setStart(me[0], me[1], 'Mijn locatie', true);
+                toast('Nieuwe route berekenen…');
+                const oud = lastRouteGeo;
+                await maybeRoute();
+                if (lastRouteGeo && lastRouteGeo !== oud) {
+                    plannerGo();
+                } else {
+                    toast('Geen nieuwe route — je volgt de oude', '#FF9800');
+                }
+            } catch (e) {
+                console.error('reroute failed', e);
+                toast('Reroute mislukt — je volgt de oude', '#FF9800');
+            } finally {
+                rerouteFinishBusy = false;
+            }
+        }
+
         // v63.17: de pop-up naast "2 Route" zetten — positie GEMETEN uit de knop zelf (rooster-regel:
         // relatief plaatsen = rekenen uit gemeten maten). Past hij rechts niet, dan eronder.
         function placeNextPointPop() {
@@ -7280,6 +7387,9 @@ assign initialcost =
                 if (right) right.style.display = 'none';
                 if (distEl) distEl.style.display = 'none';
             };
+            // v63.58: Next point onderin — alleen master met actieve route
+            const _np = document.getElementById('nextPointNav');
+            if (_np) _np.style.display = (currentMode === 'master' && detectedTurns.length && activeRoute) ? 'flex' : 'none';
             if (!detectedTurns.length || !activeRoute) {
                 const _b = document.getElementById('b2rBtn'); if (_b) _b.style.display = 'none';   // geen route → geen B2R
                 if (typeof showNextPointPop === 'function') showNextPointPop(false);   // v63.17: pop-up lift mee
@@ -7302,8 +7412,11 @@ assign initialcost =
             // B2R-knop: knippert in beeld zolang je van de route af bent; weg zodra je er weer op zit.
             const b2r = document.getElementById('b2rBtn');
             if (myDist > 60) {                       // >60m = eraf → B2R aan, pijlen uit
-                if (b2r) b2r.style.display = 'block';
-                if (typeof showNextPointPop === 'function') showNextPointPop(true);   // v63.17: pop-up erbij
+                // v63.58 (wens Sjoerd): de volger krijgt geen 2 Route-melding meer
+                if (currentMode !== 'follower') {
+                    if (b2r) b2r.style.display = 'block';
+                    if (typeof showNextPointPop === 'function') showNextPointPop(true);   // v63.17: pop-up erbij
+                }
                 hideAll(); return;
             }
             if (b2r) b2r.style.display = 'none';
@@ -11346,6 +11459,7 @@ assign initialcost =
             const fm = document.getElementById('fmBtn');
             if (bar && fm && fm.parentElement !== bar) bar.appendChild(fm);
             document.body.classList.add('btn-menu-open');
+            { const _rr = document.getElementById('rerouteBtn'); if (_rr) _rr.style.display = (currentMode === 'master') ? 'flex' : 'none'; }   // v63.59
             if (typeof vulMenuCode === 'function') vulMenuCode();   // v63.24: trackingcode in Vlak 2 bijwerken
             resetBtnMenuTimer();
         }
