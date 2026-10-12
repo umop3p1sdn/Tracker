@@ -1211,7 +1211,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.76 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.77 © Umop3p1sdn</div>
 
             </div>
 
@@ -1451,7 +1451,7 @@
             <p>Geen route nodig, gewoon elkaar zien? Dat kan ook zónder master:</p>
             <ul style="margin: 10px 0; padding-left: 20px;">
                 <li>Spreek samen een 4-cijferige code af en typ 'm allemaal in het <strong>"Enter code"</strong>-veld.</li>
-                <li>Druk op <strong>CREW</strong> — je ziet elkaar op de kaart, elk met eigen kleur, tag en lijn. CREW is een rij-stand: blauw (volgers zichtbaar) en groen (volgers-zoom) zetten het kompas automatisch mee aan en de kaart beweegt met je mee; CREW weer uit (kaal) zet het kompas ook weer uit — behalve als je route (play) het al aan had gezet.</li>
+                <li>Na de landing (op je eigen positie) staat <strong>CREW</strong> vanzelf op blauw — je ziet elkaar op de kaart, elk met eigen kleur, tag en lijn. CREW is een rij-stand: blauw (volgers zichtbaar) en groen (volgers-zoom) zetten het kompas automatisch mee aan en de kaart beweegt met je mee; CREW weer uit (kaal) zet het kompas ook weer uit — behalve als je route (play) het al aan had gezet.</li>
                 <li>Ready to go! In de auto, op de fiets, samen in de stad of verspreid over een festival.</li>
             </ul>
             <p>Wil je wél een route? Laat dan één iemand als <strong>master</strong> starten en deel zíjn code — de rest volgt.</p>
@@ -1765,7 +1765,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.76 © Umop3p1sdn
+                HO-ME v63.77 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1792,7 +1792,7 @@
             <p>No route needed, just seeing each other? That works without a master too:</p>
             <ul style="margin: 10px 0; padding-left: 20px;">
                 <li>Agree on a 4-digit code together and all type it in the <strong>"Enter code"</strong> field.</li>
-                <li>Tap <strong>CREW</strong> — you see each other on the map, each with their own colour, tag and line. CREW is a riding mode: blue (followers visible) and green (followers zoom) automatically switch the compass on too and the map moves along with you; CREW off (plain) switches the compass back off — unless your route (play) had already switched it on.</li>
+                <li>After the landing (on your own position) <strong>CREW</strong> is on blue by itself — you see each other on the map, each with their own colour, tag and line. CREW is a riding mode: blue (followers visible) and green (followers zoom) automatically switch the compass on too and the map moves along with you; CREW off (plain) switches the compass back off — unless your route (play) had already switched it on.</li>
                 <li>Ready to go! In the car, on the bike, together in town or spread out across a festival.</li>
             </ul>
             <p>Do you want a route after all? Then have one person start as <strong>master</strong> and share their code — the rest follow.</p>
@@ -2106,7 +2106,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.76 © Umop3p1sdn
+                HO-ME v63.77 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -4688,7 +4688,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "63.76";
+        const APP_VERSION = "63.77";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
@@ -11360,10 +11360,22 @@ assign initialcost =
                                 if (warnEl) warnEl.style.display = 'none';
                             }
                         }
-                        if (location) {
+                        // v63.77: alleen een master MÉT positie telt als master. Zonder (vriendenmodus: in de rit staan
+                        // alleen volgers) maakte dit blok een master-vliegtuigje op (undefined, undefined) — GEMETEN: elke
+                        // 500 ms "Invalid LatLng", en alles daarna in het blok kwam nooit aan bod.
+                        const masterOk = !!(location && typeof location.lat === 'number' && typeof location.lng === 'number');
+                        checkLandingLayers();   // v63.56: lijn-lagen terug, ook na een bevroren timer (v63.77: ook zonder master)
+                        // v63.75/76/77 (keuze Sjoerd: "ja, crew blauw" + "ook met code handmatig — altijd ready to move!" +
+                        // "alleen volgers, daar ook crew blauw"): elke volger ziet meteen de hele groep en de kaart beweegt
+                        // mee: CREW blauw, één keer per rit, ná de landingsvlucht (die mag niets onderbreken) — ook zonder
+                        // master (dan landt hij op je eigen positie). Meekijker: gewoon VRIJ. Master: kale start.
+                        if (!startCrewKlaar && !spectatorMode && landingDone && !landingInProgress) {
+                            startCrewKlaar = true;
+                            if (everyoneMode === 0 && typeof toggleSeeEveryone === 'function') toggleSeeEveryone();
+                        }
+                        if (masterOk) {
                             masterPos = { lat: location.lat, lng: location.lng };
                             landingFlight(location.lat, location.lng);   // v58.0
-                            checkLandingLayers();   // v63.56: lijn-lagen terug, ook na een bevroren timer
                             if (typeof location.heading === 'number') masterHeadingShared = location.heading;
                             if (location.tag) masterTagShared = location.tag;
                             if (spectatorMode && mapRotationEnabled) applyMapRotation();   // bank-rotatie draait op poll-data
@@ -11496,13 +11508,6 @@ assign initialcost =
                             // rijdt (navigatie actief) gaat zijn kompas vanzelf aan, één keer per route. Pas ná de
                             // landingsvlucht (die mag niets onderbreken), en niet bij de meekijker (die draait mee via
                             // zijn volgknop). Bekeek je net de kaart (handpauze), dan pas na die pauze.
-                            // v63.75/v63.76 (keuze Sjoerd: "ja, crew blauw" + "ook met code handmatig — altijd ready to
-                            // move!"): elke volger ziet meteen de hele groep en de kaart beweegt mee: CREW blauw, één keer
-                            // per rit, ná de landingsvlucht (die mag niets onderbreken). Meekijker: gewoon VRIJ.
-                            if (!startCrewKlaar && !spectatorMode && landingDone && !landingInProgress) {
-                                startCrewKlaar = true;
-                                if (everyoneMode === 0 && typeof toggleSeeEveryone === 'function') toggleSeeEveryone();
-                            }
                             if (followerNavActive && !followerKompasGezet && !spectatorMode && landingDone && !landingInProgress) {
                                 followerKompasGezet = true;
                                 if (typeof kompasVoorRit === 'function') kompasVoorRit(false);
