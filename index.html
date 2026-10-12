@@ -83,6 +83,10 @@
             text-shadow: -1.5px -1.5px 0 #fff, 1.5px -1.5px 0 #fff, -1.5px 1.5px 0 #fff, 1.5px 1.5px 0 #fff,
                          0 -1.5px 0 #fff, 0 1.5px 0 #fff, -1.5px 0 0 #fff, 1.5px 0 0 #fff, 0 0 4px #fff !important;
         }
+        /* v63.69: het zoomgetal is ook een knop (CREW-wissel). Raakvlak loopt 4 px de tussenruimtes in
+           (35 → 43 px breed, handschoen) — onzichtbaar, de balk zelf blijft precies even breed. */
+        #zoomLevelMaster, #zoomLevelFollower { position: relative; }
+        #zoomLevelMaster::after, #zoomLevelFollower::after { content: ''; position: absolute; top: 0; bottom: 0; left: -4px; right: -4px; }
         #speedometer { padding-bottom: env(safe-area-inset-bottom, 0px); }
         #plannerPanel { margin-top: env(safe-area-inset-top, 0px); margin-left: env(safe-area-inset-left, 0px); }   /* Plan-menu niet onder de notch/statusbalk (v52.6) + niet onder de camera links (v63.21) */
         /* v63.20 (melding Sjoerd: liggend zit het plan-menu vrij hoog, lastig bij het rode kruisje):
@@ -1190,7 +1194,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.68 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.69 © Umop3p1sdn</div>
 
             </div>
 
@@ -1238,8 +1242,10 @@
                         <!-- ZOOM CONTROLS BAR -->
                         <div id="zoomBarMaster" style="position: fixed; top: 10px; left: 50%; z-index: 1001; display: flex; gap: 8px; justify-content: center; background: rgba(0,0,0,0.15); padding: 8px 16px; border-radius: 8px; width: fit-content; transform: translateX(-50%);">
                             <button style="padding: 8px; font-size: 1.6em; min-width: 64px; width: 64px; height: 64px; border-radius: 6px; background: transparent; color: #000; text-shadow: 0 0 2px rgba(255,255,255,0.9); border: 3px solid #000; box-shadow: 0 0 0 2px rgba(255,255,255,0.4); cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center;" onclick="zoomOut()">−</button>
-                            <span style="font-size: 1.1em; min-width: 35px; text-align: center; color: #000; text-shadow: 0 0 2px rgba(255,255,255,0.9); font-weight: bold; display: flex; align-items: center; justify-content: center;" id="zoomLevelMaster">17</span>
+                            <span style="font-size: 1.1em; min-width: 35px; text-align: center; color: #000; text-shadow: 0 0 2px rgba(255,255,255,0.9); font-weight: bold; display: flex; align-items: center; justify-content: center; cursor: pointer;" id="zoomLevelMaster" onclick="zoomBarTik()" title="Tik: CREW wisselen">17</span>
                             <button style="padding: 8px; font-size: 1.6em; min-width: 64px; width: 64px; height: 64px; border-radius: 6px; background: transparent; color: #000; text-shadow: 0 0 2px rgba(255,255,255,0.9); border: 3px solid #000; box-shadow: 0 0 0 2px rgba(255,255,255,0.4); cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center;" onclick="zoomIn()">+</button>
+                            <!-- v63.69: CREW groen = Auto zoom (vervangt − getal +; zelfde breedte: 64+8+35+8+64 = 179 px) -->
+                            <button class="autoZoomBtn" onclick="zoomBarTik()" title="Auto zoom — tik: CREW uit" style="display: none; width: 179px; height: 64px; padding: 0 8px; border-radius: 6px; background: rgba(76,175,80,0.45); color: #000; border: 3px solid #000; box-shadow: 0 0 0 2px rgba(255,255,255,0.4); cursor: pointer; font-weight: bold; font-size: 1.2em; white-space: nowrap; align-items: center; justify-content: center;">Auto zoom</button>
                         </div>
 
                         <!-- SIDE ICON BAR (right) -->
@@ -1280,8 +1286,10 @@
                         <!-- ZOOM CONTROLS BAR -->
                         <div id="zoomBarFollower" style="position: fixed; top: 10px; left: 50%; z-index: 1001; display: flex; gap: 8px; justify-content: center; background: rgba(0,0,0,0.15); padding: 8px 16px; border-radius: 8px; width: fit-content; transform: translateX(-50%);">
                             <button style="padding: 8px; font-size: 1.6em; min-width: 64px; width: 64px; height: 64px; border-radius: 6px; background: transparent; color: #000; text-shadow: 0 0 2px rgba(255,255,255,0.9); border: 3px solid #000; box-shadow: 0 0 0 2px rgba(255,255,255,0.4); cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center;" onclick="zoomOut()">−</button>
-                            <span style="font-size: 1.1em; min-width: 35px; text-align: center; color: #000; text-shadow: 0 0 2px rgba(255,255,255,0.9); font-weight: bold; display: flex; align-items: center; justify-content: center;" id="zoomLevelFollower">17</span>
+                            <span style="font-size: 1.1em; min-width: 35px; text-align: center; color: #000; text-shadow: 0 0 2px rgba(255,255,255,0.9); font-weight: bold; display: flex; align-items: center; justify-content: center; cursor: pointer;" id="zoomLevelFollower" onclick="zoomBarTik()" title="Tik: CREW wisselen">17</span>
                             <button style="padding: 8px; font-size: 1.6em; min-width: 64px; width: 64px; height: 64px; border-radius: 6px; background: transparent; color: #000; text-shadow: 0 0 2px rgba(255,255,255,0.9); border: 3px solid #000; box-shadow: 0 0 0 2px rgba(255,255,255,0.4); cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center;" onclick="zoomIn()">+</button>
+                            <!-- v63.69: CREW groen = Auto zoom (vervangt − getal +; zelfde breedte: 64+8+35+8+64 = 179 px) -->
+                            <button class="autoZoomBtn" onclick="zoomBarTik()" title="Auto zoom — tik: CREW uit" style="display: none; width: 179px; height: 64px; padding: 0 8px; border-radius: 6px; background: rgba(76,175,80,0.45); color: #000; border: 3px solid #000; box-shadow: 0 0 0 2px rgba(255,255,255,0.4); cursor: pointer; font-weight: bold; font-size: 1.2em; white-space: nowrap; align-items: center; justify-content: center;">Auto zoom</button>
                         </div>
 
                         <!-- SIDE ICON BAR (right) -->
@@ -1457,13 +1465,13 @@
             </ul>
 
             <h3 style="color: #00BCD4; margin-top: 25px;">CREW-knop (jij centraal)</h3>
-            <p style="margin:4px 0 12px;">Onderaan de rechter icoonbalk. Handig voor een kleine groep die dicht bij elkaar rijdt — jij blijft in het midden en je volgers dwarrelen om je heen. Tik om te wisselen:</p>
+            <p style="margin:4px 0 12px;">Onderaan de rechter icoonbalk — of tik op het getal in de zoombalk bovenaan (zie <em>Zoom</em>). Handig voor een kleine groep die dicht bij elkaar rijdt — jij blijft in het midden en je volgers dwarrelen om je heen. Tik om te wisselen:</p>
             <ul style="margin: 10px 0; padding-left: 20px;">
                 <li><strong>1× (blauw)</strong> — jij blijft centraal, je volgers staan los om je heen. Je bepaalt de zoom zelf.</li>
                 <li><strong>2× (groen)</strong> — jij blijft centraal én de kaart zoomt automatisch zo dat álle volgers in beeld blijven, met een nette marge langs de rand.</li>
                 <li><strong>3× </strong> — uit; dan zie je alleen jezelf (de volgers verdwijnen van je kaart).</li>
             </ul>
-            <p style="font-size:0.85em; color:#555;">Zolang CREW aan staat, is 'ie de baas over de kaart (ook als CENTER uit staat). Zet 'm uit voor de gewone weergave.</p>
+            <p style="font-size:0.85em; color:#555;">Zolang CREW aan staat, is 'ie de baas over de kaart (ook als CENTER uit staat) — behalve tijdens Plan: dan staat de kaart stil, zodat je rustig kunt plannen. Zet 'm uit voor de gewone weergave.</p>
             <p style="background:#e3e7f5; padding:10px 14px; border-radius:8px;">Wil je een route maken of bewerken? Druk op <strong>Plan</strong> (linksboven). Daarmee open je de Route Planner — zie helemaal onderaan deze handleiding.</p>
 
             <!-- ═══════════ VOOR DE VOLGER ═══════════ -->
@@ -1492,7 +1500,7 @@
             </div>
 
             <h3 style="color: #00BCD4; margin-top: 25px;">CREW-knop (iedereen zien)</h3>
-            <p style="margin:4px 0 12px;">Onderaan de rechter icoonbalk. Hiermee zie je óók de andere volgers (niet alleen de Master), elk met hun gereden lijn. Tik om te wisselen:</p>
+            <p style="margin:4px 0 12px;">Onderaan de rechter icoonbalk — of tik op het getal in de zoombalk bovenaan (zie <em>Zoom</em>). Hiermee zie je óók de andere volgers (niet alleen de Master), elk met hun gereden lijn. Tik om te wisselen:</p>
             <ul style="margin: 10px 0; padding-left: 20px;">
                 <li><strong>1× (blauw)</strong> — alle andere volgers verschijnen op de kaart, met hun lijnen. Je bepaalt de zoom zelf.</li>
                 <li><strong>2× (groen)</strong> — jij blijft centraal én de kaart zoomt automatisch zo dat iedereen in beeld blijft, met een nette marge langs de rand.</li>
@@ -1531,7 +1539,7 @@
                     <div style="width:64px; height:64px; border-radius:6px; background:#00BCD4; display:flex; align-items:center; justify-content:center;"><svg width="40" height="40" viewBox="0 0 36 36"><circle cx="18" cy="18" r="9" fill="none" stroke="#fff" stroke-width="2.5"/><circle cx="18" cy="18" r="2.5" fill="#fff"/><line x1="18" y1="3" x2="18" y2="9" stroke="#fff" stroke-width="2.5"/><line x1="18" y1="27" x2="18" y2="33" stroke="#fff" stroke-width="2.5"/><line x1="3" y1="18" x2="9" y2="18" stroke="#fff" stroke-width="2.5"/><line x1="27" y1="18" x2="33" y2="18" stroke="#fff" stroke-width="2.5"/></svg></div>
                 </div>
                 <strong>Center</strong>
-                <p style="margin:4px 0 0;">Vlak onder het kompas. Laat de kaart je locatie automatisch volgen. UIT (grijs) = vrij rondkijken/pannen. AAN (cyaan) = kaart blijft op jou gecentreerd. Na het maken van een route zet de app Center automatisch uit, zodat je de hele route kunt bekijken; tik 'm weer aan om jezelf te volgen.</p>
+                <p style="margin:4px 0 0;">Vlak onder het kompas. Laat de kaart je locatie automatisch volgen. UIT (grijs) = vrij rondkijken/pannen. AAN (cyaan) = kaart blijft op jou gecentreerd. Tijdens Plan staat Center (net als het kompas) even uit, zodat je rustig aan je route kunt werken; sluit je Plan, dan staan ze weer zoals ze stonden.</p>
             </div>
 
             <div style="margin: 20px 0;">
@@ -1541,7 +1549,16 @@
                     <div style="width:64px; height:64px; border-radius:6px; background:transparent; border:3px solid #000; display:flex; align-items:center; justify-content:center; font-size:2em; font-weight:bold; color:#000;">+</div>
                 </div>
                 <strong>Zoom (bovenaan de kaart)</strong>
-                <p style="margin:4px 0 0;">Het getal in het midden is je zoomniveau (10-20). Tik − of + om uit/in te zoomen.</p>
+                <p style="margin:4px 0 0;">Het getal in het midden is je zoomniveau (10-20). Tik − of + om uit/in te zoomen. De balk staat er alleen als je 'm kunt gebruiken: zodra je een route rijdt (na één keer de groene play), of met Center of CREW aan. Tijdens Plan is hij weg.</p>
+                <p style="margin:8px 0 0;"><strong>Tik op het getal</strong> = CREW wisselen, zonder het menu:</p>
+                <div style="display:flex; gap:8px; align-items:center; margin:8px 0 4px;">
+                    <div style="width:64px; height:64px; border-radius:6px; background:rgba(33,150,243,0.45); border:3px solid #000; display:flex; align-items:center; justify-content:center; font-size:2em; font-weight:bold; color:#000;">−</div>
+                    <span style="font-weight:bold; font-size:1.3em;">15</span>
+                    <div style="width:64px; height:64px; border-radius:6px; background:rgba(33,150,243,0.45); border:3px solid #000; display:flex; align-items:center; justify-content:center; font-size:2em; font-weight:bold; color:#000;">+</div>
+                </div>
+                <p style="margin:0 0 8px;"><strong>1×</strong>: − en + krijgen een blauwe achtergrond en CREW in het menu wordt blauw: je ziet de rest van de groep.</p>
+                <div style="width:179px; height:64px; border-radius:6px; background:rgba(76,175,80,0.45); border:3px solid #000; display:flex; align-items:center; justify-content:center; font-size:1.2em; font-weight:bold; color:#000; margin-bottom:4px;">Auto zoom</div>
+                <p style="margin:0;"><strong>2×</strong>: i.p.v. − getal + staat er <strong>Auto zoom</strong> (groen) en CREW wordt groen: de kaart zoomt zelf zo dat iedereen in beeld blijft. <strong>Tik op Auto zoom</strong> = CREW uit, − getal + komen terug.</p>
 
                 <div style="display:flex; gap:8px; align-items:center; margin:16px 0 6px;">
                     <div style="width:64px; height:64px; border-radius:6px; background:transparent; border:3px solid #000; display:flex; align-items:center; justify-content:center; font-size:2em; font-weight:bold; color:#000;">−</div>
@@ -1687,6 +1704,7 @@
                 <li><strong>Op de kaart tikken:</strong> opent een menu — kies Start, Tussen (slim ingevoegd), Achteraan, Finish of Vermijden.</li>
                 <li><strong>Punt verwijderen/verzetten:</strong> tik op een punt op de kaart.</li>
                 <li><strong>Groene play (▶, links):</strong> verschijnt zodra je route van start naar finish klaar is — ook met Hide aan en terwijl Plan open is — en blijft staan tot je er één keer op drukt. Dan is je route actief, en dat blijft hij tot je <strong>Wis route</strong> doet.</li>
+                <li><strong>Kaart stil tijdens Plan:</strong> Tijdens Plan staan Kompas en Center uit (en is de zoombalk weg), zodat je vrij over de kaart kunt schuiven. Sluit je Plan, dan komen Kompas en Center terug zoals ze stonden.</li>
                 <li><strong>Live aanpassen:</strong> rijd je de route al (na de groene play), dan is elke wijziging meteen live — de lijn, de pijlen en stem, en je volgers krijgen de nieuwe route direct. Geen play meer nodig. Alleen de eerste start, en een geladen GPX, gaan met play.</li>
             </ul>
 
@@ -1736,7 +1754,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.68 © Umop3p1sdn
+                HO-ME v63.69 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1792,13 +1810,13 @@
             </ul>
 
             <h3 style="color: #00BCD4; margin-top: 25px;">CREW button (you in the centre)</h3>
-            <p style="margin:4px 0 12px;">At the bottom of the right icon bar. Handy for a small group riding close together — you stay in the middle and your followers move around you. Tap to cycle:</p>
+            <p style="margin:4px 0 12px;">At the bottom of the right icon bar — or tap the number in the zoom bar at the top (see <em>Zoom</em>). Handy for a small group riding close together — you stay in the middle and your followers move around you. Tap to cycle:</p>
             <ul style="margin: 10px 0; padding-left: 20px;">
                 <li><strong>1× (blue)</strong> — you stay in the centre, your followers appear around you. You control the zoom yourself.</li>
                 <li><strong>2× (green)</strong> — you stay in the centre and the map zooms automatically so that <em>all</em> followers stay in view, with a neat margin along the edge.</li>
                 <li><strong>3× </strong> — off; then you only see yourself (the followers disappear from your map).</li>
             </ul>
-            <p style="font-size:0.85em; color:#555;">As long as CREW is on, it's in charge of the map (even with CENTER off). Turn it off for the normal view.</p>
+            <p style="font-size:0.85em; color:#555;">As long as CREW is on, it's in charge of the map (even with CENTER off) — except while Plan is open: then the map stays still so you can plan in peace. Turn it off for the normal view.</p>
             <p style="background:#e3e7f5; padding:10px 14px; border-radius:8px;">Want to make or edit a route? Tap <strong>Plan</strong> (top left). This opens the Route Planner — see the very bottom of this manual.</p>
 
             <!-- ═══════════ FOR THE FOLLOWER ═══════════ -->
@@ -1827,7 +1845,7 @@
             </div>
 
             <h3 style="color: #00BCD4; margin-top: 25px;">CREW button (seeing everyone)</h3>
-            <p style="margin:4px 0 12px;">At the bottom of the right icon bar. With this you also see the other followers (not just the Master), each with their ridden line. Tap to cycle:</p>
+            <p style="margin:4px 0 12px;">At the bottom of the right icon bar — or tap the number in the zoom bar at the top (see <em>Zoom</em>). With this you also see the other followers (not just the Master), each with their ridden line. Tap to cycle:</p>
             <ul style="margin: 10px 0; padding-left: 20px;">
                 <li><strong>1× (blue)</strong> — all other followers appear on the map, with their lines. You control the zoom yourself.</li>
                 <li><strong>2× (green)</strong> — you stay in the centre and the map zooms automatically so that everyone stays in view, with a neat margin along the edge.</li>
@@ -1866,7 +1884,7 @@
                     <div style="width:64px; height:64px; border-radius:6px; background:#00BCD4; display:flex; align-items:center; justify-content:center;"><svg width="40" height="40" viewBox="0 0 36 36"><circle cx="18" cy="18" r="9" fill="none" stroke="#fff" stroke-width="2.5"/><circle cx="18" cy="18" r="2.5" fill="#fff"/><line x1="18" y1="3" x2="18" y2="9" stroke="#fff" stroke-width="2.5"/><line x1="18" y1="27" x2="18" y2="33" stroke="#fff" stroke-width="2.5"/><line x1="3" y1="18" x2="9" y2="18" stroke="#fff" stroke-width="2.5"/><line x1="27" y1="18" x2="33" y2="18" stroke="#fff" stroke-width="2.5"/></svg></div>
                 </div>
                 <strong>Center</strong>
-                <p style="margin:4px 0 0;">Just below the compass. Makes the map follow your location automatically. OFF (grey) = look around/pan freely. ON (cyan) = the map stays centred on you. After making a route the app turns Center off automatically, so you can view the whole route; tap it again to follow yourself.</p>
+                <p style="margin:4px 0 0;">Just below the compass. Makes the map follow your location automatically. OFF (grey) = look around/pan freely. ON (cyan) = the map stays centred on you. While Plan is open, Center (like the compass) is off for a moment, so you can work on your route in peace; close Plan and both are back as they were.</p>
             </div>
 
             <div style="margin: 20px 0;">
@@ -1876,7 +1894,16 @@
                     <div style="width:64px; height:64px; border-radius:6px; background:transparent; border:3px solid #000; display:flex; align-items:center; justify-content:center; font-size:2em; font-weight:bold; color:#000;">+</div>
                 </div>
                 <strong>Zoom (top of the map)</strong>
-                <p style="margin:4px 0 0;">The number in the middle is your zoom level (10-20). Tap − or + to zoom out/in.</p>
+                <p style="margin:4px 0 0;">The number in the middle is your zoom level (10-20). Tap − or + to zoom out/in. The bar only shows when you can use it: once you ride a route (after tapping the green play once), or with Center or CREW on. While Plan is open it's hidden.</p>
+                <p style="margin:8px 0 0;"><strong>Tap the number</strong> = switch CREW, without the menu:</p>
+                <div style="display:flex; gap:8px; align-items:center; margin:8px 0 4px;">
+                    <div style="width:64px; height:64px; border-radius:6px; background:rgba(33,150,243,0.45); border:3px solid #000; display:flex; align-items:center; justify-content:center; font-size:2em; font-weight:bold; color:#000;">−</div>
+                    <span style="font-weight:bold; font-size:1.3em;">15</span>
+                    <div style="width:64px; height:64px; border-radius:6px; background:rgba(33,150,243,0.45); border:3px solid #000; display:flex; align-items:center; justify-content:center; font-size:2em; font-weight:bold; color:#000;">+</div>
+                </div>
+                <p style="margin:0 0 8px;"><strong>1×</strong>: − and + get a blue background and CREW in the menu turns blue: you see the rest of the group.</p>
+                <div style="width:179px; height:64px; border-radius:6px; background:rgba(76,175,80,0.45); border:3px solid #000; display:flex; align-items:center; justify-content:center; font-size:1.2em; font-weight:bold; color:#000; margin-bottom:4px;">Auto zoom</div>
+                <p style="margin:0;"><strong>2×</strong>: instead of − number + it says <strong>Auto zoom</strong> (green) and CREW turns green: the map zooms by itself so everyone stays in view. <strong>Tap Auto zoom</strong> = CREW off, − number + come back.</p>
 
                 <div style="display:flex; gap:8px; align-items:center; margin:16px 0 6px;">
                     <div style="width:64px; height:64px; border-radius:6px; background:transparent; border:3px solid #000; display:flex; align-items:center; justify-content:center; font-size:2em; font-weight:bold; color:#000;">−</div>
@@ -2022,6 +2049,7 @@
                 <li><strong>Tapping the map:</strong> opens a menu — choose Start, Via (smartly inserted), At the end, Finish or Avoid.</li>
                 <li><strong>Remove/move a point:</strong> tap a point on the map.</li>
                 <li><strong>Green play (▶, left):</strong> appears as soon as your route from start to finish is ready — also with Hide on and while Plan is open — and stays until you tap it once. Then your route is active, and it stays active until you tap <strong>Wis route</strong> (clear route).</li>
+                <li><strong>Map stays still while planning:</strong> While Plan is open, Compass and Center are off (and the zoom bar is hidden), so you can move the map freely. Close Plan and Compass and Center come back as they were.</li>
                 <li><strong>Live editing:</strong> already riding the route (after the green play)? Then every change is live straight away — the line, the arrows and voice, and your followers get the new route immediately. No need to press play again. Only the first start, and a loaded GPX, go with play.</li>
             </ul>
 
@@ -2071,7 +2099,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.68 © Umop3p1sdn
+                HO-ME v63.69 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2230,15 +2258,47 @@
             map = mapInstance;                         // koppel de planner aan de tracker-kaart
             plannerWireUp();                           // koppel zoekveld (1x, als HTML aanwezig)
             plannerSetMapClick(true);                  // tik-op-kaart → planner-tikmenu AAN
+            try { planKaartStil(); } catch (e) { console.error('planKaartStil', e); }   // v63.69: Kompas + Center uit zolang je plant (stand onthouden) — mag Plan nooit blokkeren
             document.getElementById('plannerPanel').style.display = 'block';
             var b = document.getElementById('plannerToggleBtn'); if (b) b.style.display = 'none';
             if (typeof updateGoBtn === 'function') updateGoBtn();   // v63.66: play blijft staan tijdens plannen (als de route klaar is)
+            if (typeof updateZoomBarZichtbaar === 'function') updateZoomBarZichtbaar();   // v63.69: zoombalk weg tijdens Plan
         }
         function plannerClose() {
+            try { planKaartTerug(); } catch (e) { console.error('planKaartTerug', e); }   // v63.69: Kompas + Center terug zoals vóór Plan (vóór het sluiten: kijkt of Plan open was)
             plannerSetMapClick(false);                 // tik-handler weer UIT (tracker-kaart vrij)
             document.getElementById('plannerPanel').style.display = 'none';
             var b = document.getElementById('plannerToggleBtn'); if (b) b.style.display = 'block';
             updateGoBtn();   // groene play-knop alleen tonen als er een route is
+            if (typeof updateZoomBarZichtbaar === 'function') updateZoomBarZichtbaar();   // v63.69: zoombalk terug (als die er mag staan)
+        }
+        // v63.69 (wens Sjoerd: "tijdens Plan ook graag kompas en center in het menu uit, anders kun je niet
+        // werken aan een route; Plan weer weg → terug naar de laatste setting voor kompas en center").
+        // Bij openen: stand onthouden, dan Center uit (eerst, dan springt de kaart niet nog één keer naar jou)
+        // en Kompas uit (noorden boven, kaart weer vrij te pannen). Bij sluiten: terugzetten zoals het stond —
+        // behalve als je tijdens Plan zelf Kompas/Center aanzette (dan blijft jouw laatste keuze), of als CREW
+        // ze had aangezet en je CREW tijdens Plan uitzette (CREW uit zet ze ook uit).
+        let planDwang = null;   // { rot, center, crewRot, crewCenter } zoals het stond vóór Plan
+        function plannerIsOpen() {
+            const p = document.getElementById('plannerPanel');
+            return !!(p && p.style.display === 'block');
+        }
+        function planKaartStil() {
+            if (plannerIsOpen()) return;                       // Plan stond al open (bv. route laden) → niet opnieuw vastleggen
+            planDwang = { rot: !!mapRotationEnabled, center: !!isAutoFollowActive,
+                          crewRot: !!crewArmedRot, crewCenter: !!crewArmedCenter };
+            if (isAutoFollowActive) toggleFollow();
+            if (mapRotationEnabled) toggleMapRotation();
+        }
+        function planKaartTerug() {
+            if (!planDwang || !plannerIsOpen()) return;        // Plan was niet open → niets terug te zetten
+            const d = planDwang; planDwang = null;
+            if (mapRotationEnabled || isAutoFollowActive) return;   // tijdens Plan zelf aangezet → die keuze blijft
+            const rijstand = (currentMode === 'follower' ? everyoneMode : crewMode) > 0;
+            const rot = d.rot && (rijstand || !d.crewRot);
+            const center = d.center && (rijstand || !d.crewCenter);
+            if (rot) toggleMapRotation();                      // keten zet Center mee aan
+            if (center && !isAutoFollowActive) toggleFollow();
         }
         // Toon de groene play-knop alleen als er een echte berekende route ligt (of een geladen route klaarstaat).
         // Zo kun je 'm niet drukken zonder route ("maak eerst een route").
@@ -4506,7 +4566,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "63.68";
+        const APP_VERSION = "63.69";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
@@ -9353,6 +9413,7 @@ assign initialcost =
                     delete followerLinePolylines[id];
                 });
             }
+            if (typeof updateZoomBarRijstand === 'function') updateZoomBarRijstand();   // v63.69: zoombalk volgt CREW
         }
 
         // ── CREW (master): jij centraal, volgers eromheen. Dominant over de IK/VOLGERS/BEIDE toggle. ──
@@ -9405,6 +9466,7 @@ assign initialcost =
             // Zichtbaarheid meteen bijwerken: CREW aan → volgers tonen (ook op "IK"); CREW uit → terug
             // naar wat de toggle zegt. Anders zou je tot de volgende update-ronde niks zien veranderen.
             if (typeof applyFollowerVisibility === 'function') applyFollowerVisibility();
+            if (typeof updateZoomBarRijstand === 'function') updateZoomBarRijstand();   // v63.69: zoombalk volgt CREW
         }
         let _savedManualZoom = null;
 
@@ -9413,6 +9475,9 @@ assign initialcost =
         function applyCrewView(force) {
             if (!mapInstance || currentMode !== 'master' || crewMode === 0) return;
             if (!masterPos || typeof masterPos.lat !== 'number') return;
+            // v63.69: tijdens Plan staat de kaart stil (Kompas + Center uit) — dan schuift CREW 'm ook niet
+            // (normaal werkt CREW ook zonder Center). Zet je Center tijdens Plan zelf aan, dan werkt CREW gewoon.
+            if (!isAutoFollowActive && typeof plannerIsOpen === 'function' && plannerIsOpen()) return;
             const me = [masterPos.lat, masterPos.lng];
             if (crewMode === 1) {
                 // jij centraal, JOUW handmatige zoom (de bovenste +/- werken, want die zetten zoomLevelValue)
@@ -12104,7 +12169,51 @@ assign initialcost =
             if (m) m.textContent = z;
             if (f) f.textContent = z;
         }
-        
+
+        // ═══ v63.69 ZOOMBALK (wens Sjoerd) ═══
+        // "Als je de zoom + − knoppen niet kunt gebruiken voor je een route hebt, mogen ze weg. Ook tijdens Plan weg.
+        // Ze komen terug als je Play een keer indrukt / als je een route rijdt. Druk je op het getal: blauwe doorzichtige
+        // achtergrond bij − en +, en CREW blauw in het menu (nu zie je volgers). Nog eens: i.p.v. − en + de tekst
+        // Auto zoom in zo'n zelfde kader, groen doorzichtig, CREW groen. Nog eens (op Auto zoom): CREW uit, zoomknoppen
+        // terug." → het getal is de CREW-knop van de zoombalk: Zoom / Zoom blauw / Auto zoom groen.
+        // ZICHTBAAR: nooit tijdens Plan; verder alleen als je de knoppen kunt gebruiken: met een route (na Play, of de
+        // route van de master bij een volger), of met Center of CREW aan — dan zet de app de zoom bij elke GPS-tik
+        // zelf, dus zonder balk zou je dan niet meer kunnen zoomen (ook bij een rit zonder route).
+        function updateZoomBarZichtbaar() {
+            const rijstand = (currentMode === 'follower' ? everyoneMode : crewMode) > 0;
+            const plannen = (typeof plannerIsOpen === 'function') && plannerIsOpen();
+            const toon = (!plannen && (!!activeRoute || isAutoFollowActive || rijstand)) ? 'flex' : 'none';
+            ['zoomBarMaster', 'zoomBarFollower'].forEach(id => {
+                const bar = document.getElementById(id);
+                if (bar && bar.style.display !== toon) bar.style.display = toon;
+            });
+        }
+        // Rijstand in de balk: 0 = gewoon (− getal +), 1 = blauw doorzichtig achter − en +, 2 = alleen Auto zoom (groen).
+        function updateZoomBarRijstand() {
+            const stand = currentMode === 'follower' ? everyoneMode : crewMode;
+            ['zoomBarMaster', 'zoomBarFollower'].forEach(id => {
+                const bar = document.getElementById(id);
+                if (!bar) return;
+                const auto = bar.querySelector('.autoZoomBtn');
+                Array.from(bar.children).forEach(k => {
+                    if (k === auto) return;
+                    k.style.display = (stand === 2) ? 'none' : 'flex';
+                    if (k.tagName === 'BUTTON') k.style.background = (stand === 1) ? 'rgba(33,150,243,0.45)' : 'transparent';
+                });
+                if (auto) auto.style.display = (stand === 2) ? 'flex' : 'none';
+                const getal = bar.querySelector('span');
+                if (getal && stand !== 2) getal.textContent = zoomLevelValue;   // na Auto zoom weer JOUW zoom, niet de auto-waarde
+            });
+            updateZoomBarZichtbaar();
+        }
+        // Tik op het getal (of op Auto zoom) = de CREW-knop van je eigen rol (master crewBtn, volger seeEveryoneBtn).
+        function zoomBarTik() {
+            if (currentMode === 'follower') toggleSeeEveryone();
+            else if (currentMode === 'master') toggleCrew();
+        }
+        updateZoomBarZichtbaar();
+        setInterval(updateZoomBarZichtbaar, 1000);   // route/Center wisselen op veel plekken → 1× per seconde nakijken
+
         function increaseTrackWidth() {
             if (trackLineWidth < 15) {
                 trackLineWidth += 1;
