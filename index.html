@@ -615,6 +615,13 @@
 
 
         .map-only #plannerToggleBtn { display: none !important; }
+        /* v63.81 (wens Sjoerd: "de rode Hide-knop graag weg in de plan-fase; lijndikte mag blijven"): zolang Plan open
+           is geen Hide — het rode kruis van Plan brengt je naar het rijscherm. body.plan-open zetten plannerOpen en
+           plannerClose (planKlasse); STOP herlaadt de pagina, dus daar blijft nooit een verstopte Hide achter. */
+        body.plan-open .go-button { display: none !important; }
+        /* v63.81: aftelbalk van "4 s niets aangeraakt → terug naar het rijscherm", in de kopregel van Plan tussen
+           "Route Planner" en het kruis (verandert de hoogte van de regel niet). */
+        #planAftel { display: none; flex: 1 1 auto; height: 10px; margin: 0 10px; }
         /* v63.66 (wens Sjoerd): de groene play-knop mag óók in het schone scherm (Hide) — updateGoBtn bepaalt
            of hij er staat (route klaar en nog niet gestart), placeGoBtn zet 'm op een gemeten vrije plek. */
 
@@ -1236,7 +1243,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.80 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.81 © Umop3p1sdn</div>
 
             </div>
 
@@ -1512,7 +1519,7 @@
                 <li><strong>3× </strong> — uit; dan zie je alleen jezelf (de volgers verdwijnen van je kaart).</li>
             </ul>
             <p style="font-size:0.85em; color:#555;">Zolang CREW aan staat, beweegt de kaart met je mee en is CREW de baas over de kaart — behalve tijdens Plan en de 4 seconden nadat je de kaart zelf schuift of knijpt: dan staat hij stil. Zet 'm uit voor de gewone weergave.</p>
-            <p style="background:#e3e7f5; padding:10px 14px; border-radius:8px;">Wil je een route maken of bewerken? Druk op <strong>Plan</strong> (linksboven). Daarmee open je de Route Planner — zie helemaal onderaan deze handleiding.</p>
+            <p style="background:#e3e7f5; padding:10px 14px; border-radius:8px;">Wil je een route maken of bewerken? Druk op <strong>Plan</strong> (linksboven), of tik in het rijscherm gewoon op de kaart. Daarmee open je de Route Planner — zie helemaal onderaan deze handleiding.</p>
 
             <!-- ═══════════ VOOR DE VOLGER ═══════════ -->
             <h2 style="color: #00BCD4; margin-top: 35px; border-top: 2px solid #00BCD4; padding-top: 22px;">Voor de Volger</h2>
@@ -1613,7 +1620,7 @@
 
             <h3 style="color: #00BCD4; margin-top: 25px;">GO-knop &amp; snelheid</h3>
             <ul style="margin: 10px 0; padding-left: 20px;">
-                <li><strong>Hide</strong> (onderaan) — verbergt alle knoppen, alleen de kaart blijft over.</li>
+                <li><strong>Hide</strong> (onderaan) — verbergt alle knoppen, alleen de kaart blijft over: het <strong>rijscherm</strong>. Tik je daar op de kaart, dan opent als Master meteen <strong>Plan</strong> (met de lijndikte, zonder Hide); het <strong>rode kruis</strong> of <strong>Play</strong> zet je weer in het rijscherm. Per ongeluk getikt? Raak je 4 tellen niets aan, dan gaat Plan vanzelf dicht (het balkje naast het kruis loopt af). Een tik die een vraag of pop-up wegtikt, opent geen Plan. Als volger komen bij een tik de knoppen terug.</li>
                 <li><strong>Snelheid (km/u)</strong> — tijdens GO onderaan in beeld (staand scherm).</li>
                 <li><strong>Snelheidsbord</strong> — een rond bord (wit met rode rand) toont de <strong>maximumsnelheid van de weg</strong> waar je op rijdt. De app leest die uit OpenStreetMap: <strong>met een route</strong> haalt 'ie de snelheden vooraf op langs je route; <strong>zonder route</strong> leest 'ie tijdens het rijden de weg onder je (het bepaalt slim op welke weg je zit via je positie én rijrichting, zodat 'ie ook bij parallelle wegen de juiste pakt). De snelheid blijft staan zolang je op die weg rijdt, en wisselt mee bij een overgang (bv. snelweg 100 → 130) of als je afslaat. In clean screen staat het bord altijd in beeld; is de snelheid onbekend, dan toont 'ie een streepje (–). Let op: de app moet even <strong>bewegen</strong> om je rijrichting te weten. Nadert er een flitser, dan blijft het bord gewoon staan; de flitsermelding heeft een eigen plek. <strong>Let altijd op de echte borden langs de weg</strong> — het bord in de app is een hulpmiddel, geen vervanging.</li>
                 <li><strong>2 Route</strong> — rijd je met een route en raak je ervan af (stop, omweggetje), dan knippert bovenin de knop <strong>2 Route</strong>. Eén tik: de app berekent een route van waar je bent terug naar je route — de rest van je route blijft gewoon staan. Ben je weer op de route, dan verdwijnt de knop vanzelf. Rijd je een rondrit, dan voegt hij in waar je gebleven was — niet bij het eind van de rit, ook al ligt dat vlak bij huis. Direct eronder staat <strong>Reroute</strong> (zelfde uiterlijk): liever een helemaal nieuwe route naar je finish? Tik die twee keer (Zeker?). Jij bepaalt dus zelf wanneer je terug wilt. Dit geldt voor de Master; als volger rijd je achter de Master aan en krijg je deze knop niet.</li>
@@ -1721,7 +1728,7 @@
 
             <!-- ═══════════ ROUTE PLANNER ═══════════ -->
             <h2 style="color: #00BCD4; margin-top: 40px; border-top: 2px solid #00BCD4; padding-top: 25px;">Route Planner — alleen voor de Master</h2>
-            <p>Met de Route Planner bouw je vooraf je eigen rit op de kaart: zoeken, een route laten berekenen, omwegen toevoegen, gebieden vermijden en plekken onderweg (POI) opzoeken. Daarna rijd je 'm. Druk op <strong>Plan</strong> (linksboven) om 'm te openen.</p>
+            <p>Met de Route Planner bouw je vooraf je eigen rit op de kaart: zoeken, een route laten berekenen, omwegen toevoegen, gebieden vermijden en plekken onderweg (POI) opzoeken. Daarna rijd je 'm. Druk op <strong>Plan</strong> (linksboven) om 'm te openen; in het rijscherm is één tik op de kaart genoeg. Het rode kruis sluit hem en zet je in het rijscherm.</p>
 
             <h3 style="color: #00BCD4; margin-top: 25px;">De menu-knoppen</h3>
             <p>Bij het openen zie je de tabs. Je klapt zelf uit wat je nodig hebt — zo blijft de kaart vrij.</p>
@@ -1740,7 +1747,7 @@
                 <li><strong>📍-knop:</strong> springt naar je eigen locatie en opent hetzelfde menu (meestal kies je dan Start).</li>
                 <li><strong>Op de kaart tikken:</strong> opent een menu — kies Start, Tussen (slim ingevoegd), Achteraan, Finish of Vermijden.</li>
                 <li><strong>Punt verwijderen of wijzigen:</strong> tik op het punt op de kaart. <strong>Delete</strong> haalt het meteen weg; <strong>Wijzigen</strong> haalt het weg en opent op dezelfde plek weer "Punt toevoegen als", zodat je een andere keuze maakt (de naam gaat mee).</li>
-                <li><strong>Groene play (▶, links):</strong> verschijnt zodra je route van start naar finish klaar is — ook met Hide aan en terwijl Plan open is — en blijft staan tot je er één keer op drukt. Dan is je route actief, en dat blijft hij tot je <strong>Wis route</strong> doet. Play zet meteen ook het <strong>kompas</strong> aan: de kaart draait mee, je vliegtuig wijst omhoog en de zoombalk komt erbij.</li>
+                <li><strong>Groene play (▶, links):</strong> verschijnt zodra je route van start naar finish klaar is — ook met Hide aan en terwijl Plan open is — en blijft staan tot je er één keer op drukt. Dan is je route actief, en dat blijft hij tot je <strong>Wis route</strong> doet. Play zet meteen ook het <strong>kompas</strong> aan: de kaart draait mee, je vliegtuig wijst omhoog en de zoombalk komt erbij — en je staat meteen in het rijscherm (Play is rijden).</li>
                 <li><strong>Kaart stil tijdens Plan:</strong> Tijdens Plan staat het kompas uit en beweegt de kaart niet mee (de zoombalk is weg), zodat je vrij over de kaart kunt schuiven. Sluit je Plan, dan komt het kompas terug zoals het stond.</li>
                 <li><strong>Live aanpassen:</strong> rijd je de route al (na de groene play), dan is elke wijziging meteen live — de lijn, de pijlen en stem, en je volgers krijgen de nieuwe route direct. Geen play meer nodig. Alleen de eerste start, en een geladen GPX, gaan met play.</li>
             </ul>
@@ -1791,7 +1798,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.80 © Umop3p1sdn
+                HO-ME v63.81 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1854,7 +1861,7 @@
                 <li><strong>3× </strong> — off; then you only see yourself (the followers disappear from your map).</li>
             </ul>
             <p style="font-size:0.85em; color:#555;">As long as CREW is on, the map moves along with you and CREW is in charge of the map — except while Plan is open and for 4 seconds after you drag or pinch the map yourself: then it stays still. Turn it off for the normal view.</p>
-            <p style="background:#e3e7f5; padding:10px 14px; border-radius:8px;">Want to make or edit a route? Tap <strong>Plan</strong> (top left). This opens the Route Planner — see the very bottom of this manual.</p>
+            <p style="background:#e3e7f5; padding:10px 14px; border-radius:8px;">Want to make or edit a route? Tap <strong>Plan</strong> (top left), or simply tap the map in the riding screen. This opens the Route Planner — see the very bottom of this manual.</p>
 
             <!-- ═══════════ FOR THE FOLLOWER ═══════════ -->
             <h2 style="color: #00BCD4; margin-top: 35px; border-top: 2px solid #00BCD4; padding-top: 22px;">For the Follower</h2>
@@ -1955,7 +1962,7 @@
 
             <h3 style="color: #00BCD4; margin-top: 25px;">GO button &amp; speed</h3>
             <ul style="margin: 10px 0; padding-left: 20px;">
-                <li><strong>Hide</strong> (at the bottom) — hides all buttons, only the map remains.</li>
+                <li><strong>Hide</strong> (at the bottom) — hides all buttons, only the map remains: the <strong>riding screen</strong>. Tap the map there and, as the Master, <strong>Plan</strong> opens straight away (with the line width, without Hide); the <strong>red cross</strong> or <strong>Play</strong> takes you back to the riding screen. Tapped by accident? Touch nothing for 4 seconds and Plan closes by itself (the bar next to the cross runs down). A tap that dismisses a question or pop-up doesn't open Plan. As a follower, a tap brings the buttons back.</li>
                 <li><strong>Speed (km/h)</strong> — during GO shown at the bottom (portrait).</li>
                 <li><strong>Speed sign</strong> — a round sign (white with red edge) shows the <strong>speed limit of the road</strong> you're on. The app reads it from OpenStreetMap: <strong>with a route</strong> it fetches the limits ahead along your route; <strong>without a route</strong> it reads the road beneath you while riding (it smartly determines which road you're on using your position <em>and</em> heading, so it picks the right one even with parallel roads). The limit stays as long as you're on that road, and changes at a transition (e.g. motorway 100 → 130) or when you turn off. In clean screen the sign is always shown; if the limit is unknown it shows a dash (–). Note: the app needs a bit of <strong>movement</strong> to know your heading. When a speed camera is near, the sign simply stays; the camera warning has its own spot. <strong>Always watch the real signs along the road</strong> — the sign in the app is an aid, not a replacement.</li>
                 <li><strong>2 Route</strong> — riding with a route and you get off it (stop, small detour)? Then the <strong>2 Route</strong> button flashes at the top. One tap: the app calculates a route from where you are back to your route — the rest of your route stays as it is. Once you're back on the route, the button disappears by itself. On a round trip it rejoins where you left off — not at the end of the trip, even when that is close to home. Right below it sits <strong>Reroute</strong> (same look): rather have a completely new route to your finish? Tap that one twice (Zeker? = sure?). So you decide when you want to go back. This is for the Master; as a follower you ride behind the Master and don't get this button.</li>
@@ -2063,7 +2070,7 @@
 
             <!-- ═══════════ ROUTE PLANNER ═══════════ -->
             <h2 style="color: #00BCD4; margin-top: 40px; border-top: 2px solid #00BCD4; padding-top: 25px;">Route Planner — Master only</h2>
-            <p>With the Route Planner you build your own ride on the map in advance: search, have a route calculated, add detours, avoid areas and find places along the way (POI). Then you ride it. Tap <strong>Plan</strong> (top left) to open it.</p>
+            <p>With the Route Planner you build your own ride on the map in advance: search, have a route calculated, add detours, avoid areas and find places along the way (POI). Then you ride it. Tap <strong>Plan</strong> (top left) to open it; in the riding screen one tap on the map is enough. The red cross closes it and puts you in the riding screen.</p>
 
             <h3 style="color: #00BCD4; margin-top: 25px;">The menu buttons</h3>
             <p>On opening you see the tabs. You expand what you need yourself — keeping the map clear.</p>
@@ -2082,7 +2089,7 @@
                 <li><strong>📍 button:</strong> jumps to your own location and opens the same menu (usually you pick Start).</li>
                 <li><strong>Tapping the map:</strong> opens a menu — choose Start, Via (smartly inserted), At the end, Finish or Avoid.</li>
                 <li><strong>Remove or change a point:</strong> tap the point on the map. <strong>Delete</strong> removes it straight away; <strong>Wijzigen</strong> (change) removes it and opens "Punt toevoegen als" again on the same spot, so you can choose something else (the name comes along).</li>
-                <li><strong>Green play (▶, left):</strong> appears as soon as your route from start to finish is ready — also with Hide on and while Plan is open — and stays until you tap it once. Then your route is active, and it stays active until you tap <strong>Wis route</strong> (clear route). Play also switches the <strong>compass</strong> on straight away: the map turns with you, your plane points up and the zoom bar appears.</li>
+                <li><strong>Green play (▶, left):</strong> appears as soon as your route from start to finish is ready — also with Hide on and while Plan is open — and stays until you tap it once. Then your route is active, and it stays active until you tap <strong>Wis route</strong> (clear route). Play also switches the <strong>compass</strong> on straight away: the map turns with you, your plane points up and the zoom bar appears — and you're in the riding screen right away (Play means riding).</li>
                 <li><strong>Map stays still while planning:</strong> While Plan is open, the compass is off and the map doesn't move along (the zoom bar is hidden), so you can move the map freely. Close Plan and the compass comes back as it was.</li>
                 <li><strong>Live editing:</strong> already riding the route (after the green play)? Then every change is live straight away — the line, the arrows and voice, and your followers get the new route immediately. No need to press play again. Only the first start, and a loaded GPX, go with play.</li>
             </ul>
@@ -2133,7 +2140,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.80 © Umop3p1sdn
+                HO-ME v63.81 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2149,6 +2156,7 @@
         <div id="searchWrap" style="position:static; right:auto;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
                 <span style="color:#00BCD4; font-weight:bold; text-shadow:0 1px 3px #000;">Route Planner</span>
+                <div id="planAftel" class="aftelBalk"><div></div></div>   <!-- v63.81: 4 s niets aangeraakt → terug naar het rijscherm -->
                 <span onclick="plannerClose()" style="color:#FF5252; font-weight:bold; cursor:pointer; font-size:1.5em; line-height:1; padding:0 6px; background:rgba(10,14,39,0.7); border-radius:6px;">✕</span>
             </div>
             <div id="menuTabs">
@@ -2304,15 +2312,20 @@
 
     <script>
         // ════════ ROUTE PLANNER MODULE — eigen config & functies, deelt alleen mapInstance ════════
-        function plannerOpen() {
+        function plannerOpen(viaTik) {
             // Altijd POI volledig opruimen (balk, lijst, markers, rode X) — die liggen op z-index 2100 en
             // zouden anders boven het Plan-menu blijven hangen. Ook na 'minimize' (balk weg, lijst/markers nog).
-            if (typeof closePoiFocus === 'function') closePoiFocus();
+            // v63.81 (vangnet 4): opent Plan door een tik in het rijscherm, dan blijven gevonden POI's staan — alleen het
+            // zoekmenu gaat dicht en de lijst klapt in (anders wiste elke tik op de kaart je tankstations).
+            if (viaTik) poiOpzij();
+            else if (typeof closePoiFocus === 'function') closePoiFocus();
+            planTerugTot = 0;                          // v63.81: alleen de tik uit het rijscherm telt af (die zet hem hierna)
             map = mapInstance;                         // koppel de planner aan de tracker-kaart
             plannerWireUp();                           // koppel zoekveld (1x, als HTML aanwezig)
             plannerSetMapClick(true);                  // tik-op-kaart → planner-tikmenu AAN
             try { planKaartStil(); } catch (e) { console.error('planKaartStil', e); }   // v63.69: Kompas + Center uit zolang je plant (stand onthouden) — mag Plan nooit blokkeren
             document.getElementById('plannerPanel').style.display = 'block';
+            planKlasse();                              // v63.81: rode Hide weg tijdens Plan
             var b = document.getElementById('plannerToggleBtn'); if (b) b.style.display = 'none';
             if (typeof updateGoBtn === 'function') updateGoBtn();   // v63.66: play blijft staan tijdens plannen (als de route klaar is)
             if (typeof updateZoomBarZichtbaar === 'function') updateZoomBarZichtbaar();   // v63.69: zoombalk weg tijdens Plan
@@ -2320,11 +2333,66 @@
         function plannerClose() {
             try { planKaartTerug(); } catch (e) { console.error('planKaartTerug', e); }   // v63.69: Kompas + Center terug zoals vóór Plan (vóór het sluiten: kijkt of Plan open was)
             plannerSetMapClick(false);                 // tik-handler weer UIT (tracker-kaart vrij)
+            if (typeof tapCancel === 'function') tapCancel();   // v63.81 GEMETEN: "Punt toevoegen als" bleef na het kruis open staan
             document.getElementById('plannerPanel').style.display = 'none';
+            planKlasse();                              // v63.81: rode Hide mag terug
+            planTerugTot = 0;
             var b = document.getElementById('plannerToggleBtn'); if (b) b.style.display = 'block';
             updateGoBtn();   // groene play-knop alleen tonen als er een route is
             if (typeof updateZoomBarZichtbaar === 'function') updateZoomBarZichtbaar();   // v63.69: zoombalk terug (als die er mag staan)
+            // v63.81 (wens Sjoerd: "klik je het rode kruis, dan kom je direct in ride mode (Hide ingedrukt)" + "druk je op
+            // play, dan ook — play is rijden!"): Plan dicht = het rijscherm. Alle sluiters komen hierlangs: het kruis, de
+            // groene Play (plannerGo / goLoadedRoute, niet het stille live bijwerken), REROUTE/Dead end en de 4 s-terugval.
+            if (currentMode === 'master' && !document.body.classList.contains('map-only') && typeof toggleMapOnly === 'function') {
+                toggleMapOnly('master');
+            }
         }
+        // ═══ v63.81 RIJSCHERM ↔ PLAN (ontwerp Sjoerd: "tik ik op het scherm, dan kom ik direct in het plan-menu; klik je het
+        // rode kruis, dan direct in ride mode") + de vier vangnetten uit het sparren ("wat kan er nu fout gaan?"). GEMETEN
+        // vóór de bouw: (1) Plan zet kompas + Center uit → na een per-ongeluk-tik volgt de kaart je niet meer; (2) bij een
+        // dubbeltik opende de tweede tik meteen "Punt toevoegen als"; (3) een tik naast een open vraag (Reroute?) sloot die
+        // vraag én ging door naar de kaart; (4) Plan ruimde bij openen gevonden POI's op. Alleen de master (volger en
+        // meekijker hebben geen Plan: hun tik blijft de knoppen tonen).
+        const PLAN_TERUG_MS = 4000;    // vangnet 1: geopend door een tik en niets aangeraakt → terug naar het rijscherm
+        const PLAN_TIK_REM_MS = 500;   // vangnet 2: zo lang na het openen telt een tik op de kaart niet (dubbeltik/hobbel)
+        let planTerugTot = 0;          // > 0: Plan ging open door een tik in het rijscherm en is nog niet aangeraakt
+        let planTikTot = 0;
+        function rijTikPlan(ev) {
+            const oe = ev && ev.originalEvent;
+            if (oe && oe.__homeSloot) return;          // vangnet 3: deze tik sloot een vraag/pop-up → blijf in het rijscherm
+            toggleMapOnly('master');                   // uit het rijscherm …
+            plannerOpen(true);                         // … meteen Plan (vangnet 4: POI blijft staan)
+            planTikTot = Date.now() + PLAN_TIK_REM_MS;
+            planTerugTot = Date.now() + PLAN_TERUG_MS;
+            if (typeof aftelStart === 'function') aftelStart();   // aftelbalk in de kopregel van Plan
+        }
+        function poiOpzij() {
+            const bar = document.getElementById('poiFocusBar');
+            if (bar) bar.style.display = 'none';       // alleen het zoekmenu (Benzine/Eten/…) — daar staat nog niets in
+            const box = document.getElementById('poiFocusList');
+            if (box && box.style.display && box.style.display !== 'none' && !box.classList.contains('folded')) foldPoiList();
+        }
+        // Rode Hide weg zolang Plan open is (CSS body.plan-open), afgeleid van het plan-paneel zelf. Alleen openen en
+        // sluiten zetten het paneel; STOP zet het ook dicht maar herlaadt daarna de pagina (alles weer schoon).
+        function planKlasse() { document.body.classList.toggle('plan-open', plannerIsOpen()); }
+        // Vangnet 1: de klok telt (iOS bevriest timers, net als bij de handpauze); élke aanraking na het openen = je bent
+        // aan het plannen → Plan blijft open tot het kruis of Play. Behalve een tik op de KAART binnen de 0,5 s-rem: die
+        // telt niet (dubbeltik/hobbel), dus dan gaat Plan na 4 s toch terug.
+        setInterval(() => {
+            if (planTerugTot && Date.now() >= planTerugTot) {
+                planTerugTot = 0;
+                if (plannerIsOpen()) plannerClose();
+            }
+        }, 250);
+        function planAangeraakt(e) {
+            if (!planTerugTot) return;
+            let opKaart = false;
+            try { opKaart = !!(mapInstance && e.target && mapInstance.getContainer().contains(e.target)); } catch (x) {}
+            if (opKaart && Date.now() < planTikTot) return;
+            planTerugTot = 0;
+        }
+        document.addEventListener('pointerdown', planAangeraakt, true);
+        document.addEventListener('touchstart', planAangeraakt, { capture: true, passive: true });
         // v63.69 (wens Sjoerd: "tijdens Plan ook graag kompas en center in het menu uit, anders kun je niet
         // werken aan een route; Plan weer weg → terug naar de laatste setting voor kompas en center").
         // Bij openen: stand onthouden, dan Center uit (eerst, dan springt de kaart niet nog één keer naar jou)
@@ -2670,6 +2738,7 @@ assign initialcost =
         }
 
         function onMapTap(e) {
+            if (Date.now() < planTikTot) return;         // v63.81 vangnet 2: dubbeltik/hobbel net na het openen vanuit het rijscherm
             zoekPinWeg();                                // v63.65: tik op de kaart = nieuw punt, zoek-speld weg
             pendingTap = { lat: e.latlng.lat, lng: e.latlng.lng };
             document.getElementById('tapMenu').style.display = 'flex';
@@ -4758,7 +4827,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "63.80";
+        const APP_VERSION = "63.81";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
@@ -11261,8 +11330,12 @@ assign initialcost =
                 }
 
                 // Add click listener to exit map-only mode
-                mapInstance.on('click', () => {
+                // v63.81 (ontwerp Sjoerd: "tik ik op het scherm, dan kom ik direct in het plan-menu"): de master gaat meteen
+                // naar Plan (rijTikPlan in de planner-module, met de vangnetten); volger en meekijker hebben geen Plan en
+                // krijgen zoals altijd de knoppen terug (Hide + lijndikte).
+                mapInstance.on('click', (ev) => {
                     if (document.querySelector('.container').classList.contains('map-only')) {
+                        if (isMaster && typeof rijTikPlan === 'function') { rijTikPlan(ev); return; }
                         toggleMapOnly(isMaster ? 'master' : 'follower');
                     }
                 });
@@ -12201,6 +12274,16 @@ assign initialcost =
                 if (typeof dismissReroute === 'function') dismissReroute();
             }
         }, true);
+        // v63.81 (vangnet 3): een tik die zo'n vraag (of een pop-up op de kaart) SLUIT, mag in het rijscherm niet óók Plan
+        // openen — GEMETEN: de sluit-tik ging gewoon door naar de kaart. Op window in de capture-fase: dat draait vóór alle
+        // sluiters (die luisteren op document), dus hier zie je nog wat er open stond. De kaart-tik leest het merkje via
+        // ev.originalEvent (rijTikPlan).
+        window.addEventListener('click', (e) => {
+            const open = id => { const el = document.getElementById(id); return !!(el && el.style.display && el.style.display !== 'none' && !el.contains(e.target)); };
+            let sluit = ['reroutePrompt', 'viaVraag', 'veerTolVraag', 'fmAskPanel', 'puntMenu'].some(open);
+            if (!sluit) { try { sluit = !!(mapInstance && mapInstance._popup && mapInstance.hasLayer(mapInstance._popup)); } catch (x) {} }
+            if (sluit) e.__homeSloot = true;
+        }, true);
 
         function stopTracking() {
             closeBtnMenu();   // knoppen-menu dicht (anders blijft de backdrop hangen)
@@ -12737,6 +12820,16 @@ assign initialcost =
                 const rest = Math.max(0, Math.min(1, (_btnMenuTot - Date.now()) / BTN_MENU_MS));
                 document.querySelectorAll('.menuAftel > div').forEach(f => { f.style.transform = 'scaleX(' + rest.toFixed(3) + ')'; });
                 nodig = true;
+            }
+            // v63.81: Plan geopend door een tik in het rijscherm — balk in de kopregel van Plan; aangeraakt = weg (Plan blijft)
+            const pb = document.getElementById('planAftel');
+            if (pb) {
+                if (planTerugTot && typeof plannerIsOpen === 'function' && plannerIsOpen()) {
+                    const rest = Math.max(0, Math.min(1, (planTerugTot - Date.now()) / PLAN_TERUG_MS));
+                    if (pb.style.display !== 'block') pb.style.display = 'block';
+                    pb.firstElementChild.style.transform = 'scaleX(' + rest.toFixed(3) + ')';
+                    nodig = true;
+                } else if (pb.style.display !== 'none') pb.style.display = 'none';
             }
             if (nodig) requestAnimationFrame(aftelTeken); else aftelLoopt = false;
         }
