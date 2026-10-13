@@ -729,6 +729,31 @@
         }
         .result-item:last-child { border-bottom: none; }
         .result-item:active { background: #1a2148; }
+        /* v63.79 (wens Sjoerd: "knoppen en functies gelijk, maar mooier en strakker, geen emoji-plaatjes"):
+           tikmenu "Punt toevoegen als" + het nieuwe punt-menu (tik op een punt / vermijd-zone) in één stijl:
+           twee knoppen per rij, alles 48 px hoog, kleuren van de punten op de kaart. */
+        .pmPanel { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 2550;
+            width: 284px; max-width: calc(100vw - 24px); box-sizing: border-box; background: #0a0e27;
+            border: 2px solid #00BCD4; border-radius: 14px; padding: 14px; flex-direction: column; gap: 8px;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.6); }
+        .pmKop { color: #00BCD4; font-weight: bold; text-align: center; font-size: 1.05em; }
+        .pmSub { color: #aab; font-size: 0.8em; text-align: center; margin-top: -4px;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .pmRij { display: flex; gap: 8px; }
+        .pmKnop { flex: 1; min-width: 0; height: 48px; padding: 0 6px; border-radius: 10px; border: 2px solid;
+            font-weight: bold; font-size: 1em; cursor: pointer; background: transparent; font-family: inherit; }
+        .pmStart   { border-color: #9E9E9E; color: #EEE;    background: rgba(158,158,158,0.14); }
+        .pmFinish  { border-color: #fff;    color: #0a0e27; background: #fff; }
+        .pmVia     { border-color: #9C27B0; color: #E1BEE7; background: rgba(156,39,176,0.2); }
+        .pmNogo    { border-color: #FF1744; color: #FF8A80; background: rgba(255,23,68,0.14); }
+        .pmAnnuleer{ border-color: #4a5070; color: #ccd; }
+        .pmDelete  { border-color: #FF1744; color: #fff;    background: #FF1744; }
+        .pmWijzig  { border-color: #00BCD4; color: #00BCD4; background: rgba(0,188,212,0.1); }
+        .pmKm { display: flex; align-items: center; justify-content: center; flex: 0 0 100px; height: 48px;
+            box-sizing: border-box; border: 2px solid #FF1744; border-radius: 10px; }
+        .pmKm input { width: 48px; border: none; background: transparent; color: #fff; font-size: 1.05em;
+            font-weight: bold; text-align: right; padding: 0 4px 0 0; font-family: inherit; }
+        .pmKm span { color: #FF8A80; font-size: 0.9em; }
 
         /* Mode toggle: searching for start vs destination */
         #modeRow {
@@ -1211,7 +1236,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.78 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.79 © Umop3p1sdn</div>
 
             </div>
 
@@ -1713,7 +1738,7 @@
                 <li><strong>Laatst gezocht:</strong> tik in het lege zoekveld en je ziet je laatste 15 gekozen adressen, nieuwste bovenaan. Tik er een aan en de speld en het menu komen meteen — zonder opnieuw te zoeken, dus ook zonder bereik. Begin je te typen, dan zoekt hij gewoon. Tik naast de lijst om hem te sluiten; <strong>Wis lijst</strong> (twee tikken: Zeker?) maakt hem leeg.</li>
                 <li><strong>📍-knop:</strong> springt naar je eigen locatie en opent hetzelfde menu (meestal kies je dan Start).</li>
                 <li><strong>Op de kaart tikken:</strong> opent een menu — kies Start, Tussen (slim ingevoegd), Achteraan, Finish of Vermijden.</li>
-                <li><strong>Punt verwijderen/verzetten:</strong> tik op een punt op de kaart.</li>
+                <li><strong>Punt verwijderen of wijzigen:</strong> tik op het punt op de kaart. <strong>Delete</strong> haalt het meteen weg; <strong>Wijzigen</strong> haalt het weg en opent op dezelfde plek weer "Punt toevoegen als", zodat je een andere keuze maakt (de naam gaat mee).</li>
                 <li><strong>Groene play (▶, links):</strong> verschijnt zodra je route van start naar finish klaar is — ook met Hide aan en terwijl Plan open is — en blijft staan tot je er één keer op drukt. Dan is je route actief, en dat blijft hij tot je <strong>Wis route</strong> doet. Play zet meteen ook het <strong>kompas</strong> aan: de kaart draait mee, je vliegtuig wijst omhoog en de zoombalk komt erbij.</li>
                 <li><strong>Kaart stil tijdens Plan:</strong> Tijdens Plan staat het kompas uit en beweegt de kaart niet mee (de zoombalk is weg), zodat je vrij over de kaart kunt schuiven. Sluit je Plan, dan komt het kompas terug zoals het stond.</li>
                 <li><strong>Live aanpassen:</strong> rijd je de route al (na de groene play), dan is elke wijziging meteen live — de lijn, de pijlen en stem, en je volgers krijgen de nieuwe route direct. Geen play meer nodig. Alleen de eerste start, en een geladen GPX, gaan met play.</li>
@@ -1749,7 +1774,7 @@
             <p>Wisselknop op <strong>Rondrit</strong>: een rondje vanaf je huidige locatie. Vul <strong>km</strong> in, kies met de <strong>richting-knop</strong> Lokaal (om je heen) of Noord / Oost / Zuid / West → <strong>Genereer rondrit</strong> (pakt zelf je GPS). Nog eens drukken = andere vorm.</p>
 
             <h3 style="color: #00BCD4; margin-top: 25px;">Vermijden</h3>
-            <p>Tik op de kaart → <strong>Vermijden</strong> en vul een straal (km) in. Er verschijnt een rode pin met cirkel: de route gaat daar <strong>altijd</strong> omheen. Blokkeert de zone de enige weg, dan komt er geen route — maak de cirkel dan <strong>kleiner</strong> of verplaats 'm. Tik op de pin om de straal aan te passen of de zone te verwijderen.</p>
+            <p>Tik op de kaart → <strong>Vermijden</strong> en vul een straal (km) in. Er verschijnt een rode pin met cirkel: de route gaat daar <strong>altijd</strong> omheen. Blokkeert de zone de enige weg, dan komt er geen route — maak de cirkel dan <strong>kleiner</strong> of verplaats 'm. Tik op de pin: nieuwe straal invullen en <strong>Aanpassen</strong>, of <strong>Delete</strong> om de zone weg te halen.</p>
 
             <h3 style="color: #00BCD4; margin-top: 25px;">Veerboten &amp; tolwegen</h3>
             <p>In het <strong>Mode</strong>-menu (bovenin de planner) staan twee schakelaars. <strong>Veerboten: OFF</strong> → de route mijdt veerponten (over water). <strong>Tolwegen: OFF</strong> → de route mijdt betaalde autowegen (over land). Op <strong>ON</strong> (standaard) zijn ze toegestaan. De route wordt meteen opnieuw berekend.</p>
@@ -1765,7 +1790,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.78 © Umop3p1sdn
+                HO-ME v63.79 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2054,7 +2079,7 @@
                 <li><strong>Laatst gezocht</strong> (recent searches): tap the empty search field and you see your last 15 chosen addresses, newest at the top. Tap one and the pin and the menu appear right away — without searching again, so also without signal. Start typing and it simply searches. Tap beside the list to close it; <strong>Wis lijst</strong> (clear list, two taps: Zeker?) empties it.</li>
                 <li><strong>📍 button:</strong> jumps to your own location and opens the same menu (usually you pick Start).</li>
                 <li><strong>Tapping the map:</strong> opens a menu — choose Start, Via (smartly inserted), At the end, Finish or Avoid.</li>
-                <li><strong>Remove/move a point:</strong> tap a point on the map.</li>
+                <li><strong>Remove or change a point:</strong> tap the point on the map. <strong>Delete</strong> removes it straight away; <strong>Wijzigen</strong> (change) removes it and opens "Punt toevoegen als" again on the same spot, so you can choose something else (the name comes along).</li>
                 <li><strong>Green play (▶, left):</strong> appears as soon as your route from start to finish is ready — also with Hide on and while Plan is open — and stays until you tap it once. Then your route is active, and it stays active until you tap <strong>Wis route</strong> (clear route). Play also switches the <strong>compass</strong> on straight away: the map turns with you, your plane points up and the zoom bar appears.</li>
                 <li><strong>Map stays still while planning:</strong> While Plan is open, the compass is off and the map doesn't move along (the zoom bar is hidden), so you can move the map freely. Close Plan and the compass comes back as it was.</li>
                 <li><strong>Live editing:</strong> already riding the route (after the green play)? Then every change is live straight away — the line, the arrows and voice, and your followers get the new route immediately. No need to press play again. Only the first start, and a loaded GPX, go with play.</li>
@@ -2090,7 +2115,7 @@
             <p>Toggle on <strong>Rondrit</strong> (roundtrip): a loop from your current location. Enter <strong>km</strong>, choose with the <strong>direction button</strong> Lokaal (around you) or North / East / South / West → <strong>Genereer rondrit</strong> (generate roundtrip — uses your GPS itself). Press again = different shape.</p>
 
             <h3 style="color: #00BCD4; margin-top: 25px;">Avoid</h3>
-            <p>Tap the map → <strong>Vermijden</strong> (avoid) and enter a radius (km). A red pin with circle appears: the route <strong>always</strong> goes around it. If the zone blocks the only road, no route appears — make the circle <strong>smaller</strong> or move it. Tap the pin to adjust the radius or remove the zone.</p>
+            <p>Tap the map → <strong>Vermijden</strong> (avoid) and enter a radius (km). A red pin with circle appears: the route <strong>always</strong> goes around it. If the zone blocks the only road, no route appears — make the circle <strong>smaller</strong> or move it. Tap the pin: enter a new radius and tap <strong>Aanpassen</strong> (adjust), or <strong>Delete</strong> to remove the zone.</p>
 
             <h3 style="color: #00BCD4; margin-top: 25px;">Ferries &amp; toll roads</h3>
             <p>The <strong>Mode</strong> menu (top of the planner) has two switches. <strong>Veerboten: OFF</strong> (ferries off) → the route avoids ferries (over water). <strong>Tolwegen: OFF</strong> (toll roads off) → the route avoids paid roads (over land). On <strong>ON</strong> (default) they're allowed. The route is recalculated right away.</p>
@@ -2106,7 +2131,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.78 © Umop3p1sdn
+                HO-ME v63.79 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2241,18 +2266,37 @@
         <div id="remTimeHead" style="font-size:0.7em; color:#00BCD4; font-weight:bold; letter-spacing:0.5px;">TIJD</div>
         <div id="remMin" style="font-size:1.5em; font-weight:bold;">–</div>
     </div>
-    <div id="tapMenu" style="display:none; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); z-index:2550; background:#0a0e27; border:2px solid #00BCD4; border-radius:12px; padding:16px; flex-direction:column; gap:8px; box-shadow:0 4px 16px rgba(0,0,0,0.6); min-width:200px;">
-        <div style="color:#00BCD4; font-weight:bold; text-align:center; margin-bottom:4px;">Punt toevoegen als:</div>
-        <div id="tapMenuLabel" style="display:none; color:#ccc; font-size:0.8em; text-align:center; margin:-4px 0 2px; max-width:240px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></div>
-        <button onclick="tapChoose('start')" style="padding:12px; border-radius:8px; border:2px solid #9E9E9E; background:transparent; color:#bbb; font-weight:bold; font-size:1em; cursor:pointer;">Start</button>
-        <button onclick="tapChoose('via')" style="padding:12px; border-radius:8px; border:2px solid #9C27B0; background:transparent; color:#ce93d8; font-weight:bold; font-size:1em; cursor:pointer;">Tussen (slim)</button>
-        <button onclick="tapChoose('achteraan')" style="padding:12px; border-radius:8px; border:2px solid #9C27B0; background:transparent; color:#ce93d8; font-weight:bold; font-size:1em; cursor:pointer;">Achteraan</button>
-        <button onclick="tapChoose('dest')" style="padding:12px; border-radius:8px; border:2px solid #000; color:#000; font-weight:bold; font-size:1em; cursor:pointer; background:#eee;">Finish 🏁</button>
-        <div style="display:flex; gap:6px; align-items:center;">
-            <input id="nogoKm" type="number" inputmode="decimal" placeholder="km" value="2" style="width:60px; padding:12px; border-radius:8px; border:2px solid #FF1744; background:#0a0e27; color:#fff; font-size:1em; text-align:center;">
-            <button onclick="tapChoose('nogo')" style="flex:1; padding:12px; border-radius:8px; border:2px solid #FF1744; background:transparent; color:#FF5252; font-weight:bold; font-size:1em; cursor:pointer;">Vermijden ⛔</button>
+    <!-- v63.79 (wens Sjoerd): zelfde knoppen en functies, strakker — twee per rij, geen emoji, Annuleer als echte knop -->
+    <div id="tapMenu" class="pmPanel" style="display:none;">
+        <div class="pmKop">Punt toevoegen als</div>
+        <div id="tapMenuLabel" class="pmSub" style="display:none;"></div>
+        <div class="pmRij">
+            <button class="pmKnop pmStart" onclick="tapChoose('start')">Start</button>
+            <button class="pmKnop pmFinish" onclick="tapChoose('dest')">Finish</button>
         </div>
-        <button onclick="tapCancel()" style="padding:8px; border-radius:8px; border:none; background:transparent; color:#889; font-size:0.85em; cursor:pointer;">Annuleer</button>
+        <div class="pmRij">
+            <button class="pmKnop pmVia" onclick="tapChoose('via')">Tussen (slim)</button>
+            <button class="pmKnop pmVia" onclick="tapChoose('achteraan')">Achteraan</button>
+        </div>
+        <div class="pmRij">
+            <button class="pmKnop pmNogo" onclick="tapChoose('nogo')">Vermijden</button>
+            <label class="pmKm"><input id="nogoKm" type="text" inputmode="decimal" placeholder="2" value="2"><span>km</span></label>
+        </div>
+        <div class="pmRij"><button class="pmKnop pmAnnuleer" onclick="tapCancel()">Annuleer</button></div>
+    </div>
+    <!-- v63.79 (wens Sjoerd: "een logische knop delete"): tik op een punt (start/finish/tussenpunt) of op een
+         vermijd-zone → dit menu. Vervangt de oude confirm-vragen (OK = bewerken / Annuleren = verwijder-vraag) en
+         het typveld "leeg = verwijderen". -->
+    <div id="puntMenu" class="pmPanel" style="display:none;">
+        <div id="puntMenuKop" class="pmKop">Tussenpunt</div>
+        <div id="puntMenuSub" class="pmSub" style="display:none;"></div>
+        <div id="zoneRij" class="pmRij">
+            <label class="pmKm"><input id="zoneKm" type="text" inputmode="decimal"><span>km</span></label>
+            <button class="pmKnop pmNogo" onclick="zoneAanpassen()">Aanpassen</button>
+        </div>
+        <div class="pmRij"><button class="pmKnop pmDelete" onclick="puntDelete()">Delete</button></div>
+        <div id="wijzigRij" class="pmRij"><button class="pmKnop pmWijzig" onclick="puntWijzig()">Wijzigen</button></div>
+        <div class="pmRij"><button class="pmKnop pmAnnuleer" onclick="puntMenuSluit()">Annuleer</button></div>
     </div>
     <!-- ════════ EINDE ROUTE PLANNER MODULE ════════ -->
 
@@ -2688,7 +2732,7 @@ assign initialcost =
             else if (kind === 'via') addVia(lat, lng, label, true);       // slim
             else if (kind === 'achteraan') addVia(lat, lng, label, false); // achteraan
             else if (kind === 'nogo') {
-                const km = parseFloat(document.getElementById('nogoKm').value) || 2;
+                const km = parseFloat(String(document.getElementById('nogoKm').value).replace(',', '.')) || 2;   // v63.79: 1,5 = 1.5
                 addNogo(lat, lng, km);
             }
             pendingTap = null;
@@ -3116,13 +3160,7 @@ assign initialcost =
             laatstWeg();
         }, true);
 
-        function setStart(lat, lng, label) {
-            startPoint = { lat, lng, label };
-            if (startMarker) map.removeLayer(startMarker);
-            startMarker = L.marker([lat, lng], { title: 'Start' }).addTo(map).bindPopup('Start: ' + label);
-            map.setView([lat, lng], 14);
-        }
-        function setStart(lat, lng, label, isGps) {
+        function setStart(lat, lng, label, isGps) {   // v63.79: dode eerste setStart-versie (werd altijd overschreven) weggehaald
             startPoint = { lat, lng, label };
             if (startMarker) map.removeLayer(startMarker);
             const color = isGps ? '#E91E63' : '#9E9E9E';   // rood = eigen locatie, grijs = gekozen
@@ -3178,30 +3216,70 @@ assign initialcost =
             viaPoints.splice(insertAt, 0, via);
         }
 
-        // Tap on an existing point → confirm before removing.
+        // Tik op een bestaand punt → punt-menu (v63.79, wens Sjoerd: "een logische knop delete"). Vervangt de oude
+        // twee confirm-vragen, waarbij je voor verwijderen eerst "Annuleren" en dan "OK" moest kiezen. De naam blijft
+        // confirmDelete, zodat alle vier de marker-aanroepers (start, finish, tussenpunt ×2) ongemoeid blijven.
+        let puntMenuDoel = null;   // { kind: 'start'|'dest'|'via', via } of { zone }
         function confirmDelete(kind, via) {
-            let what = kind === 'start' ? 'startpunt' : kind === 'dest' ? 'finish' : 'tussenpunt';
-            // Drie keuzes: OK = verwijderen, Annuleren = niks, of "bewerken" via de derde weg.
-            // confirm() kan maar 2 knoppen; daarom: eerst vragen of je wilt BEWERKEN (rol wijzigen).
-            // Nee → dan vragen of je wilt VERWIJDEREN. Zo blijft het met de simpele confirm-dialogen.
-            const Cap = what.charAt(0).toUpperCase() + what.slice(1);
-            const lat = kind === 'start' ? (startPoint && startPoint.lat) : kind === 'dest' ? (destPoint && destPoint.lat) : (via && via.lat);
-            const lng = kind === 'start' ? (startPoint && startPoint.lng) : kind === 'dest' ? (destPoint && destPoint.lng) : (via && via.lng);
-            if (confirm(Cap + ' bewerken? (OK = bewerken, Annuleren = verwijderen-vraag)')) {
-                // BEWERKEN: haal dit punt weg en open het keuzemenu op dezelfde plek (Start/Finish/Tussen/Achteraan)
-                removePoint(kind, via);
-                maybeRoute();
-                if (lat != null && lng != null) {
-                    pendingTap = { lat, lng };
-                    document.getElementById('tapMenu').style.display = 'flex';
-                }
-                return;
+            const p = kind === 'start' ? startPoint : kind === 'dest' ? destPoint : via;
+            if (!p) return;
+            puntMenuOpen({ kind, via }, kind === 'start' ? 'Start' : kind === 'dest' ? 'Finish' : 'Tussenpunt', p.label || '');
+        }
+        function puntMenuOpen(doel, kop, sub) {
+            if (typeof tapCancel === 'function') tapCancel();   // geen twee menu's op elkaar
+            puntMenuDoel = doel;
+            document.getElementById('puntMenuKop').textContent = kop;
+            const s = document.getElementById('puntMenuSub');
+            s.textContent = sub || ''; s.style.display = sub ? 'block' : 'none';
+            document.getElementById('zoneRij').style.display = doel.zone ? 'flex' : 'none';     // straal alleen bij een zone
+            document.getElementById('wijzigRij').style.display = doel.zone ? 'none' : 'flex';  // wijzigen alleen bij een punt
+            document.getElementById('puntMenu').style.display = 'flex';
+        }
+        function puntMenuSluit() {
+            document.getElementById('puntMenu').style.display = 'none';
+            puntMenuDoel = null;
+        }
+        function puntDelete() {              // Delete = meteen weg (de tik op het punt + deze tik zijn al twee stappen)
+            const d = puntMenuDoel;
+            puntMenuSluit();
+            if (!d) return;
+            if (d.zone) {
+                const z = d.zone;
+                try { map.removeLayer(z.marker); map.removeLayer(z.circle); } catch (e) {}
+                nogoZones = nogoZones.filter(x => x !== z);
+            } else {
+                removePoint(d.kind, d.via);
             }
-            // geen bewerken → verwijderen?
-            if (!confirm(Cap + ' verwijderen?')) return;
-            removePoint(kind, via);
             maybeRoute();
         }
+        function puntWijzig() {              // het oude "bewerken": punt weg en op dezelfde plek opnieuw kiezen
+            const d = puntMenuDoel;
+            puntMenuSluit();
+            if (!d || d.zone) return;
+            const p = d.kind === 'start' ? startPoint : d.kind === 'dest' ? destPoint : d.via;
+            if (!p) return;
+            const lat = p.lat, lng = p.lng, label = p.label || '';
+            removePoint(d.kind, d.via);
+            maybeRoute();
+            pendingTap = { lat, lng, label };    // naam gaat mee naar de nieuwe rol
+            const lab = document.getElementById('tapMenuLabel');
+            if (lab && label) { lab.textContent = label; lab.style.display = 'block'; }
+            document.getElementById('tapMenu').style.display = 'flex';
+        }
+        function zoneAanpassen() {
+            const d = puntMenuDoel;
+            if (!d || !d.zone) { puntMenuSluit(); return; }
+            const km = parseFloat(String(document.getElementById('zoneKm').value).replace(',', '.'));
+            if (!km || km <= 0) { puntMenuSluit(); return; }   // leeg/0 = niets veranderen (weg = de Delete-knop)
+            puntMenuSluit();
+            d.zone.radius = km * 1000;
+            d.zone.circle.setRadius(d.zone.radius);
+            maybeRoute();
+        }
+        document.addEventListener('click', (e) => {    // ernaast tikken = sluiten (capture: vóór de knoppen)
+            const p = document.getElementById('puntMenu');
+            if (p && p.style.display && p.style.display !== 'none' && !p.contains(e.target)) puntMenuSluit();
+        }, true);
 
         // Punt daadwerkelijk verwijderen (zonder vraag) — gedeeld door confirmDelete.
         function removePoint(kind, via) {
@@ -3231,19 +3309,9 @@ assign initialcost =
             if (!skipRecalc) maybeRoute();   // bij laden: 1× herberekenen aan 't eind, niet per zone
         }
 
-        function editNogo(zone) {
-            const cur = (zone.radius / 1000).toFixed(1);
-            const ans = prompt('Vermijd-straal in km (leeg = verwijderen):', cur);
-            if (ans === null) return;                 // geannuleerd
-            const km = parseFloat(ans);
-            if (!km || km <= 0) {                     // leeg/0 = verwijderen
-                map.removeLayer(zone.marker); map.removeLayer(zone.circle);
-                nogoZones = nogoZones.filter(z => z !== zone);
-            } else {
-                zone.radius = km * 1000;
-                zone.circle.setRadius(zone.radius);
-            }
-            maybeRoute();
+        function editNogo(zone) {   // v63.79: punt-menu i.p.v. het typveld "leeg = verwijderen"
+            document.getElementById('zoneKm').value = String(+(zone.radius / 1000).toFixed(2));
+            puntMenuOpen({ zone }, 'Vermijd-zone', '');
         }
 
         // BRouter nogos-parameter: "lng,lat,radius[,weight]" per zone, met komma's aaneen.
@@ -4688,7 +4756,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "63.78";
+        const APP_VERSION = "63.79";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
