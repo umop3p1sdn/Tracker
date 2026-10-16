@@ -1245,7 +1245,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.82 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.83 © Umop3p1sdn</div>
 
             </div>
 
@@ -1800,7 +1800,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.82 © Umop3p1sdn
+                HO-ME v63.83 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2142,7 +2142,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.82 © Umop3p1sdn
+                HO-ME v63.83 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2318,10 +2318,13 @@
         function plannerOpen(viaTik) {
             // Altijd POI volledig opruimen (balk, lijst, markers, rode X) — die liggen op z-index 2100 en
             // zouden anders boven het Plan-menu blijven hangen. Ook na 'minimize' (balk weg, lijst/markers nog).
-            // v63.81 (vangnet 4): opent Plan door een tik in het rijscherm, dan blijven gevonden POI's staan — alleen het
-            // zoekmenu gaat dicht en de lijst klapt in (anders wiste elke tik op de kaart je tankstations).
-            if (viaTik) poiOpzij();
-            else if (typeof closePoiFocus === 'function') closePoiFocus();
+            // v63.81 (vangnet 4): opent Plan door een tik in het rijscherm, dan blijven gevonden POI's staan (anders wiste
+            // elke tik op de kaart je tankstations). v63.83 (melding Sjoerd: "POI zie ik niet — komen en verdwijnen ze heel
+            // snel?"): GEMETEN — de lijst klapte hier in, schoof weg zodra je Plan opende, en een nieuwe zoekvraag liet de
+            // resultaten in die ingeklapte (onzichtbare) lijst staan; je zag alleen "POI zoeken…" even komen en gaan. Sinds
+            // v63.82 zet poiPlek menu en lijst naast/onder het plan-paneel, dus inklappen is niet meer nodig: alles blijft
+            // gewoon staan zoals het was (poiPlek aan het eind van deze functie zet het op zijn plek).
+            if (!viaTik && typeof closePoiFocus === 'function') closePoiFocus();
             planTerugTot = 0;                          // v63.81: alleen de tik uit het rijscherm telt af (die zet hem hierna)
             map = mapInstance;                         // koppel de planner aan de tracker-kaart
             plannerWireUp();                           // koppel zoekveld (1x, als HTML aanwezig)
@@ -2370,12 +2373,6 @@
             planTikTot = Date.now() + PLAN_TIK_REM_MS;
             planTerugTot = Date.now() + PLAN_TERUG_MS;
             if (typeof aftelStart === 'function') aftelStart();   // aftelbalk in de kopregel van Plan
-        }
-        function poiOpzij() {
-            const bar = document.getElementById('poiFocusBar');
-            if (bar) bar.style.display = 'none';       // alleen het zoekmenu (Benzine/Eten/…) — daar staat nog niets in
-            const box = document.getElementById('poiFocusList');
-            if (box && box.style.display && box.style.display !== 'none' && !box.classList.contains('folded')) foldPoiList();
         }
         // Rode Hide weg zolang Plan open is (CSS body.plan-open), afgeleid van het plan-paneel zelf. Alleen openen en
         // sluiten zetten het paneel; STOP zet het ook dicht maar herlaadt daarna de pagina (alles weer schoon).
@@ -4775,6 +4772,11 @@ assign initialcost =
                     `<span onclick="askClosePOI()" title="Sluiten" style="color:#fff;background:#FF1744;font-weight:bold;cursor:pointer;font-size:1.6em;line-height:1;padding:6px 16px;border-radius:8px;">✕</span>`;
                 box.insertBefore(head, box.firstChild);
                 box.style.display = 'block';
+                // v63.83: nieuwe resultaten = lijst UITgeklapt in beeld (GEMETEN: stond hij nog ingeklapt, dan kwamen de
+                // resultaten in een lijst die buiten beeld lag en zag je niets)
+                box.classList.remove('folded');
+                const _bk = document.getElementById('poiFolded');
+                if (_bk) _bk.style.display = 'none';
                 // resultaten zijn er → het zoekmenu (Benzine/Eten/Koffie-balk) verdwijnt voor een schoon beeld
                 const bar = document.getElementById('poiFocusBar');
                 if (bar) bar.style.display = 'none';
@@ -4999,7 +5001,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "63.82";
+        const APP_VERSION = "63.83";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
