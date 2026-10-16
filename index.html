@@ -1245,7 +1245,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.84 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.85 © Umop3p1sdn</div>
 
             </div>
 
@@ -1737,7 +1737,7 @@
             <ul style="margin: 10px 0; padding-left: 20px;">
                 <li><strong>Route</strong> — zoekbalk + 📍 + Wis route + de profielen.</li>
                 <li><strong>Extra</strong> — omweg- én rondrit-generator (wisselknop Omrit/Rondrit).</li>
-                <li><strong>POI</strong> — opent de focus-modus: alle andere menu's verdwijnen voor maximaal zicht op de kaart. Knoppen onderin (liggend rechts naast het Plan-menu), de lijst onder het Plan-menu (liggend ernaast). Sluiten met de rode ✕. Eén tik op een knop is genoeg: bovenin telt hij de seconden terwijl de (drukke) POI-server zoekt — nog eens tikken start geen extra zoekvraag. Vraagt de server even rust, dan zie je over hoeveel seconden hij zoekt. Lukt het niet, dan zegt de melding per server waarom (bezet, overbelast, te traag, geen verbinding).</li>
+                <li><strong>POI</strong> — opent de focus-modus: alle andere menu's verdwijnen voor maximaal zicht op de kaart. Knoppen onderin (liggend rechts naast het Plan-menu), de lijst onder het Plan-menu (liggend ernaast). Sluiten met de rode ✕. Eén tik op een knop is genoeg: bovenin telt hij de seconden terwijl de (drukke) POI-server zoekt — nog eens tikken start geen extra zoekvraag. Vraagt de server even rust, dan zie je over hoeveel seconden hij zoekt. Lukt het niet, dan zegt de melding per server waarom (bezet, overbelast, te traag, geen verbinding). <strong>Voorraad op je telefoon:</strong> alle knoppen (plus pin, wc, uitzicht en bezienswaardigheid) bewaart de app per gebied op je telefoon — rond je en langs je route, elke week vanzelf ververst. Dan staan ze er meteen, ook zonder bereik (onderin: "van je telefoon"). Parkeren en wat je zelf intypt zoekt hij live.</li>
                 <li><strong>Mode</strong> — kies hoe je reist: Road, Offroad, Bike, Race bike of Walk. Zie de sectie <em>Mode</em> hieronder.</li>
             </ul>
             <p style="background:#e3e7f5; padding:8px 14px; border-radius:8px;"><em>Route, Extra en Mode werken als accordeon: er staat er steeds één open.</em></p>
@@ -1800,7 +1800,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.84 © Umop3p1sdn
+                HO-ME v63.85 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2079,7 +2079,7 @@
             <ul style="margin: 10px 0; padding-left: 20px;">
                 <li><strong>Route</strong> — search bar + 📍 + Wis route (clear route) + the profiles.</li>
                 <li><strong>Extra</strong> — detour and roundtrip generator (toggle Omrit/Rondrit = detour/roundtrip).</li>
-                <li><strong>POI</strong> — opens focus mode: all other menus disappear for maximum view of the map. Buttons at the bottom (in landscape to the right of the Plan menu), the list below the Plan menu (in landscape next to it). Close with the red ✕. One tap on a button is enough: at the top it counts the seconds while the (busy) POI server searches — tapping again does not start an extra search. If the server asks for a short rest, you see in how many seconds it will search. If it fails, the message tells you per server why (busy, overloaded, too slow, no connection).</li>
+                <li><strong>POI</strong> — opens focus mode: all other menus disappear for maximum view of the map. Buttons at the bottom (in landscape to the right of the Plan menu), the list below the Plan menu (in landscape next to it). Close with the red ✕. One tap on a button is enough: at the top it counts the seconds while the (busy) POI server searches — tapping again does not start an extra search. If the server asks for a short rest, you see in how many seconds it will search. If it fails, the message tells you per server why (busy, overloaded, too slow, no connection). <strong>Stored on your phone:</strong> all buttons (plus ATM, toilets, viewpoints and attractions) are kept per area on your phone — around you and along your route, refreshed automatically every week. They then appear instantly, even without signal (at the bottom: "van je telefoon"). Parking and anything you type yourself are searched live.</li>
                 <li><strong>Mode</strong> — choose how you travel: Road, Offroad, Bike, Race bike or Walk. See the <em>Mode</em> section below.</li>
             </ul>
             <p style="background:#e3e7f5; padding:8px 14px; border-radius:8px;"><em>Route, Extra and Mode work as an accordion: only one is open at a time.</em></p>
@@ -2142,7 +2142,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.84 © Umop3p1sdn
+                HO-ME v63.85 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -4453,23 +4453,27 @@ assign initialcost =
         // v63.84: en WACHTEN zolang jij zelf zoekt (POI) — anders vult de app zijn eigen 2 plekken bij de server terwijl
         // jouw zoekvraag in de wachtrij staat. Daarna gaan ze gewoon door (alleen later).
         let overpassZelf = null;   // Promise zolang een POI-zoekvraag loopt
-        async function overpassVraag(q, ms) {
+        let overpassLoopt = 0;     // v63.85: zoveel achtergrondvragen lopen er nu (de POI-voorraad wacht tot dit 0 is)
+        // tekst = true: het antwoord als tekst (CSV, voor de POI-voorraad) i.p.v. JSON
+        async function overpassVraag(q, ms, tekst) {
             while (overpassZelf) { try { await overpassZelf; } catch (e) {} }
             for (const srv of OVERPASS_SERVERS) {
                 const r = overpassRust[srv];
                 if (r && Date.now() < r.tot) continue;   // deze server wil even rust → volgende
                 const ctrl = new AbortController();
                 const t = setTimeout(() => ctrl.abort(), ms || 8000);
+                overpassLoopt++;
                 try {
                     const res = await fetch(srv, { method: 'POST', body: 'data=' + encodeURIComponent(q), signal: ctrl.signal });
+                    if (res.ok && !tekst) { clearTimeout(t); delete overpassRust[srv]; return await res.json(); }
+                    if (res.ok) { const uit = await res.text(); clearTimeout(t); delete overpassRust[srv]; return uit; }   // CSV: ook het lezen onder de klok
                     clearTimeout(t);
-                    if (res.ok) { delete overpassRust[srv]; return await res.json(); }
                     if (res.status === 400) return null;   // fout in de vraag zelf → een andere server helpt niet
                     overpassPauze(srv, res.status === 429 || res.status === 406);   // weigering of overbelast → rust
                 } catch (e) {
                     clearTimeout(t);
                     overpassPauze(srv, false);             // time-out of geen verbinding → ook even rust
-                }
+                } finally { overpassLoopt--; }
             }
             return null;
         }
@@ -4676,6 +4680,242 @@ assign initialcost =
             if (b) b.textContent = 'Zoekgebied: ' + (poiScope === 'route' ? 'Route' : 'Lokaal');
         }
 
+        // ═══ v63.85 POI-VOORRAAD OP DE TELEFOON (wens Sjoerd: "laad maar in en zet op mobiel" — "ik heb nog meer POI,
+        // allemaal structureel in mijn cache zetten") ═══
+        // Alle soorten van de POI-knoppen (plus pin, wc, uitzicht, bezienswaardigheid) per vak van 0,5° × 0,5° in de opslag
+        // van de telefoon (IndexedDB 'HomePOI'): de 3×3 vakken rond je en de vakken langs je route. Zoeken = meteen, ook
+        // zonder bereik. Verversen 1× per week (een leeg vak na 1 dag: dat kan een mislukte vraag zijn geweest), na 60 dagen
+        // niet nodig = opgeruimd. Downloaden op de achtergrond: één vak tegelijk, pas 15 s na de start, alleen als er geen
+        // andere Overpass-vraag loopt en nooit tijdens jouw eigen zoekvraag. Per vak één vraag, als CSV met alleen de velden
+        // die de app gebruikt (JSON met alle tags was ±7× groter). NIET in de voorraad: parkeren (NL alleen al 236.120
+        // plekken, taginfo okt 2026 — blijft live) en wat je zelf intypt (naam-zoek, live). NL totaal ±85.000 plekken.
+        // Alleen de master: POI zit in Plan (volger en meekijker hebben geen POI).
+        const POI_VOORRAAD = {
+            amenity: ['fuel', 'charging_station', 'restaurant', 'fast_food', 'cafe', 'pub', 'food_court', 'bakery', 'atm', 'toilets'],
+            shop: ['bakery', 'supermarket'],
+            tourism: ['hotel', 'viewpoint', 'attraction']
+        };
+        const POI_VELDEN = ['::type', '::id', '::lat', '::lon', 'amenity', 'shop', 'tourism', 'name', 'brand', 'opening_hours', 'cuisine',
+            '"charging_station:output"', 'maxpower', 'capacity', '"socket:type2:output"', '"socket:type2_combo:output"', '"socket:ccs:output"', '"socket:chademo:output"'];
+        const POI_VAK = 0.5;                        // graden
+        const POI_VERS_MS = 7 * 24 * 3600 * 1000;   // verversen na een week
+        const POI_LEEG_MS = 24 * 3600 * 1000;       // leeg vak: na een dag nog eens
+        const POI_WEG_MS = 60 * 24 * 3600 * 1000;   // 60 dagen niet ververst (je kwam er niet meer) → opruimen
+        const POI_START_MS = 15000, POI_CHECK_MS = 30000, POI_TUSSEN_MS = 3000, POI_MAX_ROUTE = 40;
+        let poiStartTijd = Date.now(), poiCheckTijd = 0, poiVoorraadBezig = false, poiVoorraadRustTot = 0, poiOpgeruimd = false;
+        const poiVakRust = {};                      // vak → niet opnieuw proberen tot (na een mislukking)
+        const poiVakGeheugen = new Map();           // vak → plekken, na de eerste keer lezen in het geheugen (hoogstens 10 vakken)
+        let poiDbBelofte = null, poiMetaBelofte = null;   // meta: Map vak → { k, t, n }
+        let poiRouteSleutel = '', poiRouteVakken = [];
+
+        function poiVakVan(lat, lng) { return Math.floor(lat / POI_VAK) + '_' + Math.floor(lng / POI_VAK); }
+        function poiDb() {
+            if (!poiDbBelofte) poiDbBelofte = new Promise((ok, mis) => {
+                const r = indexedDB.open('HomePOI', 1);
+                r.onupgradeneeded = () => {
+                    const db = r.result;
+                    if (!db.objectStoreNames.contains('vakken')) db.createObjectStore('vakken', { keyPath: 'k' });
+                    if (!db.objectStoreNames.contains('meta')) db.createObjectStore('meta', { keyPath: 'k' });
+                };
+                r.onsuccess = () => ok(r.result);
+                r.onerror = () => mis(r.error);
+            }).catch(e => { poiDbBelofte = null; throw e; });
+            return poiDbBelofte;
+        }
+        function poiMeta() {
+            if (!poiMetaBelofte) poiMetaBelofte = poiDb().then(db => new Promise((ok, mis) => {
+                const req = db.transaction('meta', 'readonly').objectStore('meta').getAll();
+                req.onsuccess = () => ok(new Map((req.result || []).map(m => [m.k, m])));
+                req.onerror = () => mis(req.error);
+            })).catch(e => { poiMetaBelofte = null; throw e; });
+            return poiMetaBelofte;
+        }
+        function poiGeheugen(k, p) {
+            if (poiVakGeheugen.size >= 10 && !poiVakGeheugen.has(k)) poiVakGeheugen.delete(poiVakGeheugen.keys().next().value);
+            poiVakGeheugen.set(k, p);
+        }
+        async function poiVakLees(k) {
+            if (poiVakGeheugen.has(k)) return poiVakGeheugen.get(k);
+            const db = await poiDb();
+            const rec = await new Promise((ok, mis) => {
+                const req = db.transaction('vakken', 'readonly').objectStore('vakken').get(k);
+                req.onsuccess = () => ok(req.result || null);
+                req.onerror = () => mis(req.error);
+            });
+            if (!rec || !Array.isArray(rec.p)) return null;
+            poiGeheugen(k, rec.p);
+            return rec.p;
+        }
+        async function poiVakSchrijf(k, p) {
+            const db = await poiDb();
+            const m = { k, t: Date.now(), n: p.length };
+            await new Promise((ok, mis) => {
+                const tx = db.transaction(['vakken', 'meta'], 'readwrite');
+                tx.objectStore('vakken').put({ k, p });
+                tx.objectStore('meta').put(m);
+                tx.oncomplete = () => ok(); tx.onerror = () => mis(tx.error); tx.onabort = () => mis(tx.error);
+            });
+            (await poiMeta()).set(k, m);
+            poiGeheugen(k, p);
+        }
+        async function poiVoorraadOpruimen() {
+            const meta = await poiMeta();
+            const weg = [...meta.values()].filter(m => Date.now() - m.t > POI_WEG_MS).map(m => m.k);
+            if (!weg.length) return;
+            const db = await poiDb();
+            await new Promise((ok, mis) => {
+                const tx = db.transaction(['vakken', 'meta'], 'readwrite');
+                weg.forEach(k => { tx.objectStore('vakken').delete(k); tx.objectStore('meta').delete(k); });
+                tx.oncomplete = () => ok(); tx.onerror = () => mis(tx.error);
+            });
+            weg.forEach(k => { meta.delete(k); poiVakGeheugen.delete(k); });
+        }
+        // CSV van Overpass → [[id, lat, lon, tags], …]. De kopregel moet kloppen, anders was het geen goed antwoord.
+        function poiCsvLees(tekst) {
+            const regels = String(tekst).split('\n');
+            const kop = (regels.shift() || '').split('\t').map(x => x.trim().replace(/^(@|::)/, '').replace(/^"|"$/g, ''));
+            const kol = n => kop.indexOf(n);
+            const iT = kol('type'), iI = kol('id'), iLa = kol('lat'), iLo = kol('lon');
+            if (iT < 0 || iI < 0 || iLa < 0 || iLo < 0) return null;
+            const tagKol = kop.map((n, i) => [n, i]).filter(([n]) => !['type', 'id', 'lat', 'lon'].includes(n));
+            const uit = [];
+            for (const r of regels) {
+                if (!r) continue;
+                const v = r.split('\t');
+                const lat = parseFloat(v[iLa]), lon = parseFloat(v[iLo]);
+                if (!isFinite(lat) || !isFinite(lon)) continue;
+                const g = {};
+                for (const [n, i] of tagKol) if (v[i]) g[n] = v[i];
+                uit.push([(v[iT] || 'x').charAt(0) + v[iI], lat, lon, g]);
+            }
+            return uit;
+        }
+        async function poiVakHaal(k) {
+            const [i, j] = k.split('_').map(Number);
+            const s = i * POI_VAK, w = j * POI_VAK, bb = `${s},${w},${s + POI_VAK},${w + POI_VAK}`;
+            const deel = key => `nwr["${key}"~"^(${POI_VOORRAAD[key].join('|')})$"](${bb});`;
+            const q = `[out:csv(${POI_VELDEN.join(',')};true)][timeout:60];(${deel('amenity')}${deel('shop')}${deel('tourism')});out center;`;
+            const tekst = await overpassVraag(q, 65000, true);
+            if (typeof tekst !== 'string') return false;
+            const p = poiCsvLees(tekst);
+            if (!p) return false;
+            await poiVakSchrijf(k, p);
+            return true;
+        }
+        function poiVakkenRond(lat, lng) {   // 3×3 rond je — je eigen vak eerst
+            const i = Math.floor(lat / POI_VAK), j = Math.floor(lng / POI_VAK), uit = [i + '_' + j];
+            for (let a = -1; a <= 1; a++) for (let b = -1; b <= 1; b++) if (a || b) uit.push((i + a) + '_' + (j + b));
+            return uit;
+        }
+        function poiVakkenLangs(pts, marge) {   // pts = [[lng, lat], …] → vakken die de lijn ± marge (m) raakt, in volgorde
+            const uit = [], gezien = new Set(), mLat = marge / 111000;
+            for (const p of pts) {
+                const mLng = marge / (111000 * Math.cos(p[1] * Math.PI / 180));
+                for (const [a, b] of [[p[1] - mLat, p[0] - mLng], [p[1] - mLat, p[0] + mLng], [p[1] + mLat, p[0] - mLng], [p[1] + mLat, p[0] + mLng]]) {
+                    const k = poiVakVan(a, b);
+                    if (!gezien.has(k)) { gezien.add(k); uit.push(k); }
+                }
+            }
+            return uit;
+        }
+        function poiVakkenRoute() {   // vakken langs je hele route (vooraf binnenhalen = onderweg zonder bereik ook)
+            const rc = lastRouteCoords;
+            if (!rc || rc.length < 2) return [];
+            const sleutel = rc.length + ':' + rc[0] + ':' + rc[rc.length - 1];
+            if (sleutel !== poiRouteSleutel) {
+                poiRouteSleutel = sleutel;
+                const stap = Math.max(1, Math.floor(rc.length / 2000)), pts = [];
+                for (let i = 0; i < rc.length; i += stap) pts.push(rc[i]);
+                pts.push(rc[rc.length - 1]);
+                poiRouteVakken = poiVakkenLangs(pts, 1500).slice(0, POI_MAX_ROUTE);
+            }
+            return poiRouteVakken;
+        }
+        function poiVakOud(m) { return !m || Date.now() - m.t > (m.n ? POI_VERS_MS : POI_LEEG_MS); }
+        // Vanuit de GPS van de master: wat ontbreekt of is ouder dan een week? Eén vak tegelijk ophalen.
+        async function poiVoorraadCheck(lat, lng) {
+            const nu = Date.now();
+            if (poiVoorraadBezig || nu - poiStartTijd < POI_START_MS || nu < poiVoorraadRustTot || nu - poiCheckTijd < POI_CHECK_MS) return;
+            if (typeof indexedDB === 'undefined') return;
+            poiCheckTijd = nu;
+            poiVoorraadBezig = true;
+            try {
+                if (!poiOpgeruimd) { poiOpgeruimd = true; await poiVoorraadOpruimen(); }
+                const meta = await poiMeta();
+                const lijst = [...new Set(poiVakkenRond(lat, lng).concat(poiVakkenRoute()))];
+                for (const k of lijst) {
+                    if (!poiVakOud(meta.get(k)) || Date.now() < (poiVakRust[k] || 0)) continue;
+                    // alleen als de app verder niets aan Overpass vraagt — en nooit tijdens jouw eigen zoekvraag
+                    for (let w = 0; (overpassLoopt > 0 || overpassZelf) && w < 60; w++) await new Promise(r => setTimeout(r, 1000));
+                    if (overpassLoopt > 0 || overpassZelf) break;           // te druk → bij een volgende check verder
+                    if (!(await poiVakHaal(k))) { poiVakRust[k] = Date.now() + 600000; poiVoorraadRustTot = Date.now() + 60000; break; }
+                    await new Promise(r => setTimeout(r, POI_TUSSEN_MS));
+                }
+            } catch (e) { console.warn('POI-voorraad', e); poiVoorraadRustTot = Date.now() + 300000; }
+            finally { poiVoorraadBezig = false; }
+        }
+        // Stilstaand geeft de telefoon soms lang geen nieuwe GPS-positie → ook elke minuut met de laatst bekende (alleen master)
+        setInterval(() => {
+            if (typeof currentMode !== 'undefined' && currentMode === 'master' && lastGps) poiVoorraadCheck(lastGps.lat, lastGps.lng);
+        }, 60000);
+        // Afstand van een plek tot een lijn (pts = [[lng, lat], …]): { d in meters, i = positie langs de lijn }
+        function poiAfstandLijn(lat, lng, pts) {
+            if (pts.length === 1) return { d: distM4(lat, lng, pts[0][1], pts[0][0]), i: 0 };
+            const kx = 111000 * Math.cos(lat * Math.PI / 180), ky = 111000;
+            let best = Infinity, bi = 0;
+            for (let i = 0; i < pts.length - 1; i++) {
+                const ax = (pts[i][0] - lng) * kx, ay = (pts[i][1] - lat) * ky;
+                const dx = (pts[i + 1][0] - pts[i][0]) * kx, dy = (pts[i + 1][1] - pts[i][1]) * ky, l2 = dx * dx + dy * dy;
+                const t = l2 ? Math.max(0, Math.min(1, -(ax * dx + ay * dy) / l2)) : 0;
+                const px = ax + t * dx, py = ay + t * dy, d = Math.sqrt(px * px + py * py);
+                if (d < best) { best = d; bi = i + t; }
+            }
+            return { d: best, i: bi };
+        }
+        // Zoeken in de voorraad. null = kan niet (soort niet bewaard of een vak ontbreekt) → dan live, zoals altijd.
+        // Anders de plekken: langs de route binnen 1 km (in de volgorde waarin je ze tegenkomt), of lokaal binnen 10 km
+        // (dichtstbij eerst); hoogstens 80, net als live. Een lege lijst = daar is echt niets.
+        async function poiUitVoorraad(tag, extra, corridorPts, c) {
+            if (typeof indexedDB === 'undefined' || !tag) return null;
+            const spec = [tag].concat(extra ? [extra] : []).map(s => { const m = String(s).match(/^(\w+)([=~])(.+)$/); return m ? { k: m[1], v: m[2] === '~' ? m[3].split('|') : [m[3]] } : null; });
+            if (spec.some(s => !s || !POI_VOORRAAD[s.k] || !s.v.every(v => POI_VOORRAAD[s.k].includes(v)))) return null;
+            let vakken, pts = null;
+            if (corridorPts && corridorPts.length) {
+                const stap = Math.max(1, Math.floor(corridorPts.length / 300));
+                pts = [];
+                for (let i = 0; i < corridorPts.length; i += stap) pts.push(corridorPts[i]);
+                if (pts[pts.length - 1] !== corridorPts[corridorPts.length - 1]) pts.push(corridorPts[corridorPts.length - 1]);
+                vakken = poiVakkenLangs(pts, 1100);
+            } else {
+                if (!c) return null;
+                const dLat = 10000 / 111000, dLng = 10000 / (111000 * Math.cos(c.lat * Math.PI / 180));
+                vakken = [];
+                for (let a = Math.floor((c.lat - dLat) / POI_VAK); a <= Math.floor((c.lat + dLat) / POI_VAK); a++)
+                    for (let b = Math.floor((c.lng - dLng) / POI_VAK); b <= Math.floor((c.lng + dLng) / POI_VAK); b++) vakken.push(a + '_' + b);
+            }
+            const meta = await poiMeta();
+            if (vakken.some(k => !meta.has(k))) return null;
+            const past = g => spec.some(s => s.v.includes(g[s.k]));
+            const gezien = new Set(), kand = [];
+            for (const k of vakken) {
+                const p = await poiVakLees(k);
+                if (!p) return null;
+                for (const r of p) if (!gezien.has(r[0]) && past(r[3])) { gezien.add(r[0]); kand.push(r); }
+            }
+            let uit;
+            if (pts) {
+                let s = 90, n = -90, w = 180, e = -180;
+                pts.forEach(p => { s = Math.min(s, p[1]); n = Math.max(n, p[1]); w = Math.min(w, p[0]); e = Math.max(e, p[0]); });
+                const mLat = 0.012, mLng = 0.012 / Math.cos(((s + n) / 2) * Math.PI / 180);
+                uit = kand.filter(r => r[1] >= s - mLat && r[1] <= n + mLat && r[2] >= w - mLng && r[2] <= e + mLng)
+                    .map(r => Object.assign({ r }, poiAfstandLijn(r[1], r[2], pts)))
+                    .filter(x => x.d <= 1000).sort((a, b) => a.i - b.i).slice(0, 80);
+            } else {
+                uit = kand.map(r => ({ r, d: distM4(c.lat, c.lng, r[1], r[2]) })).filter(x => x.d <= 10000).sort((a, b) => a.d - b.d).slice(0, 80);
+            }
+            return uit.map(x => ({ lat: x.r[1], lng: x.r[2], tags: Object.assign({}, x.r[3]) }));
+        }
+
         async function searchPOI(term) {
             term = (term || '').trim().toLowerCase();
             if (!term) { alert('Typ een zoekterm of kies een knop.'); return; }
@@ -4751,6 +4991,18 @@ assign initialcost =
             // v63.84: zelf gevraagd → geduldig (overpassZoek); achtergrondvragen wachten zolang dit loopt (overpassZelf).
             const zoek = poiZoek = { term, start: Date.now(), vervallen: false, ctrl: null, fase: 'vraag', server: 0, rustTot: 0 };
             poiZoekTeller();
+            // v63.85: eerst de voorraad op je telefoon (meteen, ook zonder bereik); kan die het niet, dan live zoals altijd
+            let lokaal = null;
+            try { lokaal = await poiUitVoorraad(tag, extraFilter ? 'shop=bakery' : null, corridorPts, corridorPts ? null : (myPos || map.getCenter())); }
+            catch (e) { console.warn('POI-voorraad lezen', e); }
+            if (zoek.vervallen) return;
+            if (lokaal) {
+                poiZoek = null; poiZoekTeller();
+                if (!lokaal.length) { poiMelding(corridorPts ? `Geen "${term}" langs je route (30 km vooruit).` : `Geen "${term}" binnen 10 km.`, '#FF9800'); return; }
+                drawPOI(lokaal, term, tag, corridorPts);
+                showInfo(`${lokaal.length} gevonden voor "${term}" — van je telefoon, tik een icoon voor info.`);
+                return;
+            }
             let uit = null;
             const klaar = overpassZoek(q, zoek, (fase, i, tot) => {
                 zoek.fase = fase; zoek.server = i; zoek.rustTot = tot || 0;
@@ -5116,7 +5368,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "63.84";
+        const APP_VERSION = "63.85";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
@@ -11643,6 +11895,7 @@ assign initialcost =
                             checkFlitserLand(latitude, longitude);
                             if (typeof updateSpeedSign === 'function') updateSpeedSign(latitude, longitude);   // ná flitser: flitser heeft voorrang
                             if (typeof updateLiveSpeed === 'function') updateLiveSpeed(latitude, longitude);   // live snelheid zonder route
+                            if (typeof poiVoorraadCheck === 'function') poiVoorraadCheck(latitude, longitude);   // v63.85: POI-voorraad (master)
 
                             if (masterMarker) {
                                 masterMarker.setLatLng([latitude, longitude]);
