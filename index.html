@@ -1245,7 +1245,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.83 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.84 © Umop3p1sdn</div>
 
             </div>
 
@@ -1737,7 +1737,7 @@
             <ul style="margin: 10px 0; padding-left: 20px;">
                 <li><strong>Route</strong> — zoekbalk + 📍 + Wis route + de profielen.</li>
                 <li><strong>Extra</strong> — omweg- én rondrit-generator (wisselknop Omrit/Rondrit).</li>
-                <li><strong>POI</strong> — opent de focus-modus: alle andere menu's verdwijnen voor maximaal zicht op de kaart. Knoppen onderin (liggend rechts naast het Plan-menu), de lijst onder het Plan-menu (liggend ernaast). Sluiten met de rode ✕. Is de POI-server even bezet, dan zie je bovenin wanneer je het opnieuw kunt proberen.</li>
+                <li><strong>POI</strong> — opent de focus-modus: alle andere menu's verdwijnen voor maximaal zicht op de kaart. Knoppen onderin (liggend rechts naast het Plan-menu), de lijst onder het Plan-menu (liggend ernaast). Sluiten met de rode ✕. Eén tik op een knop is genoeg: bovenin telt hij de seconden terwijl de (drukke) POI-server zoekt — nog eens tikken start geen extra zoekvraag. Vraagt de server even rust, dan zie je over hoeveel seconden hij zoekt. Lukt het niet, dan zegt de melding per server waarom (bezet, overbelast, te traag, geen verbinding).</li>
                 <li><strong>Mode</strong> — kies hoe je reist: Road, Offroad, Bike, Race bike of Walk. Zie de sectie <em>Mode</em> hieronder.</li>
             </ul>
             <p style="background:#e3e7f5; padding:8px 14px; border-radius:8px;"><em>Route, Extra en Mode werken als accordeon: er staat er steeds één open.</em></p>
@@ -1800,7 +1800,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.83 © Umop3p1sdn
+                HO-ME v63.84 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2079,7 +2079,7 @@
             <ul style="margin: 10px 0; padding-left: 20px;">
                 <li><strong>Route</strong> — search bar + 📍 + Wis route (clear route) + the profiles.</li>
                 <li><strong>Extra</strong> — detour and roundtrip generator (toggle Omrit/Rondrit = detour/roundtrip).</li>
-                <li><strong>POI</strong> — opens focus mode: all other menus disappear for maximum view of the map. Buttons at the bottom (in landscape to the right of the Plan menu), the list below the Plan menu (in landscape next to it). Close with the red ✕. If the POI server is busy, a message at the top tells you when to try again.</li>
+                <li><strong>POI</strong> — opens focus mode: all other menus disappear for maximum view of the map. Buttons at the bottom (in landscape to the right of the Plan menu), the list below the Plan menu (in landscape next to it). Close with the red ✕. One tap on a button is enough: at the top it counts the seconds while the (busy) POI server searches — tapping again does not start an extra search. If the server asks for a short rest, you see in how many seconds it will search. If it fails, the message tells you per server why (busy, overloaded, too slow, no connection).</li>
                 <li><strong>Mode</strong> — choose how you travel: Road, Offroad, Bike, Race bike or Walk. See the <em>Mode</em> section below.</li>
             </ul>
             <p style="background:#e3e7f5; padding:8px 14px; border-radius:8px;"><em>Route, Extra and Mode work as an accordion: only one is open at a time.</em></p>
@@ -2142,7 +2142,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.83 © Umop3p1sdn
+                HO-ME v63.84 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -4449,23 +4449,15 @@ assign initialcost =
             r.weiger = !!weiger;                       // 429/406 = de server weigert ons → die pauze geldt voor iedereen
             overpassRust[srv] = r;
         }
-        // Over hoeveel seconden is er weer een server vrij? (0 = nu al) — voor de POI-melding.
-        function overpassVrijOver() {
-            const nu = Date.now();
-            let vroegst = Infinity;
+        // Achtergrondvragen (flitsers, snelheidsbord, rotondes, straat): kort geduld en elke rustende server overslaan.
+        // v63.84: en WACHTEN zolang jij zelf zoekt (POI) — anders vult de app zijn eigen 2 plekken bij de server terwijl
+        // jouw zoekvraag in de wachtrij staat. Daarna gaan ze gewoon door (alleen later).
+        let overpassZelf = null;   // Promise zolang een POI-zoekvraag loopt
+        async function overpassVraag(q, ms) {
+            while (overpassZelf) { try { await overpassZelf; } catch (e) {} }
             for (const srv of OVERPASS_SERVERS) {
                 const r = overpassRust[srv];
-                if (!r || r.tot <= nu) return 0;
-                vroegst = Math.min(vroegst, r.tot);
-            }
-            return Math.ceil((vroegst - nu) / 1000);
-        }
-        // zelf = jij vroeg erom (POI-knop): dan wél een server proberen die alleen rust na een time-out of storing,
-        // nooit een die ons net weigerde (429/406). Achtergrondvragen slaan elke rustende server over.
-        async function overpassVraag(q, ms, zelf) {
-            for (const srv of OVERPASS_SERVERS) {
-                const r = overpassRust[srv];
-                if (r && Date.now() < r.tot && (!zelf || r.weiger)) continue;   // deze server wil even rust → volgende
+                if (r && Date.now() < r.tot) continue;   // deze server wil even rust → volgende
                 const ctrl = new AbortController();
                 const t = setTimeout(() => ctrl.abort(), ms || 8000);
                 try {
@@ -4482,21 +4474,129 @@ assign initialcost =
             return null;
         }
 
+        // ═══ v63.84 POI = ZELF GEVRAAGD: geduldig, één server tegelijk, en de reden per server ═══
+        // Melding Sjoerd: "POI-server bezet … het blijft bezet — als ik hem spam vindt hij wel wat". De server is er dus.
+        // GEMETEN (nagebootste server): de app gaf POI 8 s per server, maar Overpass zet een vraag tot 15 s in de
+        // wachtrij zodra je 2 plekken bezet zijn (ook door de eigen achtergrondvragen van de app) — na 8 s brak de app
+        // af, en afbreken maakt die plek op de server niet eens vrij. En na één 429 op een achtergrondvraag sloeg POI de
+        // hoofdserver 30–120 s over. Nu: hoofdserver 25 s geduld; vroeg hij net om rust (429/406, beleid: ≥ 30 s) en is
+        // die rust kort, dan wachten we die af (met teller); pas daarna een reserve (15 s). Eén server tegelijk — het
+        // beleid van overpass-api.de vraagt geen parallelle vragen om sneller te zijn.
+        const OVERPASS_GEDULD = [25000, 15000, 15000];   // ms per server, zelfde volgorde als OVERPASS_SERVERS
+        const OVERPASS_KORT = ['de', 'coffee', 'mail.ru'];
+        function overpassReden(r) {
+            if (r === 'traag') return 'te traag';
+            if (r === 'net') return 'geen verbinding';
+            if (r === 'afgebroken') return 'brak af (te druk)';
+            if (r === 'onleesbaar') return 'onleesbaar antwoord';
+            if (r === 429) return 'bezet (429)';
+            if (r === 400) return 'snapt de zoekvraag niet (400)';
+            if (r === 406 || r === 403) return 'weigert (' + r + ')';
+            if (r === 504) return 'overbelast (504)';
+            return 'fout (' + r + ')';
+        }
+        // Eén poging bij één server. zoek.vervallen = jij sloot POI of koos iets anders → stil stoppen.
+        async function overpassPoging(srv, q, ms, zoek) {
+            const ctrl = new AbortController();
+            zoek.ctrl = ctrl;
+            let teLang = false;
+            const t = setTimeout(() => { teLang = true; ctrl.abort(); }, ms);
+            try {
+                const res = await fetch(srv, { method: 'POST', body: 'data=' + encodeURIComponent(q), signal: ctrl.signal });
+                if (!res.ok) return { reden: res.status };
+                const json = await res.json();
+                // Overpass stopt een vraag soms zelf (eigen time-out of geheugen) en geeft dan tóch 200, met "runtime error"
+                // in remark en niets of een halve lijst. Niets = mislukt (anders zei de app "geen benzine langs je route").
+                if (json && json.remark && /runtime error/i.test(json.remark) && !(json.elements && json.elements.length)) return { reden: 'afgebroken' };
+                return { json };
+            } catch (e) {
+                if (zoek.vervallen) return { reden: 'gestopt' };
+                if (teLang) return { reden: 'traag' };
+                if (e && e.name === 'SyntaxError') return { reden: 'onleesbaar' };
+                return { reden: 'net' };   // geen verbinding (of de server laat de browser niet toe)
+            } finally { clearTimeout(t); zoek.ctrl = null; }
+        }
+        const OVERPASS_RUST_WACHT = 35000;   // zo kort rust de hoofdserver nog → zelf gevraagd: afwachten (met teller)
+        async function overpassZoek(q, zoek, fase) {
+            const uitslag = [];
+            const kortRust = i => { const r = overpassRust[OVERPASS_SERVERS[i]]; return !!(r && r.weiger && Date.now() < r.tot && r.tot - Date.now() <= OVERPASS_RUST_WACHT); };
+            // Vroeg de hoofdserver net om rust, dan eerst de reserves (andere servers — dat mag) en daarna de hoofdserver
+            // zodra zijn rust voorbij is; anders gewoon de hoofdserver eerst.
+            const volgorde = kortRust(0) ? [1, 2, 0] : [0, 1, 2];
+            for (const i of volgorde) {
+                const srv = OVERPASS_SERVERS[i];
+                const r = overpassRust[srv];
+                if (r && r.weiger && Date.now() < r.tot) {                 // deze server vroeg ons om rust (429/406)
+                    if (i === 0 && kortRust(0)) {                           // hoofdserver, korte rust → afwachten
+                        fase('rust', i, r.tot);
+                        while (Date.now() < r.tot) { await new Promise(res => setTimeout(res, 250)); if (zoek.vervallen) return null; }
+                    } else { uitslag.push([i, OVERPASS_KORT[i] + ': rust nog ' + Math.ceil((r.tot - Date.now()) / 1000) + ' s']); continue; }
+                }
+                if (zoek.vervallen) return null;
+                fase('vraag', i);
+                const a = await overpassPoging(srv, q, OVERPASS_GEDULD[i], zoek);
+                if (a.json) { delete overpassRust[srv]; return { data: a.json, server: i }; }
+                if (zoek.vervallen) return null;
+                uitslag.push([i, OVERPASS_KORT[i] + ': ' + overpassReden(a.reden)]);
+                if (a.reden === 400) break;                                  // fout in de vraag zelf → andere server helpt niet
+                overpassPauze(srv, a.reden === 429 || a.reden === 406);
+            }
+            return { data: null, uitslag: uitslag.sort((a, b) => a[0] - b[0]).map(u => u[1]) };   // vaste volgorde: de · coffee · mail.ru
+        }
+
         // ─── POI-zoek (Overpass): markers op de kaart + lijst van POI's langs de route ───
         let poiMarkers = [];   // markers van gevonden POI's
         // v63.82: POI-meldingen ook als melding bovenin — de infoBar is liggend altijd verborgen (en in het rijscherm
         // bezet door de route-info), dus liggend zag je nooit "zoeken…", "niets gevonden" of "server reageert niet".
+        let poiToastTekst = '';   // v63.84: de laatste POI-melding bovenin — alleen díe werkt de POI-code bij of haalt hij weg
         function poiMelding(tekst, kleur, ms) {
             showInfo(tekst);
-            if (typeof showBufferToast === 'function') showBufferToast(String(tekst).replace(/<[^>]+>/g, ''), kleur || '#00838f', ms || 3500);
+            poiToastTekst = String(tekst).replace(/<[^>]+>/g, '');
+            if (typeof showBufferToast === 'function') showBufferToast(poiToastTekst, kleur || '#00838f', ms || 3500);
+            poiToastDoorlaten();
+        }
+        // v63.84: een POI-melding blijft nu langer staan (teller tijdens het wachten) — GEMETEN: staand lag hij over de
+        // tabs en het ✕ van Plan. Een melding is alleen om te lezen: tikken gaan er dwars doorheen.
+        function poiToastDoorlaten() {
+            if (typeof bufferToastEl !== 'undefined' && bufferToastEl) bufferToastEl.style.pointerEvents = 'none';
         }
         // Gevonden: de lijst en de iconen zijn de melding — de "POI zoeken…"-melding gaat meteen weg (GEMETEN: liggend lag
         // die bovenin over de eerste regels van de lijst). Alleen als die melding er nog staat; andere meldingen blijven.
         function poiMeldingWeg() {
-            if (typeof bufferToastEl !== 'undefined' && bufferToastEl && bufferToastEl.textContent === 'POI zoeken…') {
+            if (typeof bufferToastEl !== 'undefined' && bufferToastEl && poiToastTekst && bufferToastEl.textContent === poiToastTekst) {
                 if (typeof bufferToastHideTimer !== 'undefined' && bufferToastHideTimer) { clearTimeout(bufferToastHideTimer); bufferToastHideTimer = null; }
                 bufferToastEl.remove(); bufferToastEl = null;
             }
+        }
+        // v63.84: één zoekvraag tegelijk, met een teller bovenin (dan zie je dat hij bezig is en hoef je niet te
+        // spammen — elke afgebroken vraag draait op de server gewoon door en kost je een plek). Nog eens dezelfde knop =
+        // geen extra vraag; een andere zoekterm = de oude vervalt; POI sluiten of opruimen = vervalt (dan komt er ook
+        // niets meer op de kaart). De teller overschrijft geen andere melding: die mag eerst uitgelezen worden.
+        let poiZoek = null;          // { term, start, vervallen, ctrl, fase, server, rustTot }
+        let poiTellerTimer = null;
+        function poiZoekTeller() {
+            const z = poiZoek;
+            if (!z) { if (poiTellerTimer) { clearInterval(poiTellerTimer); poiTellerTimer = null; } return; }
+            if (!poiTellerTimer) poiTellerTimer = setInterval(poiZoekTeller, 1000);
+            const sec = Math.floor((Date.now() - z.start) / 1000);
+            const tekst = z.fase === 'rust'
+                ? `POI-server vraagt even rust — zoekt over ${Math.max(1, Math.ceil((z.rustTot - Date.now()) / 1000))} s`
+                : `POI zoeken${z.server ? ' (reserve-server)' : ''}…` + (sec >= 1 ? ` ${sec} s` : '');
+            const el = (typeof bufferToastEl !== 'undefined') ? bufferToastEl : null;
+            if (el && el.textContent !== poiToastTekst) return;   // er staat een andere melding → eerst die
+            poiToastTekst = tekst;
+            if (typeof showBufferToast === 'function') showBufferToast(tekst, '#00838f', 3500);
+            poiToastDoorlaten();
+        }
+        function poiZoekStop() {
+            if (!poiZoek) return;
+            poiZoek.vervallen = true;
+            try { if (poiZoek.ctrl) poiZoek.ctrl.abort(); } catch (e) {}
+            poiZoek = null;
+            poiZoekTeller();   // teller uit
+            poiMeldingWeg();
+            const ib = document.getElementById('infoBar');   // en geen blijvend "POI zoeken…" onderin
+            if (ib && ib.textContent === 'POI zoeken…') ib.style.display = 'none';
         }
 
         // steekwoord → OSM-tag. Onbekend woord → naam-zoek (fallback).
@@ -4579,8 +4679,10 @@ assign initialcost =
         async function searchPOI(term) {
             term = (term || '').trim().toLowerCase();
             if (!term) { alert('Typ een zoekterm of kies een knop.'); return; }
+            if (poiZoek && poiZoek.term === term) { poiZoekTeller(); return; }   // v63.84: zoekt al → geen tweede vraag
+            poiZoekStop();                                                     // andere zoekterm → de oude vervalt
             wipePoiMarkers();   // alleen oude resultaten weg, clean beeld blijft aan
-            poiMelding('POI zoeken…', '#00838f', 10000);
+            showInfo('POI zoeken…');
 
             // bepaal de query: bekende tag of naam-zoek
             const tag = POI_TAGS[term];
@@ -4646,14 +4748,26 @@ assign initialcost =
             }
 
             const q = `[out:json][timeout:25];(${aroundClause});out center 80;`;
-            // v63.82: via de gedeelde Overpass-ingang (rustpauzes, reserveservers); zelf gevraagd → ook een server die
-            // alleen na een storing rust, nooit een die ons net weigerde. 8 s per server.
-            const data = await overpassVraag(q, 8000, true);
-            if (!data) {
-                const n = overpassVrijOver();
-                poiMelding(n > 0 ? `POI-server is even bezet — probeer over ${n} s opnieuw.` : 'POI-server reageert niet — probeer zo nog eens.', '#FF9800');
+            // v63.84: zelf gevraagd → geduldig (overpassZoek); achtergrondvragen wachten zolang dit loopt (overpassZelf).
+            const zoek = poiZoek = { term, start: Date.now(), vervallen: false, ctrl: null, fase: 'vraag', server: 0, rustTot: 0 };
+            poiZoekTeller();
+            let uit = null;
+            const klaar = overpassZoek(q, zoek, (fase, i, tot) => {
+                zoek.fase = fase; zoek.server = i; zoek.rustTot = tot || 0;
+                if (poiZoek === zoek) poiZoekTeller();
+            });
+            overpassZelf = klaar;
+            try { uit = await klaar; }
+            catch (e) { console.error('POI zoeken', e); uit = { data: null, uitslag: ['fout in de app'] }; }
+            finally { if (overpassZelf === klaar) overpassZelf = null; }
+            if (zoek.vervallen || !uit) return;          // POI gesloten of een andere zoekterm gekozen → niets meer tonen
+            poiZoek = null; poiZoekTeller();             // teller uit
+            if (!uit.data) {
+                // wat er per server gebeurde — zo weten we op de weg waarom (bezet, te traag, geen verbinding …)
+                poiMelding(`POI: geen antwoord — ${uit.uitslag.join(' · ')}`, '#FF9800', 7000);
                 return;
             }
+            const data = uit.data;
             try {
                 let els = (data.elements || []).map(e => {
                     const lat = e.lat || (e.center && e.center.lat);
@@ -4925,6 +5039,7 @@ assign initialcost =
         }
 
         function clearPOI() {
+            if (typeof poiZoekStop === 'function') poiZoekStop();   // v63.84: een lopende zoekvraag vervalt mee
             poiMarkers.forEach(m => map.removeLayer(m));
             poiMarkers = [];
             ['poiList', 'poiFocusList'].forEach(id => {
@@ -5001,7 +5116,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "63.83";
+        const APP_VERSION = "63.84";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
@@ -6566,6 +6681,20 @@ assign initialcost =
             FR: { bbox: '42.3,-4.8,51.1,8.3', naam: 'Frankrijk' }
         };
         const flitserLandGeladen = {};   // landcode → true zodra geladen
+        // v63.84 (Sjoerd: "gewoon vervelend dat POI niet snel oppopt"): heel-land-flitsers hoogstens 1× per WEEK per toestel
+        // (was: bij élke start). Dat is de zwaarste Overpass-vraag van de app en hij liep precies op het moment dat je na
+        // het opstarten POI wilt: hij houdt één van je 2 plekken bij de server bezet. De flitsers zelf staan al in je eigen
+        // opslag (loadFlitsersFromLocal) en in Firebase; wat in beeld is wordt nog steeds gecheckt (checkFlitsersInView).
+        // Alleen als die eigen opslag ook echt flitsers heeft — anders (gewist, vol) gewoon opnieuw laden.
+        const FLITSER_LAND_WEEK = 7 * 24 * 3600 * 1000, FLITSER_LAND_LS = 'homeFlitserLand';
+        try {
+            const raw = localStorage.getItem(FLITSER_LS_KEY);
+            const week = JSON.parse(localStorage.getItem(FLITSER_LAND_LS) || '{}');
+            if (raw && raw.length > 2) for (const c in week) if (Date.now() - week[c] < FLITSER_LAND_WEEK) flitserLandGeladen[c] = true;
+        } catch (e) {}
+        function flitserLandOnthoud(code) {
+            try { const week = JSON.parse(localStorage.getItem(FLITSER_LAND_LS) || '{}'); week[code] = Date.now(); localStorage.setItem(FLITSER_LAND_LS, JSON.stringify(week)); } catch (e) {}
+        }
 
         // v63.82 GEMETEN: dit werd bij élke GPS-tik opnieuw gestart zolang het land nog niet binnen was — met een
         // weigerende server 60 zware heel-NL-vragen per minuut, ook tegelijk. Nu: één tegelijk, en na een mislukking
@@ -6597,6 +6726,7 @@ assign initialcost =
                 }
                 drawFlitserMarkers();
                 saveFlitsersToLocal();
+                flitserLandOnthoud(code);   // v63.84: echt binnen (en bewaard) → deze week niet opnieuw
                 console.log(`📷 ${land.naam}: ${added} flitsers geladen (totaal ${flitsers.length})`);
             } catch (e) { console.warn(`flitsers ${code} laden mislukt`, e); }
             finally { flitserLandBezig[code] = false; }
