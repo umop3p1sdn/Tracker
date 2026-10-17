@@ -711,6 +711,10 @@
         .poi-popup .leaflet-popup-content-wrapper { border-radius: 12px; }
         .poi-popup .leaflet-popup-close-button { font-size: 26px; width: 34px; height: 34px; padding: 6px 0 0 0; }
         /* POI focus-modus: knoppen onderin */
+        /* v63.89: lijsten-menu op de plek van de zoekknoppen (📥 Lijsten ↔ ↩ Zoeken) */
+        #poiLandPaneel { display: none; flex-direction: column; }
+        #poiFocusBar.lijsten #poiLandPaneel { display: flex; }
+        #poiFocusBar.lijsten .poiCat { display: none !important; }
         #poiFocusBar {
             position: absolute; bottom: 130px; left: 12px; right: 12px; z-index: 2100;
             background: rgba(10,14,39,0.92); border: 2px solid #00BCD4; border-radius: 12px;
@@ -1248,7 +1252,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.88 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.89 © Umop3p1sdn</div>
 
             </div>
 
@@ -1740,7 +1744,7 @@
             <ul style="margin: 10px 0; padding-left: 20px;">
                 <li><strong>Route</strong> — zoekbalk + 📍 + Wis route + de profielen.</li>
                 <li><strong>Extra</strong> — omweg- én rondrit-generator (wisselknop Omrit/Rondrit).</li>
-                <li><strong>POI</strong> — opent de focus-modus: alle andere menu's verdwijnen voor maximaal zicht op de kaart. Knoppen onderin (liggend rechts naast het Plan-menu), de lijst onder het Plan-menu (liggend ernaast). Sluiten met de rode ✕. Eén tik op een knop is genoeg: bovenin telt hij de seconden terwijl de (drukke) POI-server zoekt — nog eens tikken start geen extra zoekvraag. Vraagt de server even rust, dan zie je over hoeveel seconden hij zoekt. Lukt het niet, dan zegt de melding per server waarom (bezet, overbelast, te traag, geen verbinding). <strong>Voorraad op je telefoon:</strong> Benzine, Restaurant en Supermarkt bewaart de app op je telefoon. Ben je in NL, BE, DE, LU of FR, dan haalt hij dat hele land binnen (eerst rond je, dan langs je route, dan de rest — dichtstbij eerst). Met de knop 📥 naast "Zoekgebied" start je het zelf en zie je de voortgang (⏳ NL 12/63); staat er ✓, dan haalt de knop alles van dat land opnieuw op. Rond je en langs je route ververst hij elke week, de rest blijft gewoon bewaard. Dan staan ze er meteen, ook zonder bereik (onderin: "van je telefoon"). De andere knoppen en wat je zelf intypt zoekt hij live.</li>
+                <li><strong>POI</strong> — opent de focus-modus: alle andere menu's verdwijnen voor maximaal zicht op de kaart. Knoppen onderin (liggend rechts naast het Plan-menu), de lijst onder het Plan-menu (liggend ernaast). Sluiten met de rode ✕. Eén tik op een knop is genoeg: bovenin telt hij de seconden terwijl de (drukke) POI-server zoekt — nog eens tikken start geen extra zoekvraag. Vraagt de server even rust, dan zie je over hoeveel seconden hij zoekt. Weigert hij vaker, dan laat de app hem langer met rust (1 tot 30 min) — wie blijft aandringen wordt door de server geblokkeerd. Lukt het niet, dan zegt de melding per server waarom (bezet, overbelast, te traag, geen verbinding). <strong>Voorraad op je telefoon:</strong> Benzine, Restaurant en Supermarkt bewaart de app op je telefoon: vanzelf rond je en langs je route (elke week vers). Hele landen kies je zelf: tik 📥 Lijsten (naast "Zoekgebied"), tik de landen aan (NL, BE, DE, LU, FR) en dan Download. Onder elk land: ⏳ bezig, ½ half binnen, ✓ binnen (met datum), ↻ half ververst (de vorige lijsten blijven gewoon werken). Hij haalt één blok tegelijk met pauzes ertussen, veilig voor de server. Weigert die, dan stopt hij meteen en probeert niets opnieuw; later Download = verder waar hij was. Een land dat compleet is en nog geen week oud haalt hij niet opnieuw. Tijdens het downloaden is de knop ⏹ Stop; ↩ Zoeken brengt je terug naar de zoekknoppen. Alles blijft bewaard en staat er meteen, ook zonder bereik (onderin: "van je telefoon"). De andere knoppen en wat je zelf intypt zoekt hij live.</li>
                 <li><strong>Mode</strong> — kies hoe je reist: Road, Offroad, Bike, Race bike of Walk. Zie de sectie <em>Mode</em> hieronder.</li>
             </ul>
             <p style="background:#e3e7f5; padding:8px 14px; border-radius:8px;"><em>Route, Extra en Mode werken als accordeon: er staat er steeds één open.</em></p>
@@ -1803,7 +1807,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.88 © Umop3p1sdn
+                HO-ME v63.89 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2082,7 +2086,7 @@
             <ul style="margin: 10px 0; padding-left: 20px;">
                 <li><strong>Route</strong> — search bar + 📍 + Wis route (clear route) + the profiles.</li>
                 <li><strong>Extra</strong> — detour and roundtrip generator (toggle Omrit/Rondrit = detour/roundtrip).</li>
-                <li><strong>POI</strong> — opens focus mode: all other menus disappear for maximum view of the map. Buttons at the bottom (in landscape to the right of the Plan menu), the list below the Plan menu (in landscape next to it). Close with the red ✕. One tap on a button is enough: at the top it counts the seconds while the (busy) POI server searches — tapping again does not start an extra search. If the server asks for a short rest, you see in how many seconds it will search. If it fails, the message tells you per server why (busy, overloaded, too slow, no connection). <strong>Stored on your phone:</strong> Fuel, Restaurant and Supermarket are kept on your phone. When you are in NL, BE, DE, LU or FR, the app fetches that whole country (first around you, then along your route, then the rest — nearest first). The 📥 button next to "Zoekgebied" starts it yourself and shows the progress (⏳ NL 12/63); when it shows ✓, the button fetches that whole country again. Around you and along your route it refreshes every week; the rest is simply kept. They then appear instantly, even without signal (at the bottom: "van je telefoon"). The other buttons and anything you type yourself are searched live.</li>
+                <li><strong>POI</strong> — opens focus mode: all other menus disappear for maximum view of the map. Buttons at the bottom (in landscape to the right of the Plan menu), the list below the Plan menu (in landscape next to it). Close with the red ✕. One tap on a button is enough: at the top it counts the seconds while the (busy) POI server searches — tapping again does not start an extra search. If the server asks for a short rest, you see in how many seconds it will search. If it refuses more often, the app leaves it alone for longer (1 to 30 min) — the server blocks anyone who keeps insisting. If it fails, the message tells you per server why (busy, overloaded, too slow, no connection). <strong>Stored on your phone:</strong> Fuel, Restaurant and Supermarket are kept on your phone: automatically around you and along your route (refreshed every week). Whole countries you choose yourself: tap 📥 Lijsten (next to "Zoekgebied"), tap the countries (NL, BE, DE, LU, FR) and then Download. Under each country: ⏳ busy, ½ partly in, ✓ in (with date), ↻ partly refreshed (the previous lists keep working). It fetches one block at a time with pauses in between, safe for the server. If the server refuses, it stops at once and retries nothing; Download later = continues where it left off. A country that is complete and less than a week old is not fetched again. While downloading the button is ⏹ Stop; ↩ Zoeken takes you back to the search buttons. Everything is kept and appears instantly, even without signal (at the bottom: "van je telefoon"). The other buttons and anything you type yourself are searched live.</li>
                 <li><strong>Mode</strong> — choose how you travel: Road, Offroad, Bike, Race bike or Walk. See the <em>Mode</em> section below.</li>
             </ul>
             <p style="background:#e3e7f5; padding:8px 14px; border-radius:8px;"><em>Route, Extra and Mode work as an accordion: only one is open at a time.</em></p>
@@ -2145,7 +2149,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.88 © Umop3p1sdn
+                HO-ME v63.89 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2242,25 +2246,32 @@
         </div>
         <div style="display:flex; gap:6px; margin-bottom:4px;">
             <button id="poiScopeBtn" onclick="togglePoiScope()" style="flex:1; padding:7px; border-radius:8px; border:2px solid #00838f; background:#0a0e27; color:#cfeffd; font-weight:bold; font-size:0.78em; cursor:pointer;">Zoekgebied: Route</button>
-            <button id="poiLandBtn" onclick="poiLandKnop()" title="Benzine, Restaurant en Supermarkt van dit land op je telefoon zetten" style="flex:1; padding:7px; border-radius:8px; border:2px solid #00838f; background:#0a0e27; color:#cfeffd; font-weight:bold; font-size:0.78em; cursor:pointer;">📥 Lijsten</button>
+            <button id="poiLandBtn" onclick="poiLandKnop()" title="Lijsten per land: Benzine, Restaurant en Supermarkt op je telefoon" style="flex:1; padding:7px; border-radius:8px; border:2px solid #00838f; background:#0a0e27; color:#cfeffd; font-weight:bold; font-size:0.78em; cursor:pointer;">📥 Lijsten</button>
         </div>
-        <div style="display:flex; gap:6px; margin-bottom:6px;">
+        <!-- v63.89: lijsten per land (Benzine/Restaurant/Supermarkt op de telefoon) — op de plek van de zoekknoppen -->
+        <div id="poiLandPaneel">
+            <div style="color:#cfeffd; font-size:0.8em; margin:2px 0 6px;">Op je telefoon: ⛽ Benzine · 🍽 Restaurant · 🛒 Super — kies landen:</div>
+            <div id="poiLandKeuze" style="display:grid; grid-template-columns:repeat(3, 1fr); gap:6px; margin-bottom:8px;"></div>
+            <button id="poiLandGo" onclick="poiLandDownload()" style="padding:12px 8px; border-radius:10px; border:2px solid #00BCD4; background:#00838f; color:#fff; font-weight:bold; font-size:1em; cursor:pointer;">📥 Download</button>
+            <div style="color:#9aa; font-size:0.72em; margin-top:6px; line-height:1.3;">Eén blok tegelijk met pauzes — veilig voor de server. Weigert hij, dan stopt het en kun je later verder.</div>
+        </div>
+        <div class="poiCat" style="display:flex; gap:6px; margin-bottom:6px;">
             <button onclick="searchPOI('benzine')" style="flex:1; padding:16px 6px; border-radius:10px; border:2px solid #555; background:#e8e8ea; color:#1a1a2e; font-weight:bold; font-size:1.1em; cursor:pointer;">⛽ Benzine</button>
             <button onclick="searchPOI('laden')" style="flex:1; padding:16px 6px; border-radius:10px; border:2px solid #555; background:#e8e8ea; color:#1a1a2e; font-weight:bold; font-size:1.1em; cursor:pointer;">⚡ Laden</button>
         </div>
-        <div style="display:flex; gap:6px; margin-bottom:6px;">
+        <div class="poiCat" style="display:flex; gap:6px; margin-bottom:6px;">
             <button onclick="searchPOI('restaurant')" style="flex:1; padding:16px 6px; border-radius:10px; border:2px solid #555; background:#e8e8ea; color:#1a1a2e; font-weight:bold; font-size:1.1em; cursor:pointer;">🍽 Restaurant</button>
             <button onclick="searchPOI('snackbar')" style="flex:1; padding:16px 6px; border-radius:10px; border:2px solid #555; background:#e8e8ea; color:#1a1a2e; font-weight:bold; font-size:1.1em; cursor:pointer;">🍔 Snack</button>
         </div>
-        <div style="display:flex; gap:6px; margin-bottom:6px;">
+        <div class="poiCat" style="display:flex; gap:6px; margin-bottom:6px;">
             <button onclick="searchPOI('koffie')" style="flex:1; padding:16px 6px; border-radius:10px; border:2px solid #555; background:#e8e8ea; color:#1a1a2e; font-weight:bold; font-size:1.1em; cursor:pointer;">☕ Café</button>
             <button onclick="searchPOI('bakker')" style="flex:1; padding:16px 6px; border-radius:10px; border:2px solid #555; background:#e8e8ea; color:#1a1a2e; font-weight:bold; font-size:1.1em; cursor:pointer;">🥐 Bakker</button>
         </div>
-        <div style="display:flex; gap:6px;">
+        <div class="poiCat" style="display:flex; gap:6px;">
             <button onclick="searchPOI('hotel')" style="flex:1; padding:16px 6px; border-radius:10px; border:2px solid #555; background:#e8e8ea; color:#1a1a2e; font-weight:bold; font-size:1.1em; cursor:pointer;">🛏 Hotel</button>
             <button onclick="searchPOI('supermarkt')" style="flex:1; padding:16px 6px; border-radius:10px; border:2px solid #555; background:#e8e8ea; color:#1a1a2e; font-weight:bold; font-size:1.1em; cursor:pointer;">🛒 Super</button>
         </div>
-        <div style="display:flex; gap:6px;">
+        <div class="poiCat" style="display:flex; gap:6px;">
             <input id="poiText" type="text" placeholder="Zoek POI (bv hotel, bakker, uitzicht)..." autocomplete="off" style="flex:1; padding:10px; border-radius:8px; border:2px solid #555; background:#e8e8ea; color:#1a1a2e; font-size:0.85em;">
             <button onclick="searchPOI(document.getElementById('poiText').value)" style="flex:0 0 auto; padding:10px 14px; border-radius:8px; border:2px solid #555; background:#e8e8ea; color:#1a1a2e; font-weight:bold; font-size:0.85em; cursor:pointer;">Zoek</button>
         </div>
@@ -2749,6 +2760,7 @@ assign initialcost =
             document.getElementById('panelRoute').classList.remove('open');
             document.getElementById('panelExtra').classList.remove('open');
             document.getElementById('poiFocusBar').style.display = 'flex';
+            document.getElementById('poiFocusBar').classList.remove('lijsten');   // v63.89: open = de zoekknoppen
             poiPlek();   // v63.82: liggend naast het plan-paneel (de Benzine-knop lag eronder)
             if (typeof poiKnopTekst === 'function') { poiKnopTekst(); if (typeof poiMeta === 'function') poiMeta().then(poiKnopTekst).catch(() => {}); }   // v63.87
         }
@@ -4447,36 +4459,71 @@ assign initialcost =
             'https://maps.mail.ru/osm/tools/overpass/api/interpreter'
         ];
         const overpassRust = {};   // server → { tot, keer, weiger }: tot dit moment niet vragen
+        // v63.89 (Sjoerd: "veilig is het belangrijkste, ban is een no go"): een weigering (429/406) = langer rust, en bij
+        // herhaling véél langer — de beheerder van overpass-api.de bant wie herhaald tegen 429/406 aanloopt (aug 2026) en
+        // vraagt minstens 30 s pauze. Weigering: 1, 5, 15, 30 min. Storing/time-out (server druk): 30, 60, 90, 120 s.
+        // Eén gelukt antwoord zet de teller terug.
+        const OVERPASS_WEIGER_S = [60, 300, 900, 1800];
         function overpassPauze(srv, weiger) {
             const r = overpassRust[srv] || { keer: 0 };
             r.keer = Math.min(r.keer + 1, 4);
-            r.tot = Date.now() + 30000 * r.keer;       // 30, 60, 90, 120 s
+            r.tot = Date.now() + (weiger ? OVERPASS_WEIGER_S[r.keer - 1] * 1000 : 30000 * r.keer);
             r.weiger = !!weiger;                       // 429/406 = de server weigert ons → die pauze geldt voor iedereen
             overpassRust[srv] = r;
+            overpassRustBewaar();
         }
+        // v63.89: een weigering overleeft een herstart van de app — anders vraagt een herstart (of POI een paar keer opnieuw
+        // openen als het niet wil) de weigerende server meteen weer. Alleen weigeringen (429/406); langer dan een uur
+        // voorbij = vergeten. Een storing of geen verbinding wordt niet bewaard (daar zag de server ons vaak niet eens).
+        const OVERPASS_RUST_LS = 'homeOverpassRust';
+        try {
+            const o = JSON.parse(localStorage.getItem(OVERPASS_RUST_LS) || '{}') || {};
+            for (const k of OVERPASS_SERVERS) if (o[k] && o[k].weiger && typeof o[k].tot === 'number' && o[k].tot > Date.now() - 3600000) overpassRust[k] = o[k];
+        } catch (e) {}
+        function overpassRustBewaar() {
+            try { const o = {}; for (const k in overpassRust) if (overpassRust[k].weiger) o[k] = overpassRust[k]; localStorage.setItem(OVERPASS_RUST_LS, JSON.stringify(o)); } catch (e) {}
+        }
+        function overpassRustWeg(srv) { if (overpassRust[srv]) { delete overpassRust[srv]; overpassRustBewaar(); } }   // gelukt → teller terug
         // Achtergrondvragen (flitsers, snelheidsbord, rotondes, straat): kort geduld en elke rustende server overslaan.
         // v63.84: en WACHTEN zolang jij zelf zoekt (POI) — anders vult de app zijn eigen 2 plekken bij de server terwijl
         // jouw zoekvraag in de wachtrij staat. Daarna gaan ze gewoon door (alleen later).
         let overpassZelf = null;   // Promise zolang een POI-zoekvraag loopt
-        let overpassLoopt = 0;     // v63.85: zoveel achtergrondvragen lopen er nu (de POI-voorraad wacht tot dit 0 is)
-        // tekst = true: het antwoord als tekst (CSV, voor de POI-voorraad) i.p.v. JSON
-        async function overpassVraag(q, ms, tekst) {
+        let overpassLoopt = 0;     // v63.85: zoveel achtergrondvragen lopen er nu
+        let overpassLaatsteFout = null;   // v63.89: waarom de laatste achtergrondvraag mislukte (429, 406, 504, 'net', 'traag', 'rust')
+        // v63.89 VEILIG: alle achtergrondvragen van de app gaan ÉÉN VOOR ÉÉN (een rij). GEMETEN vóór v63.89: flitsers in
+        // beeld, live snelheid, straat, snelheidsborden, rotondes en de POI-voorraad konden tegelijk lopen (tot 3–4) — de
+        // server geeft per telefoon 2 plekken, daarboven volgt 429. Jouw eigen POI-zoekvraag gaat buiten de rij om (dan
+        // hooguit 2 tegelijk) en de rij wacht daar ook nog op (overpassZelf).
+        // tekst = true: het antwoord als tekst (CSV) i.p.v. JSON. alleenHoofd = true: alleen overpass-api.de, geen reserves
+        // (voor de grote POI-lijsten: die schuiven we niet door naar andermans server).
+        let overpassRij = Promise.resolve();
+        function overpassVraag(q, ms, tekst, alleenHoofd) {
+            const beurt = overpassRij.then(() => overpassVraagNu(q, ms, tekst, alleenHoofd));
+            overpassRij = beurt.catch(() => {});
+            return beurt;
+        }
+        async function overpassVraagNu(q, ms, tekst, alleenHoofd) {
             while (overpassZelf) { try { await overpassZelf; } catch (e) {} }
-            for (const srv of OVERPASS_SERVERS) {
+            overpassLaatsteFout = 'rust';
+            for (const srv of (alleenHoofd ? OVERPASS_SERVERS.slice(0, 1) : OVERPASS_SERVERS)) {
                 const r = overpassRust[srv];
                 if (r && Date.now() < r.tot) continue;   // deze server wil even rust → volgende
                 const ctrl = new AbortController();
-                const t = setTimeout(() => ctrl.abort(), ms || 8000);
+                let teLang = false;
+                const t = setTimeout(() => { teLang = true; ctrl.abort(); }, ms || 8000);
                 overpassLoopt++;
                 try {
                     const res = await fetch(srv, { method: 'POST', body: 'data=' + encodeURIComponent(q), signal: ctrl.signal });
-                    if (res.ok && !tekst) { clearTimeout(t); delete overpassRust[srv]; return await res.json(); }
-                    if (res.ok) { const uit = await res.text(); clearTimeout(t); delete overpassRust[srv]; return uit; }   // CSV: ook het lezen onder de klok
+                    // v63.89: ook het lezen van het antwoord onder de klok — stokt dat, dan zou de rij (en dus álle
+                    // achtergrondvragen) blijven hangen tot je de app herstart.
+                    if (res.ok) { const uit = tekst ? await res.text() : await res.json(); clearTimeout(t); overpassRustWeg(srv); overpassLaatsteFout = null; return uit; }
                     clearTimeout(t);
+                    overpassLaatsteFout = res.status;
                     if (res.status === 400) return null;   // fout in de vraag zelf → een andere server helpt niet
                     overpassPauze(srv, res.status === 429 || res.status === 406);   // weigering of overbelast → rust
                 } catch (e) {
                     clearTimeout(t);
+                    overpassLaatsteFout = teLang ? 'traag' : 'net';
                     overpassPauze(srv, false);             // time-out of geen verbinding → ook even rust
                 } finally { overpassLoopt--; }
             }
@@ -4525,7 +4572,9 @@ assign initialcost =
                 return { reden: 'net' };   // geen verbinding (of de server laat de browser niet toe)
             } finally { clearTimeout(t); zoek.ctrl = null; }
         }
-        const OVERPASS_RUST_WACHT = 35000;   // zo kort rust de hoofdserver nog → zelf gevraagd: afwachten (met teller)
+        // Zo kort rust de hoofdserver nog → zelf gevraagd: afwachten (met teller). v63.89: 60 s = de rust na één weigering
+        // (was 35 s bij 30 s rust); na een herhaalde weigering (5 min of meer) wacht POI niet, dan alleen de reserves.
+        const OVERPASS_RUST_WACHT = 60000;
         async function overpassZoek(q, zoek, fase) {
             const uitslag = [];
             const kortRust = i => { const r = overpassRust[OVERPASS_SERVERS[i]]; return !!(r && r.weiger && Date.now() < r.tot && r.tot - Date.now() <= OVERPASS_RUST_WACHT); };
@@ -4544,7 +4593,7 @@ assign initialcost =
                 if (zoek.vervallen) return null;
                 fase('vraag', i);
                 const a = await overpassPoging(srv, q, OVERPASS_GEDULD[i], zoek);
-                if (a.json) { delete overpassRust[srv]; return { data: a.json, server: i }; }
+                if (a.json) { overpassRustWeg(srv); return { data: a.json, server: i }; }
                 if (zoek.vervallen) return null;
                 uitslag.push([i, OVERPASS_KORT[i] + ': ' + overpassReden(a.reden)]);
                 if (a.reden === 400) break;                                  // fout in de vraag zelf → andere server helpt niet
@@ -4698,11 +4747,9 @@ assign initialcost =
         // v63.87 (Sjoerd: "belangrijk: Benzine, Restaurants, Supermarkt — de rest later met de zoekknop"; "de trigger zelf
         // starten om die lijsten binnen te halen, sowieso zodra je een land binnenkomt"; "gebieden niet opruimen, gewoon
         // bewaren"; "niet op wifi, gewoon data, maar paar MB"): de voorraad is nu alleen Benzine, Restaurant en Supermarkt
-        // (NL ±27.000 plekken, ±2 MB) — de andere knoppen en zelf typen zoeken live. Ben je in NL, BE, DE, LU of FR (de
-        // landen van de flitsers, ruwe kaders), dan haalt hij dat HELE land binnen: eerst de 3×3 rond je, dan je route, dan
-        // de rest van het land, dichtstbij eerst; hervat waar hij was. Knop 📥 in het POI-menu: meteen beginnen, voortgang
-        // zien; staat het hele land er al (✓), dan haalt de knop alles van dat land opnieuw op. Niets wordt meer opgeruimd;
-        // rond je en langs je route ververst hij 1× per week, de rest van een land blijft staan tot je op de knop drukt.
+        // (NL ±27.000 plekken, ±2 MB) — de andere knoppen en zelf typen zoeken live. Niets wordt meer opgeruimd; rond je en
+        // langs je route ververst hij 1× per week. v63.89: hele landen NIET meer automatisch (aan de grens koos hij het
+        // verkeerde land, en het was traag en veel verkeer) — je kiest ze zelf in het lijsten-menu (📥), zie verderop.
         const POI_VOORRAAD = {
             amenity: ['fuel', 'restaurant'],
             shop: ['supermarket']
@@ -4773,17 +4820,46 @@ assign initialcost =
             poiGeheugen(k, p);
         }
         // CSV van Overpass → [[id, lat, lon, tags], …]. De kopregel moet kloppen, anders was het geen goed antwoord.
+        // v63.89: Overpass zet een waarde met een komma, " of regeleinde tussen "…" (RFC 4180, broncode escape_csv) — bv.
+        // openingstijden "Mo-Fr 08:00-12:00,13:00-17:00": die aanhalingstekens kwamen mee in je lijst, en een waarde met een
+        // regeleinde brak de regel in tweeën. Nu netjes ontleed: tab = volgende veld, "" binnen "…" = één ".
+        function poiCsvRijen(tekst) {
+            const s = String(tekst), n = s.length, rijen = [];
+            let rij = [], i = 0;
+            while (i < n) {
+                let veld;
+                if (s.charCodeAt(i) === 34) {
+                    let j = i + 1; veld = '';
+                    for (;;) {
+                        const q = s.indexOf('"', j);
+                        if (q < 0) { veld += s.slice(j); j = n; break; }
+                        if (s.charCodeAt(q + 1) === 34) { veld += s.slice(j, q + 1); j = q + 2; continue; }
+                        veld += s.slice(j, q); j = q + 1; break;
+                    }
+                    i = j;
+                    while (i < n && s.charCodeAt(i) !== 9 && s.charCodeAt(i) !== 10) i++;
+                } else {
+                    let j = i;
+                    while (j < n) { const c = s.charCodeAt(j); if (c === 9 || c === 10) break; j++; }
+                    veld = s.slice(i, j); i = j;
+                }
+                rij.push(veld.charCodeAt(veld.length - 1) === 13 ? veld.slice(0, -1) : veld);
+                if (i >= n) { rijen.push(rij); rij = null; break; }
+                if (s.charCodeAt(i) === 10) { rijen.push(rij); rij = []; }
+                i++;
+            }
+            if (rij && rij.length) rijen.push(rij);
+            return rijen;
+        }
         function poiCsvLees(tekst) {
-            const regels = String(tekst).split('\n');
-            const kop = (regels.shift() || '').split('\t').map(x => x.trim().replace(/^(@|::)/, '').replace(/^"|"$/g, ''));
+            const rijen = poiCsvRijen(tekst);
+            const kop = (rijen.shift() || []).map(x => x.trim().replace(/^(@|::)/, ''));
             const kol = n => kop.indexOf(n);
             const iT = kol('type'), iI = kol('id'), iLa = kol('lat'), iLo = kol('lon');
             if (iT < 0 || iI < 0 || iLa < 0 || iLo < 0) return null;
             const tagKol = kop.map((n, i) => [n, i]).filter(([n]) => !['type', 'id', 'lat', 'lon'].includes(n));
             const uit = [];
-            for (const r of regels) {
-                if (!r) continue;
-                const v = r.split('\t');
+            for (const v of rijen) {
                 const lat = parseFloat(v[iLa]), lon = parseFloat(v[iLo]);
                 if (!isFinite(lat) || !isFinite(lon)) continue;
                 const g = {};
@@ -4792,14 +4868,30 @@ assign initialcost =
             }
             return uit;
         }
+        // v63.89: CSV kent geen foutmelding. Breekt Overpass een vraag af (eigen time-out of geheugen — onder drukte), dan
+        // krijg je gewoon 200 met een halve of lege lijst (broncode: Output_CSV::display_error is leeg) — en dat zou een vak
+        // met goede plekken overschrijven met niets. Daarom vraagt hij als laatste een eigen regel "klaar" (make); ontbreekt
+        // die, dan was het antwoord niet compleet: mislukt (en de server even rust), het vak blijft zoals het was.
+        const POI_KLAAR = 'make klaar;out;';
+        function poiCsvKlaar(tekst) { return /(^|\n)klaar(\t[^\n]*)?\n?$/.test(String(tekst).slice(-300)); }
+        // Antwoord van de rij → plekken, of null. Niet leesbaar of niet compleet: reden onthouden en de server even rust
+        // (30 s, geen weigering) — net als bij een time-out.
+        function poiCsvAntwoord(tekst) {
+            if (typeof tekst !== 'string') return null;      // de rij gaf zelf al de reden (429, net, traag, rust …)
+            const p = poiCsvLees(tekst);
+            const fout = !p ? 'onleesbaar' : !poiCsvKlaar(tekst) ? 'afgebroken' : null;
+            if (!fout) return p;
+            overpassLaatsteFout = fout;
+            overpassPauze(OVERPASS_SERVERS[0], false);
+            return null;
+        }
+        // Eén vak van 0,5° (de automatische voorraad rond je en langs je route). v63.89: alleen bij overpass-api.de.
         async function poiVakHaal(k) {
             const [i, j] = k.split('_').map(Number);
             const s = i * POI_VAK, w = j * POI_VAK, bb = `${s},${w},${s + POI_VAK},${w + POI_VAK}`;
             const deel = key => `nwr["${key}"~"^(${POI_VOORRAAD[key].join('|')})$"](${bb});`;
-            const q = `[out:csv(${POI_VELDEN.join(',')};true)][timeout:60];(${Object.keys(POI_VOORRAAD).map(deel).join('')});out center;`;
-            const tekst = await overpassVraag(q, 65000, true);
-            if (typeof tekst !== 'string') return false;
-            const p = poiCsvLees(tekst);
+            const q = `[out:csv(${POI_VELDEN.join(',')};true)][timeout:60];(${Object.keys(POI_VOORRAAD).map(deel).join('')});out center;${POI_KLAAR}`;
+            const p = poiCsvAntwoord(await overpassVraag(q, 65000, true, true));
             if (!p) return false;
             await poiVakSchrijf(k, p);
             return true;
@@ -4834,106 +4926,196 @@ assign initialcost =
             return poiRouteVakken;
         }
         function poiVakOud(m) { return !m || Date.now() - m.t > (m.n ? POI_VERS_MS : POI_LEEG_MS); }
-        // v63.87: in welk land ben je (eerste kader dat past, net als de flitsers) en welke vakken horen daarbij?
-        function poiLandVan(lat, lng) {
-            if (typeof FLITSER_LANDEN === 'undefined' || lat == null) return null;
-            for (const code in FLITSER_LANDEN) {
-                const [s, w, n, e] = FLITSER_LANDEN[code].bbox.split(',').map(Number);
-                if (lat >= s && lat <= n && lng >= w && lng <= e) return code;
-            }
-            return null;
-        }
-        function poiLandVakken(code) {
-            const [s, w, n, e] = FLITSER_LANDEN[code].bbox.split(',').map(Number), uit = [];
-            for (let a = Math.floor(s / POI_VAK); a <= Math.floor((n - 1e-9) / POI_VAK); a++)
-                for (let b = Math.floor(w / POI_VAK); b <= Math.floor((e - 1e-9) / POI_VAK); b++) uit.push(a + '_' + b);
-            return uit;
-        }
-        function poiLandStand(code) {   // { klaar, totaal } — vakken die er zijn (en niet ouder dan je laatste "alles opnieuw")
-            const vakken = poiLandVakken(code), vers = poiLandVers[code] || 0, m = poiMetaMap;
-            return { klaar: m ? vakken.filter(k => m.has(k) && m.get(k).t >= vers).length : 0, totaal: vakken.length };
-        }
-        // Welk vak nu? 1) rond je: ontbreekt of ouder dan een week; 2) langs je route: idem; 3) de rest van het land waar
-        // je bent: ontbreekt (of ouder dan je knop-druk) — dichtstbij eerst. null = niets te doen.
+        // Welk vak nu (automatisch)? 1) rond je: ontbreekt of ouder dan een week; 2) langs je route: idem. null = niets te doen.
+        // v63.89: geen automatisch hele land meer — dat ging aan de grens mis (ruwe kaders: bij Rijsel "België") en is
+        // veel verkeer; landen kies je zelf in het lijsten-menu.
         function poiVolgendVak(meta, lat, lng) {
             const nu = Date.now(), rust = k => nu < (poiVakRust[k] || 0);
             for (const k of poiVakkenRond(lat, lng)) if (!rust(k) && poiVakOud(meta.get(k))) return k;
             for (const k of poiVakkenRoute()) if (!rust(k) && poiVakOud(meta.get(k))) return k;
-            const code = poiLandVan(lat, lng);
-            if (!code) return null;
-            const vers = poiLandVers[code] || 0;
-            let best = null, bestD = Infinity;
-            for (const k of poiLandVakken(code)) {
-                if (rust(k) || (meta.has(k) && meta.get(k).t >= vers)) continue;
-                const [i, j] = k.split('_').map(Number);
-                const d = distM4(lat, lng, (i + 0.5) * POI_VAK, (j + 0.5) * POI_VAK);
-                if (d < bestD) { bestD = d; best = k; }
-            }
-            return best;
+            return null;
         }
-        // Vanuit de GPS van de master (en elke minuut, en via de knop: meteen): vak voor vak ophalen tot er niets meer te doen is.
-        async function poiVoorraadCheck(lat, lng, meteen) {
+        // Vanuit de GPS van de master (en elke minuut): vak voor vak ophalen tot er niets meer te doen is. v63.89 VEILIG: na elk
+        // vak minstens zo lang wachten als het duurde (de afkoeltijd van de server, minimaal 3 s); mislukt er één, dan stopt de
+        // ronde (en rust de server na een weigering 1–30 min, zie overpassPauze). Niet tijdens een land-download.
+        async function poiVoorraadCheck(lat, lng) {
             const nu = Date.now();
-            if (poiVoorraadBezig) return;
-            if (!meteen && (nu - poiStartTijd < POI_START_MS || nu < poiVoorraadRustTot || nu - poiCheckTijd < POI_CHECK_MS)) return;
+            if (poiVoorraadBezig || poiLandJob) return;
+            if (nu - poiStartTijd < POI_START_MS || nu < poiVoorraadRustTot || nu - poiCheckTijd < POI_CHECK_MS) return;
             if (typeof indexedDB === 'undefined') return;
             poiCheckTijd = nu;
             poiVoorraadBezig = true;
-            poiKnopTekst();
             try {
                 const meta = await poiMeta();
-                let gehaald = 0;
                 for (;;) {
                     const pos = lastGps || { lat, lng };             // onderweg: dichtstbij vanaf waar je nú bent
                     const k = poiVolgendVak(meta, pos.lat, pos.lng);
-                    if (!k) break;
-                    // alleen als de app verder niets aan Overpass vraagt — en nooit tijdens jouw eigen zoekvraag
-                    for (let w = 0; (overpassLoopt > 0 || overpassZelf) && w < 60; w++) await new Promise(r => setTimeout(r, 1000));
-                    if (overpassLoopt > 0 || overpassZelf) break;           // te druk → bij een volgende check verder
-                    if (!(await poiVakHaal(k))) {
-                        poiVakRust[k] = Date.now() + 600000; poiVoorraadRustTot = Date.now() + 60000;
-                        if (meteen && !gehaald) poiMelding('Lijsten ophalen lukt nu niet — geen verbinding of de server is bezet. Probeer het zo nog eens.', '#FF9800', 5000);
-                        break;
-                    }
-                    gehaald++;
-                    poiKnopTekst();
-                    await new Promise(r => setTimeout(r, poiTussenMs));
+                    if (!k || poiLandJob) break;
+                    const t0 = Date.now();
+                    if (!(await poiVakHaal(k))) { poiVakRust[k] = Date.now() + 600000; poiVoorraadRustTot = Date.now() + 60000; break; }
+                    await new Promise(r => setTimeout(r, Math.max(poiTussenMs, Date.now() - t0)));
                 }
             } catch (e) { console.warn('POI-voorraad', e); poiVoorraadRustTot = Date.now() + 300000; }
-            finally { poiVoorraadBezig = false; poiKnopTekst(); }
-        }
-        // De knop in het POI-menu: 📥 NL 12/63 (nog niet compleet) · ⏳ NL 12/63 (bezig) · ✓ NL (alles binnen)
-        function poiKnopTekst() {
-            const b = document.getElementById('poiLandBtn');
-            if (!b) return;
-            const code = lastGps ? poiLandVan(lastGps.lat, lastGps.lng) : null;
-            if (!code) { b.textContent = '📥 Lijsten'; return; }
-            const s = poiLandStand(code), compleet = poiMetaMap && s.klaar === s.totaal;
-            b.textContent = (compleet ? '✓ ' : poiVoorraadBezig ? '⏳ ' : '📥 ') + code + (compleet ? '' : ` ${s.klaar}/${s.totaal}`);
-        }
-        async function poiLandKnop() {
-            const code = lastGps ? poiLandVan(lastGps.lat, lastGps.lng) : null;
-            if (!code) { poiMelding('Lijsten ophalen kan in NL, BE, DE, LU en FR — je positie ligt daar niet (of is nog onbekend).', '#FF9800', 5000); return; }
-            try { await poiMeta(); } catch (e) { poiMelding('Lijsten ophalen: de opslag van de telefoon werkt niet.', '#FF9800', 5000); return; }
-            const s = poiLandStand(code);
-            if (s.klaar === s.totaal) {   // alles al binnen → alles van dit land opnieuw
-                poiLandVers[code] = Date.now();
-                try { localStorage.setItem('homePoiLandVers', JSON.stringify(poiLandVers)); } catch (e) {}
-                poiMelding(`${code}: Benzine, Restaurant en Supermarkt opnieuw ophalen…`, '#00838f', 3000);
-            } else poiMelding(`${code}: Benzine, Restaurant en Supermarkt ophalen…`, '#00838f', 3000);
-            // Zelf gevraagd: wat alleen rust na een storing of time-out (bv. net nog zonder bereik) mag meteen weer.
-            // GEMETEN: anders deed de knop na een mislukte zoekvraag zonder internet 30 s lang niets. Een weigering
-            // (429/406) blijft staan — beleid van overpass-api.de.
-            for (const srv of OVERPASS_SERVERS) { const r = overpassRust[srv]; if (r && !r.weiger) delete overpassRust[srv]; }
-            for (const k in poiVakRust) delete poiVakRust[k];
-            poiVoorraadRustTot = 0;
-            poiVoorraadCheck(lastGps.lat, lastGps.lng, true);
-            poiKnopTekst();
+            finally { poiVoorraadBezig = false; }
         }
         // Stilstaand geeft de telefoon soms lang geen nieuwe GPS-positie → ook elke minuut met de laatst bekende (alleen master)
         setInterval(() => {
             if (typeof currentMode !== 'undefined' && currentMode === 'master' && lastGps) poiVoorraadCheck(lastGps.lat, lastGps.lng);
         }, 60000);
+
+        // ═══ v63.89 LIJSTEN PER LAND — jij kiest, dan Download (Sjoerd: "mss klein keuzemenu: voor welke landen en dan de
+        // download-knop"; "het gaat zo langzaam"; "veilig is het belangrijkste, ban is een no go") ═══
+        // Gecontroleerd tegen de regels van overpass-api.de (Commons-pagina + beheerder, aug 2026): tot ±10.000 vragen en
+        // 1 GB per dag; met de hand gestarte vragen geven vrijwel nooit problemen; ban = herhaald 429/406; na 429/406
+        // minstens 30 s wachten; geen parallelle vragen. Daarom: alleen op jouw Download, in blokken van hoogstens 2°×2°
+        // (BE 2, NL 6, DE 25, FR 35 vragen i.p.v. 32/63/…/513 losse vakjes), één tegelijk via dezelfde rij als de rest van de
+        // app, na elk blok minstens zo lang wachten als het duurde (min. 5 s), alleen bij overpass-api.de (niet doorschuiven
+        // naar andermans server), en bij de EERSTE weigering of storing stoppen met een melding — nooit vanzelf opnieuw.
+        // Afgebroken? Download gaat later verder waar hij was. Staat een land er al compleet (✓) en is het nog geen week oud,
+        // dan niet opnieuw; ouder: alles opnieuw (zolang dat half is: ↻, de vorige lijsten blijven werken).
+        const POI_LANDEN = ['NL', 'BE', 'DE', 'LU', 'FR'];
+        const POI_BLOK = 2;                         // graden per blok
+        let poiLandKeus = [], poiLandKlaar = {};
+        try { poiLandKeus = JSON.parse(localStorage.getItem('homePoiLandKeus') || '[]') || []; } catch (e) {}
+        try { poiLandKlaar = JSON.parse(localStorage.getItem('homePoiLandKlaar') || '{}') || {}; } catch (e) {}
+        let poiLandJob = null;                      // { stop, code, klaar, totaal } zolang een download loopt
+        function poiLandBewaar() {
+            try {
+                localStorage.setItem('homePoiLandKeus', JSON.stringify(poiLandKeus));
+                localStorage.setItem('homePoiLandKlaar', JSON.stringify(poiLandKlaar));
+                localStorage.setItem('homePoiLandVers', JSON.stringify(poiLandVers));
+            } catch (e) {}
+        }
+        function poiLandKader(code) {               // ruw kader (zoals bij de flitsers), naar buiten afgerond op vakken van 0,5°
+            const [s, w, n, e] = FLITSER_LANDEN[code].bbox.split(',').map(Number);
+            return { s: Math.floor(s / POI_VAK) * POI_VAK, w: Math.floor(w / POI_VAK) * POI_VAK, n: Math.ceil(n / POI_VAK) * POI_VAK, e: Math.ceil(e / POI_VAK) * POI_VAK };
+        }
+        function poiLandBlokken(code) {
+            const k = poiLandKader(code), uit = [];
+            for (let s = k.s; s < k.n - 1e-9; s += POI_BLOK)
+                for (let w = k.w; w < k.e - 1e-9; w += POI_BLOK) uit.push({ s, w, n: Math.min(s + POI_BLOK, k.n), e: Math.min(w + POI_BLOK, k.e) });
+            return uit;
+        }
+        function poiBlokVakken(b) {
+            const uit = [];
+            for (let a = Math.round(b.s / POI_VAK); a < Math.round(b.n / POI_VAK); a++)
+                for (let c = Math.round(b.w / POI_VAK); c < Math.round(b.e / POI_VAK); c++) uit.push(a + '_' + c);
+            return uit;
+        }
+        function poiBlokKlaar(b, vers) { const m = poiMetaMap; return !!m && poiBlokVakken(b).every(k => m.has(k) && m.get(k).t >= vers); }
+        // Status onder een land: — niets · ⏳ bezig · ½ half binnen · ✓ dag-maand compleet · ↻ half ververst (de vorige
+        // complete lijsten staan er nog en worden gewoon gebruikt).
+        function poiLandStatus(code) {
+            if (poiLandJob && poiLandJob.code === code) return `⏳ ${poiLandJob.klaar}/${poiLandJob.totaal}`;
+            const vers = poiLandVers[code] || 0, klaar = poiLandKlaar[code] || 0;
+            const dm = t => { const d = new Date(t); return `${d.getDate()}-${d.getMonth() + 1}`; };
+            if (klaar && klaar >= vers) return `✓ ${dm(klaar)}`;
+            const bl = poiLandBlokken(code), n = (vers && poiMetaMap) ? bl.filter(b => poiBlokKlaar(b, vers)).length : 0;
+            if (n) return `${klaar ? '↻' : '½'} ${n}/${bl.length}`;
+            return klaar ? `✓ ${dm(klaar)}` : '—';   // verversen begonnen maar nog geen blok binnen → de oude staan er nog
+        }
+        // Eén blok: één vraag, daarna verdeeld over de vakken van 0,5° (alle vakken van het blok in één keer bewaard, ook lege).
+        async function poiBlokHaal(b) {
+            const bb = `${b.s},${b.w},${b.n},${b.e}`;
+            const deel = key => `nwr["${key}"~"^(${POI_VOORRAAD[key].join('|')})$"](${bb});`;
+            const q = `[out:csv(${POI_VELDEN.join(',')};true)][timeout:90];(${Object.keys(POI_VOORRAAD).map(deel).join('')});out center;${POI_KLAAR}`;
+            const rij = poiCsvAntwoord(await overpassVraag(q, 95000, true, true));
+            if (!rij) return false;
+            const perVak = new Map(poiBlokVakken(b).map(k => [k, []]));
+            for (const r of rij) { const k = poiVakVan(r[1], r[2]); if (perVak.has(k)) perVak.get(k).push(r); }
+            await poiVakkenSchrijf(perVak);
+            return true;
+        }
+        async function poiVakkenSchrijf(perVak) {
+            const db = await poiDb(), t = Date.now(), meta = await poiMeta();
+            await new Promise((ok, mis) => {
+                const tx = db.transaction(['vakken', 'meta'], 'readwrite');
+                perVak.forEach((p, k) => { tx.objectStore('vakken').put({ k, p }); tx.objectStore('meta').put({ k, t, n: p.length }); });
+                tx.oncomplete = () => ok(); tx.onerror = () => mis(tx.error); tx.onabort = () => mis(tx.error);
+            });
+            perVak.forEach((p, k) => { meta.set(k, { k, t, n: p.length }); poiVakGeheugen.delete(k); });
+        }
+        const poiSlaap = ms => new Promise(r => setTimeout(r, ms));
+        // Meldingen van de download alleen bovenin: hij loopt door als je Plan al dicht hebt (of rijdt) — de infoBar onderin
+        // hoort dan bij de route (km/tijd) en mag niet door een download-melding overschreven of opnieuw zichtbaar worden.
+        function poiLandMelding(tekst, kleur, ms) {
+            if (typeof showBufferToast === 'function') showBufferToast(tekst, kleur || '#00838f', ms || 4000);
+            poiToastDoorlaten();
+        }
+        async function poiLandDownload() {
+            if (poiLandJob) { poiLandJob.stop = true; poiLandUI(); return; }   // tweede tik = stoppen (na het lopende blok)
+            const codes = POI_LANDEN.filter(c => poiLandKeus.includes(c));
+            if (!codes.length) { poiLandMelding('Kies eerst een of meer landen (tik erop), dan Download.', '#FF9800', 3500); return; }
+            try { await poiMeta(); } catch (e) { poiLandMelding('Lijsten ophalen: de opslag van de telefoon werkt niet.', '#FF9800', 5000); return; }
+            // Zelf gevraagd: rust na een storing of time-out (bv. net nog zonder bereik) mag meteen weer — GEMETEN in v63.87:
+            // anders deed de knop daarna een halve minuut niets. Een weigering (429/406) blijft staan.
+            const r0 = overpassRust[OVERPASS_SERVERS[0]];
+            if (r0 && !r0.weiger) delete overpassRust[OVERPASS_SERVERS[0]];
+            const job = poiLandJob = { stop: false, code: null, klaar: 0, totaal: 0 };
+            let vorige = 0;   // duur van het vorige blok — de afkoeltijd
+            const gehaald = [], vers7 = [];
+            try {
+                for (const code of codes) {
+                    const st = poiLandStatus(code);
+                    // Compleet en nog geen week oud → niet opnieuw (scheelt de server werk; de automatische voorraad ververst ook pas na een week)
+                    if (st.startsWith('✓') && Date.now() - (poiLandKlaar[code] || 0) < POI_VERS_MS) { vers7.push(code); continue; }
+                    if (st.startsWith('✓') || !poiLandVers[code]) { poiLandVers[code] = Date.now(); poiLandBewaar(); }   // nieuw, of na een week alles opnieuw; half (½ ↻) = verder
+                    const vers = poiLandVers[code], blokken = poiLandBlokken(code);
+                    job.code = code; job.totaal = blokken.length; job.klaar = blokken.filter(b => poiBlokKlaar(b, vers)).length;
+                    poiLandUI();
+                    for (const b of blokken) {
+                        if (poiBlokKlaar(b, vers)) continue;
+                        if (vorige) { const tot = Date.now() + Math.max(5000, vorige); while (Date.now() < tot && !job.stop) await poiSlaap(250); }
+                        if (job.stop) { poiLandMelding(`${code}: gestopt — Download gaat later verder waar hij was.`, '#00838f', 4000); return; }
+                        const t0 = Date.now();
+                        if (!(await poiBlokHaal(b))) {
+                            const f = overpassLaatsteFout, r = overpassRust[OVERPASS_SERVERS[0]];
+                            const nogMin = r ? Math.max(1, Math.ceil((r.tot - Date.now()) / 60000)) : 1;
+                            const waarom = (f === 429 || f === 406) ? `de server vraagt om rust (${f})` : f === 'rust' ? `de server rust nog ${nogMin} min na een weigering` : f === 'net' ? 'geen verbinding' : f === 'traag' ? 'de server is te traag' : f === 'afgebroken' ? 'de server brak de vraag af (te druk)' : f === 'onleesbaar' ? 'onleesbaar antwoord van de server' : `de server is druk (${f})`;
+                            poiLandMelding(`${code}: ${waarom} — gestopt, er wordt niets opnieuw geprobeerd. Druk later op Download; hij gaat verder waar hij was.`, '#FF9800', 8000);
+                            return;
+                        }
+                        vorige = Date.now() - t0;
+                        job.klaar++; poiLandUI();
+                    }
+                    poiLandKlaar[code] = Date.now(); poiLandBewaar(); gehaald.push(code);
+                }
+                poiLandMelding(gehaald.length
+                    ? `✓ ${gehaald.join(', ')}: Benzine, Restaurant en Supermarkt op je telefoon`
+                    : `✓ ${vers7.join(', ')}: staat al op je telefoon (minder dan een week oud) — na een week haalt Download ze opnieuw`, '#4CAF50', gehaald.length ? 4000 : 5000);
+            } catch (e) { console.warn('lijsten per land', e); poiLandMelding('Lijsten ophalen ging mis — probeer het later nog eens.', '#FF9800', 5000); }
+            finally { poiLandJob = null; poiLandUI(); }
+        }
+        // Het lijsten-menu (in het POI-menu, op de plek van de knoppen): landen aantikken, dan Download.
+        function poiLandKiezen(code) {
+            poiLandKeus = poiLandKeus.includes(code) ? poiLandKeus.filter(c => c !== code) : poiLandKeus.concat(code);
+            poiLandBewaar(); poiLandUI();
+        }
+        function poiLandKnop() {   // 📥 in de bovenste rij: lijsten-menu open/dicht
+            const bar = document.getElementById('poiFocusBar');
+            if (!bar) return;
+            bar.classList.toggle('lijsten');
+            poiLandUI();
+            if (typeof poiMeta === 'function') poiMeta().then(poiLandUI).catch(() => {});
+            if (typeof poiPlek === 'function') poiPlek();
+        }
+        function poiKnopTekst() { poiLandUI(); }
+        function poiLandUI() {
+            const bar = document.getElementById('poiFocusBar'), knop = document.getElementById('poiLandBtn');
+            const open = !!(bar && bar.classList.contains('lijsten'));
+            if (knop) knop.textContent = open ? '↩ Zoeken' : poiLandJob ? `⏳ ${poiLandJob.code || ''} ${poiLandJob.klaar}/${poiLandJob.totaal}` : '📥 Lijsten';
+            const vak = document.getElementById('poiLandKeuze');
+            if (vak) vak.innerHTML = POI_LANDEN.map(c => {
+                const aan = poiLandKeus.includes(c);
+                return `<button onclick="poiLandKiezen('${c}')" style="padding:8px 4px; border-radius:10px; border:2px solid ${aan ? '#00BCD4' : '#555'}; background:${aan ? '#00838f' : '#0a0e27'}; color:#fff; font-weight:bold; font-size:1.05em; cursor:pointer; line-height:1.2;">${c}<br><span style="font-size:0.72em; font-weight:normal; color:${aan ? '#e0f7fa' : '#9aa'};">${poiLandStatus(c)}</span></button>`;
+            }).join('');
+            const go = document.getElementById('poiLandGo');
+            if (go) {
+                const n = poiLandKeus.length;
+                go.textContent = poiLandJob ? '⏹ Stop' : n ? `📥 Download (${POI_LANDEN.filter(c => poiLandKeus.includes(c)).join(', ')})` : '📥 Download';
+                go.style.opacity = (poiLandJob || n) ? '1' : '0.5';
+            }
+        }
         // Afstand van een plek tot een lijn (pts = [[lng, lat], …]): { d in meters, i = positie langs de lijn }
         function poiAfstandLijn(lat, lng, pts) {
             if (pts.length === 1) return { d: distM4(lat, lng, pts[0][1], pts[0][0]), i: 0 };
@@ -5444,7 +5626,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "63.88";
+        const APP_VERSION = "63.89";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
