@@ -1248,7 +1248,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.87 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.88 © Umop3p1sdn</div>
 
             </div>
 
@@ -1680,7 +1680,7 @@
             <p style="background:#e3e7f5; padding:10px 14px; border-radius:8px;"><strong>Werkt het? Test 'm:</strong> druk bij de start op <strong>toestemming</strong> (mic + beweging). Houd dan de mic-knop vast, spreek iets in, en laat los. Je ziet je eigen bericht als lichtkrant en hoort het voorgelezen.</p>
 
             <h3 style="color: #00BCD4; margin-top: 25px;">Privacy / STOP</h3>
-            <p>Bij <strong>STOP</strong> worden je gegevens uit de cloud gewist (geen sporen). Sluit je de app zonder STOP, dan ruimt de app het later vanzelf op (binnen ~10 min).</p>
+            <p>Bij <strong>STOP</strong> worden je gegevens uit de cloud gewist (geen sporen). Sluit je de app zonder STOP, dan ruimt de app het op zodra je hem weer opent. Een volger wist nooit iets van de master: staat de master even stil met zijn telefoon weg (fotostop, filmen), dan blijven de routes gewoon staan.</p>
 
             <h3 style="color: #00BCD4; margin-top: 25px;">Tips</h3>
             <ul style="margin: 10px 0; padding-left: 20px;">
@@ -1803,7 +1803,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.87 © Umop3p1sdn
+                HO-ME v63.88 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2022,7 +2022,7 @@
             <p style="background:#e3e7f5; padding:10px 14px; border-radius:8px;"><strong>Does it work? Test it:</strong> tap <strong>permission</strong> at the start (mic + motion). Then hold the mic button, say something, and release. You see your own message as a ticker and hear it read aloud.</p>
 
             <h3 style="color: #00BCD4; margin-top: 25px;">Privacy / STOP</h3>
-            <p>On <strong>STOP</strong> your data is wiped from the cloud (no traces). If you close the app without STOP, the app cleans it up automatically later (within ~10 min).</p>
+            <p>On <strong>STOP</strong> your data is wiped from the cloud (no traces). If you close the app without STOP, the app cleans it up as soon as you open it again. A follower never deletes anything of the master: if the master stands still for a while with the phone away (photo stop, filming), the routes simply stay.</p>
 
             <h3 style="color: #00BCD4; margin-top: 25px;">Tips</h3>
             <ul style="margin: 10px 0; padding-left: 20px;">
@@ -2145,7 +2145,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.87 © Umop3p1sdn
+                HO-ME v63.88 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -5444,7 +5444,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "63.87";
+        const APP_VERSION = "63.88";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
@@ -9295,6 +9295,7 @@ assign initialcost =
                 gpxPolyline = null;
                 
                 // Delete from Firebase
+                laatsteGpxDeel = null;   // v63.88: zelf gewist → het zelfherstel zet hem niet terug
                 if (currentCode) {
                     const deleteUrl = `${firebaseConfig.databaseURL}/gpx/${currentCode}.json`;
                     fetch(deleteUrl, { method: 'DELETE' })
@@ -9693,6 +9694,7 @@ assign initialcost =
                         pref: (typeof selectedProfile !== 'undefined' ? selectedProfile : 'car-fast')
                     };
                 }
+                laatsteGpxDeel = { code, payload };   // v63.88: onthouden voor het zelfherstel hieronder
                 await fetch(url, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
@@ -9705,6 +9707,25 @@ assign initialcost =
                 console.error('GPX Firebase error:', error);
             }
         }
+
+        // v63.88 ZELFHERSTEL (melding Sjoerd: volger zag ineens de route niet meer). Staat wat de master het laatst deelde
+        // niet meer in Firebase — een volger met een oudere versie wist het na 10 min stilte, of wat dan ook — dan zet de
+        // master het er binnen een minuut opnieuw neer (zelfde inhoud, nieuw tijdstempel → volgers halen het meteen op).
+        // Zelf gewist (Delete Loaded Track) = niet terugzetten; STOP herlaadt de pagina en vergeet het.
+        let laatsteGpxDeel = null;   // { code, payload }
+        setInterval(async () => {
+            const d = laatsteGpxDeel;
+            if (!d || currentMode !== 'master' || d.code !== currentCode) return;
+            try {
+                const c = new AbortController(), t = setTimeout(() => c.abort(), 5000);
+                const r = await fetch(`${firebaseConfig.databaseURL}/gpx/${d.code}/timestamp.json`, { signal: c.signal });
+                clearTimeout(t);
+                if ((await r.json()) !== null || laatsteGpxDeel !== d) return;
+                d.payload.timestamp = Date.now();
+                await fetch(`${firebaseConfig.databaseURL}/gpx/${d.code}.json`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(d.payload) });
+                console.log('🛟 route opnieuw gedeeld (stond niet meer in Firebase)');
+            } catch (e) {}
+        }, 60000);
 
         // Offroad-spoor (kaal, paars) apart delen — eigen Firebase-pad, los van de navi-route.
         async function sendOffroadToFirebase(code, route) {
@@ -10702,15 +10723,35 @@ assign initialcost =
             return null;
         }
 
+        // v63.88: de route van de master verandert zelden. GEMETEN (volger88): de volger haalde de hele /gpx/ (route + paars
+        // spoor + afslagen) elke halve seconde op, 108× per minuut. Nu elke 2 s alleen het tijdstempel (een paar bytes) en
+        // de hele route alleen als de master iets nieuws deelde — of als vangnet eens per minuut.
+        let volgGpxTs, volgGpxCheck = 0, volgGpxGehaald = 0, volgGpxFout = false;
+        async function volgGpxNieuw(code) {
+            const nu = Date.now();
+            if (volgGpxTs !== undefined && nu - volgGpxCheck < 2000) return false;
+            volgGpxCheck = nu;
+            let ts;
+            try {
+                const c = new AbortController(), t = setTimeout(() => c.abort(), 5000);
+                const r = await fetch(`${firebaseConfig.databaseURL}/gpx/${code}/timestamp.json`, { signal: c.signal });
+                clearTimeout(t);
+                ts = await r.json();
+            } catch (e) { return volgGpxTs === undefined; }   // geen antwoord: alleen de allereerste keer toch proberen
+            if (ts === volgGpxTs && nu - volgGpxGehaald < 60000) return false;
+            volgGpxTs = ts; volgGpxGehaald = nu;
+            return true;
+        }
         async function fetchGPXRoute(code) {
+            volgGpxFout = false;
             try {
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), 5000);
-                
+
                 const url = `${firebaseConfig.databaseURL}/gpx/${code}.json`;
                 const response = await fetch(url, { signal: controller.signal });
                 clearTimeout(timeoutId);
-                
+
                 const data = await response.json();
                 // offroad-veld (kaal spoor van de master) bewaren voor de volger-loop.
                 window._followerOffroad = (data && data.offroad && Array.isArray(data.offroad)) ? data.offroad : [];
@@ -10728,6 +10769,7 @@ assign initialcost =
                     return data.route;
                 }
             } catch (err) {
+                volgGpxFout = true;   // v63.88: niet gelukt (time-out/geen verbinding) ≠ "master heeft geen route"
                 console.error('Fetch GPX error:', err);
             }
             return null;
@@ -12103,16 +12145,18 @@ assign initialcost =
 
                     const updateMasterMarker = async () => {
                         const location = await fetchMasterLocation(code);
-                        // Master staleness: warn at 5 min, wipe+stop at 10 min
+                        // Master staleness: warn at 5 min (en bij 10 min een sterkere tekst).
+                        // v63.88 (melding Sjoerd: "de volger zag ineens mijn geladen route niet meer — hij was even uit de app
+                        // om te filmen; terug: geen routes meer, wel de master"). GEMETEN (volger88, klok stilgezet): stond de
+                        // master 10 min stil zonder te delen (telefoon weg, fotostop), dan WIST de volger bij terugkomen de
+                        // master-gegevens in Firebase (/tracking én /gpx: route, paars spoor, afslagen). Reed de master weer,
+                        // dan kwam zijn positie terug, maar de routes nooit meer. Een volger wist nu niets meer van de master;
+                        // de master ruimt zijn eigen oude rit op bij STOP en bij de volgende start (cleanupMyOldMasterData).
                         if (location && location.timestamp) {
                             const age = Date.now() - location.timestamp;
                             const warnEl = document.getElementById('masterStaleWarn');
                             if (age > 600000) {
-                                // 10 min: leave no trace — wipe this code and stop
-                                fetch(`${firebaseConfig.databaseURL}/tracking/${code}.json`, { method: 'DELETE' }).catch(() => {});
-                                fetch(`${firebaseConfig.databaseURL}/gpx/${code}.json`, { method: 'DELETE' }).catch(() => {});
-                                if (warnEl) { warnEl.textContent = 'Geen actieve master meer'; warnEl.style.display = 'block'; }
-                                return;
+                                if (warnEl) { warnEl.textContent = 'Master al 10 min stil'; warnEl.style.display = 'block'; }
                             } else if (age > 300000) {
                                 if (warnEl) { warnEl.textContent = 'Mogelijk is master niet actief'; warnEl.style.display = 'block'; }
                             } else {
@@ -12194,9 +12238,13 @@ assign initialcost =
                             // Fetch and display Master's GPX route if ALL TRACK is enabled
                             if (trackState === 'all') {
                                 // Only fetch Master's GPX if Follower hasn't loaded their own
-                                if (!followerLoadedGpxRoute || followerLoadedGpxRoute.length === 0) {
+                                // v63.88: en alleen als de master iets nieuws deelde (volgGpxNieuw); mislukt het ophalen, dan
+                                // gooien we niets weg en proberen het de volgende ronde opnieuw.
+                                if ((!followerLoadedGpxRoute || followerLoadedGpxRoute.length === 0) && await volgGpxNieuw(code)) {
                                     const fetchedGpxRoute = await fetchGPXRoute(code);
-                                    if (fetchedGpxRoute && fetchedGpxRoute.length > 0) {
+                                    if (volgGpxFout) {
+                                        volgGpxTs = undefined;
+                                    } else if (fetchedGpxRoute && fetchedGpxRoute.length > 0) {
                                         gpxRoute = fetchedGpxRoute;  // Update to latest
                                         // DEEL 3: master-route + afslagen in de navigatie zetten zodat de
                                         // VOLGER op zijn eigen positie stem/pijlen/afstand/opeten krijgt.
@@ -12288,8 +12336,17 @@ assign initialcost =
                         }
                     };
 
-                    updateMasterMarker();
-                    followInterval = setInterval(updateMasterMarker, 500);
+                    // v63.88: één ronde tegelijk — GEMETEN (volger88, traag netwerk 3 s per antwoord): elke 0,5 s startte
+                    // een nieuwe ronde terwijl de vorige nog liep, tot 14 Firebase-vragen tegelijk (die elk na 5 s afbreken).
+                    volgGpxTs = undefined; volgGpxCheck = 0;
+                    let volgLusBezig = false;
+                    const volgLus = async () => {
+                        if (volgLusBezig) return;
+                        volgLusBezig = true;
+                        try { await updateMasterMarker(); } catch (e) { console.warn('volger-lus', e); } finally { volgLusBezig = false; }
+                    };
+                    volgLus();
+                    followInterval = setInterval(volgLus, 500);
                 }
             }, 100);
         }
