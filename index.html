@@ -1252,7 +1252,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.89 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.90 © Umop3p1sdn</div>
 
             </div>
 
@@ -1807,7 +1807,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.89 © Umop3p1sdn
+                HO-ME v63.90 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2149,7 +2149,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.89 © Umop3p1sdn
+                HO-ME v63.90 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -5626,7 +5626,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "63.89";
+        const APP_VERSION = "63.90";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
@@ -11907,8 +11907,14 @@ assign initialcost =
         function showBufferToast(text, bg, autoHideMs) {
             if (!bufferToastEl) {
                 bufferToastEl = document.createElement('div');
+                // v63.90 (melding Sjoerd: "de info-tekst — bv. server bezet — ligt onder de camera; nu kan ik hem alleen
+                // lezen als de mobiel op zijn zij ligt"): GEMETEN met de randen van een iPhone 16 Pro (staand boven 62 px):
+                // de melding stond op 20 px, dus onder de Dynamic Island. Nu onder de rand vandaan (margin-top = de
+                // safe area, zoals de andere bovenste knoppen sinds v52.4); liggend en zonder notch blijft hij waar hij was.
+                // Een melding is alleen om te lezen: tikken gaan erdoorheen (staand ligt hij over de titel en tabs van Plan).
                 bufferToastEl.style.cssText = `
                     position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+                    margin-top: env(safe-area-inset-top, 0px); pointer-events: none;
                     color: white; padding: 12px 20px; border-radius: 4px; font-size: 14px;
                     z-index: 10000; box-shadow: 0 2px 8px rgba(0,0,0,0.2);
                 `;
