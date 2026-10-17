@@ -619,6 +619,9 @@
            is geen Hide — het rode kruis van Plan brengt je naar het rijscherm. body.plan-open zetten plannerOpen en
            plannerClose (planKlasse); STOP herlaadt de pagina, dus daar blijft nooit een verstopte Hide achter. */
         body.plan-open .go-button { display: none !important; }
+        /* v63.86 (Sjoerd: "SPOOR met afstand gewoon weg als het menu opengaat"): GEMETEN staand met Plan + POI open lag het
+           SPOOR-blok half onder het POI-menu, vlak boven de antwoordtekst onderin. In Plan plan je, dan hoeft het niet. */
+        body.plan-open #trackLenBox { display: none !important; }
         /* v63.81: aftelbalk van "4 s niets aangeraakt → terug naar het rijscherm", in de kopregel van Plan tussen
            "Route Planner" en het kruis (verandert de hoogte van de regel niet). */
         #planAftel { display: none; flex: 1 1 auto; height: 10px; margin: 0 10px; }
@@ -1245,7 +1248,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.85 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.86 © Umop3p1sdn</div>
 
             </div>
 
@@ -1507,7 +1510,7 @@
                 <li>Elke volger verschijnt als vliegtuigje op je kaart, met zijn <strong>tag</strong> (naam).</li>
                 <li>De teller in het knoppen-menu toont <strong>hoeveel</strong> volgers er verbonden zijn (dat getal staat ook klein op de menu-knop).</li>
                 <li>Bij een <strong>rotonde</strong> hoor je welke afslag én welke kant: "op de rotonde de 2e afslag, rechtdoor". Om je niet te overladen komt daar maar één waarschuwing vooraf (op 600 meter) en dan de afslag zelf vlak voor de rotonde.</li>
-                <li>Rijd je zonder route, dan zie je linksonder <strong>SPOOR</strong> met de lengte van je rode gereden lijn (in meters, en vanaf een kilometer in km). Zodra je wél een route maakt verdwijnt dat, want dan staan de afstanden al in het rij-blok.</li>
+                <li>Rijd je zonder route, dan zie je linksonder <strong>SPOOR</strong> met de lengte van je rode gereden lijn (in meters, en vanaf een kilometer in km). Zodra je wél een route maakt verdwijnt dat, want dan staan de afstanden al in het rij-blok. Zolang Plan open is, is het ook weg (dan blijft de antwoordtekst onderin vrij).</li>
                 <li>In het knoppen-menu zit ook de <strong>LIJN</strong>-knop (alleen als er volgers zijn): tik 'm aan om de <strong>gereden sporen van je volgers</strong> te zien (elk in zijn eigen kleur). Handig als een volger een leuke weg weet en even voorrijdt — dan volg je gewoon zijn lijn. Standaard uit, zodat je kaart rustig blijft.</li>
                 <li>Zo weet je in één oogopslag wie achter je rijdt en wie nog stilstaat.</li>
                 <li>Met de <strong>TAG</strong>-knop in het knoppen-menu zet je als master ook je eigen naam — die zien spectators op hun volg-knop.</li>
@@ -1800,7 +1803,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.85 © Umop3p1sdn
+                HO-ME v63.86 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1849,7 +1852,7 @@
                 <li>Each follower appears as a small plane on your map, with their <strong>tag</strong> (name).</li>
                 <li>The counter in the button menu shows <strong>how many</strong> followers are connected (the number is also shown small on the menu button).</li>
                 <li>At a <strong>roundabout</strong> you hear both the exit and the direction: "op de rotonde de 2e afslag, rechtdoor" (take the 2nd exit, straight on). To avoid overloading you there is only one warning beforehand (at 600 metres) and then the exit itself just before the roundabout.</li>
-                <li>When you ride without a route, the bottom-left shows <strong>SPOOR</strong> (trail) with the length of your red driven line (in metres, and from a kilometre in km). As soon as you do make a route it disappears, since the distances are then already in the ride block.</li>
+                <li>When you ride without a route, the bottom-left shows <strong>SPOOR</strong> (trail) with the length of your red driven line (in metres, and from a kilometre in km). As soon as you do make a route it disappears, since the distances are then already in the ride block. While Plan is open it is hidden too (so the answer text at the bottom stays clear).</li>
                 <li>The button menu also has the <strong>LIJN</strong> (line) button (only when there are followers): tap it to see the <strong>ridden tracks of your followers</strong> (each in their own colour). Handy when a follower knows a nice road and rides ahead — you simply follow their line. Off by default, so your map stays calm.</li>
                 <li>So at a glance you know who's riding behind you and who's still stationary.</li>
                 <li>With the <strong>TAG</strong> button in the button menu you as master set your own name too — spectators see it on their follow button.</li>
@@ -2142,7 +2145,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.85 © Umop3p1sdn
+                HO-ME v63.86 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -5368,7 +5371,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "63.85";
+        const APP_VERSION = "63.86";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
