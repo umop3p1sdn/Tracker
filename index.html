@@ -685,7 +685,8 @@
         .panel.open { display: block; }
         /* POI focus-modus: lijst linksboven, scrollbaar window */
         #poiFocusList {
-            position: absolute; top: 12px; left: 12px; width: 440px; max-width: 88%;
+            /* v63.91: in het rijscherm niet onder de camera/notch (zelfde regel als de meldingen bovenin); onder Plan zet poiPlek hem */
+            position: absolute; top: calc(12px + env(safe-area-inset-top, 0px)); left: calc(12px + env(safe-area-inset-left, 0px)); width: 440px; max-width: 88%;
             max-height: 38vh; overflow-y: auto; z-index: 2100;
             background: rgba(10,14,39,0.92); border: 2px solid #00BCD4; border-radius: 12px;
             box-shadow: 0 4px 16px rgba(0,0,0,0.6); display: none;
@@ -715,6 +716,13 @@
         #poiLandPaneel { display: none; flex-direction: column; }
         #poiFocusBar.lijsten #poiLandPaneel { display: flex; }
         #poiFocusBar.lijsten .poiCat { display: none !important; }
+        /* v63.91: liggend ⊞ weg zolang Plan open is en POI in beeld (hij lag over de rechterkant van het POI-menu) */
+        @media (orientation: landscape) { body.poi-in-beeld #btnMenuBtn { display: none !important; } }
+        /* v63.91: de plek die je in de POI-lijst koos licht op (groter, gele rand) en ligt bovenop de andere */
+        .poi-marker.poi-gekozen { z-index: 1000 !important; }
+        .poi-marker.poi-gekozen > div { transform: scale(1.45); box-shadow: 0 0 0 4px #FFEB3B, 0 0 14px 4px rgba(255,235,59,0.8); }
+        /* v63.91: aantal achter een POI-knop = die lijst is onthouden ("🥐 Bakker · 12") */
+        #poiFocusBar .poiTel { font-size: 0.8em; font-weight: normal; color: #00838f; white-space: nowrap; }
         #poiFocusBar {
             position: absolute; bottom: 130px; left: 12px; right: 12px; z-index: 2100;
             background: rgba(10,14,39,0.92); border: 2px solid #00BCD4; border-radius: 12px;
@@ -1252,7 +1260,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.90 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.91 © Umop3p1sdn</div>
 
             </div>
 
@@ -1744,14 +1752,14 @@
             <ul style="margin: 10px 0; padding-left: 20px;">
                 <li><strong>Route</strong> — zoekbalk + 📍 + Wis route + de profielen.</li>
                 <li><strong>Extra</strong> — omweg- én rondrit-generator (wisselknop Omrit/Rondrit).</li>
-                <li><strong>POI</strong> — opent de focus-modus: alle andere menu's verdwijnen voor maximaal zicht op de kaart. Knoppen onderin (liggend rechts naast het Plan-menu), de lijst onder het Plan-menu (liggend ernaast). Sluiten met de rode ✕. Eén tik op een knop is genoeg: bovenin telt hij de seconden terwijl de (drukke) POI-server zoekt — nog eens tikken start geen extra zoekvraag. Vraagt de server even rust, dan zie je over hoeveel seconden hij zoekt. Weigert hij vaker, dan laat de app hem langer met rust (1 tot 30 min) — wie blijft aandringen wordt door de server geblokkeerd. Lukt het niet, dan zegt de melding per server waarom (bezet, overbelast, te traag, geen verbinding). <strong>Voorraad op je telefoon:</strong> Benzine, Restaurant en Supermarkt bewaart de app op je telefoon: vanzelf rond je en langs je route (elke week vers). Hele landen kies je zelf: tik 📥 Lijsten (naast "Zoekgebied"), tik de landen aan (NL, BE, DE, LU, FR) en dan Download. Onder elk land: ⏳ bezig, ½ half binnen, ✓ binnen (met datum), ↻ half ververst (de vorige lijsten blijven gewoon werken). Hij haalt één blok tegelijk met pauzes ertussen, veilig voor de server. Weigert die, dan stopt hij meteen en probeert niets opnieuw; later Download = verder waar hij was. Een land dat compleet is en nog geen week oud haalt hij niet opnieuw. Tijdens het downloaden is de knop ⏹ Stop; ↩ Zoeken brengt je terug naar de zoekknoppen. Alles blijft bewaard en staat er meteen, ook zonder bereik (onderin: "van je telefoon"). De andere knoppen en wat je zelf intypt zoekt hij live.</li>
+                <li><strong>POI</strong> — opent de focus-modus: alle andere menu's verdwijnen voor maximaal zicht op de kaart. Knoppen onderin (liggend rechts naast het Plan-menu), de lijst onder het Plan-menu (liggend ernaast). Sluiten met de rode ✕. Eén tik op een knop is genoeg: bovenin telt hij de seconden terwijl de (drukke) POI-server zoekt — nog eens tikken start geen extra zoekvraag. Vraagt de server even rust, dan zie je over hoeveel seconden hij zoekt. Weigert hij vaker, dan laat de app hem langer met rust (1 tot 30 min) — wie blijft aandringen wordt door de server geblokkeerd. Lukt het niet, dan zegt de melding per server waarom (bezet, overbelast, te traag, geen verbinding). <strong>Voorraad op je telefoon:</strong> Benzine, Restaurant en Supermarkt (de basis) bewaart de app op je telefoon: vanzelf rond je en langs je route (elke week vers). Is de basis er, dan komt vanzelf ook de rest: ⚡ Laden, 🍔 Snack, ☕ Café, 🥐 Bakker en 🛏 Hotel — rustig aan, één tegelijk (na elk stukje minstens 15 seconden rust), nooit terwijl jij zelf zoekt; weigert de server, dan stopt dat tot je de app opnieuw opent. Hele landen kies je zelf: tik 📥 Lijsten (naast "Zoekgebied"), tik de landen aan (NL, BE, DE, LU, FR) en dan Download (de basis); daarna komt de rest van die landen vanzelf, één blok per minuut. Onder elk land: ⏳ bezig, ½ half binnen, ✓ binnen (met datum), ↻ half ververst (de vorige lijsten blijven gewoon werken) — en daaronder de rest: "rest 3/6" of "rest ✓". Hij haalt één blok tegelijk met pauzes ertussen, veilig voor de server. Weigert die, dan stopt hij meteen en probeert niets opnieuw; later Download = verder waar hij was. Een land dat compleet is en nog geen week oud haalt hij niet opnieuw. Tijdens het downloaden is de knop ⏹ Stop; ↩ Zoeken brengt je terug naar de zoekknoppen. Alles blijft bewaard en staat er meteen, ook zonder bereik (onderin: "van je telefoon"). Wat je zelf intypt (uitzicht, pin, wc …) zoekt hij live, net als een knop waarvan de lijst rond je nog niet binnen is. <strong>Lijsten onthouden:</strong> het ✕ op de lijst haalt lijst en icoontjes van de kaart, maar de app onthoudt ze: het zoekmenu komt terug en op de knop staat het aantal (bv. "🥐 Bakker · 12"). Tik erop en de lijst staat er meteen weer, zonder server — zolang je in de buurt bent (zelfde zoekgebied, hooguit 5 km verder) en hij niet ouder is dan een uur. Plan openen of sluiten wist je POI's niet; sluit je Plan, dan gaat alleen het zoekmenu dicht. Liggend is het ⊞-knopje weg zolang POI in beeld is. <strong>Kiezen uit de lijst:</strong> tik je een plek in de lijst aan, dan klapt de lijst in tot het balkje links (↔ = lijst terug, ✕ = weg) en staat de plek met een gele rand midden in het vrije stuk van de kaart — niet onder Plan, het balkje of de lijndikte. Tik op het icoon voor het menu: Start, Finish, Tussen (slim) of Achteraan.</li>
                 <li><strong>Mode</strong> — kies hoe je reist: Road, Offroad, Bike, Race bike of Walk. Zie de sectie <em>Mode</em> hieronder.</li>
             </ul>
             <p style="background:#e3e7f5; padding:8px 14px; border-radius:8px;"><em>Route, Extra en Mode werken als accordeon: er staat er steeds één open.</em></p>
 
             <h3 style="color: #00BCD4; margin-top: 25px;">Een route maken</h3>
             <ul style="margin: 10px 0; padding-left: 20px;">
-                <li><strong>Zoeken:</strong> typ een adres of plaats en tik op een resultaat. De kaart springt erheen, prikt er een speld op en het menu <strong>Punt toevoegen als</strong> komt op: kies Start, Tussen (slim), Achteraan, Finish of Vermijden.</li>
+                <li><strong>Zoeken:</strong> typ een adres of plaats en tik op een resultaat. De kaart springt erheen, prikt er een speld op en het menu <strong>Punt toevoegen als</strong> komt op: kies Start, Tussen (slim), Achteraan, Finish of Vermijden. Tijdens het typen zoekt hij met Photon (namen, straten, cafés). Druk op <strong>Zoek</strong> (↵ op het toetsenbord), op het vergrootglas of op de regel "🔍 Ook adressen en plaatsen zoeken" om ook Nominatim te vragen: dan staat het centrum van een plaats (het plaatsbordje) bovenaan en vind je adressen die Photon mist. Nominatim staat zoeken-tijdens-typen niet toe — zo blijft het veilig (geen blokkade).</li>
                 <li><strong>Laatst gezocht:</strong> tik in het lege zoekveld en je ziet je laatste 15 gekozen adressen, nieuwste bovenaan. Tik er een aan en de speld en het menu komen meteen — zonder opnieuw te zoeken, dus ook zonder bereik. Begin je te typen, dan zoekt hij gewoon. Tik naast de lijst om hem te sluiten; <strong>Wis lijst</strong> (twee tikken: Zeker?) maakt hem leeg.</li>
                 <li><strong>📍-knop:</strong> springt naar je eigen locatie en opent hetzelfde menu (meestal kies je dan Start).</li>
                 <li><strong>Op de kaart tikken:</strong> opent een menu — kies Start, Tussen (slim ingevoegd), Achteraan, Finish of Vermijden. Kies je niets, dan gaat het na 4 tellen vanzelf dicht (het balkje onder de kop loopt af; aanraken = weer vol, typen in het km-veld houdt het open). Na zoeken of 📍 blijft het staan tot je kiest.</li>
@@ -1807,7 +1815,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.90 © Umop3p1sdn
+                HO-ME v63.91 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2086,14 +2094,14 @@
             <ul style="margin: 10px 0; padding-left: 20px;">
                 <li><strong>Route</strong> — search bar + 📍 + Wis route (clear route) + the profiles.</li>
                 <li><strong>Extra</strong> — detour and roundtrip generator (toggle Omrit/Rondrit = detour/roundtrip).</li>
-                <li><strong>POI</strong> — opens focus mode: all other menus disappear for maximum view of the map. Buttons at the bottom (in landscape to the right of the Plan menu), the list below the Plan menu (in landscape next to it). Close with the red ✕. One tap on a button is enough: at the top it counts the seconds while the (busy) POI server searches — tapping again does not start an extra search. If the server asks for a short rest, you see in how many seconds it will search. If it refuses more often, the app leaves it alone for longer (1 to 30 min) — the server blocks anyone who keeps insisting. If it fails, the message tells you per server why (busy, overloaded, too slow, no connection). <strong>Stored on your phone:</strong> Fuel, Restaurant and Supermarket are kept on your phone: automatically around you and along your route (refreshed every week). Whole countries you choose yourself: tap 📥 Lijsten (next to "Zoekgebied"), tap the countries (NL, BE, DE, LU, FR) and then Download. Under each country: ⏳ busy, ½ partly in, ✓ in (with date), ↻ partly refreshed (the previous lists keep working). It fetches one block at a time with pauses in between, safe for the server. If the server refuses, it stops at once and retries nothing; Download later = continues where it left off. A country that is complete and less than a week old is not fetched again. While downloading the button is ⏹ Stop; ↩ Zoeken takes you back to the search buttons. Everything is kept and appears instantly, even without signal (at the bottom: "van je telefoon"). The other buttons and anything you type yourself are searched live.</li>
+                <li><strong>POI</strong> — opens focus mode: all other menus disappear for maximum view of the map. Buttons at the bottom (in landscape to the right of the Plan menu), the list below the Plan menu (in landscape next to it). Close with the red ✕. One tap on a button is enough: at the top it counts the seconds while the (busy) POI server searches — tapping again does not start an extra search. If the server asks for a short rest, you see in how many seconds it will search. If it refuses more often, the app leaves it alone for longer (1 to 30 min) — the server blocks anyone who keeps insisting. If it fails, the message tells you per server why (busy, overloaded, too slow, no connection). <strong>Stored on your phone:</strong> Fuel, Restaurant and Supermarket (the basics) are kept on your phone: automatically around you and along your route (refreshed every week). Once the basics are in, the rest follows by itself: ⚡ Laden (charging), 🍔 Snack, ☕ Café, 🥐 Bakker (bakery) and 🛏 Hotel — gently, one at a time (at least 15 seconds of rest after each piece), never while you are searching yourself; if the server refuses, that stops until you open the app again. Whole countries you choose yourself: tap 📥 Lijsten (next to "Zoekgebied"), tap the countries (NL, BE, DE, LU, FR) and then Download (the basics); after that the rest of those countries follows by itself, one block per minute. Under each country: ⏳ busy, ½ partly in, ✓ in (with date), ↻ partly refreshed (the previous lists keep working) — and below that the rest: "rest 3/6" or "rest ✓". It fetches one block at a time with pauses in between, safe for the server. If the server refuses, it stops at once and retries nothing; Download later = continues where it left off. A country that is complete and less than a week old is not fetched again. While downloading the button is ⏹ Stop; ↩ Zoeken takes you back to the search buttons. Everything is kept and appears instantly, even without signal (at the bottom: "van je telefoon"). Anything you type yourself (viewpoint, ATM, toilet …) is searched live, as is a button whose list around you is not in yet. <strong>Lists remembered:</strong> the ✕ on the list takes the list and its icons off the map, but the app remembers them: the search menu comes back and the button shows the count (e.g. "🥐 Bakker · 12"). Tap it and the list is back at once, without the server — as long as you are nearby (same search area, at most 5 km further) and it is less than an hour old. Opening or closing Plan no longer clears your POIs; closing Plan only closes the search menu. In landscape the ⊞ button is hidden while POI is on screen. <strong>Choosing from the list:</strong> tap a place in the list and the list folds into the small bar on the left (↔ = list back, ✕ = away) and the place, with a yellow ring, sits in the middle of the free part of the map — not under Plan, the bar or the line-width control. Tap the icon for the menu: Start, Finish, Tussen (via, smart) or Achteraan (at the end).</li>
                 <li><strong>Mode</strong> — choose how you travel: Road, Offroad, Bike, Race bike or Walk. See the <em>Mode</em> section below.</li>
             </ul>
             <p style="background:#e3e7f5; padding:8px 14px; border-radius:8px;"><em>Route, Extra and Mode work as an accordion: only one is open at a time.</em></p>
 
             <h3 style="color: #00BCD4; margin-top: 25px;">Making a route</h3>
             <ul style="margin: 10px 0; padding-left: 20px;">
-                <li><strong>Search:</strong> type an address or place and tap a result. The map jumps there, drops a pin and the <strong>Punt toevoegen als</strong> menu (add point as) pops up: choose Start, Tussen (via, smart), Achteraan (at the end), Finish or Vermijden (avoid).</li>
+                <li><strong>Search:</strong> type an address or place and tap a result. The map jumps there, drops a pin and the <strong>Punt toevoegen als</strong> menu (add point as) pops up: choose Start, Tussen (via, smart), Achteraan (at the end), Finish or Vermijden (avoid). While you type it searches with Photon (names, streets, cafés). Press <strong>Search</strong> (↵ on the keyboard), the magnifier or the line "🔍 Ook adressen en plaatsen zoeken" to also ask Nominatim: then the centre of a place (the town sign) is at the top and you find addresses Photon misses. Nominatim does not allow search-as-you-type — this keeps it safe (no block).</li>
                 <li><strong>Laatst gezocht</strong> (recent searches): tap the empty search field and you see your last 15 chosen addresses, newest at the top. Tap one and the pin and the menu appear right away — without searching again, so also without signal. Start typing and it simply searches. Tap beside the list to close it; <strong>Wis lijst</strong> (clear list, two taps: Zeker?) empties it.</li>
                 <li><strong>📍 button:</strong> jumps to your own location and opens the same menu (usually you pick Start).</li>
                 <li><strong>Tapping the map:</strong> opens a menu — choose Start, Via (smartly inserted), At the end, Finish or Avoid. Choose nothing and it closes by itself after 4 seconds (the bar under the title runs down; touching it fills it again, typing in the km field keeps it open). After a search or 📍 it stays until you choose.</li>
@@ -2149,7 +2157,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.90 © Umop3p1sdn
+                HO-ME v63.91 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2235,7 +2243,7 @@
         <div id="poiCardInner" style="background:#0a0e27; border:2px solid #00BCD4; border-radius:16px; max-width:380px; width:100%; max-height:82vh; overflow-y:auto; box-shadow:0 8px 30px rgba(0,0,0,0.7); padding:18px 18px 20px;"></div>
     </div>
     <!-- Ingevouwen-balk: verschijnt links als de lijst is weggevouwen. Pijl ▶ = uitklappen, ✕ = sluiten. -->
-    <div id="poiFolded" style="display:none; position:absolute; top:12px; left:12px; z-index:2100; flex-direction:column; gap:8px;">
+    <div id="poiFolded" style="display:none; position:absolute; top:calc(12px + env(safe-area-inset-top, 0px)); left:calc(12px + env(safe-area-inset-left, 0px)); z-index:2100; flex-direction:column; gap:8px;">
         <button onclick="unfoldPoiList()" title="In-/uitklappen" style="width:60px; height:60px; border-radius:12px; background:#00BCD4; border:2px solid #fff; color:#0a0e27; font-weight:bold; font-size:1.9em; line-height:1; cursor:pointer; box-shadow:0 2px 10px rgba(0,0,0,0.6);">↔</button>
         <button onclick="askClosePOI()" title="Sluiten" style="width:60px; height:60px; border-radius:12px; background:#FF1744; border:2px solid #fff; color:#fff; font-weight:bold; font-size:1.9em; line-height:1; cursor:pointer; box-shadow:0 2px 10px rgba(0,0,0,0.6);">✕</button>
     </div>
@@ -2250,7 +2258,7 @@
         </div>
         <!-- v63.89: lijsten per land (Benzine/Restaurant/Supermarkt op de telefoon) — op de plek van de zoekknoppen -->
         <div id="poiLandPaneel">
-            <div style="color:#cfeffd; font-size:0.8em; margin:2px 0 6px;">Op je telefoon: ⛽ Benzine · 🍽 Restaurant · 🛒 Super — kies landen:</div>
+            <div style="color:#cfeffd; font-size:0.8em; margin:2px 0 6px;">Download: ⛽ Benzine · 🍽 Restaurant · 🛒 Super. Daarna komt de rest (⚡ 🍔 ☕ 🥐 🛏) vanzelf, rustig aan. Kies landen:</div>
             <div id="poiLandKeuze" style="display:grid; grid-template-columns:repeat(3, 1fr); gap:6px; margin-bottom:8px;"></div>
             <button id="poiLandGo" onclick="poiLandDownload()" style="padding:12px 8px; border-radius:10px; border:2px solid #00BCD4; background:#00838f; color:#fff; font-weight:bold; font-size:1em; cursor:pointer;">📥 Download</button>
             <div style="color:#9aa; font-size:0.72em; margin-top:6px; line-height:1.3;">Eén blok tegelijk met pauzes — veilig voor de server. Weigert hij, dan stopt het en kun je later verder.</div>
@@ -2331,15 +2339,15 @@
     <script>
         // ════════ ROUTE PLANNER MODULE — eigen config & functies, deelt alleen mapInstance ════════
         function plannerOpen(viaTik) {
-            // Altijd POI volledig opruimen (balk, lijst, markers, rode X) — die liggen op z-index 2100 en
-            // zouden anders boven het Plan-menu blijven hangen. Ook na 'minimize' (balk weg, lijst/markers nog).
-            // v63.81 (vangnet 4): opent Plan door een tik in het rijscherm, dan blijven gevonden POI's staan (anders wiste
+            // Vroeger: altijd POI volledig opruimen (balk, lijst, markers, rode X) — die lagen op z-index 2100 over het
+            // Plan-menu. v63.81 (vangnet 4): opent Plan door een tik in het rijscherm, dan blijven gevonden POI's staan (anders wiste
             // elke tik op de kaart je tankstations). v63.83 (melding Sjoerd: "POI zie ik niet — komen en verdwijnen ze heel
             // snel?"): GEMETEN — de lijst klapte hier in, schoof weg zodra je Plan opende, en een nieuwe zoekvraag liet de
             // resultaten in die ingeklapte (onzichtbare) lijst staan; je zag alleen "POI zoeken…" even komen en gaan. Sinds
             // v63.82 zet poiPlek menu en lijst naast/onder het plan-paneel, dus inklappen is niet meer nodig: alles blijft
             // gewoon staan zoals het was (poiPlek aan het eind van deze functie zet het op zijn plek).
-            if (!viaTik && typeof closePoiFocus === 'function') closePoiFocus();
+            // v63.91 (Sjoerd: "lijsten onthouden … alles weg? niet slim"): ook via de Plan-knop blijven gevonden POI's staan —
+            // GEMETEN v63.90: Plan-knop = alles weg, tik in het rijscherm = alles bleef. Nu altijd blijven (poiPlek zet ze).
             planTerugTot = 0;                          // v63.81: alleen de tik uit het rijscherm telt af (die zet hem hierna)
             map = mapInstance;                         // koppel de planner aan de tracker-kaart
             plannerWireUp();                           // koppel zoekveld (1x, als HTML aanwezig)
@@ -2357,6 +2365,11 @@
             plannerSetMapClick(false);                 // tik-handler weer UIT (tracker-kaart vrij)
             if (typeof tapCancel === 'function') tapCancel();   // v63.81 GEMETEN: "Punt toevoegen als" bleef na het kruis open staan
             document.getElementById('plannerPanel').style.display = 'none';
+            // v63.91 GEMETEN: sloot je Plan met het POI-zoekmenu open, dan bleef dat menu in het rijscherm staan (over het
+            // snelheidsbord en Afstand/Tijd) — tot nu toe ruimde de Plan-knop het daarna op. Het menu hoort bij Plan: dicht.
+            // Gevonden plekken (icoontjes + lijst) blijven, zoals altijd.
+            const _pb = document.getElementById('poiFocusBar');
+            if (_pb) { _pb.style.display = 'none'; _pb.classList.remove('lijsten'); }
             planKlasse();                              // v63.81: rode Hide mag terug
             planTerugTot = 0;
             var b = document.getElementById('plannerToggleBtn'); if (b) b.style.display = 'block';
@@ -2763,6 +2776,7 @@ assign initialcost =
             document.getElementById('poiFocusBar').classList.remove('lijsten');   // v63.89: open = de zoekknoppen
             poiPlek();   // v63.82: liggend naast het plan-paneel (de Benzine-knop lag eronder)
             if (typeof poiKnopTekst === 'function') { poiKnopTekst(); if (typeof poiMeta === 'function') poiMeta().then(poiKnopTekst).catch(() => {}); }   // v63.87
+            if (typeof poiKnoppenTel === 'function') poiKnoppenTel();   // v63.91: onthouden lijsten ("· 12")
         }
         // v63.82 (melding Sjoerd: "POI werkt niet — ik zie geen benzinepompen of wat dan ook meer, er was altijd een
         // lijst"). GEMETEN: liggend lag het plan-paneel (z 2550) precies over de knop "⛽ Benzine" van het POI-menu
@@ -2774,11 +2788,16 @@ assign initialcost =
             const pp = document.getElementById('plannerPanel');
             const bar = document.getElementById('poiFocusBar'), lijst = document.getElementById('poiFocusList'), balkje = document.getElementById('poiFolded');
             [bar, lijst, balkje].forEach(el => { if (el) { el.style.left = ''; el.style.top = ''; el.style.maxWidth = ''; } });
-            if (!pp || !plannerIsOpen()) return;
-            const r = pp.getBoundingClientRect();
-            if (!r.width) return;
             const ingeklapt = !!(lijst && lijst.classList.contains('folded'));   // ingeklapt: oude plek, dan schuift hij helemaal uit beeld
-            if (window.innerWidth > window.innerHeight) {          // liggend: ernaast
+            const staand = window.innerWidth <= window.innerHeight;
+            const r = (pp && plannerIsOpen()) ? pp.getBoundingClientRect() : null;
+            if (!r || !r.width) {
+                // v63.91: rijscherm (Plan dicht), staand: de lijst blijft staan — GEMETEN: ⊞ en het slotje (z 2200) lagen over
+                // de rechterkant van de lijst. Dan stopt hij er ook hier 8 px vóór, net als onder Plan.
+                if (staand && lijst && !ingeklapt && getComputedStyle(lijst).display !== 'none') poiLijstVoorKnoppen(lijst, lijst.getBoundingClientRect().top);
+                return;
+            }
+            if (!staand) {                                         // liggend: ernaast
                 const links = Math.round(r.right + 12);
                 if (bar) bar.style.left = links + 'px';
                 if (lijst && !ingeklapt) { lijst.style.left = links + 'px'; lijst.style.maxWidth = Math.max(200, window.innerWidth - links - 12) + 'px'; }
@@ -2787,22 +2806,40 @@ assign initialcost =
                 const boven = Math.round(r.bottom + 8);
                 if (lijst && !ingeklapt) {
                     lijst.style.top = boven + 'px';
-                    // GEMETEN: zo lager kwam het rode kruis van de lijst onder de menu-knop rechts (z 2200) → de lijst
-                    // stopt 8 px vóór de menu-knop/het slotje als die op dezelfde hoogte staan.
-                    const links = parseFloat(getComputedStyle(lijst).left) || 12;   // de vaste plek, niet de (schuivende) animatie
-                    const hoog = lijst.getBoundingClientRect().height || 200;
-                    let rechts = Math.min(window.innerWidth - 12, links + window.innerWidth * 0.88);   // zoals de CSS (88%)
-                    ['btnMenuBtn', 'lockIcon'].forEach(id => {
-                        const k = document.getElementById(id);
-                        if (!k || !k.getClientRects().length) return;
-                        const q = k.getBoundingClientRect();
-                        if (q.width && q.bottom > boven && q.top < boven + hoog) rechts = Math.min(rechts, q.left - 8);
-                    });
-                    lijst.style.maxWidth = Math.max(220, Math.round(rechts - links)) + 'px';
+                    poiLijstVoorKnoppen(lijst, boven);
                 }
                 if (balkje) balkje.style.top = boven + 'px';
             }
         }
+        // GEMETEN (v63.82): zo lager kwam het rode kruis van de lijst onder de menu-knop rechts (z 2200) → de lijst stopt 8 px
+        // vóór de menu-knop/het slotje als die op dezelfde hoogte staan.
+        function poiLijstVoorKnoppen(lijst, boven) {
+            const links = parseFloat(getComputedStyle(lijst).left) || 12;   // de vaste plek, niet de (schuivende) animatie
+            const hoog = lijst.getBoundingClientRect().height || 200;
+            let rechts = Math.min(window.innerWidth - 12, links + window.innerWidth * 0.88);   // zoals de CSS (88%)
+            ['btnMenuBtn', 'lockIcon'].forEach(id => {
+                const k = document.getElementById(id);
+                if (!k || !k.getClientRects().length) return;
+                const q = k.getBoundingClientRect();
+                if (q.width && q.bottom > boven && q.top < boven + hoog) rechts = Math.min(rechts, q.left - 8);
+            });
+            lijst.style.maxWidth = Math.max(220, Math.round(rechts - links)) + 'px';
+        }
+        // v63.91 (gesparrd met Sjoerd over ⊞): liggend ligt ⊞ (knoppen-menu, rechts) over het POI-menu en de lijst rechts
+        // naast Plan — GEMETEN (v63.88 al): over de rechterkant van "Bakker" op iPhone en S22; een tik daar opende het
+        // knoppen-menu. Zolang Plan open is en POI in beeld (menu, of de lijst uitgeklapt), is ⊞ liggend weg (CSS
+        // body.poi-in-beeld). POI dicht, lijst ingeklapt of Plan dicht = ⊞ terug. Staand zit ⊞ nergens in de weg.
+        function poiInBeeldKlasse() {
+            const zicht = el => !!el && getComputedStyle(el).display !== 'none';
+            const bar = document.getElementById('poiFocusBar'), lijst = document.getElementById('poiFocusList');
+            const aan = plannerIsOpen() && (zicht(bar) || (zicht(lijst) && !lijst.classList.contains('folded')));
+            document.body.classList.toggle('poi-in-beeld', aan);
+        }
+        (function () {
+            if (typeof MutationObserver !== 'function') return;
+            const mo = new MutationObserver(() => { try { poiInBeeldKlasse(); } catch (e) {} });
+            ['poiFocusBar', 'poiFocusList', 'plannerPanel'].forEach(id => { const el = document.getElementById(id); if (el) mo.observe(el, { attributes: true, attributeFilter: ['style', 'class'] }); });
+        })();
         window.addEventListener('resize', () => { try { poiPlek(); } catch (e) {} });
         (function () {
             const pp = document.getElementById('plannerPanel');
@@ -3013,6 +3050,7 @@ assign initialcost =
             searchInput.addEventListener('input', () => {
                 const q = searchInput.value.trim();
                 clearTimeout(searchTimer);
+                zoekNr++;   // v63.91: je typt verder → een antwoord op een oudere vraag telt niet meer
                 if (!q.length) { toonLaatst(); return; }   // v63.74: veld weer leeg → "laatst gezocht"
                 if (q.length < 3) { resultsEl.style.display = 'none'; return; }
                 // Coördinaten geplakt? (bv. "52.04, 5.67" of "52.04 5.67") → meteen tonen als resultaat.
@@ -3021,7 +3059,20 @@ assign initialcost =
                     showResults([{ lat: coord.lat, lon: coord.lon, label: `📍 ${coord.lat.toFixed(5)}, ${coord.lon.toFixed(5)}` }]);
                     return;
                 }
-                searchTimer = setTimeout(() => doSearch(q), 800);
+                searchTimer = setTimeout(() => doSearch(q, false), 800);   // v63.91: tijdens typen alleen Photon
+            });
+            // v63.91: Zoek (↵ op het toetsenbord) of het vergrootglas = jij vraagt het echt → ook Nominatim (plaatscentrum, adressen)
+            searchInput.setAttribute('enterkeyhint', 'search');
+            searchInput.addEventListener('keydown', e => {
+                if (e.key !== 'Enter') return;
+                e.preventDefault();
+                const q = searchInput.value.trim();
+                if (q.length >= 3 && !parseCoords(q)) zoekNu(q);
+            });
+            const icoon = document.getElementById('searchIcon');
+            if (icoon) icoon.addEventListener('click', () => {
+                const q = searchInput.value.trim();
+                if (q.length >= 3 && !parseCoords(q)) zoekNu(q); else searchInput.focus();
             });
             // v63.74: tik in het LEGE zoekveld → je laatst gekozen zoekresultaten eronder (nieuwste boven).
             searchInput.addEventListener('click', () => { if (!searchInput.value.trim()) toonLaatst(); });
@@ -3041,7 +3092,40 @@ assign initialcost =
             return { lat, lon };
         }
 
-        async function doSearch(q) {
+        // v63.91 (Sjoerd: "veilig is het belangrijkste, ban is een no go"): het Nominatim-beleid (operations.osmfoundation.org)
+        // verbiedt zoeken-tijdens-typen in een app ("will get you banned"), wil hooguit 1 vraag per seconde en dat je antwoorden
+        // bewaart. GEMETEN v63.90: elke pauze van 0,8 s tijdens het typen vroeg Nominatim 1–2× (plaats-check + vangnet). Nu:
+        // tijdens het typen alleen Photon (dáár is het voor gemaakt); Nominatim pas als jij op Zoek drukt (↵ of het
+        // vergrootglas, of de regel "Ook adressen en plaatsen zoeken") — met geheugen (zelfde vraag = geen nieuwe vraag) en
+        // minstens 1,1 s tussen twee vragen. Alleen het antwoord op je laatste zoekvraag telt (een trage oude overschreef soms
+        // een nieuwere lijst).
+        let zoekNr = 0;
+        const nominatimGeheugen = new Map();
+        let nominatimLaatst = 0, nominatimRij = Promise.resolve();
+        function nominatimVraag(url) {
+            if (nominatimGeheugen.has(url)) return Promise.resolve(nominatimGeheugen.get(url));
+            const beurt = nominatimRij.then(async () => {
+                if (nominatimGeheugen.has(url)) return nominatimGeheugen.get(url);
+                const wacht = nominatimLaatst + 1100 - Date.now();
+                if (wacht > 0) await new Promise(r => setTimeout(r, wacht));
+                nominatimLaatst = Date.now();
+                const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                const data = await res.json();
+                if (nominatimGeheugen.size >= 50) nominatimGeheugen.delete(nominatimGeheugen.keys().next().value);
+                nominatimGeheugen.set(url, data);
+                return data;
+            });
+            nominatimRij = beurt.catch(() => {});
+            return beurt;
+        }
+        function zoekNu(q) {
+            clearTimeout(searchTimer);
+            if (searchInput) searchInput.blur();   // toetsenbord weg → de resultaten in beeld
+            doSearch(q, true);
+        }
+        async function doSearch(q, metNominatim) {
+            const nr = ++zoekNr, actueel = () => nr === zoekNr;
             showStatus('Zoeken...');
             // Bias naar waar je kijkt (kaartmidden) zodat dichtbij voorrang krijgt.
             let biasLat = null, biasLon = null;
@@ -3051,16 +3135,15 @@ assign initialcost =
                 }
             } catch (e) {}
 
-            // 0) PLAATS-CENTRUM: als je een plaatsnaam zoekt (bv "Ede"), pak het echte centrumpunt
-            //    (het place-node met het plaatsbordje) i.p.v. het rekenkundige zwaartepunt van de gemeente.
+            // 0) PLAATS-CENTRUM (alleen als je op Zoek drukte): als je een plaatsnaam zoekt (bv "Ede"), pak het echte
+            //    centrumpunt (het place-node met het plaatsbordje) i.p.v. het rekenkundige zwaartepunt van de gemeente.
             //    Nominatim's featureType=settlement geeft steden/dorpen als punt-node terug.
             let placeHit = null;
-            try {
-                const pu = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}`
-                    + `&format=json&featureType=settlement&limit=1&accept-language=nl`;
-                const pr = await fetch(pu, { headers: { 'Accept': 'application/json' } });
-                if (pr.ok) {
-                    const pd = await pr.json();
+            if (metNominatim) {
+                try {
+                    const pu = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}`
+                        + `&format=json&featureType=settlement&limit=1&accept-language=nl`;
+                    const pd = await nominatimVraag(pu);
                     if (Array.isArray(pd) && pd.length) {
                         const d = pd[0];
                         // alleen als het echt een plaats is (city/town/village/hamlet/suburb)
@@ -3069,16 +3152,19 @@ assign initialcost =
                             placeHit = { lat: parseFloat(d.lat), lon: parseFloat(d.lon), label: shortLabel(d) };
                         }
                     }
-                }
-            } catch (e) { /* geen plaats-hit → gewoon door met normale zoek */ }
+                } catch (e) { /* geen plaats-hit → gewoon door met normale zoek */ }
+                if (!actueel()) return;
+            }
 
             // 1) PHOTON — veel beter in namen/POI's ("Koning David school", cafés, straten).
             try {
                 let url = `https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=8&lang=nl`;
                 if (biasLat !== null) url += `&lat=${biasLat}&lon=${biasLon}`;
                 const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+                if (!actueel()) return;
                 if (res.ok) {
                     const gj = await res.json();
+                    if (!actueel()) return;
                     const items = (gj.features || []).map(f => {
                         const p = f.properties || {};
                         const c = (f.geometry && f.geometry.coordinates) || [];
@@ -3096,19 +3182,21 @@ assign initialcost =
                     let out = items;
                     if (placeHit) out = [placeHit].concat(items.filter(it =>
                         distMeters([it.lat, it.lon], [placeHit.lat, placeHit.lon]) > 30));
-                    if (out.length) { showResults(out, q); return; }
+                    if (out.length) { showResults(out, q, !metNominatim); return; }
                 }
-            } catch (e) { console.warn('Photon faalde, terugval Nominatim', e); }
+            } catch (e) { console.warn('Photon faalde', e); }
+            if (!actueel()) return;
 
             // als Photon niks gaf maar we wél een plaats-centrum hebben → toon dat
             if (placeHit) { showResults([placeHit], q); return; }
+            // tijdens het typen: Nominatim niet vanzelf — de regel "Ook adressen en plaatsen zoeken" doet het als jij wilt
+            if (!metNominatim) { showNoResults(q, true); return; }
 
             // 2) NOMINATIM als vangnet (sterk in adressen/plaatsnamen).
             try {
                 const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&addressdetails=1&limit=6&accept-language=nl`;
-                const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
-                if (!res.ok) throw new Error('HTTP ' + res.status);
-                const data = await res.json();
+                const data = await nominatimVraag(url);
+                if (!actueel()) return;
                 if (!Array.isArray(data) || !data.length) {
                     showNoResults(q);
                     return;
@@ -3120,6 +3208,7 @@ assign initialcost =
                 }));
                 showResults(items, q);
             } catch (e) {
+                if (!actueel()) return;
                 console.error('search failed', e);
                 showStatus('Zoeken mislukt: ' + (e.message || 'verbinding?') + ' — probeer opnieuw.');
             }
@@ -3143,17 +3232,27 @@ assign initialcost =
 
         // Niets gevonden in de gratis zoekers → knop om in Google Maps te zoeken (jij mag dat als mens),
         // plus een hint dat je de coördinaten daarna kunt plakken.
-        function showNoResults(q) {
+        // v63.91: regel om (alsnog) écht te zoeken — Photon + Nominatim (zie doSearch)
+        function zoekMeerRij(q) {
+            const d = document.createElement('div');
+            d.className = 'result-item';
+            d.style.cssText = 'cursor:pointer; color:#FFB74D; font-weight:bold; border-top:1px solid rgba(255,255,255,0.15);';
+            d.textContent = '🔍 Ook adressen en plaatsen zoeken (Zoek ↵)';
+            d.onclick = () => zoekNu(q);
+            return d;
+        }
+        function showNoResults(q, meer) {
             const gmUrl = 'https://www.google.com/maps/search/' + encodeURIComponent(q);
             resultsEl.innerHTML =
                 '<div class="result-item" style="opacity:0.85;">Niets gevonden voor "' + q + '"</div>' +
                 '<div class="result-item" onclick="window.open(\'' + gmUrl + '\',\'_blank\')" ' +
                 'style="cursor:pointer; color:#00BCD4; font-weight:bold;">🔎 Zoek in Google Maps →</div>' +
                 '<div class="result-item" style="opacity:0.7; font-size:0.85em;">Open Google Maps, kopieer het adres (straat + postcode) en plak het hier — of plak de coördinaten (bv. 52.04, 5.67)</div>';
+            if (meer) resultsEl.insertBefore(zoekMeerRij(q), resultsEl.children[1] || null);
             resultsEl.style.display = 'block';
         }
 
-        function showResults(items, q) {
+        function showResults(items, q, meer) {
             if (!items.length) { resultsEl.style.display = 'none'; return; }
             resultsEl.innerHTML = '';
             items.forEach(item => {
@@ -3166,6 +3265,7 @@ assign initialcost =
                 div.onclick = () => pickResult(lat, lng, label);
                 resultsEl.appendChild(div);
             });
+            if (q && meer) resultsEl.appendChild(zoekMeerRij(q));   // v63.91: tijdens typen alleen Photon → hier kan het écht
             // Altijd onderaan een Google Maps-knop: soms vindt de gratis zoeker iets, maar het verkeerde.
             if (q) {
                 const gmUrl = 'https://www.google.com/maps/search/' + encodeURIComponent(q);
@@ -4656,6 +4756,38 @@ assign initialcost =
             const ib = document.getElementById('infoBar');   // en geen blijvend "POI zoeken…" onderin
             if (ib && ib.textContent === 'POI zoeken…') ib.style.display = 'none';
         }
+        // ═══ v63.91 LIJSTEN ONTHOUDEN (Sjoerd: "graag lijsten onthouden — ik zoek bakker en klik hem weg; druk ik op
+        // zoeken: alles weg? Dat is niet slim") ═══ GEMETEN v63.90: ✕ op de lijst vroeg "Menu sluiten? De gevonden plekken
+        // worden van de kaart gehaald" en gooide alles weg (het zoekmenu kwam ook niet terug); Plan openen met de Plan-knop
+        // wiste ook alle POI's — daarna ging dezelfde vraag opnieuw naar de (drukke) server. Nu onthoudt de app per knop of
+        // zoekwoord de laatste lijst. Zolang je in de buurt bent (zelfde zoekgebied, hooguit 5 km verder, bij Route dezelfde
+        // route) en hij jonger is dan een uur, staat hij met één tik weer op de kaart — zonder server. De knop laat het zien:
+        // "🥐 Bakker · 12". Alleen in het geheugen: herstart = vergeten (de lijsten op je telefoon blijven gewoon).
+        const POI_ONTHOUD_MS = 3600000, POI_ONTHOUD_M = 5000;
+        const poiOnthoud = new Map();   // term → { els, tag, corridorPts, scope, pos, route, t }
+        function poiRouteNu() { const rc = lastRouteCoords; return rc && rc.length ? rc.length + ':' + rc[0] + ':' + rc[rc.length - 1] : ''; }
+        function poiOnthoudPlek() { const p = poiOrigin() || (map && map.getCenter ? map.getCenter() : null); return p ? { lat: p.lat, lng: p.lng } : null; }
+        function poiOnthoudGeldig(o) {
+            if (!o || Date.now() - o.t > POI_ONTHOUD_MS || o.scope !== poiScope) return false;
+            if (o.scope === 'route' && o.route !== poiRouteNu()) return false;
+            const nu = poiOnthoudPlek();
+            return !!(nu && o.pos && distM4(nu.lat, nu.lng, o.pos.lat, o.pos.lng) <= POI_ONTHOUD_M);
+        }
+        function poiOnthoudZet(term, els, tag, corridorPts) {
+            poiOnthoud.set(term, { els, tag, corridorPts, scope: poiScope, pos: poiOnthoudPlek(), route: poiRouteNu(), t: Date.now() });
+            poiKnoppenTel();
+        }
+        // Het aantal achter de knop ("· 12") = deze lijst staat klaar. Andere zoekgebied, ver weg of ouder dan een uur: weg.
+        function poiKnoppenTel() {
+            document.querySelectorAll('#poiFocusBar .poiCat button[onclick^="searchPOI(\'"]').forEach(b => {
+                const m = (b.getAttribute('onclick') || '').match(/^searchPOI\('([^']+)'\)$/);
+                if (!m) return;
+                if (b.dataset.label == null) b.dataset.label = b.textContent;
+                const o = poiOnthoud.get(m[1]);
+                b.textContent = b.dataset.label;
+                if (poiOnthoudGeldig(o)) { const s = document.createElement('span'); s.className = 'poiTel'; s.textContent = ' · ' + o.els.length; b.appendChild(s); }
+            });
+        }
 
         // steekwoord → OSM-tag. Onbekend woord → naam-zoek (fallback).
         const POI_TAGS = {
@@ -4732,6 +4864,7 @@ assign initialcost =
             poiScope = (poiScope === 'route') ? 'lokaal' : 'route';
             const b = document.getElementById('poiScopeBtn');
             if (b) b.textContent = 'Zoekgebied: ' + (poiScope === 'route' ? 'Route' : 'Lokaal');
+            if (typeof poiKnoppenTel === 'function') poiKnoppenTel();   // v63.91: onthouden lijst hoort bij het zoekgebied
         }
 
         // ═══ v63.85 POI-VOORRAAD OP DE TELEFOON (wens Sjoerd: "laad maar in en zet op mobiel" — "ik heb nog meer POI,
@@ -4755,6 +4888,27 @@ assign initialcost =
             shop: ['supermarket']
         };
         const POI_VELDEN = ['::type', '::id', '::lat', '::lon', 'amenity', 'shop', 'name', 'brand', 'opening_hours', 'cuisine'];
+        // v63.91 (Sjoerd: "als hij de basis heeft — benzine enz. — laad dan ook de rest in: bakker, hotel enz. Wel automatisch
+        // alles opstarten, maar geleidelijk; niets als bulk, geen spam, maar wel smart"): de REST van de knoppen als tweede laag
+        // in dezelfde vakken (sleutel "r:" + vak). amenity=bakery staat erbij omdat ☕ Café ook die soort vraagt (zeldzaam). Voor
+        // ⚡ Laden ook vermogen en aantal (chargeInfo: "50 kW 4×"). NL (taginfo okt 2026): laadpalen 22.174, snack 8.755,
+        // café 6.233, bakker 2.915 (+ hotels) — ±3 MB naast de ±2 MB van de basis.
+        const POI_REST = {
+            amenity: ['charging_station', 'fast_food', 'cafe', 'bakery'],
+            shop: ['bakery'],
+            tourism: ['hotel']
+        };
+        const POI_REST_VELDEN = ['::type', '::id', '::lat', '::lon', 'amenity', 'shop', 'tourism', 'name', 'brand', 'opening_hours', 'cuisine',
+            'charging_station:output', 'maxpower', 'socket:type2:output', 'socket:type2_combo:output', 'socket:ccs:output', 'socket:chademo:output', 'capacity'];
+        const POI_LAGEN = { b: { soorten: POI_VOORRAAD, velden: POI_VELDEN }, r: { soorten: POI_REST, velden: POI_REST_VELDEN } };
+        function poiSleutel(k, laag) { return (laag === 'r' ? 'r:' : '') + k; }
+        // De vraag voor één vak of blok (bb = "z,w,n,o"), CSV met als laatste de eigen regel "klaar". Sleutels met een
+        // dubbele punt tussen "…" (zo wil Overpass dat); de basis-vraag blijft precies zoals hij was.
+        function poiVraagTekst(bb, laag, tijd) {
+            const L = POI_LAGEN[laag], veld = v => /^(::)?[a-z_]+$/i.test(v) ? v : '"' + v + '"';
+            const deel = key => `nwr["${key}"~"^(${L.soorten[key].join('|')})$"](${bb});`;
+            return `[out:csv(${L.velden.map(veld).join(',')};true)][timeout:${tijd}];(${Object.keys(L.soorten).map(deel).join('')});out center;${POI_KLAAR}`;
+        }
         const POI_VAK = 0.5;                        // graden
         const POI_VERS_MS = 7 * 24 * 3600 * 1000;   // rond je en langs je route: verversen na een week
         const POI_LEEG_MS = 24 * 3600 * 1000;       // leeg vak rond je: na een dag nog eens (kan een mislukte vraag zijn geweest)
@@ -4886,14 +5040,14 @@ assign initialcost =
             return null;
         }
         // Eén vak van 0,5° (de automatische voorraad rond je en langs je route). v63.89: alleen bij overpass-api.de.
-        async function poiVakHaal(k) {
+        // v63.91: laag 'b' = de basis, 'r' = de rest.
+        async function poiVakHaal(k, laag) {
+            laag = laag || 'b';
             const [i, j] = k.split('_').map(Number);
             const s = i * POI_VAK, w = j * POI_VAK, bb = `${s},${w},${s + POI_VAK},${w + POI_VAK}`;
-            const deel = key => `nwr["${key}"~"^(${POI_VOORRAAD[key].join('|')})$"](${bb});`;
-            const q = `[out:csv(${POI_VELDEN.join(',')};true)][timeout:60];(${Object.keys(POI_VOORRAAD).map(deel).join('')});out center;${POI_KLAAR}`;
-            const p = poiCsvAntwoord(await overpassVraag(q, 65000, true, true));
+            const p = poiCsvAntwoord(await overpassVraag(poiVraagTekst(bb, laag, 60), 65000, true, true));
             if (!p) return false;
-            await poiVakSchrijf(k, p);
+            await poiVakSchrijf(poiSleutel(k, laag), p);
             return true;
         }
         function poiVakkenRond(lat, lng) {   // 3×3 rond je — je eigen vak eerst
@@ -4929,15 +5083,66 @@ assign initialcost =
         // Welk vak nu (automatisch)? 1) rond je: ontbreekt of ouder dan een week; 2) langs je route: idem. null = niets te doen.
         // v63.89: geen automatisch hele land meer — dat ging aan de grens mis (ruwe kaders: bij Rijsel "België") en is
         // veel verkeer; landen kies je zelf in het lijsten-menu.
-        function poiVolgendVak(meta, lat, lng) {
+        // v63.91: en daarna — pas als de basis rond je en langs je route er is — de REST: 3) rond je, 4) langs je route, 5) de
+        // landen die je koos en waarvan de basis ✓ is, per blok, dichtstbij eerst. null = niets te doen.
+        function poiVolgendWerk(meta, lat, lng) {
             const nu = Date.now(), rust = k => nu < (poiVakRust[k] || 0);
-            for (const k of poiVakkenRond(lat, lng)) if (!rust(k) && poiVakOud(meta.get(k))) return k;
-            for (const k of poiVakkenRoute()) if (!rust(k) && poiVakOud(meta.get(k))) return k;
-            return null;
+            const oud = (k, laag) => poiVakOud(meta.get(poiSleutel(k, laag)));
+            const rond = poiVakkenRond(lat, lng), route = poiVakkenRoute();
+            for (const k of rond) if (!rust(k) && oud(k, 'b')) return { soort: 'vak', k, laag: 'b' };
+            for (const k of route) if (!rust(k) && oud(k, 'b')) return { soort: 'vak', k, laag: 'b' };
+            if (!poiRestMag()) return null;
+            for (const k of rond) if (!rust('r:' + k) && oud(k, 'r')) return { soort: 'vak', k, laag: 'r' };
+            for (const k of route) if (!rust('r:' + k) && oud(k, 'r')) return { soort: 'vak', k, laag: 'r' };
+            const lb = poiRestLandBlok(lat, lng);
+            return lb ? { soort: 'blok', b: lb.b, code: lb.code, laag: 'r' } : null;
         }
-        // Vanuit de GPS van de master (en elke minuut): vak voor vak ophalen tot er niets meer te doen is. v63.89 VEILIG: na elk
-        // vak minstens zo lang wachten als het duurde (de afkoeltijd van de server, minimaal 3 s); mislukt er één, dan stopt de
-        // ronde (en rust de server na een weigering 1–30 min, zie overpassPauze). Niet tijdens een land-download.
+        // ─── v63.91 DE REST, GELEIDELIJK (geen bulk, geen spam): één vraag tegelijk (dezelfde rij als de rest van de app),
+        // alleen overpass-api.de; na een rest-vak minstens 15 s rust, na een land-blok minstens 1 minuut (of 3× zo lang als
+        // het duurde); nooit terwijl jij zelf POI zoekt of een Download loopt. Weigert de server (429/406): de rest stopt tot
+        // je de app opnieuw opent (plus 1–30 min rust voor alles). Geen verbinding: 10 min pauze; server druk/afgebroken:
+        // 30 min. Hooguit 200 rest-vragen per dag (de server staat ±10.000 per dag toe). ───
+        const POI_REST_PER_DAG = 200, POI_REST_DAG_LS = 'homePoiRestDag';
+        let poiRestVakMs = 15000, poiRestBlokMs = 60000;   // rust na een rest-vak / een land-blok (let: de test zet ze korter)
+        let poiRestStop = '';          // ≠ '': gestopt tot de volgende start (reden)
+        let poiRestRustTot = 0;        // pauze na een storing of zonder verbinding
+        function poiRestTeller(erbij) {
+            const dag = new Date().toISOString().slice(0, 10);
+            let t = { d: dag, n: 0 };
+            try { const o = JSON.parse(localStorage.getItem(POI_REST_DAG_LS) || 'null'); if (o && o.d === dag) t = o; } catch (e) {}
+            if (erbij) { t.n += erbij; try { localStorage.setItem(POI_REST_DAG_LS, JSON.stringify(t)); } catch (e) {} }
+            return t.n;
+        }
+        function poiRestMag() { return !poiRestStop && Date.now() >= poiRestRustTot && poiRestTeller(0) < POI_REST_PER_DAG; }
+        function poiLandBasisKlaar(code) { const k = poiLandKlaar[code] || 0; return k && k >= (poiLandVers[code] || 0) ? k : 0; }
+        function poiRestLandBlok(lat, lng) {
+            let best = null, bestD = Infinity;
+            const nu = Date.now();
+            for (const code of POI_LANDEN) {
+                if (!poiLandKeus.includes(code)) continue;
+                const sinds = poiLandBasisKlaar(code);
+                if (!sinds) continue;
+                for (const b of poiLandBlokken(code)) {
+                    if (nu < (poiVakRust['blok:' + b.s + '_' + b.w] || 0) || poiBlokKlaar(b, sinds, 'r')) continue;
+                    const d = distM4(lat, lng, (b.s + b.n) / 2, (b.w + b.e) / 2);
+                    if (d < bestD) { bestD = d; best = { b, code }; }
+                }
+            }
+            return best;
+        }
+        function poiRestFout(w) {
+            const f = overpassLaatsteFout;
+            const sleutel = w.soort === 'blok' ? 'blok:' + w.b.s + '_' + w.b.w : 'r:' + w.k;
+            if (f === 429 || f === 406) { poiRestStop = 'weigering (' + f + ')'; return; }
+            if (f === 'rust') { poiRestRustTot = Date.now() + 60000; return; }        // server rust nog: er ging niets uit
+            const ms = f === 'net' ? 600000 : 1800000;
+            poiRestRustTot = Date.now() + ms;
+            poiVakRust[sleutel] = Date.now() + ms;
+        }
+        const poiWacht = ms => new Promise(r => setTimeout(r, ms));
+        // Vanuit de GPS van de master (en elke minuut): werk voor werk tot er niets meer te doen is. v63.89 VEILIG: na elk
+        // basis-vak minstens zo lang wachten als het duurde (min. 3 s); mislukt er één, dan stopt de ronde. Niet tijdens een
+        // land-download. v63.91: daarna de rest, met de langere pauzes hierboven.
         async function poiVoorraadCheck(lat, lng) {
             const nu = Date.now();
             if (poiVoorraadBezig || poiLandJob) return;
@@ -4949,11 +5154,21 @@ assign initialcost =
                 const meta = await poiMeta();
                 for (;;) {
                     const pos = lastGps || { lat, lng };             // onderweg: dichtstbij vanaf waar je nú bent
-                    const k = poiVolgendVak(meta, pos.lat, pos.lng);
-                    if (!k || poiLandJob) break;
+                    const w = poiVolgendWerk(meta, pos.lat, pos.lng);
+                    if (!w || poiLandJob) break;
+                    if (w.laag === 'r' && (poiZoek || overpassZelf)) break;   // jij zoekt zelf → de rest wacht tot een volgende check
                     const t0 = Date.now();
-                    if (!(await poiVakHaal(k))) { poiVakRust[k] = Date.now() + 600000; poiVoorraadRustTot = Date.now() + 60000; break; }
-                    await new Promise(r => setTimeout(r, Math.max(poiTussenMs, Date.now() - t0)));
+                    const ok = w.soort === 'blok' ? await poiBlokHaal(w.b, 'r') : await poiVakHaal(w.k, w.laag);
+                    const duur = Date.now() - t0;
+                    if (w.laag === 'r' && (ok || overpassLaatsteFout !== 'rust')) poiRestTeller(1);
+                    if (!ok) {
+                        if (w.laag === 'b') { poiVakRust[w.k] = Date.now() + 600000; poiVoorraadRustTot = Date.now() + 60000; }
+                        else poiRestFout(w);
+                        break;
+                    }
+                    if (w.soort === 'blok') poiLandUI();                       // "rest n/N" onder het land bijwerken
+                    await poiWacht(w.laag === 'b' ? Math.max(poiTussenMs, duur)
+                        : w.soort === 'vak' ? Math.max(poiRestVakMs, duur) : Math.max(poiRestBlokMs, 3 * duur));
                 }
             } catch (e) { console.warn('POI-voorraad', e); poiVoorraadRustTot = Date.now() + 300000; }
             finally { poiVoorraadBezig = false; }
@@ -5002,7 +5217,7 @@ assign initialcost =
                 for (let c = Math.round(b.w / POI_VAK); c < Math.round(b.e / POI_VAK); c++) uit.push(a + '_' + c);
             return uit;
         }
-        function poiBlokKlaar(b, vers) { const m = poiMetaMap; return !!m && poiBlokVakken(b).every(k => m.has(k) && m.get(k).t >= vers); }
+        function poiBlokKlaar(b, vers, laag) { const m = poiMetaMap; return !!m && poiBlokVakken(b).every(k => { const x = m.get(poiSleutel(k, laag)); return !!x && x.t >= vers; }); }
         // Status onder een land: — niets · ⏳ bezig · ½ half binnen · ✓ dag-maand compleet · ↻ half ververst (de vorige
         // complete lijsten staan er nog en worden gewoon gebruikt).
         function poiLandStatus(code) {
@@ -5014,15 +5229,22 @@ assign initialcost =
             if (n) return `${klaar ? '↻' : '½'} ${n}/${bl.length}`;
             return klaar ? `✓ ${dm(klaar)}` : '—';   // verversen begonnen maar nog geen blok binnen → de oude staan er nog
         }
+        // v63.91: de rest (⚡ 🍔 ☕ 🥐 🛏) van een land komt vanzelf zodra de basis ✓ is — "rest 3/6" of "rest ✓".
+        function poiLandRestStatus(code) {
+            const sinds = poiLandBasisKlaar(code);
+            if (!sinds || !poiMetaMap) return '';
+            const bl = poiLandBlokken(code), n = bl.filter(b => poiBlokKlaar(b, sinds, 'r')).length;
+            return n === bl.length ? 'rest ✓' : `rest ${n}/${bl.length}`;
+        }
         // Eén blok: één vraag, daarna verdeeld over de vakken van 0,5° (alle vakken van het blok in één keer bewaard, ook lege).
-        async function poiBlokHaal(b) {
+        // v63.91: laag 'b' = de basis (Download), 'r' = de rest (vanzelf, geleidelijk).
+        async function poiBlokHaal(b, laag) {
+            laag = laag || 'b';
             const bb = `${b.s},${b.w},${b.n},${b.e}`;
-            const deel = key => `nwr["${key}"~"^(${POI_VOORRAAD[key].join('|')})$"](${bb});`;
-            const q = `[out:csv(${POI_VELDEN.join(',')};true)][timeout:90];(${Object.keys(POI_VOORRAAD).map(deel).join('')});out center;${POI_KLAAR}`;
-            const rij = poiCsvAntwoord(await overpassVraag(q, 95000, true, true));
+            const rij = poiCsvAntwoord(await overpassVraag(poiVraagTekst(bb, laag, 90), 95000, true, true));
             if (!rij) return false;
-            const perVak = new Map(poiBlokVakken(b).map(k => [k, []]));
-            for (const r of rij) { const k = poiVakVan(r[1], r[2]); if (perVak.has(k)) perVak.get(k).push(r); }
+            const perVak = new Map(poiBlokVakken(b).map(k => [poiSleutel(k, laag), []]));
+            for (const r of rij) { const k = poiSleutel(poiVakVan(r[1], r[2]), laag); if (perVak.has(k)) perVak.get(k).push(r); }
             await poiVakkenSchrijf(perVak);
             return true;
         }
@@ -5107,7 +5329,9 @@ assign initialcost =
             const vak = document.getElementById('poiLandKeuze');
             if (vak) vak.innerHTML = POI_LANDEN.map(c => {
                 const aan = poiLandKeus.includes(c);
-                return `<button onclick="poiLandKiezen('${c}')" style="padding:8px 4px; border-radius:10px; border:2px solid ${aan ? '#00BCD4' : '#555'}; background:${aan ? '#00838f' : '#0a0e27'}; color:#fff; font-weight:bold; font-size:1.05em; cursor:pointer; line-height:1.2;">${c}<br><span style="font-size:0.72em; font-weight:normal; color:${aan ? '#e0f7fa' : '#9aa'};">${poiLandStatus(c)}</span></button>`;
+                const rest = poiLandRestStatus(c);
+                return `<button onclick="poiLandKiezen('${c}')" style="padding:8px 4px; border-radius:10px; border:2px solid ${aan ? '#00BCD4' : '#555'}; background:${aan ? '#00838f' : '#0a0e27'}; color:#fff; font-weight:bold; font-size:1.05em; cursor:pointer; line-height:1.2;">${c}<br><span style="font-size:0.72em; font-weight:normal; color:${aan ? '#e0f7fa' : '#9aa'};">${poiLandStatus(c)}</span>` +
+                    (rest ? `<br><span style="font-size:0.62em; font-weight:normal; color:${aan ? '#b2ebf2' : '#8a9'};">${rest}</span>` : '') + `</button>`;
             }).join('');
             const go = document.getElementById('poiLandGo');
             if (go) {
@@ -5136,7 +5360,11 @@ assign initialcost =
         async function poiUitVoorraad(tag, extra, corridorPts, c) {
             if (typeof indexedDB === 'undefined' || !tag) return null;
             const spec = [tag].concat(extra ? [extra] : []).map(s => { const m = String(s).match(/^(\w+)([=~])(.+)$/); return m ? { k: m[1], v: m[2] === '~' ? m[3].split('|') : [m[3]] } : null; });
-            if (spec.some(s => !s || !POI_VOORRAAD[s.k] || !s.v.every(v => POI_VOORRAAD[s.k].includes(v)))) return null;
+            // v63.91: in welke laag staat deze soort helemaal — de basis of de rest? Allebei niet (of half): live.
+            const inLaag = L => spec.every(s => s && L.soorten[s.k] && s.v.every(v => L.soorten[s.k].includes(v)));
+            const laag = inLaag(POI_LAGEN.b) ? 'b' : inLaag(POI_LAGEN.r) ? 'r' : null;
+            if (!laag) return null;
+            const sl = k => poiSleutel(k, laag);
             let vakken, pts = null;
             if (corridorPts && corridorPts.length) {
                 const stap = Math.max(1, Math.floor(corridorPts.length / 300));
@@ -5152,11 +5380,11 @@ assign initialcost =
                     for (let b = Math.floor((c.lng - dLng) / POI_VAK); b <= Math.floor((c.lng + dLng) / POI_VAK); b++) vakken.push(a + '_' + b);
             }
             const meta = await poiMeta();
-            if (vakken.some(k => !meta.has(k))) return null;
+            if (vakken.some(k => !meta.has(sl(k)))) return null;
             const past = g => spec.some(s => s.v.includes(g[s.k]));
             const gezien = new Set(), kand = [];
             for (const k of vakken) {
-                const p = await poiVakLees(k);
+                const p = await poiVakLees(sl(k));
                 if (!p) return null;
                 for (const r of p) if (!gezien.has(r[0]) && past(r[3])) { gezien.add(r[0]); kand.push(r); }
             }
@@ -5180,6 +5408,14 @@ assign initialcost =
             if (poiZoek && poiZoek.term === term) { poiZoekTeller(); return; }   // v63.84: zoekt al → geen tweede vraag
             poiZoekStop();                                                     // andere zoekterm → de oude vervalt
             wipePoiMarkers();   // alleen oude resultaten weg, clean beeld blijft aan
+            // v63.91: deze lijst staat nog klaar (in de buurt, < 1 uur) → meteen terug, geen server
+            const onth = poiOnthoud.get(term);
+            if (poiOnthoudGeldig(onth)) {
+                drawPOI(onth.els, term, onth.tag, onth.corridorPts);
+                const min = Math.round((Date.now() - onth.t) / 60000);
+                showInfo(`${onth.els.length} gevonden voor "${term}" — onthouden (${min ? min + ' min geleden' : 'net gezocht'}), tik een icoon voor info.`);
+                return;
+            }
             showInfo('POI zoeken…');
 
             // bepaal de query: bekende tag of naam-zoek
@@ -5258,6 +5494,7 @@ assign initialcost =
                 poiZoek = null; poiZoekTeller();
                 if (!lokaal.length) { poiMelding(corridorPts ? `Geen "${term}" langs je route (30 km vooruit).` : `Geen "${term}" binnen 10 km.`, '#FF9800'); return; }
                 drawPOI(lokaal, term, tag, corridorPts);
+                poiOnthoudZet(term, lokaal, tag, corridorPts);
                 showInfo(`${lokaal.length} gevonden voor "${term}" — van je telefoon, tik een icoon voor info.`);
                 return;
             }
@@ -5293,6 +5530,7 @@ assign initialcost =
                 // v63.82: tekst klopt nu met wat er gezocht is (route: 30 km vooruit — stond er 20; lokaal: 10 km om je heen)
                 if (!els.length) { poiMelding(corridorPts ? `Geen "${term}" langs je route (30 km vooruit).` : `Geen "${term}" binnen 10 km.`, '#FF9800'); return; }
                 drawPOI(els, term, tag || 'name', corridorPts);
+                poiOnthoudZet(term, els, tag || 'name', corridorPts);
             } catch (e) {
                 console.error('POI search failed', e);
                 poiMelding('POI zoeken mislukt — probeer opnieuw.', '#FF9800');
@@ -5317,6 +5555,7 @@ assign initialcost =
                 });
                 const m = L.marker([e.lat, e.lng], { icon }).addTo(map);
                 m.on('click', () => openPOI(e, m));
+                e._m = m;   // v63.91: voor poiKies (keuze in de lijst → dit icoon licht op)
                 // mini-label (naam + korte omschrijving) — alleen zichtbaar als je ver inzoomt (zoom 17+)
                 const naam = e.tags.name || e.tags.brand || '';
                 const oms = poiOmschrijving(e.tags);
@@ -5385,7 +5624,7 @@ assign initialcost =
                     const div = document.createElement('div');
                     div.style.cssText = 'padding:14px 16px;color:#fff;cursor:pointer;border-bottom:1px solid #1a2148;font-size:1.15em;display:flex;gap:8px;align-items:center;';
                     div.innerHTML = `<span style="font-size:1.2em;">${emoji}</span>${leftStr}${rightStr}${chargeStr}<span>${name}</span>`;
-                    div.onclick = () => { map.setView([e.lat, e.lng], 19); };
+                    div.onclick = () => poiKies(e);   // v63.91: lijst klein aan de zijkant, plek in het vrije stuk
                     box.appendChild(div);
                 });
                 // kop met kolomtitels + grote vouw-pijl (◀ wegvouwen) + grote rode X (sluiten)
@@ -5515,6 +5754,61 @@ assign initialcost =
             if (f) f.style.display = 'flex';
             if (typeof poiPlek === 'function') poiPlek();   // v63.82
         }
+        // ═══ v63.91 KEUZE IN DE LIJST (Sjoerd: "maak je een keuze in de POI-lijst, dan graag de lijst klein aan de zijkant,
+        // zodat je het punt op de kaart kan zien — en er op drukken zodat het menu opkomt met start, finish enz.") ═══ GEMETEN
+        // v63.90: de kaart sprong naar de plek (zoom 19, midden van het scherm), maar daar lag de lijst overheen (staand onder
+        // Plan, liggend naast Plan) — het punt zat eronder. Nu klapt de lijst in tot het balkje links (▶ = lijst terug,
+        // ✕ = weg), komt de plek midden in het VRIJE stuk van de kaart (naast/onder Plan, naast het balkje, boven de
+        // infobalk) en licht het gekozen icoon op. Tik op het icoon = het menu (Start, Finish, Tussen, Achteraan).
+        let poiGekozen = null;
+        function poiKies(e) {
+            foldPoiList();
+            if (poiGekozen && poiGekozen._icon) poiGekozen._icon.classList.remove('poi-gekozen');
+            poiGekozen = e._m || null;
+            if (poiGekozen && poiGekozen._icon) poiGekozen._icon.classList.add('poi-gekozen');
+            const v = poiVrijeKaart(), ll = L.latLng(e.lat, e.lng);
+            // Draait de kaart mee (kompas, rijscherm), dan klopt rekenen in schermpunten niet → gewoon in het vrije vlak.
+            const P = (typeof mapRotationEnabled !== 'undefined' && mapRotationEnabled) ? null : poiVrijPunt(v);
+            if (!P) { map.fitBounds(L.latLngBounds(ll, ll), { paddingTopLeft: [v.links, v.boven], paddingBottomRight: [v.rechts, v.onder], maxZoom: 19 }); return; }
+            const kr = map.getContainer().getBoundingClientRect();
+            const naar = L.point(P.x - kr.left - kr.width / 2, P.y - kr.top - kr.height / 2);   // van het kaartmidden naar P
+            map.setView(map.unproject(map.project(ll, 19).subtract(naar), 19), 19);
+        }
+        // Midden van het vrije vlak — tenzij daar iets bovenop ligt (GEMETEN op de SE: de lijndikte-balk "− 12 +" staat
+        // tijdens Plan midden op de kaart): dan de dichtstbijzijnde plek waar niets bovenop ligt. Wat op de kaart zelf ligt
+        // (andere icoontjes) telt niet: de kaart schuift toch; de lijst ook niet: die schuift net weg.
+        function poiVrijPunt(v) {
+            const k = map.getContainer(), kr = k.getBoundingClientRect(), lijst = document.getElementById('poiFocusList');
+            const x0 = kr.left + v.links, x1 = kr.right - v.rechts, y0 = kr.top + v.boven, y1 = kr.bottom - v.onder;
+            const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
+            const leeg = (x, y) => { const el = document.elementFromPoint(x, y); return !!el && ((k.contains(el) && !el.closest('.leaflet-control-container')) || (lijst && lijst.contains(el))); };
+            // het icoon (±24 px) en het naambordje eronder (zoom 19: ±116 × 67 px, begint ±23 px onder het midden)
+            const vrij = (x, y) => [[0, 0], [-24, 0], [24, 0], [0, -24], [0, 24], [0, 50], [-58, 60], [58, 60], [0, 92], [-58, 90], [58, 90]].every(([dx, dy]) => leeg(x + dx, y + dy));
+            if (vrij(cx, cy)) return { x: cx, y: cy };
+            let best = null, bestD = Infinity;
+            for (let y = y0 + 26; y <= y1 - 94; y += 14) for (let x = x0 + 60; x <= x1 - 60; x += 14) {
+                const d = (x - cx) * (x - cx) + (y - cy) * (y - cy);
+                if (d < bestD && vrij(x, y)) { bestD = d; best = { x, y }; }
+            }
+            return best || { x: cx, y: cy };
+        }
+        // Het stuk kaart dat niet onder Plan, het balkje of de infobalk ligt (marges in px vanaf de randen van de kaart).
+        function poiVrijeKaart() {
+            const k = map.getContainer().getBoundingClientRect();
+            const zicht = el => !!el && getComputedStyle(el).display !== 'none' && el.getBoundingClientRect().width > 0;
+            const staand = window.innerWidth <= window.innerHeight;
+            let links = 12, boven = 12, rechts = 12, onder = 12;
+            const pp = document.getElementById('plannerPanel');
+            if (plannerIsOpen() && zicht(pp)) {
+                const r = pp.getBoundingClientRect();
+                if (staand) boven = Math.max(boven, r.bottom - k.top + 12); else links = Math.max(links, r.right - k.left + 12);
+            }
+            const f = document.getElementById('poiFolded');
+            if (zicht(f)) links = Math.max(links, f.getBoundingClientRect().right - k.left + 12);
+            const ib = document.getElementById('infoBar');
+            if (zicht(ib)) onder = Math.max(onder, k.bottom - ib.getBoundingClientRect().top + 12);
+            return { links, boven, rechts, onder };
+        }
         // Uitklappen: lijst weer in beeld, ingevouwen-balk weg.
         function unfoldPoiList() {
             const box = document.getElementById('poiFocusList');
@@ -5523,14 +5817,21 @@ assign initialcost =
             if (f) f.style.display = 'none';
             if (typeof poiPlek === 'function') poiPlek();   // v63.82
         }
-        // Sluiten (rode X): eerst vragen — anders moet alles opnieuw geladen worden.
+        // Sluiten (rode X). v63.91: geen vraag meer — lijst en icoontjes gaan van de kaart, maar de lijst blijft onthouden
+        // (poiOnthoud: de knop toont "· 12", één tik = terug). Staat Plan open, dan komt het zoekmenu terug.
         function askClosePOI() {
-            if (confirm('Menu sluiten? De gevonden plekken worden van de kaart gehaald.')) {
-                const box = document.getElementById('poiFocusList');
-                if (box) box.classList.remove('folded');
-                const f = document.getElementById('poiFolded');
-                if (f) f.style.display = 'none';
-                clearPOI();   // markers weg + lijst leeg
+            const box = document.getElementById('poiFocusList');
+            if (box) box.classList.remove('folded');
+            const f = document.getElementById('poiFolded');
+            if (f) f.style.display = 'none';
+            clearPOI();   // markers weg + lijst leeg (onthouden blijft)
+            const bar = document.getElementById('poiFocusBar');
+            if (bar && plannerIsOpen()) {
+                bar.classList.remove('lijsten');
+                bar.style.display = 'flex';
+                poiKnoppenTel();
+                if (typeof poiKnopTekst === 'function') poiKnopTekst();
+                poiPlek();
             }
         }
 
@@ -5626,7 +5927,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "63.90";
+        const APP_VERSION = "63.91";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
