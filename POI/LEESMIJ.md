@@ -16,12 +16,13 @@ De **POI-fabriek** (`.github/workflows/poi.yml`) draait vanzelf de 3e van elke m
 tab **Actions** → **POI-fabriek** → **Run workflow** (±20–30 minuten). Hij:
 
 1. haalt per land het OpenStreetMap-extract bij [Geofabrik](https://download.geofabrik.de/europe.html) — één keer per
-   land per run, met MD5-controle;
+   land per run, met MD5-controle (als Geofabrik die heeft; anders controleert osmium het bestand);
 2. houdt met `osmium` alleen de POI-soorten over;
 3. zet per plek het midden (net als Overpass `out center`) en verdeelt alles over vakken van 0,5°;
 4. schrijft per land alle vakken die het land raakt — compleet, dus een grensvak met Duitsland bevat ook de Duitse
-   plekken. Vakken die een land raken dat hier niet bij zit (bv. Oostenrijk) worden weggelaten: die haalt de app zelf
-   als je daar bent;
+   plekken (Monaco gaat mee voor het vak van Nice). Vakken met **land** van een land dat hier niet bij zit
+   (bv. Oostenrijk) worden weggelaten: die haalt de app zelf als je daar bent. Alleen land telt (Natural Earth,
+   publiek domein) — de grenzen van Geofabrik lopen ook over zee, en anders viel bv. Rostock weg om Deens water;
 5. slaat de bestanden hier op en laat de site opnieuw bouwen.
 
 ## Licentie en bron

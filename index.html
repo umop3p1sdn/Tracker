@@ -1260,7 +1260,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.93 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v63.94 © Umop3p1sdn</div>
 
             </div>
 
@@ -1815,7 +1815,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.93 © Umop3p1sdn
+                HO-ME v63.94 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2157,7 +2157,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v63.93 © Umop3p1sdn
+                HO-ME v63.94 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -5282,11 +5282,13 @@ assign initialcost =
             const teller = new TransformStream({ transform(stuk, c) { binnen += stuk.byteLength; voortgang(binnen / (info.bytes || binnen)); c.enqueue(stuk); } });
             const lezer = r.body.pipeThrough(teller).pipeThrough(new DecompressionStream('gzip')).pipeThrough(new TextDecoderStream()).getReader();
             const db = await poiDb(), meta = await poiMeta();
-            let velden = null, vakken = null, t = 0, vak = null, per = null, rest = '', aantal = 0, klaar = false, adem = 0;
-            const batch = [];                       // [sleutel, plekken]
+            let velden = null, vakken = null, t = 0, vak = null, per = null, rest = '', aantal = 0, klaar = false, adem = 0, inBatch = 0;
+            const batch = [];                       // [sleutel, plekken] — per keer hooguit ±8000 plekken wegschrijven: GEMETEN met de
+                                                    // echte bestanden haperde de kaart anders tot 190 ms (een vol stadsvak is groot)
             const schrijf = async () => {
                 if (!batch.length) return;
                 const stuk = batch.splice(0), m = stuk.map(([k, p]) => ({ k, t, n: p.length, f: code }));
+                inBatch = 0;
                 await new Promise((ok, mis) => {
                     const tx = db.transaction(['vakken', 'meta'], 'readwrite');
                     stuk.forEach(([k, p], i) => { tx.objectStore('vakken').put({ k, p }); tx.objectStore('meta').put(m[i]); });
@@ -5297,9 +5299,9 @@ assign initialcost =
             const sluitVak = async () => {
                 if (vak === null) return;
                 if (!vakken.delete(vak)) throw new Error('vak ' + vak);     // hoort niet in dit bestand, of kwam al eerder
-                for (const l of POI_LAAG_VOLGORDE) batch.push([poiSleutel(vak, l), per[l]]);
+                for (const l of POI_LAAG_VOLGORDE) { batch.push([poiSleutel(vak, l), per[l]]); inBatch += per[l].length; }
                 vak = null;
-                if (batch.length >= 60) await schrijf();
+                if (inBatch >= 8000 || batch.length >= 60) await schrijf();
             };
             const regel = async s => {
                 if (!s) return;
@@ -6055,7 +6057,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "63.93";
+        const APP_VERSION = "63.94";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de

@@ -9,8 +9,9 @@ Run workflow). Wat hij doet:
   3. alles samenvoegen (dubbele plekken uit overlappende extracten = een keer), per plek het midden (zoals Overpass
      'out center': het midden van het omhullende kader) en het vak van 0,5 graad;
   4. per land een bestand POI/<LAND>.tsv.gz met ALLE vakken die het land raakt - compleet, dus een vak op de grens met
-     Duitsland bevat ook de Duitse plekken. Vakken die een land raken dat we NIET maken (bv. Oostenrijk) laten we weg:
-     die zouden niet compleet zijn; de app haalt die zelf (Overpass) als je daar bent;
+     Duitsland bevat ook de Duitse plekken. Vakken met LAND van een land dat we NIET maken (bv. Oostenrijk) laten we weg:
+     die zouden niet compleet zijn; de app haalt die zelf (Overpass) als je daar bent. Alleen land telt (Natural Earth,
+     publiek domein): de grenzen van Geofabrik lopen ook over zee, en dan viel bv. Rostock weg om Deens water;
   5. POI/index.json met per land de datum van de gegevens, de grootte en het aantal plekken.
 
 De lagen en velden moeten gelijk zijn aan die in de app (POI_VOORRAAD, POI_REST, POI_EXTRA en hun velden).
@@ -32,15 +33,20 @@ import time
 import urllib.request
 from datetime import datetime, timezone
 
-from shapely.geometry import Polygon, box
+from shapely.geometry import Polygon, box, shape
 from shapely.ops import unary_union
 from shapely.prepared import prep
 
 GEOFABRIK = 'https://download.geofabrik.de/europe/'
 LANDEN = {'NL': 'netherlands', 'BE': 'belgium', 'DE': 'germany', 'LU': 'luxembourg', 'FR': 'france'}
-# Buurlanden die we niet maken: een vak dat een van deze raakt is niet compleet en gaat niet in de bestanden
-BUREN = ['denmark', 'poland', 'czech-republic', 'austria', 'switzerland', 'liechtenstein', 'italy', 'monaco',
+# Alleen voor de volledigheid van grensvakken (geen eigen bestand): Monaco ligt in het vak van Nice
+HULP = {'MC': 'monaco'}
+# Buurlanden die we niet maken: een vak met land van een van deze is niet compleet en gaat niet in de bestanden
+BUREN = ['denmark', 'poland', 'czech-republic', 'austria', 'switzerland', 'liechtenstein', 'italy',
          'spain', 'andorra', 'united-kingdom', 'guernsey-jersey']
+# Land (zonder zee) - Natural Earth 1:10 miljoen, publiek domein, vaste versie
+LAND = 'https://raw.githubusercontent.com/nvkelso/natural-earth-vector/v5.1.2/geojson/'
+LAND_BESTANDEN = ['ne_10m_land', 'ne_10m_minor_islands']
 UA = 'HO-ME-POI-fabriek/1 (github.com/umop3p1sdn/Tracker; 1x per maand)'
 
 # Precies de lagen van de app: b = basis, r = rest, x = extra's
@@ -141,6 +147,19 @@ def vakken_van(vorm):
     return uit
 
 
+def lees_land(paden, kader):
+    """Natural Earth (GeoJSON) -> het land binnen het kader (minx, miny, maxx, maxy), als een vorm."""
+    k = box(*kader)
+    delen = []
+    for pad in paden:
+        with open(pad, encoding='utf-8') as f:
+            for ft in json.load(f)['features']:
+                g = shape(ft['geometry'])
+                if g.intersects(k):
+                    delen.append(g.intersection(k))
+    return unary_union(delen)
+
+
 def schoon(w):
     return str(w).replace('\t', ' ').replace('\r', ' ').replace('\n', ' ').strip()
 
@@ -169,10 +188,12 @@ def main():
     ap.add_argument('--bron', default='', help='map met <naam>-latest.osm.pbf en <naam>.poly (geen downloads)')
     ap.add_argument('--landen', default='', help='bv. NL=netherlands,BE=belgium')
     ap.add_argument('--buren', default=None, help='bv. austria,switzerland')
+    ap.add_argument('--hulp', default=None, help='extracten alleen voor de grensvakken, bv. MC=monaco')
     ap.add_argument('--geofabrik', default=GEOFABRIK, help='andere downloadplek (alleen om te testen)')
     a = ap.parse_args()
 
     landen = dict(x.split('=') for x in a.landen.split(',')) if a.landen else dict(LANDEN)
+    hulp = dict(x.split('=') for x in a.hulp.split(',') if x) if a.hulp is not None else dict(HULP)
     buren = [x for x in (a.buren.split(',') if a.buren is not None else BUREN) if x]
     os.makedirs(a.werk, exist_ok=True)
     os.makedirs(a.uit, exist_ok=True)
@@ -183,6 +204,9 @@ def main():
         pad = os.path.join(a.werk, naam + ext)
         if ext == '.poly':
             haal(a.geofabrik + naam + '.poly', pad)
+            return pad
+        if ext == '.geojson':
+            haal(LAND + naam + '.geojson', pad)
             return pad
         # MD5 voor en na: zet Geofabrik net een nieuwe stand neer (hun dagelijkse update), dan past het bestand bij een van
         # de twee. Past hij bij geen van beide, dan stoppen we (niets opnieuw geprobeerd).
@@ -195,9 +219,9 @@ def main():
                 sys.exit('MD5 klopt niet voor %s - gestopt (niets opnieuw geprobeerd)' % naam)
         return pad
 
-    # 1 + 2: per land ophalen en filteren
+    # 1 + 2: per land ophalen en filteren (de hulp-extracten ook: hun plekken maken grensvakken compleet)
     datum, poi = {}, []
-    for code, naam in landen.items():
+    for code, naam in list(landen.items()) + list(hulp.items()):
         groot = bron(naam, '-latest.osm.pbf')
         datum[code] = subprocess.run(['osmium', 'fileinfo', '-g', 'header.option.osmosis_replication_timestamp', groot],
                                      check=True, capture_output=True, text=True).stdout.strip()
@@ -245,19 +269,24 @@ def main():
                 rijen.setdefault(vak, []).append((LAAG_VOLGORDE.index(l), ident, '\t'.join([l, ident, lat, lon] + velden)))
     log('plekken', len(gezien), 'vakken met plekken', len(rijen))
 
-    # 4: vakken per land; vakken die een buurland raken (dat we niet maken) zijn niet compleet
+    # 4: vakken per land; een vak met LAND van een buurland (dat we niet maken) is niet compleet. Alleen land telt: de
+    # grenzen van Geofabrik lopen ook over zee (Deens water tot vlak bij Rostock, het Kanaal tot bij Calais) - daar staan
+    # geen plekken van dat buurland.
     vormen = {code: lees_poly(bron(naam, '.poly')) for code, naam in landen.items()}
     buur = [prep(lees_poly(bron(n, '.poly'))) for n in buren]
-    deel = set()
+    gx0, gy0, gx1, gy1 = unary_union(list(vormen.values())).bounds
+    land = lees_land([bron(n, '.geojson') for n in LAND_BESTANDEN], (gx0 - 1, gy0 - 1, gx1 + 1, gy1 + 1))
+    land_p = prep(land)
+    oordeel = {}                               # vak -> True = niet compleet
+    def niet_compleet(v):
+        if v not in oordeel:
+            r = box(v[1] * VAK, v[0] * VAK, (v[1] + 1) * VAK, (v[0] + 1) * VAK)
+            oordeel[v] = land_p.intersects(r) and any(b.intersects(r.intersection(land)) for b in buur)
+        return oordeel[v]
     land_vakken = {}
     for code, vorm in vormen.items():
-        vs = vakken_van(vorm)
-        for v in vs:
-            r = box(v[1] * VAK, v[0] * VAK, (v[1] + 1) * VAK, (v[0] + 1) * VAK)
-            if any(b.intersects(r) for b in buur):
-                deel.add(v)
-        land_vakken[code] = sorted(vs - deel)
-    log('randvakken met een buurland (niet compleet, weggelaten):', len(deel))
+        land_vakken[code] = sorted(v for v in vakken_van(vorm) if not niet_compleet(v))
+    log('randvakken met land van een buurland (niet compleet, weggelaten):', sum(oordeel.values()))
 
     index = {'formaat': FORMAAT, 'gemaakt': datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'),
              'bron': 'OpenStreetMap via Geofabrik (download.geofabrik.de)',
