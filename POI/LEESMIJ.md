@@ -23,7 +23,7 @@ tab **Actions** → **POI-fabriek** → **Run workflow** (±20–30 minuten). Hi
    plekken (Monaco gaat mee voor het vak van Nice). Vakken met **land** van een land dat hier niet bij zit
    (bv. Oostenrijk) worden weggelaten: die haalt de app zelf als je daar bent. Alleen land telt (Natural Earth,
    publiek domein) — de grenzen van Geofabrik lopen ook over zee, en anders viel bv. Rostock weg om Deens water;
-5. slaat de bestanden hier op en laat de site opnieuw bouwen.
+5. slaat de bestanden hier op; de site bouwt daarna vanzelf opnieuw.
 
 ## Licentie en bron
 

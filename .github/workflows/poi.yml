@@ -9,8 +9,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write                # de nieuwe bestanden in POI/ opslaan
-  pages: write                   # daarna de site opnieuw laten bouwen
+  contents: write                # de nieuwe bestanden in POI/ opslaan (de site bouwt daarna vanzelf opnieuw)
 
 concurrency:
   group: poi-fabriek
@@ -58,10 +57,5 @@ jobs:
           done
           if [ "$gelukt" != ja ]; then echo "opslaan mislukt"; exit 1; fi
           echo "veranderd=ja" >> "$GITHUB_OUTPUT"
-
-      # Een push met de GITHUB_TOKEN start zelf geen Pages-build (zo staat het in de documentatie van GitHub) -> vragen
-      - name: Site opnieuw bouwen
-        if: steps.opslaan.outputs.veranderd == 'ja'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: gh api -X POST "repos/$GITHUB_REPOSITORY/pages/builds"
+      # De site bouwt na het opslaan vanzelf opnieuw (v63.95: GEMETEN bij twee runs — de opslag startte al een Pages-build;
+      # een extra bouw-opdracht hier startte er een tweede die de eerste afbrak. Die stap is daarom weg.)
