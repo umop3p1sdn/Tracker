@@ -1,0 +1,61 @@
+# POI-fabriek (HO-ME Live Tracker v63.93): 1x per maand de POI's van NL, BE, DE, LU en FR uit de OpenStreetMap-
+# extracten van Geofabrik halen en als kleine bestanden in de map POI/ zetten (zie POI/LEESMIJ.md).
+# Met de hand starten kan ook: tab Actions -> POI-fabriek -> Run workflow.
+name: POI-fabriek
+
+on:
+  schedule:
+    - cron: '23 2 3 * *'        # de 3e van elke maand, 02:23 UTC (Geofabrik ververst dagelijks; 1x per maand is genoeg)
+  workflow_dispatch:
+
+permissions:
+  contents: write                # de nieuwe bestanden in POI/ opslaan
+  pages: write                   # daarna de site opnieuw laten bouwen
+
+concurrency:
+  group: poi-fabriek
+  cancel-in-progress: false
+
+jobs:
+  maak:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 20
+
+      - name: Gereedschap (osmium, shapely)
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq osmium-tool python3-shapely
+
+      - name: POI maken (Geofabrik -> POI/*.tsv.gz + index.json)
+        run: python3 POI/fabriek.py --werk "$RUNNER_TEMP/poi"
+
+      - name: Opslaan in de repo
+        id: opslaan
+        run: |
+          git config user.name "POI-fabriek"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add POI
+          if git diff --cached --quiet; then
+            echo "niets veranderd"
+            echo "veranderd=nee" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git commit -q -m "POI: stand $(date -u +%Y-%m-%d)"
+          gelukt=nee
+          for poging in 1 2 3; do
+            if git pull -q --rebase origin "$GITHUB_REF_NAME" && git push -q origin "HEAD:$GITHUB_REF_NAME"; then gelukt=ja; break; fi
+            sleep 20
+          done
+          if [ "$gelukt" != ja ]; then echo "opslaan mislukt"; exit 1; fi
+          echo "veranderd=ja" >> "$GITHUB_OUTPUT"
+
+      # Een push met de GITHUB_TOKEN start zelf geen Pages-build (zo staat het in de documentatie van GitHub) -> vragen
+      - name: Site opnieuw bouwen
+        if: steps.opslaan.outputs.veranderd == 'ja'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X POST "repos/$GITHUB_REPOSITORY/pages/builds"
