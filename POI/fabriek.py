@@ -79,7 +79,13 @@ def haal(url, pad):
 
 
 def md5_van(url, pad):
-    haal(url, pad)
+    """De MD5 van Geofabrik, of None als die er (even) niet is - GEMETEN 18-10-2026: germany-latest.osm.pbf.md5 gaf 404
+    terwijl het bestand er wel was. Dan controleert osmium het bestand bij het lezen (kapot = osmium stopt = geen commit)."""
+    try:
+        haal(url, pad)
+    except subprocess.CalledProcessError:
+        log('geen MD5 bij', url, '- osmium controleert het bestand bij het lezen')
+        return None
     with open(pad) as f:
         return f.read().split()[0]
 
@@ -183,9 +189,10 @@ def main():
         url = a.geofabrik + naam + '-latest.osm.pbf'
         voor = md5_van(url + '.md5', pad + '.md5')
         haal(url, pad)
-        echt = md5(pad)
-        if echt != voor and echt != md5_van(url + '.md5', pad + '.md5'):
-            sys.exit('MD5 klopt niet voor %s - gestopt (niets opnieuw geprobeerd)' % naam)
+        if voor:
+            echt = md5(pad)
+            if echt != voor and echt != md5_van(url + '.md5', pad + '.md5'):
+                sys.exit('MD5 klopt niet voor %s - gestopt (niets opnieuw geprobeerd)' % naam)
         return pad
 
     # 1 + 2: per land ophalen en filteren
