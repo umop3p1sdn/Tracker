@@ -74,7 +74,14 @@ def run(*args):
 
 def haal(url, pad):
     """Een bestand ophalen (curl: hervat niet, probeert hooguit 3x met een minuut ertussen - nooit in een lus)."""
-    run('curl', '-fSL', '--retry', '3', '--retry-delay', '60', '-A', UA, '-o', pad, url)
+    run('curl', '-fsSL', '--show-error', '--retry', '3', '--retry-delay', '60', '-A', UA, '-o', pad, url)
+    log('binnen', os.path.basename(pad), os.path.getsize(pad), 'bytes')
+
+
+def md5_van(url, pad):
+    haal(url, pad)
+    with open(pad) as f:
+        return f.read().split()[0]
 
 
 def md5(pad):
@@ -156,6 +163,7 @@ def main():
     ap.add_argument('--bron', default='', help='map met <naam>-latest.osm.pbf en <naam>.poly (geen downloads)')
     ap.add_argument('--landen', default='', help='bv. NL=netherlands,BE=belgium')
     ap.add_argument('--buren', default=None, help='bv. austria,switzerland')
+    ap.add_argument('--geofabrik', default=GEOFABRIK, help='andere downloadplek (alleen om te testen)')
     a = ap.parse_args()
 
     landen = dict(x.split('=') for x in a.landen.split(',')) if a.landen else dict(LANDEN)
@@ -168,13 +176,15 @@ def main():
             return os.path.join(a.bron, naam + ext)
         pad = os.path.join(a.werk, naam + ext)
         if ext == '.poly':
-            haal(GEOFABRIK + naam + '.poly', pad)
+            haal(a.geofabrik + naam + '.poly', pad)
             return pad
-        haal(GEOFABRIK + naam + '-latest.osm.pbf', pad)
-        haal(GEOFABRIK + naam + '-latest.osm.pbf.md5', pad + '.md5')
-        with open(pad + '.md5') as f:
-            verwacht = f.read().split()[0]
-        if md5(pad) != verwacht:
+        # MD5 voor en na: zet Geofabrik net een nieuwe stand neer (hun dagelijkse update), dan past het bestand bij een van
+        # de twee. Past hij bij geen van beide, dan stoppen we (niets opnieuw geprobeerd).
+        url = a.geofabrik + naam + '-latest.osm.pbf'
+        voor = md5_van(url + '.md5', pad + '.md5')
+        haal(url, pad)
+        echt = md5(pad)
+        if echt != voor and echt != md5_van(url + '.md5', pad + '.md5'):
             sys.exit('MD5 klopt niet voor %s - gestopt (niets opnieuw geprobeerd)' % naam)
         return pad
 

@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 120
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 20
 
@@ -30,8 +30,14 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y -qq osmium-tool python3-shapely
 
+      # Gaat het mis, dan komen de laatste regels als foutmelding bovenaan de run (ook via de API te lezen)
       - name: POI maken (Geofabrik -> POI/*.tsv.gz + index.json)
-        run: python3 POI/fabriek.py --werk "$RUNNER_TEMP/poi"
+        run: |
+          set -o pipefail
+          if ! python3 POI/fabriek.py --werk "$RUNNER_TEMP/poi" 2>&1 | tee "$RUNNER_TEMP/fabriek.log"; then
+            echo "::error title=POI-fabriek mislukt::$(tail -n 25 "$RUNNER_TEMP/fabriek.log" | sed ':a;N;$!ba;s/%/%25/g;s/\r/%0D/g;s/\n/%0A/g')"
+            exit 1
+          fi
 
       - name: Opslaan in de repo
         id: opslaan
