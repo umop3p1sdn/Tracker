@@ -19,7 +19,8 @@ git add POI
 # POI-versies uit de geschiedenis halen (de huidige blijven)
 if git diff --cached --quiet && [ "${OPRUIMEN:-}" != 1 ]; then echo "niets veranderd"; uit "veranderd=nee"; exit 0; fi
 STAND="POI: stand $(date -u +%Y-%m-%d)"
-[ "${OPRUIMEN:-}" = 1 ] && git diff --cached --quiet && STAND="POI: stand $(git log -1 --format=%cs -- POI/index.json) (opgeruimd)"
+NIEUWS=1
+if git diff --cached --quiet; then NIEUWS=0; STAND="POI: stand $(git log -1 --format=%cs -- POI/index.json) (opgeruimd)"; fi
 NIEUW=$(mktemp -d)
 cp POI/*.tsv.gz POI/index.json "$NIEUW"/
 git reset -q --hard "$OUD"
@@ -38,17 +39,22 @@ if git filter-repo --force --quiet --replace-refs delete-no-add --invert-paths -
     echo "opgeslagen en opgeruimd (alleen de nieuwste POI-bestanden in de geschiedenis)"
     uit "veranderd=ja"; uit "opgeruimd=ja"; exit 0
   fi
-  echo "opruimen ging niet (main is tussendoor veranderd, of force-push mag niet) - gewoon opslaan"
+  echo "opruimen ging niet (main is tussendoor veranderd, of force-push mag niet)"
 else
   echo "filter-repo lukte niet - gewoon opslaan"
   git remote add origin "$URL" 2>/dev/null || git remote set-url origin "$URL"
 fi
 
+# Alleen opruimen (niets nieuws): wat hier staat kan ouder zijn dan main nu (die bewoog) - dus NIET terugzetten, stoppen;
+# de volgende run ruimt op.
+if [ "$NIEUWS" = 0 ]; then echo "niets nieuws op te slaan - niets veranderd"; uit "veranderd=nee"; exit 0; fi
+
 # 2) gewoon opslaan (zoals vroeger)
+echo "gewoon opslaan"
 gelukt=nee
 for poging in 1 2 3; do
-  # noop: na het herschrijven kent de server onze commits niet - GEMETEN in de proef: gewoon onderhandelen gaf de eerste
-  # keer "expected 'acknowledgments', received 'packfile'"; zonder onderhandelen haalt hij main in één keer
+  # noop: na het herschrijven kent de server onze commits niet, onderhandelen heeft dan geen zin (in de proef ging juist
+  # die onderhandeling bij de push mis); zonder onderhandelen haalt hij main gewoon in één keer
   git -c fetch.negotiationAlgorithm=noop fetch -q --no-tags origin "$TAK" && git reset -q --hard FETCH_HEAD || { sleep 20; continue; }
   cp "$NIEUW"/* POI/
   git add POI
