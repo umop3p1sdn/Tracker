@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""POI-fabriek voor HO-ME Live Tracker (v63.93).
+"""POI-fabriek voor HO-ME Live Tracker (v63.93; v63.96: ±40 landen, namen en vakkenlijst in index.json).
 
 Draait 1x per maand vanzelf als GitHub Action (.github/workflows/poi.yml), of met de hand (Actions -> POI-fabriek ->
 Run workflow). Wat hij doet:
@@ -12,13 +12,14 @@ Run workflow). Wat hij doet:
      Duitsland bevat ook de Duitse plekken. Vakken met LAND van een land dat we NIET maken (bv. Oostenrijk) laten we weg:
      die zouden niet compleet zijn; de app haalt die zelf (Overpass) als je daar bent. Alleen land telt (Natural Earth,
      publiek domein): de grenzen van Geofabrik lopen ook over zee, en dan viel bv. Rostock weg om Deens water;
-  5. POI/index.json met per land de datum van de gegevens, de grootte en het aantal plekken.
+  5. POI/index.json met per land de naam, de datum van de gegevens, de grootte (download en uitgepakt), het aantal plekken
+     en de lijst van vakken (daarmee wist de app een land zonder de grensvakken van een ander land).
 
 De lagen en velden moeten gelijk zijn aan die in de app (POI_VOORRAAD, POI_REST, POI_EXTRA en hun velden).
 Gegevens: (c) OpenStreetMap-bijdragers, ODbL 1.0 - zie LEESMIJ.md.
 
-Testen zonder downloads:  python3 fabriek.py --bron MAP --landen MC=monaco --buren france --uit UITMAP
-  (MAP bevat <naam>-latest.osm.pbf en <naam>.poly)
+Testen zonder downloads:  python3 fabriek.py --bron MAP --landen MC=europe/monaco --buren europe/france --uit UITMAP
+  (MAP bevat <naam>-latest.osm.pbf en <naam>.poly, zonder het deel voor de laatste / - bv. monaco.poly)
 """
 import argparse
 import gzip
@@ -37,13 +38,33 @@ from shapely.geometry import Polygon, box, shape
 from shapely.ops import unary_union
 from shapely.prepared import prep
 
-GEOFABRIK = 'https://download.geofabrik.de/europe/'
-LANDEN = {'NL': 'netherlands', 'BE': 'belgium', 'DE': 'germany', 'LU': 'luxembourg', 'FR': 'france'}
-# Alleen voor de volledigheid van grensvakken (geen eigen bestand): Monaco ligt in het vak van Nice
-HULP = {'MC': 'monaco'}
-# Buurlanden die we niet maken: een vak met land van een van deze is niet compleet en gaat niet in de bestanden
-BUREN = ['denmark', 'poland', 'czech-republic', 'austria', 'switzerland', 'liechtenstein', 'italy',
-         'spain', 'andorra', 'united-kingdom', 'guernsey-jersey']
+GEOFABRIK = 'https://download.geofabrik.de/'
+# v63.96 (Sjoerd: "Maak de lijst met landen maar nog groter - er staat hoeveel data het kost, dus het is een keuze om deze
+# te activeren"): heel Europa behalve Rusland, Wit-Rusland, Oekraine, Moldavie, Georgie en Turkije. Code -> (pad bij
+# Geofabrik, naam in de app). Op de telefoon komt alleen wat je zelf kiest.
+LANDEN = {
+    'NL': ('europe/netherlands', 'Nederland'), 'BE': ('europe/belgium', 'België'), 'DE': ('europe/germany', 'Duitsland'),
+    'LU': ('europe/luxembourg', 'Luxemburg'), 'FR': ('europe/france', 'Frankrijk'), 'MC': ('europe/monaco', 'Monaco'),
+    'AT': ('europe/austria', 'Oostenrijk'), 'CH': ('europe/switzerland', 'Zwitserland'),
+    'LI': ('europe/liechtenstein', 'Liechtenstein'), 'IT': ('europe/italy', 'Italië'), 'SI': ('europe/slovenia', 'Slovenië'),
+    'ES': ('europe/spain', 'Spanje'), 'AD': ('europe/andorra', 'Andorra'), 'PT': ('europe/portugal', 'Portugal'),
+    'GB': ('europe/united-kingdom', 'Verenigd Koninkrijk'), 'IE': ('europe/ireland-and-northern-ireland', 'Ierland'),
+    'IM': ('europe/isle-of-man', 'Isle of Man'), 'GG': ('europe/guernsey-jersey', 'Kanaaleilanden'),
+    'DK': ('europe/denmark', 'Denemarken'), 'NO': ('europe/norway', 'Noorwegen'), 'SE': ('europe/sweden', 'Zweden'),
+    'FI': ('europe/finland', 'Finland'), 'IS': ('europe/iceland', 'IJsland'), 'FO': ('europe/faroe-islands', 'Faeröer'),
+    'EE': ('europe/estonia', 'Estland'), 'LV': ('europe/latvia', 'Letland'), 'LT': ('europe/lithuania', 'Litouwen'),
+    'PL': ('europe/poland', 'Polen'), 'CZ': ('europe/czech-republic', 'Tsjechië'), 'SK': ('europe/slovakia', 'Slowakije'),
+    'HU': ('europe/hungary', 'Hongarije'), 'RO': ('europe/romania', 'Roemenië'), 'BG': ('europe/bulgaria', 'Bulgarije'),
+    'HR': ('europe/croatia', 'Kroatië'), 'BA': ('europe/bosnia-herzegovina', 'Bosnië en Herzegovina'),
+    'RS': ('europe/serbia', 'Servië'), 'ME': ('europe/montenegro', 'Montenegro'), 'XK': ('europe/kosovo', 'Kosovo'),
+    'AL': ('europe/albania', 'Albanië'), 'MK': ('europe/macedonia', 'Noord-Macedonië'), 'GR': ('europe/greece', 'Griekenland'),
+    'MT': ('europe/malta', 'Malta'), 'CY': ('europe/cyprus', 'Cyprus'),
+}
+# Alleen voor de volledigheid van grensvakken (geen eigen bestand). Monaco is sinds v63.96 een eigen land.
+HULP = {}
+# Buurlanden die we niet maken: een vak met LAND van een van deze is niet compleet en gaat niet in de bestanden (de app haalt
+# die zelf). Kaliningrad apart erbij (grens met Polen en Litouwen), Marokko voor Ceuta en Melilla (in het extract van Spanje).
+BUREN = ['russia', 'russia/kaliningrad', 'europe/belarus', 'europe/ukraine', 'europe/moldova', 'europe/turkey', 'africa/morocco']
 # Land (zonder zee) - Natural Earth 1:10 miljoen, publiek domein, vaste versie
 LAND = 'https://raw.githubusercontent.com/nvkelso/natural-earth-vector/v5.1.2/geojson/'
 LAND_BESTANDEN = ['ne_10m_land', 'ne_10m_minor_islands']
@@ -192,16 +213,18 @@ def main():
     ap.add_argument('--geofabrik', default=GEOFABRIK, help='andere downloadplek (alleen om te testen)')
     a = ap.parse_args()
 
-    landen = dict(x.split('=') for x in a.landen.split(',')) if a.landen else dict(LANDEN)
+    namen = {c: n for c, (_, n) in LANDEN.items()}
+    landen = dict(x.split('=') for x in a.landen.split(',')) if a.landen else {c: p for c, (p, _) in LANDEN.items()}
     hulp = dict(x.split('=') for x in a.hulp.split(',') if x) if a.hulp is not None else dict(HULP)
     buren = [x for x in (a.buren.split(',') if a.buren is not None else BUREN) if x]
     os.makedirs(a.werk, exist_ok=True)
     os.makedirs(a.uit, exist_ok=True)
 
     def bron(naam, ext):
+        kort = naam.split('/')[-1]               # europe/netherlands -> netherlands (de naam van het bestand)
         if a.bron:
-            return os.path.join(a.bron, naam + ext)
-        pad = os.path.join(a.werk, naam + ext)
+            return os.path.join(a.bron, kort + ext)
+        pad = os.path.join(a.werk, kort + ext)
         if ext == '.poly':
             haal(a.geofabrik + naam + '.poly', pad)
             return pad
@@ -271,7 +294,8 @@ def main():
 
     # 4: vakken per land; een vak met LAND van een buurland (dat we niet maken) is niet compleet. Alleen land telt: de
     # grenzen van Geofabrik lopen ook over zee (Deens water tot vlak bij Rostock, het Kanaal tot bij Calais) - daar staan
-    # geen plekken van dat buurland.
+    # geen plekken van dat buurland. v63.96: eerst de snelle toets (raakt het vak een buurland?), pas dan het (dure) stuk
+    # land uitsnijden - met ±40 landen zijn het duizenden vakken.
     vormen = {code: lees_poly(bron(naam, '.poly')) for code, naam in landen.items()}
     buur = [prep(lees_poly(bron(n, '.poly'))) for n in buren]
     gx0, gy0, gx1, gy1 = unary_union(list(vormen.values())).bounds
@@ -281,7 +305,8 @@ def main():
     def niet_compleet(v):
         if v not in oordeel:
             r = box(v[1] * VAK, v[0] * VAK, (v[1] + 1) * VAK, (v[0] + 1) * VAK)
-            oordeel[v] = land_p.intersects(r) and any(b.intersects(r.intersection(land)) for b in buur)
+            dichtbij = [b for b in buur if b.intersects(r)]
+            oordeel[v] = bool(dichtbij) and land_p.intersects(r) and any(b.intersects(r.intersection(land)) for b in dichtbij)
         return oordeel[v]
     land_vakken = {}
     for code, vorm in vormen.items():
@@ -293,12 +318,15 @@ def main():
              'licentie': 'ODbL 1.0 - (c) OpenStreetMap-bijdragers', 'landen': {}}
     for code in landen:
         vs = land_vakken[code]
-        n = 0
+        n = tekst = 0
         tijdelijk = os.path.join(a.werk, code + '.tsv.gz')
         with open(tijdelijk, 'wb') as ruw:
             with gzip.GzipFile(filename='', mode='wb', fileobj=ruw, compresslevel=9, mtime=0) as gz:
                 def w(s):
-                    gz.write((s + '\n').encode('utf-8'))
+                    nonlocal tekst
+                    b = (s + '\n').encode('utf-8')
+                    tekst += len(b)
+                    gz.write(b)
                 w('#POI\t%d\t%s\t%s' % (FORMAAT, code, datum[code]))
                 w('#velden\t' + ' '.join(VELDEN))
                 w('#vakken\t' + ' '.join('%d_%d' % v for v in vs))
@@ -309,8 +337,10 @@ def main():
                 w('#einde\t%d' % n)
         doel = os.path.join(a.uit, code + '.tsv.gz')
         shutil.move(tijdelijk, doel)
-        index['landen'][code] = {'bestand': code + '.tsv.gz', 'datum': datum[code], 'bytes': os.path.getsize(doel),
-                                 'rijen': n, 'vakken': len(vs)}
+        # naam (voor het lijsten-menu), tekst = uitgepakt (± wat het op de telefoon kost), lijst = de vakken (om te wissen)
+        index['landen'][code] = {'bestand': code + '.tsv.gz', 'naam': namen.get(code, code), 'datum': datum[code],
+                                 'bytes': os.path.getsize(doel), 'tekst': tekst, 'rijen': n, 'vakken': len(vs),
+                                 'lijst': ' '.join('%d_%d' % v for v in vs)}
         log(code, n, 'regels,', len(vs), 'vakken,', os.path.getsize(doel), 'bytes')
 
     with open(os.path.join(a.uit, 'index.json'), 'w', encoding='utf-8') as f:

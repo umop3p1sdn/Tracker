@@ -1,5 +1,5 @@
-# POI-fabriek (HO-ME Live Tracker v63.93): 1x per maand de POI's van NL, BE, DE, LU en FR uit de OpenStreetMap-
-# extracten van Geofabrik halen en als kleine bestanden in de map POI/ zetten (zie POI/LEESMIJ.md).
+# POI-fabriek (HO-ME Live Tracker v63.93; v63.96: ±40 landen = heel Europa behalve RU, BY, UA, MD, GE, TR): 1x per maand
+# de POI's uit de OpenStreetMap-extracten van Geofabrik halen en als kleine bestanden in de map POI/ zetten (zie POI/LEESMIJ.md).
 # Met de hand starten kan ook: tab Actions -> POI-fabriek -> Run workflow.
 name: POI-fabriek
 
@@ -18,11 +18,11 @@ concurrency:
 jobs:
   maak:
     runs-on: ubuntu-24.04
-    timeout-minutes: 120
+    timeout-minutes: 240         # v63.96: ±28 GB bij Geofabrik (één land tegelijk, het grote bestand gaat meteen weg)
     steps:
       - uses: actions/checkout@v5
         with:
-          fetch-depth: 20
+          fetch-depth: 1             # v63.96: niet de oude POI-bestanden uit de geschiedenis mee ophalen
 
       - name: Gereedschap (osmium, shapely)
         run: |
@@ -33,7 +33,11 @@ jobs:
       - name: POI maken (Geofabrik -> POI/*.tsv.gz + index.json)
         run: |
           set -o pipefail
-          if ! python3 POI/fabriek.py --werk "$RUNNER_TEMP/poi" 2>&1 | tee "$RUNNER_TEMP/fabriek.log"; then
+          # v63.96: ±40 landen - werkmap op de grote tijdelijke schijf (/mnt) als die er is; anders RUNNER_TEMP
+          WERK=/mnt/poi-werk
+          if ! { sudo mkdir -p "$WERK" && sudo chown "$(id -u):$(id -g)" "$WERK"; } 2>/dev/null; then WERK="$RUNNER_TEMP/poi"; fi
+          df -h / /mnt 2>/dev/null || true
+          if ! python3 POI/fabriek.py --werk "$WERK" 2>&1 | tee "$RUNNER_TEMP/fabriek.log"; then
             echo "::error title=POI-fabriek mislukt::$(tail -n 25 "$RUNNER_TEMP/fabriek.log" | sed ':a;N;$!ba;s/%/%25/g;s/\r/%0D/g;s/\n/%0A/g')"
             exit 1
           fi

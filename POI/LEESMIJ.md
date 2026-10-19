@@ -1,27 +1,27 @@
 # POI — plekken voor de HO-ME Live Tracker
 
-Deze map bevat de POI-bestanden die de app downloadt (📥 Lijsten → landen → Download): per land één bestand met
+Deze map bevat de POI-bestanden die de app downloadt (📥 Lijsten → landen aantikken → Download): per land één bestand met
 ⛽ benzine, 🍽 restaurant, 🛒 supermarkt, ⚡ laden, 🍔 snack, ☕ café, 🥐 bakker, 🛏 hotel, 🏧 pin, 🚻 wc,
 📷 uitzicht/bezienswaardigheid, kroeg en foodcourt.
 
 | Bestand | Wat |
 |---|---|
-| `index.json` | per land: bestandsnaam, datum van de gegevens, grootte, aantal plekken en vakken |
-| `NL.tsv.gz`, `BE.tsv.gz`, `DE.tsv.gz`, `LU.tsv.gz`, `FR.tsv.gz` | de plekken (tekst met tabs, gzip) |
+| `index.json` | per land: bestandsnaam, naam, datum van de gegevens, grootte (download en uitgepakt), aantal plekken, de vakken |
+| `NL.tsv.gz`, `DE.tsv.gz`, `AT.tsv.gz`, … | de plekken (tekst met tabs, gzip) — ±40 landen: heel Europa behalve Rusland, Wit-Rusland, Oekraïne, Moldavië, Georgië en Turkije |
 | `fabriek.py` | het script dat ze maakt |
 
 ## Hoe ze gemaakt worden
 
 De **POI-fabriek** (`.github/workflows/poi.yml`) draait vanzelf de 3e van elke maand, of met de hand:
-tab **Actions** → **POI-fabriek** → **Run workflow** (±20–30 minuten). Hij:
+tab **Actions** → **POI-fabriek** → **Run workflow** (±40 minuten). Hij:
 
 1. haalt per land het OpenStreetMap-extract bij [Geofabrik](https://download.geofabrik.de/europe.html) — één keer per
    land per run, met MD5-controle (als Geofabrik die heeft; anders controleert osmium het bestand);
 2. houdt met `osmium` alleen de POI-soorten over;
 3. zet per plek het midden (net als Overpass `out center`) en verdeelt alles over vakken van 0,5°;
 4. schrijft per land alle vakken die het land raakt — compleet, dus een grensvak met Duitsland bevat ook de Duitse
-   plekken (Monaco gaat mee voor het vak van Nice). Vakken met **land** van een land dat hier niet bij zit
-   (bv. Oostenrijk) worden weggelaten: die haalt de app zelf als je daar bent. Alleen land telt (Natural Earth,
+   plekken (en Monaco is een eigen land, dus het vak van Nice is compleet). Vakken met **land** van een land dat hier niet bij zit
+   (bv. Oekraïne) worden weggelaten: die haalt de app zelf als je daar bent. Alleen land telt (Natural Earth,
    publiek domein) — de grenzen van Geofabrik lopen ook over zee, en anders viel bv. Rostock weg om Deens water;
 5. slaat de bestanden hier op; de site bouwt daarna vanzelf opnieuw.
 
