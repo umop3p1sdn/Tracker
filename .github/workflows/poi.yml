@@ -7,6 +7,11 @@ on:
   schedule:
     - cron: '23 2 3 * *'        # de 3e van elke maand, 02:23 UTC (Geofabrik ververst dagelijks; 1x per maand is genoeg)
   workflow_dispatch:
+    inputs:
+      alleen_opruimen:
+        description: 'Alleen opruimen: geen nieuwe lijsten maken, alleen de oude POI-versies uit de geschiedenis halen'
+        type: boolean
+        default: false
 
 permissions:
   contents: write                # de nieuwe bestanden in POI/ opslaan (de site bouwt daarna vanzelf opnieuw)
@@ -22,15 +27,17 @@ jobs:
     steps:
       - uses: actions/checkout@v5
         with:
-          fetch-depth: 1             # v63.96: niet de oude POI-bestanden uit de geschiedenis mee ophalen
+          fetch-depth: 0             # v63.96: de hele geschiedenis - opslaan.sh haalt daar de oude POI-versies uit
 
-      - name: Gereedschap (osmium, shapely)
+      - name: Gereedschap (osmium, shapely, git-filter-repo)
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y -qq osmium-tool python3-shapely
+          sudo apt-get install -y -qq git-filter-repo || pip3 install --break-system-packages -q git-filter-repo || true
 
       # Gaat het mis, dan komen de laatste regels als foutmelding bovenaan de run (ook via de API te lezen)
       - name: POI maken (Geofabrik -> POI/*.tsv.gz + index.json)
+        if: ${{ !inputs.alleen_opruimen }}
         run: |
           set -o pipefail
           # v63.96: ±40 landen - werkmap op de grote tijdelijke schijf (/mnt) als die er is; anders RUNNER_TEMP
@@ -42,24 +49,13 @@ jobs:
             exit 1
           fi
 
-      - name: Opslaan in de repo
+      # v63.96 (Sjoerd: "Waarom niet vaker opruimen? Oude hebben geen waarde meer" + "vaker opruimen is wel prettig"): opslaan
+      # én de oude POI-versies uit de geschiedenis halen - alleen als niemand tussendoor iets op main zette (force-with-lease),
+      # anders gewoon opslaan en de volgende keer opruimen. Zie POI/opslaan.sh en POI/LEESMIJ.md.
+      - name: Opslaan in de repo (en de oude POI-versies opruimen)
         id: opslaan
-        run: |
-          git config user.name "POI-fabriek"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add POI
-          if git diff --cached --quiet; then
-            echo "niets veranderd"
-            echo "veranderd=nee" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          git commit -q -m "POI: stand $(date -u +%Y-%m-%d)"
-          gelukt=nee
-          for poging in 1 2 3; do
-            if git pull -q --rebase origin "$GITHUB_REF_NAME" && git push -q origin "HEAD:$GITHUB_REF_NAME"; then gelukt=ja; break; fi
-            sleep 20
-          done
-          if [ "$gelukt" != ja ]; then echo "opslaan mislukt"; exit 1; fi
-          echo "veranderd=ja" >> "$GITHUB_OUTPUT"
+        env:
+          OPRUIMEN: ${{ inputs.alleen_opruimen && '1' || '' }}
+        run: bash POI/opslaan.sh
       # De site bouwt na het opslaan vanzelf opnieuw (v63.95: GEMETEN bij twee runs — de opslag startte al een Pages-build;
       # een extra bouw-opdracht hier startte er een tweede die de eerste afbrak. Die stap is daarom weg.)
