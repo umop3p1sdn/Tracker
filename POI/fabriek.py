@@ -63,8 +63,11 @@ LANDEN = {
 # Alleen voor de volledigheid van grensvakken (geen eigen bestand). Monaco is sinds v63.96 een eigen land.
 HULP = {}
 # Buurlanden die we niet maken: een vak met LAND van een van deze is niet compleet en gaat niet in de bestanden (de app haalt
-# die zelf). Kaliningrad apart erbij (grens met Polen en Litouwen), Marokko voor Ceuta en Melilla (in het extract van Spanje).
-BUREN = ['russia', 'russia/kaliningrad', 'europe/belarus', 'europe/ukraine', 'europe/moldova', 'europe/turkey', 'africa/morocco']
+# die zelf). Van Rusland alleen het stuk dat aan onze landen grenst (Noordwest: Noorwegen, Finland, Estland, Letland; en
+# Kaliningrad: Polen, Litouwen) - heel Rusland loopt over de datumgrens heen. Marokko voor Ceuta en Melilla (in het extract
+# van Spanje).
+BUREN = ['russia/northwestern-fed-district', 'russia/kaliningrad', 'europe/belarus', 'europe/ukraine', 'europe/moldova',
+         'europe/turkey', 'africa/morocco']
 # Land (zonder zee) - Natural Earth 1:10 miljoen, publiek domein, vaste versie
 LAND = 'https://raw.githubusercontent.com/nvkelso/natural-earth-vector/v5.1.2/geojson/'
 LAND_BESTANDEN = ['ne_10m_land', 'ne_10m_minor_islands']
@@ -242,65 +245,86 @@ def main():
                 sys.exit('MD5 klopt niet voor %s - gestopt (niets opnieuw geprobeerd)' % naam)
         return pad
 
-    # 1 + 2: per land ophalen en filteren (de hulp-extracten ook: hun plekken maken grensvakken compleet)
+    # 0: eerst de grenzen (.poly) en het land (Natural Earth) - ontbreekt er een, dan stoppen we METEEN en niet pas na ±2 uur
+    # downloaden (v63.96: ±40 landen = 1 u 49 min bij Geofabrik)
+    vormen = {code: lees_poly(bron(naam, '.poly')) for code, naam in landen.items()}
+    buur = [prep(lees_poly(bron(n, '.poly'))) for n in buren]
+    gx0, gy0, gx1, gy1 = unary_union(list(vormen.values())).bounds
+    land = lees_land([bron(n, '.geojson') for n in LAND_BESTANDEN], (gx0 - 1, gy0 - 1, gx1 + 1, gy1 + 1))
+    land_p = prep(land)
+    log('grenzen en land binnen:', len(vormen), 'landen,', len(buur), 'buren')
+
+    # 1 + 2: per land ophalen en filteren (de hulp-extracten ook: hun plekken maken grensvakken compleet).
+    # v63.96: de gefilterde bestanden staan in <werk>/filter met hun stand en de dag van ophalen. Mislukt een run nadat alles
+    # binnen is (GEMETEN 19-10: 1 u 49 min downloaden, daarna een fout), dan pakt een nieuwe run DEZELFDE dag ze daar weer op
+    # (de workflow bewaart die map dan) - zo halen we niet twee keer hetzelfde bij Geofabrik.
     datum, poi = {}, []
+    filtermap = os.path.join(a.werk, 'filter')
+    os.makedirs(filtermap, exist_ok=True)
+    vandaag = datetime.now(timezone.utc).strftime('%Y-%m-%d')
     for code, naam in list(landen.items()) + list(hulp.items()):
+        klein = os.path.join(filtermap, code + '-poi.osm.pbf')
+        stand = os.path.join(filtermap, code + '.stand')
+        if not a.bron and os.path.exists(klein) and os.path.exists(stand):
+            d, dag = (open(stand, encoding='utf-8').read().split() + ['', ''])[:2]
+            if d and dag == vandaag:
+                datum[code] = d
+                poi.append((code, klein))
+                log(code, 'van eerder vandaag (niet opnieuw bij Geofabrik)', d)
+                continue
         groot = bron(naam, '-latest.osm.pbf')
         datum[code] = subprocess.run(['osmium', 'fileinfo', '-g', 'header.option.osmosis_replication_timestamp', groot],
                                      check=True, capture_output=True, text=True).stdout.strip()
         if not datum[code]:                    # geen stand in het bestand: dan de tijd van nu (de app ziet dan toch een nieuwe stand)
             datum[code] = datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
-        klein = os.path.join(a.werk, code + '-poi.osm.pbf')
         run('osmium', 'tags-filter', groot, *filter_expressies(), '-o', klein, '-O')
         if not a.bron:
             os.remove(groot)                   # schijfruimte: Duitsland en Frankrijk zijn elk 4,5 GB
-        poi.append(klein)
+        with open(stand, 'w', encoding='utf-8') as f:
+            f.write('%s %s\n' % (datum[code], vandaag))
+        poi.append((code, klein))
         log(code, 'datum', datum[code], 'gefilterd', os.path.getsize(klein), 'bytes')
 
-    # 3: samenvoegen en naar regels
-    alle = os.path.join(a.werk, 'alle.osm.pbf')
-    run('osmium', 'merge', *poi, '-o', alle, '-O')
-    geo = os.path.join(a.werk, 'alle.geojsonseq')
-    run('osmium', 'export', alle, '-f', 'geojsonseq', '-a', 'type,id', '-o', geo, '-O')
-
+    # 3: per land naar regels. v63.96: NIET meer eerst samenvoegen - GEMETEN op GitHub (19-10, ±40 landen): extracten van
+    # verschillende momenten hebben soms een andere versie van dezelfde plek; osmium merge houdt dan beide en osmium export
+    # stopt met "Node ID twice in input". Nu per land exporteren; een plek uit twee extracten telt één keer (de eerste).
     rijen = {}                                 # (i, j) -> lijst (laagnr, id, regel)
     gezien = set()
-    with open(geo, encoding='utf-8') as f:
-        for regel in f:
-            regel = regel.strip().lstrip('\x1e')
-            if not regel:
-                continue
-            ft = json.loads(regel)
-            pr = ft.get('properties') or {}
-            sleutel = (pr.get('@type'), pr.get('@id'))
-            if sleutel in gezien:              # een gesloten weg kan als lijn en als vlak komen
-                continue
-            lagen = [l for l in LAAG_VOLGORDE if any(pr.get(k) in v for k, v in LAGEN[l].items())]
-            if not lagen or not ft.get('geometry'):
-                continue
-            m = kader_midden(ft['geometry'])
-            if not m:
-                continue
-            gezien.add(sleutel)
-            lat, lon = '%.5f' % m[0], '%.5f' % m[1]
-            vak = (math.floor(float(lat) / VAK), math.floor(float(lon) / VAK))   # zelfde getal als de app leest
-            ident = str(pr['@type'])[0] + str(pr['@id'])
-            for l in lagen:
-                velden = [schoon(pr[v]) if (v in LAAG_VELDEN[l] and pr.get(v) not in (None, '')) else '' for v in VELDEN]
-                while velden and not velden[-1]:
-                    velden.pop()
-                rijen.setdefault(vak, []).append((LAAG_VOLGORDE.index(l), ident, '\t'.join([l, ident, lat, lon] + velden)))
+    for code, klein in poi:
+        geo = os.path.join(a.werk, code + '.geojsonseq')
+        run('osmium', 'export', klein, '-f', 'geojsonseq', '-a', 'type,id', '-o', geo, '-O')
+        with open(geo, encoding='utf-8') as f:
+            for regel in f:
+                regel = regel.strip().lstrip('\x1e')
+                if not regel:
+                    continue
+                ft = json.loads(regel)
+                pr = ft.get('properties') or {}
+                sleutel = (pr.get('@type'), pr.get('@id'))
+                if sleutel in gezien:              # een gesloten weg kan als lijn en als vlak komen
+                    continue
+                lagen = [l for l in LAAG_VOLGORDE if any(pr.get(k) in v for k, v in LAGEN[l].items())]
+                if not lagen or not ft.get('geometry'):
+                    continue
+                m = kader_midden(ft['geometry'])
+                if not m:
+                    continue
+                gezien.add(sleutel)
+                lat, lon = '%.5f' % m[0], '%.5f' % m[1]
+                vak = (math.floor(float(lat) / VAK), math.floor(float(lon) / VAK))   # zelfde getal als de app leest
+                ident = str(pr['@type'])[0] + str(pr['@id'])
+                for l in lagen:
+                    velden = [schoon(pr[v]) if (v in LAAG_VELDEN[l] and pr.get(v) not in (None, '')) else '' for v in VELDEN]
+                    while velden and not velden[-1]:
+                        velden.pop()
+                    rijen.setdefault(vak, []).append((LAAG_VOLGORDE.index(l), ident, '\t'.join([l, ident, lat, lon] + velden)))
+        os.remove(geo)                     # schijfruimte
     log('plekken', len(gezien), 'vakken met plekken', len(rijen))
 
     # 4: vakken per land; een vak met LAND van een buurland (dat we niet maken) is niet compleet. Alleen land telt: de
     # grenzen van Geofabrik lopen ook over zee (Deens water tot vlak bij Rostock, het Kanaal tot bij Calais) - daar staan
     # geen plekken van dat buurland. v63.96: eerst de snelle toets (raakt het vak een buurland?), pas dan het (dure) stuk
     # land uitsnijden - met ±40 landen zijn het duizenden vakken.
-    vormen = {code: lees_poly(bron(naam, '.poly')) for code, naam in landen.items()}
-    buur = [prep(lees_poly(bron(n, '.poly'))) for n in buren]
-    gx0, gy0, gx1, gy1 = unary_union(list(vormen.values())).bounds
-    land = lees_land([bron(n, '.geojson') for n in LAND_BESTANDEN], (gx0 - 1, gy0 - 1, gx1 + 1, gy1 + 1))
-    land_p = prep(land)
     oordeel = {}                               # vak -> True = niet compleet
     def niet_compleet(v):
         if v not in oordeel:

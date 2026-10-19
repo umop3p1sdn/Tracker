@@ -35,19 +35,45 @@ jobs:
           sudo apt-get install -y -qq osmium-tool python3-shapely
           sudo apt-get install -y -qq git-filter-repo || pip3 install --break-system-packages -q git-filter-repo || true
 
+      # v63.96: ±40 landen - werkmap op de grote tijdelijke schijf (/mnt) als die er is; anders RUNNER_TEMP
+      - name: Werkmap
+        id: werk
+        run: |
+          WERK=/mnt/poi-werk
+          if ! { sudo mkdir -p "$WERK" && sudo chown "$(id -u):$(id -g)" "$WERK"; } 2>/dev/null; then WERK="$RUNNER_TEMP/poi"; mkdir -p "$WERK"; fi
+          echo "map=$WERK" >> "$GITHUB_OUTPUT"
+          echo "dag=$(date -u +%Y-%m-%d)" >> "$GITHUB_OUTPUT"
+          df -h / /mnt 2>/dev/null || true
+
+      # Mislukte een eerdere run VANDAAG nadat alles binnen was, dan staan de gefilterde extracten in de cache: niet opnieuw
+      # bij Geofabrik halen (GEMETEN 19-10: 1 u 49 min downloaden voor ±40 landen, daarna een fout)
+      - name: Gefilterde extracten van vandaag terughalen
+        if: ${{ !inputs.alleen_opruimen }}
+        continue-on-error: true
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ steps.werk.outputs.map }}/filter
+          key: poi-filter-${{ steps.werk.outputs.dag }}-${{ github.run_id }}
+          restore-keys: poi-filter-${{ steps.werk.outputs.dag }}-
+
       # Gaat het mis, dan komen de laatste regels als foutmelding bovenaan de run (ook via de API te lezen)
       - name: POI maken (Geofabrik -> POI/*.tsv.gz + index.json)
         if: ${{ !inputs.alleen_opruimen }}
         run: |
           set -o pipefail
-          # v63.96: ±40 landen - werkmap op de grote tijdelijke schijf (/mnt) als die er is; anders RUNNER_TEMP
-          WERK=/mnt/poi-werk
-          if ! { sudo mkdir -p "$WERK" && sudo chown "$(id -u):$(id -g)" "$WERK"; } 2>/dev/null; then WERK="$RUNNER_TEMP/poi"; fi
-          df -h / /mnt 2>/dev/null || true
-          if ! python3 POI/fabriek.py --werk "$WERK" 2>&1 | tee "$RUNNER_TEMP/fabriek.log"; then
+          if ! python3 POI/fabriek.py --werk "${{ steps.werk.outputs.map }}" 2>&1 | tee "$RUNNER_TEMP/fabriek.log"; then
             echo "::error title=POI-fabriek mislukt::$(tail -n 25 "$RUNNER_TEMP/fabriek.log" | sed ':a;N;$!ba;s/%/%25/g;s/\r/%0D/g;s/\n/%0A/g')"
             exit 1
           fi
+
+      # Alleen als het mislukte: de gefilterde extracten bewaren voor een nieuwe run vandaag
+      - name: Gefilterde extracten bewaren (alleen als het mislukte)
+        if: ${{ failure() && !inputs.alleen_opruimen }}
+        continue-on-error: true
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ steps.werk.outputs.map }}/filter
+          key: poi-filter-${{ steps.werk.outputs.dag }}-${{ github.run_id }}
 
       # v63.96 (Sjoerd: "Waarom niet vaker opruimen? Oude hebben geen waarde meer" + "vaker opruimen is wel prettig"): opslaan
       # én de oude POI-versies uit de geschiedenis halen - alleen als niemand tussendoor iets op main zette (force-with-lease),

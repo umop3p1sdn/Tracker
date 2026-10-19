@@ -32,6 +32,10 @@ tab **Actions** → **POI-fabriek** → **Run workflow** (±40 minuten). Hij:
 Alleen opruimen (zonder nieuwe lijsten te maken): **Actions** → **POI-fabriek** → **Run workflow** → vink
 **Alleen opruimen** aan.
 
+Mislukt een run nadat de extracten binnen zijn, dan bewaart hij de gefilterde stukken (cache); een nieuwe run op dezelfde
+dag haalt dan niets opnieuw bij Geofabrik. De grenzen (`.poly`) haalt hij als eerste: ontbreekt er een, dan stopt hij
+meteen in plaats van na ±2 uur downloaden.
+
 **Let op** — opruimen herschrijft de geschiedenis: de inhoud van alle app-commits blijft precies gelijk, maar hun nummers
 (SHA) veranderen. Uploaden via de website van GitHub gaat gewoon. Wie de repo lokaal heeft (git): na een run eerst
 `git fetch` en `git reset --hard origin/main` (een push vanaf een oude kopie wordt geweigerd — er gaat niets kapot).
