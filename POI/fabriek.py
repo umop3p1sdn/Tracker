@@ -13,13 +13,17 @@ Run workflow). Wat hij doet:
      die zouden niet compleet zijn; de app haalt die zelf (Overpass) als je daar bent. Alleen land telt (Natural Earth,
      publiek domein): de grenzen van Geofabrik lopen ook over zee, en dan viel bv. Rostock weg om Deens water;
   5. POI/index.json met per land de naam, de datum van de gegevens, de grootte (download en uitgepakt), het aantal plekken
-     en de lijst van vakken (daarmee wist de app een land zonder de grensvakken van een ander land).
+     en de lijst van vakken (daarmee wist de app een land zonder de grensvakken van een ander land);
+  6. v63.97: elk vak ook LOS: POI/v/<i>/<j>.tsv.gz (alle lagen, zelfde opbouw). Bij het zoeken haalt de app alleen de vakken
+     die hij nodig heeft (Lokaal: 1-4 vakken, ±5-900 KB) - zonder eerst een heel land te downloaden. In index.json bij
+     'vakken': welke vakken er zijn ('vol') en welke compleet maar leeg zijn ('leeg' - daar is geen bestand van).
 
 De lagen en velden moeten gelijk zijn aan die in de app (POI_VOORRAAD, POI_REST, POI_EXTRA en hun velden).
 Gegevens: (c) OpenStreetMap-bijdragers, ODbL 1.0 - zie LEESMIJ.md.
 
 Testen zonder downloads:  python3 fabriek.py --bron MAP --landen MC=europe/monaco --buren europe/france --uit UITMAP
   (MAP bevat <naam>-latest.osm.pbf en <naam>.poly, zonder het deel voor de laatste / - bv. monaco.poly)
+Alleen de losse vakken (uit de landbestanden die er al staan, geen Geofabrik):  python3 fabriek.py --knip [--uit MAP]
 """
 import argparse
 import gzip
@@ -91,6 +95,7 @@ LAAG_VELDEN = {
 }
 VAK = 0.5
 FORMAAT = 1
+VAKMAP = 'v'                                   # v63.97: POI/v/<i>/<j>.tsv.gz - elk vak los
 
 
 def log(*a):
@@ -188,6 +193,125 @@ def schoon(w):
     return str(w).replace('\t', ' ').replace('\r', ' ').replace('\n', ' ').strip()
 
 
+def schrijf_tsv(doel, naam, datum, vs, rijen):
+    """Eén POI-bestand (een land, of v63.97 één los vak): kop, velden, vakken, per vak de regels (rijen[vak] is al
+    gesorteerd), slotregel. gzip zonder tijd en naam: dezelfde inhoud = precies dezelfde bytes. -> (regels, bytes uitgepakt)"""
+    n = tekst = 0
+    with open(doel, 'wb') as ruw:
+        with gzip.GzipFile(filename='', mode='wb', fileobj=ruw, compresslevel=9, mtime=0) as gz:
+            def w(s):
+                nonlocal tekst
+                b = (s + '\n').encode('utf-8')
+                tekst += len(b)
+                gz.write(b)
+            w('#POI\t%d\t%s\t%s' % (FORMAAT, naam, datum))
+            w('#velden\t' + ' '.join(VELDEN))
+            w('#vakken\t' + ' '.join('%d_%d' % v for v in vs))
+            for v in vs:
+                for _, _, regel in rijen.get(v, []):
+                    w(regel)
+                    n += 1
+            w('#einde\t%d' % n)
+    return n, tekst
+
+
+def reeks(vakken):
+    """Vakken kort voor index.json: per rij i de kolommen j, met '..' voor een reeks - bv. '97:4..12,15 98:-3..9'
+    (j kan negatief zijn: west van Greenwich)."""
+    per = {}
+    for i, j in sorted(vakken):
+        per.setdefault(i, []).append(j)
+    delen = []
+    for i, js in sorted(per.items()):
+        stukken, a = [], js[0]
+        b = a
+        for j in js[1:] + [None]:
+            if j is not None and j == b + 1:
+                b = j
+                continue
+            stukken.append('%d' % a if a == b else '%d..%d' % (a, b))
+            a = b = j
+        delen.append('%d:%s' % (i, ','.join(stukken)))
+    return ' '.join(delen)
+
+
+def schrijf_vakken(uit, werk, alle, rijen, datum):
+    """v63.97 (Sjoerd: "Veel mensen downloaden niet de pre info, maar zoeken gewoon dmv POI, en dan bv benzine"): elk vak dat
+    in een land-bestand staat ook los, met alle lagen: POI/v/<i>/<j>.tsv.gz. De app haalt bij het zoeken alleen de vakken die
+    hij nodig heeft. Een leeg vak (zee, of niets van deze soorten) krijgt geen bestand - dat staat in index.json bij 'leeg'.
+    Eerst in de werkmap, dan in één keer op de plek (vakken die nu leeg zijn of weg zijn gaan zo ook weg).
+    -> het stuk 'vakken' voor index.json"""
+    nieuw = os.path.join(werk, VAKMAP + '-nieuw')
+    shutil.rmtree(nieuw, ignore_errors=True)
+    os.makedirs(nieuw)
+    vol, leeg, grootte, regels = [], [], 0, 0
+    for v in sorted(alle):
+        if not rijen.get(v):
+            leeg.append(v)
+            continue
+        # per rij een map (v/97/4.tsv.gz): GitHub raadt hooguit 3.000 dingen per map aan - het zijn er ±3.300
+        os.makedirs(os.path.join(nieuw, str(v[0])), exist_ok=True)
+        pad = os.path.join(nieuw, str(v[0]), '%d.tsv.gz' % v[1])
+        n, _ = schrijf_tsv(pad, '%d_%d' % v, datum, [v], rijen)
+        vol.append(v)
+        grootte += os.path.getsize(pad)
+        regels += n
+    doel = os.path.join(uit, VAKMAP)
+    shutil.rmtree(doel, ignore_errors=True)
+    shutil.move(nieuw, doel)
+    log('losse vakken:', len(vol), 'bestanden,', len(leeg), 'leeg,', regels, 'regels,', grootte, 'bytes')
+    return {'map': VAKMAP + '/', 'datum': datum, 'bestanden': len(vol), 'bytes': grootte, 'rijen': regels,
+            'vol': reeks(vol), 'leeg': reeks(leeg)}
+
+
+def schrijf_index(uit, index):
+    with open(os.path.join(uit, 'index.json'), 'w', encoding='utf-8') as f:
+        json.dump(index, f, ensure_ascii=False, indent=1)
+        f.write('\n')
+
+
+def knip(a):
+    """--knip (v63.97): de losse vakken maken uit de land-bestanden die er al staan - zonder Geofabrik (de eerste keer, of als
+    alleen de vakken anders moeten). Een grensvak staat in twee land-bestanden met precies dezelfde regels (zelfde run): het
+    eerste land telt. index.json houdt zijn landen; alleen 'vakken' is nieuw."""
+    with open(os.path.join(a.uit, 'index.json'), encoding='utf-8') as f:
+        index = json.load(f)
+    rijen, alle, datums = {}, set(), []
+    for code, info in index['landen'].items():
+        eigen, n, einde = set(), 0, None
+        with gzip.open(os.path.join(a.uit, info['bestand']), 'rt', encoding='utf-8', newline='\n') as f:
+            for regel in f:
+                regel = regel.rstrip('\n')
+                if regel.startswith('#'):
+                    d = regel.split('\t')
+                    if d[0] == '#POI' and (d[2] != code or int(d[1]) != FORMAAT):
+                        sys.exit('%s: kop klopt niet (%s)' % (code, regel))
+                    if d[0] == '#POI':
+                        datums.append(d[3])
+                    elif d[0] == '#velden' and d[1].split(' ') != VELDEN:
+                        sys.exit('%s: andere velden dan deze fabriek' % code)
+                    elif d[0] == '#vakken':
+                        vs = [tuple(int(x) for x in k.split('_')) for k in (d[1].split() if len(d) > 1 else [])]
+                        eigen = {v for v in vs if v not in alle}
+                        alle.update(vs)
+                    elif d[0] == '#einde':
+                        einde = int(d[1])
+                    continue
+                n += 1
+                d = regel.split('\t', 4)
+                v = (math.floor(float(d[2]) / VAK), math.floor(float(d[3]) / VAK))   # zelfde getal als de app leest
+                if v in eigen:
+                    rijen.setdefault(v, []).append((LAAG_VOLGORDE.index(d[0]), d[1], regel))
+        if einde != n:
+            sys.exit('%s: niet compleet (%d van %s regels)' % (code, n, einde))
+        log(code, n, 'regels,', len(eigen), 'vakken erbij')
+    for l in rijen.values():
+        l.sort()
+    index['vakken'] = schrijf_vakken(a.uit, a.werk, alle, rijen, max(datums))
+    schrijf_index(a.uit, index)
+    log('klaar')
+
+
 def kader_midden(geo):
     """Midden van het omhullende kader van alle coordinaten (zoals Overpass 'out center')."""
     mnx = mny = math.inf
@@ -214,9 +338,13 @@ def main():
     ap.add_argument('--buren', default=None, help='bv. austria,switzerland')
     ap.add_argument('--hulp', default=None, help='extracten alleen voor de grensvakken, bv. MC=monaco')
     ap.add_argument('--geofabrik', default=GEOFABRIK, help='andere downloadplek (alleen om te testen)')
+    ap.add_argument('--knip', action='store_true', help='alleen de losse vakken, uit de land-bestanden in --uit (geen downloads)')
     a = ap.parse_args()
+    os.makedirs(a.werk, exist_ok=True)
+    if a.knip:
+        return knip(a)
 
-    namen = {c: n for c, (_, n) in LANDEN.items()}
+    namen ={c: n for c, (_, n) in LANDEN.items()}
     landen = dict(x.split('=') for x in a.landen.split(',')) if a.landen else {c: p for c, (p, _) in LANDEN.items()}
     hulp = dict(x.split('=') for x in a.hulp.split(',') if x) if a.hulp is not None else dict(HULP)
     buren = [x for x in (a.buren.split(',') if a.buren is not None else BUREN) if x]
@@ -319,6 +447,8 @@ def main():
                         velden.pop()
                     rijen.setdefault(vak, []).append((LAAG_VOLGORDE.index(l), ident, '\t'.join([l, ident, lat, lon] + velden)))
         os.remove(geo)                     # schijfruimte
+    for l in rijen.values():               # één keer sorteren (laag, id) - voor de land-bestanden én de losse vakken
+        l.sort()
     log('plekken', len(gezien), 'vakken met plekken', len(rijen))
 
     # 4: vakken per land; een vak met LAND van een buurland (dat we niet maken) is niet compleet. Alleen land telt: de
@@ -342,23 +472,8 @@ def main():
              'licentie': 'ODbL 1.0 - (c) OpenStreetMap-bijdragers', 'landen': {}}
     for code in landen:
         vs = land_vakken[code]
-        n = tekst = 0
         tijdelijk = os.path.join(a.werk, code + '.tsv.gz')
-        with open(tijdelijk, 'wb') as ruw:
-            with gzip.GzipFile(filename='', mode='wb', fileobj=ruw, compresslevel=9, mtime=0) as gz:
-                def w(s):
-                    nonlocal tekst
-                    b = (s + '\n').encode('utf-8')
-                    tekst += len(b)
-                    gz.write(b)
-                w('#POI\t%d\t%s\t%s' % (FORMAAT, code, datum[code]))
-                w('#velden\t' + ' '.join(VELDEN))
-                w('#vakken\t' + ' '.join('%d_%d' % v for v in vs))
-                for v in vs:
-                    for _, _, regel in sorted(rijen.get(v, [])):
-                        w(regel)
-                        n += 1
-                w('#einde\t%d' % n)
+        n, tekst = schrijf_tsv(tijdelijk, code, datum[code], vs, rijen)
         doel = os.path.join(a.uit, code + '.tsv.gz')
         shutil.move(tijdelijk, doel)
         # naam (voor het lijsten-menu), tekst = uitgepakt (± wat het op de telefoon kost), lijst = de vakken (om te wissen)
@@ -367,9 +482,9 @@ def main():
                                  'lijst': ' '.join('%d_%d' % v for v in vs)}
         log(code, n, 'regels,', len(vs), 'vakken,', os.path.getsize(doel), 'bytes')
 
-    with open(os.path.join(a.uit, 'index.json'), 'w', encoding='utf-8') as f:
-        json.dump(index, f, ensure_ascii=False, indent=1)
-        f.write('\n')
+    # 6: elk vak ook los (v63.97). Stand = de nieuwste van de extracten (de app ziet zo elke maand een nieuwe stand).
+    index['vakken'] = schrijf_vakken(a.uit, a.werk, set().union(*land_vakken.values()), rijen, max(datum[c] for c in landen))
+    schrijf_index(a.uit, index)
     log('klaar')
 
 

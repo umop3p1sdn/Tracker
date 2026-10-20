@@ -1,20 +1,25 @@
 # POI — plekken voor de HO-ME Live Tracker
 
-Deze map bevat de POI-bestanden die de app downloadt (📥 Lijsten → landen aantikken → Download): per land één bestand met
-⛽ benzine, 🍽 restaurant, 🛒 supermarkt, ⚡ laden, 🍔 snack, ☕ café, 🥐 bakker, 🛏 hotel, 🏧 pin, 🚻 wc,
-📷 uitzicht/bezienswaardigheid, kroeg en foodcourt.
+Deze map bevat de POI-bestanden van de app: ⛽ benzine, 🍽 restaurant, 🛒 supermarkt, ⚡ laden, 🍔 snack, ☕ café,
+🥐 bakker, 🛏 hotel, 🏧 pin, 🚻 wc, 📷 uitzicht/bezienswaardigheid, kroeg en foodcourt — op twee manieren:
+
+- **zoeken** (v63.97): zoek je iets (bv. ⛽ Benzine), dan haalt de app alleen de vakken van 0,5° die hij nodig heeft uit
+  `v/` (Lokaal: 1–4 vakken, meestal een paar honderd KB) en bewaart ze op je telefoon — zonder eerst iets te downloaden;
+- **offline** (📥 Lijsten → landen aantikken → Download): per land één bestand, alles vooraf op je telefoon (voor onderweg
+  zonder bereik).
 
 | Bestand | Wat |
 |---|---|
-| `index.json` | per land: bestandsnaam, naam, datum van de gegevens, grootte (download en uitgepakt), aantal plekken, de vakken |
-| `NL.tsv.gz`, `DE.tsv.gz`, `AT.tsv.gz`, … | de plekken (tekst met tabs, gzip) — ±40 landen: heel Europa behalve Rusland, Wit-Rusland, Oekraïne, Moldavië, Georgië en Turkije |
+| `index.json` | per land: bestandsnaam, naam, datum van de gegevens, grootte (download en uitgepakt), aantal plekken, de vakken; bij `vakken`: welke losse vakken er zijn (zie onder) |
+| `NL.tsv.gz`, `DE.tsv.gz`, `AT.tsv.gz`, … | de plekken per land (tekst met tabs, gzip) — ±40 landen: heel Europa behalve Rusland, Wit-Rusland, Oekraïne, Moldavië, Georgië en Turkije |
+| `v/<rij>/<kolom>.tsv.gz` | dezelfde plekken per vak van 0,5° (bv. `v/104/11.tsv.gz` = Ede, `v/97/4.tsv.gz` = Parijs); per rij een map, omdat GitHub hooguit 3.000 dingen per map aanraadt |
 | `fabriek.py` | het script dat ze maakt |
 | `opslaan.sh` | opslaan + de oude POI-versies uit de geschiedenis halen |
 
 ## Hoe ze gemaakt worden
 
 De **POI-fabriek** (`.github/workflows/poi.yml`) draait vanzelf de 3e van elke maand, of met de hand:
-tab **Actions** → **POI-fabriek** → **Run workflow** (±40 minuten). Hij:
+tab **Actions** → **POI-fabriek** → **Run workflow** (±2,5 uur, vooral het downloaden bij Geofabrik). Hij:
 
 1. haalt per land het OpenStreetMap-extract bij [Geofabrik](https://download.geofabrik.de/europe.html) — één keer per
    land per run, met MD5-controle (als Geofabrik die heeft; anders controleert osmium het bestand);
@@ -24,13 +29,17 @@ tab **Actions** → **POI-fabriek** → **Run workflow** (±40 minuten). Hij:
    plekken (en Monaco is een eigen land, dus het vak van Nice is compleet). Vakken met **land** van een land dat hier niet bij zit
    (bv. Oekraïne) worden weggelaten: die haalt de app zelf als je daar bent. Alleen land telt (Natural Earth,
    publiek domein) — de grenzen van Geofabrik lopen ook over zee, en anders viel bv. Rostock weg om Deens water;
-5. slaat de bestanden hier op én haalt de oude versies van de POI-bestanden uit de geschiedenis van de repo (`opslaan.sh`):
+5. zet elk vak ook los in `v/` (v63.97) — een leeg vak (zee, of niets van deze soorten) krijgt geen bestand;
+6. slaat de bestanden hier op én haalt de oude versies van de POI-bestanden uit de geschiedenis van de repo (`opslaan.sh`):
    alleen de nieuwste blijft, dus de repo groeit niet mee. Dat gebeurt alleen als niemand tussendoor iets op `main` heeft
    gezet (git `--force-with-lease`); anders slaat hij gewoon op en ruimt hij de volgende keer op. De site bouwt daarna
    vanzelf opnieuw.
 
 Alleen opruimen (zonder nieuwe lijsten te maken): **Actions** → **POI-fabriek** → **Run workflow** → vink
 **Alleen opruimen** aan.
+
+Alleen de losse vakken opnieuw maken uit de landbestanden die hier al staan (niets bij Geofabrik, ±5 minuten): vink
+**Alleen vakken** aan.
 
 Mislukt een run nadat de extracten binnen zijn, dan bewaart hij de gefilterde stukken (cache); een nieuwe run op dezelfde
 dag haalt dan niets opnieuw bij Geofabrik. De grenzen (`.poly`) haalt hij als eerste: ontbreekt er een, dan stopt hij
@@ -57,3 +66,8 @@ vermelding van de bron.
 b	n123	52.09071	5.12140	fuel		…   (laag b/r/x, id, lat, lon, velden; gesorteerd per vak)
 #einde	95123                              (aantal regels — ontbreekt deze regel, dan is het bestand niet compleet)
 ```
+
+Een los vak heeft dezelfde opbouw, met het vak waar het land stond: `#POI	1	104_11	<stand>` en `#vakken	104_11`.
+In `index.json` staat bij `vakken` de stand, en welke vakken er zijn: `vol` (met een bestand) en `leeg` (compleet, maar
+zonder plekken — daar is geen bestand van). Kort geschreven per rij: `104:6..12,15` = rij 104, kolommen 6 t/m 12 en 15
+(een kolom kan negatief zijn: west van Greenwich). Vak `rij_kolom` = de zuidwesthoek op (rij × 0,5°, kolom × 0,5°).
