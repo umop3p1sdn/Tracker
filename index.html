@@ -93,6 +93,18 @@
         .aftelBalk { box-sizing: border-box; border-radius: 6px; background: rgba(0,0,0,0.35); border: 2px solid #000;
                      box-shadow: 0 0 0 2px rgba(255,255,255,0.7); overflow: hidden; pointer-events: none; }
         .aftelBalk > div { width: 100%; height: 100%; background: rgba(255,255,255,0.92); transform-origin: left center; }
+        /* v64.4 ZOOMBALK VERVAAGT (wens Sjoerd: "Auto zoom doorzichtig maken met een afloopbalkje, dat hij na het aftellen niet
+           meer zichtbaar is — maar hij is er wel; druk je erop, dan popt hij weer op. Als hij weg is een hele lichte transparante
+           kleur op die plek, zodat je weet dat er iets zit — zoals de glow die er nu omheen zit. Je moet er echt goed doorheen
+           kunnen kijken" + "altijd een afloop-timer, ook bij blauw"): na 4 s slaapt de zoombalk (alle standen: − getal +,
+           blauw, Auto zoom) — de knoppen onzichtbaar, alleen een vleugje wit op dezelfde plek. Tik = wakker (doet verder
+           niets); wakker doen de knoppen hun werk en begint de 4 s opnieuw. Het balkje hangt net onder de zoombalk. */
+        #zoomBarMaster, #zoomBarFollower { transition: background-color 0.4s ease, box-shadow 0.4s ease; }
+        #zoomBarMaster > *, #zoomBarFollower > * { transition: opacity 0.4s ease; }
+        #zoomBarMaster.zoom-slaapt, #zoomBarFollower.zoom-slaapt { background: rgba(255,255,255,0.07) !important;
+            box-shadow: 0 0 0 1px rgba(255,255,255,0.22), 0 0 10px rgba(255,255,255,0.10); }
+        .zoom-slaapt > * { opacity: 0 !important; pointer-events: none !important; }
+        .zoomAftel { position: absolute; left: 16px; right: 16px; top: calc(100% + 4px); height: 10px; display: none; pointer-events: none; }
         /* kaart: op de plek van de zoombalk (die is tijdens de handpauze weg) — zelfde breedte, langs de bovenrand */
         #pauzeAftel { display: none; position: fixed; top: 10px; left: 50%; transform: translateX(-50%); width: 211px; height: 12px;
                       z-index: 1001; margin-top: env(safe-area-inset-top, 0px); }
@@ -1280,7 +1292,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v64.3 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v64.4 © Umop3p1sdn</div>
 
             </div>
 
@@ -1332,6 +1344,7 @@
                             <button style="padding: 8px; font-size: 1.6em; min-width: 64px; width: 64px; height: 64px; border-radius: 6px; background: transparent; color: #000; text-shadow: 0 0 2px rgba(255,255,255,0.9); border: 3px solid #000; box-shadow: 0 0 0 2px rgba(255,255,255,0.4); cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center;" onclick="zoomIn()">+</button>
                             <!-- v63.69: CREW groen = Auto zoom (vervangt − getal +; zelfde breedte: 64+8+35+8+64 = 179 px) -->
                             <button class="autoZoomBtn" onclick="zoomBarTik()" title="Auto zoom — tik: CREW uit" style="display: none; width: 179px; height: 64px; padding: 0 8px; border-radius: 6px; background: rgba(76,175,80,0.45); color: #000; border: 3px solid #000; box-shadow: 0 0 0 2px rgba(255,255,255,0.4); cursor: pointer; font-weight: bold; font-size: 1.2em; white-space: nowrap; align-items: center; justify-content: center;">Auto zoom</button>
+                            <div class="aftelBalk zoomAftel"><div></div></div>   <!-- v64.4: de zoombalk slaapt na 4 s -->
                         </div>
 
                         <!-- SIDE ICON BAR (right) -->
@@ -1375,6 +1388,7 @@
                             <button style="padding: 8px; font-size: 1.6em; min-width: 64px; width: 64px; height: 64px; border-radius: 6px; background: transparent; color: #000; text-shadow: 0 0 2px rgba(255,255,255,0.9); border: 3px solid #000; box-shadow: 0 0 0 2px rgba(255,255,255,0.4); cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center;" onclick="zoomIn()">+</button>
                             <!-- v63.69: CREW groen = Auto zoom (vervangt − getal +; zelfde breedte: 64+8+35+8+64 = 179 px) -->
                             <button class="autoZoomBtn" onclick="zoomBarTik()" title="Auto zoom — tik: CREW uit" style="display: none; width: 179px; height: 64px; padding: 0 8px; border-radius: 6px; background: rgba(76,175,80,0.45); color: #000; border: 3px solid #000; box-shadow: 0 0 0 2px rgba(255,255,255,0.4); cursor: pointer; font-weight: bold; font-size: 1.2em; white-space: nowrap; align-items: center; justify-content: center;">Auto zoom</button>
+                            <div class="aftelBalk zoomAftel"><div></div></div>   <!-- v64.4: de zoombalk slaapt na 4 s -->
                         </div>
 
                         <!-- SIDE ICON BAR (right) -->
@@ -1639,6 +1653,7 @@
                 <p style="margin:0 0 8px;"><strong>1×</strong>: − en + krijgen een blauwe achtergrond en CREW in het menu wordt blauw: je ziet de rest van de groep.</p>
                 <div style="width:179px; height:64px; border-radius:6px; background:rgba(76,175,80,0.45); border:3px solid #000; display:flex; align-items:center; justify-content:center; font-size:1.2em; font-weight:bold; color:#000; margin-bottom:4px;">Auto zoom</div>
                 <p style="margin:0;"><strong>2×</strong>: i.p.v. − getal + staat er <strong>Auto zoom</strong> (groen) en CREW wordt groen: de kaart zoomt zelf, vloeiend (zoals knijpen), zo dat iedereen in beeld blijft — elke pijl net binnen beeld (±¼ cm van de rand van je scherm; staand onder de statusbalk met klok en batterij), ook als de kaart meedraait. Uitzoomen begint meteen; weer inzoomen pas als het 3 seconden ruimer kan — zo gaat hij niet heen en weer. <strong>Tik op Auto zoom</strong> = CREW uit, − getal + komen terug.</p>
+                <p style="margin:8px 0 0;"><strong>Na 4 seconden uit beeld</strong> (alle standen: − getal +, blauw en Auto zoom): onder de balk loopt een balkje leeg, daarna zijn de knoppen onzichtbaar en zie je op die plek alleen nog een heel licht vlak — zo houd je meer kaart over. <strong>Tik op het vlak</strong> = de knoppen komen terug (die tik doet verder niets); dan werken ze weer en beginnen de 4 seconden opnieuw.</p>
 
                 <div style="display:flex; gap:8px; align-items:center; margin:16px 0 6px;">
                     <div style="width:64px; height:64px; border-radius:6px; background:transparent; border:3px solid #000; display:flex; align-items:center; justify-content:center; font-size:2em; font-weight:bold; color:#000;">−</div>
@@ -1835,7 +1850,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v64.3 © Umop3p1sdn
+                HO-ME v64.4 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1981,6 +1996,7 @@
                 <p style="margin:0 0 8px;"><strong>1×</strong>: − and + get a blue background and CREW in the menu turns blue: you see the rest of the group.</p>
                 <div style="width:179px; height:64px; border-radius:6px; background:rgba(76,175,80,0.45); border:3px solid #000; display:flex; align-items:center; justify-content:center; font-size:1.2em; font-weight:bold; color:#000; margin-bottom:4px;">Auto zoom</div>
                 <p style="margin:0;"><strong>2×</strong>: instead of − number + it says <strong>Auto zoom</strong> (green) and CREW turns green: the map zooms by itself, smoothly (like pinching), so everyone stays in view — every arrow just inside the screen (±¼ cm from the edge of your screen; upright below the status bar with clock and battery), also when the map turns along. Zooming out starts at once; zooming back in only once there has been room for 3 seconds — so it doesn't go back and forth. <strong>Tap Auto zoom</strong> = CREW off, − number + come back.</p>
+                <p style="margin:8px 0 0;"><strong>Out of sight after 4 seconds</strong> (every state: − number +, blue and Auto zoom): a small bar runs down below the zoom bar, then the buttons fade out and only a very faint area stays in that spot — so you keep more map. <strong>Tap the area</strong> = the buttons come back (that tap does nothing else); then they work again and the 4 seconds start over.</p>
 
                 <div style="display:flex; gap:8px; align-items:center; margin:16px 0 6px;">
                     <div style="width:64px; height:64px; border-radius:6px; background:transparent; border:3px solid #000; display:flex; align-items:center; justify-content:center; font-size:2em; font-weight:bold; color:#000;">−</div>
@@ -2177,7 +2193,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v64.3 © Umop3p1sdn
+                HO-ME v64.4 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -6634,7 +6650,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "64.3";
+        const APP_VERSION = "64.4";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
@@ -14663,7 +14679,12 @@ assign initialcost =
             const toon = (!plannen && isAutoFollowActive) ? 'flex' : 'none';
             ['zoomBarMaster', 'zoomBarFollower'].forEach(id => {
                 const bar = document.getElementById(id);
-                if (bar && bar.style.display !== toon) bar.style.display = toon;
+                if (bar && bar.style.display !== toon) {
+                    // v64.4: verschijnt hij (en sliep hij niet), dan 4 s zichtbaar en daarna slapen; sliep hij, dan blijft hij slapen.
+                    // Weg (Plan, handpauze, het overzicht bij verbinden) telt niet af — anders sliep hij al vóór je hem zag.
+                    if (toon === 'flex' && !bar.classList.contains('zoom-slaapt')) zoomBalkWek();
+                    bar.style.display = toon;
+                }
             });
         }
         // Rijstand in de balk: 0 = gewoon (− getal +), 1 = blauw doorzichtig achter − en +, 2 = alleen Auto zoom (groen).
@@ -14674,7 +14695,7 @@ assign initialcost =
                 if (!bar) return;
                 const auto = bar.querySelector('.autoZoomBtn');
                 Array.from(bar.children).forEach(k => {
-                    if (k === auto) return;
+                    if (k === auto || k.classList.contains('zoomAftel')) return;   // v64.4: het aftelbalkje is geen knop
                     k.style.display = (stand === 2) ? 'none' : 'flex';
                     if (k.tagName === 'BUTTON') k.style.background = (stand === 1) ? 'rgba(33,150,243,0.45)' : 'transparent';
                 });
@@ -14682,8 +14703,40 @@ assign initialcost =
                 const getal = bar.querySelector('span');
                 if (getal && stand !== 2) getal.textContent = zoomLevelValue;   // na Auto zoom weer JOUW zoom, niet de auto-waarde
             });
+            zoomBalkWek();   // v64.4: CREW gewisseld → de balk laat 4 s zien wat hij nu is
             updateZoomBarZichtbaar();
         }
+        // ═══ v64.4 ZOOMBALK VERVAAGT (zie de CSS bij .zoom-slaapt) ═══
+        const ZOOMBALK_MS = 4000;
+        let zoomBalkTot = 0;           // tot dit tijdstip is de balk wakker (0 = hij slaapt)
+        let zoomBalkSlik = 0;          // de tik die hem wekte doet verder niets (tot dit tijdstip)
+        function zoomBalkWek() {
+            zoomBalkTot = Date.now() + ZOOMBALK_MS;
+            ['zoomBarMaster', 'zoomBarFollower'].forEach(id => { const b = document.getElementById(id); if (b) b.classList.remove('zoom-slaapt'); });
+            if (typeof aftelStart === 'function') aftelStart();
+        }
+        function zoomBalkSlaap() {
+            zoomBalkTot = 0;
+            ['zoomBarMaster', 'zoomBarFollower'].forEach(id => { const b = document.getElementById(id); if (b) b.classList.add('zoom-slaapt'); });
+        }
+        function zoomBalkDruk(e) {     // vinger/muis omlaag op de balk (vangfase, vóór de knop)
+            const bar = e.currentTarget;
+            if (bar.classList.contains('zoom-slaapt')) {   // slaapt → alleen wakker maken; deze tik doet verder niets
+                zoomBalkSlik = Date.now() + 700;
+                if (e.cancelable) e.preventDefault();
+                e.stopPropagation();
+            }
+            zoomBalkWek();                                 // wakker → de knop doet zijn werk, de 4 s beginnen opnieuw
+        }
+        function zoomBalkKlik(e) {     // de klik van de tik die hem wekte: niet doorgeven aan − getal + / Auto zoom
+            if (Date.now() < zoomBalkSlik) { zoomBalkSlik = 0; e.preventDefault(); e.stopPropagation(); }
+        }
+        ['zoomBarMaster', 'zoomBarFollower'].forEach(id => {
+            const b = document.getElementById(id);
+            if (!b) return;
+            b.addEventListener('pointerdown', zoomBalkDruk, true);
+            b.addEventListener('click', zoomBalkKlik, true);
+        });
         // Tik op het getal (of op Auto zoom) = de CREW-knop van je eigen rol (master crewBtn, volger seeEveryoneBtn).
         function zoomBarTik() {
             if (currentMode === 'follower') toggleSeeEveryone();
@@ -14927,6 +14980,17 @@ assign initialcost =
                     nodig = true;
                 } else if (tb.style.display !== 'none') tb.style.display = 'none';
             }
+            // v64.4: de zoombalk — balkje loopt 4 s leeg, dan slaapt hij (zie zoomBalkWek); alleen als hij in beeld is
+            const zbActief = document.getElementById(currentMode === 'follower' ? 'zoomBarFollower' : 'zoomBarMaster');
+            if (zoomBalkTot && zbActief && zbActief.style.display === 'flex') {
+                const rest = Math.max(0, Math.min(1, (zoomBalkTot - Date.now()) / ZOOMBALK_MS));
+                document.querySelectorAll('.zoomAftel').forEach(z => {
+                    if (z.style.display !== 'block') z.style.display = 'block';
+                    z.firstElementChild.style.transform = 'scaleX(' + rest.toFixed(3) + ')';
+                });
+                if (rest <= 0) zoomBalkSlaap(); else nodig = true;
+            }
+            if (!zoomBalkTot) document.querySelectorAll('.zoomAftel').forEach(z => { if (z.style.display !== 'none') z.style.display = 'none'; });
             if (nodig) requestAnimationFrame(aftelTeken); else aftelLoopt = false;
         }
 
