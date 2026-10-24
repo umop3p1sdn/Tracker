@@ -1280,7 +1280,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v64.2 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v64.3 © Umop3p1sdn</div>
 
             </div>
 
@@ -1835,7 +1835,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v64.2 © Umop3p1sdn
+                HO-ME v64.3 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2177,7 +2177,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v64.2 © Umop3p1sdn
+                HO-ME v64.3 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -6634,7 +6634,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "64.2";
+        const APP_VERSION = "64.3";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
@@ -11065,6 +11065,7 @@ assign initialcost =
                 }
                 if (!devTimer) devTimer = setInterval(devTick, 1000);
                 showInfo('Test-modus AAN — tik op de kaart om een volger te plaatsen');
+                devStartCrew(true);   // v64.3: CREW blauw, anders zie je je test-volgers niet
             } else {
                 if (devTimer) { clearInterval(devTimer); devTimer = null; }
                 devAwaitDest = null;
@@ -11073,6 +11074,18 @@ assign initialcost =
                 renderTagList();
                 showInfo('Test-modus UIT — test-volgers verwijderd');
             }
+        }
+
+        // v64.3 (wens Sjoerd: "bij develop aan, graag crew standaard op blauw — dan kun je hem zelf altijd nog op groen zetten;
+        // anders zie je jouw volger niet"): volgers (ook test-volgers) zijn op de master alleen te zien met CREW aan of Toon niet
+        // op IK (applyFollowerVisibility). Develop aanzetten tijdens de rit: meteen blauw. Rit starten met Develop aan: de master
+        // start kaal (v59.5), maar ná de landingsvlucht één keer blauw (zoals de volger, startCrewKlaar). Staat CREW al aan
+        // (blauw of groen), dan blijft hij zo; Develop uit laat CREW staan.
+        function devStartCrew(nu) {
+            if (!devMode || currentMode !== 'master' || !landingDone || landingInProgress) return;   // eerst de landing
+            if (!nu && startCrewKlaar) return;                                                      // per rit één keer
+            startCrewKlaar = true;
+            if (crewMode === 0 && typeof toggleCrew === 'function') toggleCrew();
         }
 
         function devMapClick(e) {
@@ -11123,8 +11136,12 @@ assign initialcost =
             m._idx = idx; m._planeColor = color;
             m.on('click', () => devFollowerMenu(id));
             followerMarkers[id] = m;
-            masterFollowersData[id] = { lat, lng, heading: 0, idx, tag: 'T' + devSeq };
-            devFollowers[id] = { route: null, pos: 0, dir: 1 };
+            // v64.3: de gegevens wonen bij de test-volger zelf (data) — de master-poll bouwt masterFollowersData elke 500 ms
+            // opnieuw op uit Firebase en zet ze er daarna weer bij. GEMETEN v64.2: na één ronde waren ze weg — niet meer in de
+            // namenlijst, en "Tag wijzigen" gaf een fout (Cannot set properties of undefined).
+            const data = { lat, lng, heading: 0, idx, tag: 'T' + devSeq };
+            masterFollowersData[id] = data;
+            devFollowers[id] = { route: null, pos: 0, dir: 1, data };
             renderTagList();
             if (typeof applyFollowerVisibility === 'function') applyFollowerVisibility();
             showInfo('Test-volger T' + devSeq + ' geplaatst — tik erop voor opties');
@@ -11136,7 +11153,7 @@ assign initialcost =
             devShowPanel('Test-volger ' + tag, [
                 ['Tag wijzigen', '#2196F3', () => {
                     const t = prompt('Nieuwe tag (max 6 tekens):', tag);
-                    if (t) { masterFollowersData[id].tag = t.slice(0, 6); renderTagList(); }
+                    if (t && devFollowers[id]) { devFollowers[id].data.tag = t.slice(0, 6); masterFollowersData[id] = devFollowers[id].data; renderTagList(); }   // v64.3
                 }],
                 ['Beweeg naar…', '#4CAF50', () => {
                     devAwaitDest = id;
@@ -11199,10 +11216,10 @@ assign initialcost =
                 let hdg = 0;
                 try { hdg = bearing(prev, cur); } catch (e) {}
                 if (typeof setMarkerHeading === 'function') setMarkerHeading(m, hdg);
-                if (masterFollowersData[id]) {
-                    masterFollowersData[id].lat = cur[0];
-                    masterFollowersData[id].lng = cur[1];
-                    masterFollowersData[id].heading = hdg;
+                if (d.data) {   // v64.3: bij de test-volger zelf (en zo ook in masterFollowersData)
+                    d.data.lat = cur[0];
+                    d.data.lng = cur[1];
+                    d.data.heading = hdg;
                 }
             });
         }
@@ -11367,6 +11384,7 @@ assign initialcost =
                 });
                 return;
             }
+            if (currentMode === 'master') devStartCrew(false);   // v64.3: rit gestart met Develop aan → na de landing CREW blauw
             const followers = await fetchFollowers(code);
             // v63.75 (GEMETEN bij de link-test): ging CREW uit terwijl dit ophalen nog liep, dan tekende deze
             // late ronde de andere volgers opnieuw — en omdat de 500 ms-lus al gestopt was, bleven ze staan.
@@ -11446,6 +11464,9 @@ assign initialcost =
                     }
                 }
             }
+
+            // v64.3: test-volgers (Develop, alleen lokaal) weer bij de gegevens — anders vielen ze na één ronde uit de namenlijst
+            Object.keys(devFollowers).forEach(id => { if (devFollowers[id] && devFollowers[id].data) masterFollowersData[id] = devFollowers[id].data; });
 
             // Remove markers for followers that are gone/stale (test-volgers 'dev...' zijn lokaal
             // en zitten nooit in de Firebase-data — die dus overslaan)
@@ -14086,6 +14107,7 @@ assign initialcost =
             let _crewGuard = 0;
             while (crewMode !== 0 && typeof toggleCrew === 'function' && _crewGuard++ < 3) toggleCrew();
             landingDone = false; landingInProgress = false;   // v58.5: landingsvlucht PER RIT, niet per app-lading
+            startCrewKlaar = false;                            // v64.3: met Develop aan na de landing CREW blauw (devStartCrew), per rit
 
             document.getElementById('modeSelect').classList.add('hidden');
             if (typeof stopHomeUpdateChecks === 'function') stopHomeUpdateChecks();
