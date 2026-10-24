@@ -792,6 +792,7 @@
         .pmAnnuleer{ border-color: #4a5070; color: #ccd; }
         .pmDelete  { border-color: #FF1744; color: #fff;    background: #FF1744; }
         .pmWijzig  { border-color: #00BCD4; color: #00BCD4; background: rgba(0,188,212,0.1); }
+        .pmDev     { border-color: #FF9800; color: #FFCC80; background: rgba(255,152,0,0.14); }   /* v64.2: test-modus (Develop) */
         .pmKm { display: flex; align-items: center; justify-content: center; flex: 0 0 100px; height: 48px;
             box-sizing: border-box; border: 2px solid #FF1744; border-radius: 10px; }
         .pmKm input { width: 48px; border: none; background: transparent; color: #fff; font-size: 1.05em;
@@ -1279,7 +1280,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v64.1 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v64.2 © Umop3p1sdn</div>
 
             </div>
 
@@ -1834,7 +1835,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v64.1 © Umop3p1sdn
+                HO-ME v64.2 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2176,7 +2177,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v64.1 © Umop3p1sdn
+                HO-ME v64.2 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2338,6 +2339,9 @@
             <button class="pmKnop pmNogo" onclick="tapChoose('nogo')">Vermijden</button>
             <label class="pmKm"><input id="nogoKm" type="text" inputmode="decimal" placeholder="2" value="2"><span>km</span></label>
         </div>
+        <!-- v64.2 (wens Sjoerd: "test-volger in hetzelfde menu, zodat je geen 2 menu's krijgt — juist extra opties als je
+             Develop aan zet"): alleen zichtbaar met Develop aan (tikDevRij) -->
+        <div id="tikDevRij" class="pmRij" style="display:none;"><button class="pmKnop pmDev" onclick="tapChoose('testvolger')">Test-volger</button></div>
         <div class="pmRij"><button class="pmKnop pmAnnuleer" onclick="tapCancel()">Annuleer</button></div>
     </div>
     <!-- v63.79 (wens Sjoerd: "een logische knop delete"): tik op een punt (start/finish/tussenpunt) of op een
@@ -2875,8 +2879,15 @@ assign initialcost =
 
         function onMapTap(e) {
             if (Date.now() < planTikTot) return;         // v63.81 vangnet 2: dubbeltik/hobbel net na het openen vanuit het rijscherm
+            // v64.2: wacht een test-volger op zijn punt B ("Beweeg naar…"), dan is deze tik dát punt — geen menu
+            if (typeof devMode !== 'undefined' && devMode && devAwaitDest) {
+                const id = devAwaitDest; devAwaitDest = null;
+                devSetRoute(id, e.latlng.lat, e.latlng.lng);
+                return;
+            }
             zoekPinWeg();                                // v63.65: tik op de kaart = nieuw punt, zoek-speld weg
             pendingTap = { lat: e.latlng.lat, lng: e.latlng.lng };
+            tikDevRij();                                 // v64.2: met Develop aan de knop Test-volger erbij
             document.getElementById('tapMenu').style.display = 'flex';
             tikMenuTot = Date.now() + TIK_MENU_MS;       // v63.82: kies je niets, dan gaat het menu na 4 s dicht
             if (typeof aftelStart === 'function') aftelStart();
@@ -2900,6 +2911,10 @@ assign initialcost =
             if (km) ['input', 'focus', 'keydown', 'blur'].forEach(t => km.addEventListener(t, () => tikMenuVol(null)));   // veld verlaten = nog 4 s
         })();
         function tikMenuTypt() { const km = document.getElementById('nogoKm'); return !!(km && document.activeElement === km); }
+        function tikDevRij(mag) {   // v64.2: de rij Test-volger in "Punt toevoegen als" — alleen met Develop aan (master)
+            const r = document.getElementById('tikDevRij');
+            if (r) r.style.display = (mag !== false && typeof devMode !== 'undefined' && devMode && currentMode === 'master') ? 'flex' : 'none';
+        }
         // v63.65 (ontwerp Sjoerd: "maken van een route is lastig — hij staat op start en springt naar finish.
         // Gebruik het menu dat opkomt als je op de kaart drukt: Punt toevoegen als. Adres intypen → hij prikt
         // het op de kaart en het menu komt op. Het pinnetje ook. De knoppen Start/Tussen/Finish mogen weg").
@@ -2918,6 +2933,7 @@ assign initialcost =
             pendingTap = { lat, lng, label: label || '', gps: !!gps };
             const lab = document.getElementById('tapMenuLabel');
             if (lab && label) { lab.textContent = label; lab.style.display = 'block'; }
+            tikDevRij();                                 // v64.2
             document.getElementById('tapMenu').style.display = 'flex';
             try { zoekPin = L.marker([lat, lng], { icon: pinIcon('#00BCD4'), interactive: false }).addTo(map); } catch (e) {}
             try { zoekPinInBeeld(lat, lng); } catch (e) {}
@@ -2957,6 +2973,11 @@ assign initialcost =
             const label = pendingTap.label || `(${lat.toFixed(4)}, ${lng.toFixed(4)})`;
             const gps = !!pendingTap.gps;
             zoekPinWeg();
+            if (kind === 'testvolger') {                 // v64.2: test-volger hier (Develop) — de route blijft zoals hij was
+                pendingTap = null;
+                if (typeof devMode !== 'undefined' && devMode && currentMode === 'master') devPlaceFollower(lat, lng);
+                return;
+            }
             if (kind === 'start') setStart(lat, lng, label, gps);
             else if (kind === 'dest') setDest(lat, lng, label);
             else if (kind === 'via') addVia(lat, lng, label, true);       // slim
@@ -3558,6 +3579,7 @@ assign initialcost =
             pendingTap = { lat, lng, label };    // naam gaat mee naar de nieuwe rol
             const lab = document.getElementById('tapMenuLabel');
             if (lab && label) { lab.textContent = label; lab.style.display = 'block'; }
+            tikDevRij(false);                    // v64.2: een bestaand punt wijzigen = een nieuwe rol, geen test-volger
             document.getElementById('tapMenu').style.display = 'flex';
         }
         function zoneAanpassen() {
@@ -6612,7 +6634,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "64.1";
+        const APP_VERSION = "64.2";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
@@ -11058,6 +11080,9 @@ assign initialcost =
             // In het cleane scherm haalt de bestaande tik-handler je al uit clean — daar geen menu.
             const cont = document.querySelector('.container');
             if (cont && cont.classList.contains('map-only')) return;
+            // v64.2 (melding Sjoerd: "test-volger plaatsen in develop mode geeft ook het menu van de planner"): met Plan open
+            // regelt "Punt toevoegen als" de tik — met de knop Test-volger erin, en punt B voor "Beweeg naar…" (onMapTap)
+            if (typeof plannerIsOpen === 'function' && plannerIsOpen()) return;
             const lat = e.latlng.lat, lng = e.latlng.lng;
             if (devAwaitDest) {   // dit is punt B voor de wachtende volger
                 const id = devAwaitDest; devAwaitDest = null;
