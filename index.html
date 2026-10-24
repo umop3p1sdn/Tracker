@@ -1292,7 +1292,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v64.4 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v64.5 © Umop3p1sdn</div>
 
             </div>
 
@@ -1343,7 +1343,7 @@
                             <span style="font-size: 1.1em; min-width: 35px; text-align: center; color: #000; text-shadow: 0 0 2px rgba(255,255,255,0.9); font-weight: bold; display: flex; align-items: center; justify-content: center; cursor: pointer;" id="zoomLevelMaster" onclick="zoomBarTik()" title="Tik: CREW wisselen">17</span>
                             <button style="padding: 8px; font-size: 1.6em; min-width: 64px; width: 64px; height: 64px; border-radius: 6px; background: transparent; color: #000; text-shadow: 0 0 2px rgba(255,255,255,0.9); border: 3px solid #000; box-shadow: 0 0 0 2px rgba(255,255,255,0.4); cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center;" onclick="zoomIn()">+</button>
                             <!-- v63.69: CREW groen = Auto zoom (vervangt − getal +; zelfde breedte: 64+8+35+8+64 = 179 px) -->
-                            <button class="autoZoomBtn" onclick="zoomBarTik()" title="Auto zoom — tik: CREW uit" style="display: none; width: 179px; height: 64px; padding: 0 8px; border-radius: 6px; background: rgba(76,175,80,0.45); color: #000; border: 3px solid #000; box-shadow: 0 0 0 2px rgba(255,255,255,0.4); cursor: pointer; font-weight: bold; font-size: 1.2em; white-space: nowrap; align-items: center; justify-content: center;">Auto zoom</button>
+                            <button class="autoZoomBtn" onclick="zoomBarTik()" title="Auto zoom — tik: terug naar blauw" style="display: none; width: 179px; height: 64px; padding: 0 8px; border-radius: 6px; background: rgba(76,175,80,0.45); color: #000; border: 3px solid #000; box-shadow: 0 0 0 2px rgba(255,255,255,0.4); cursor: pointer; font-weight: bold; font-size: 1.2em; white-space: nowrap; align-items: center; justify-content: center;">Auto zoom</button>
                             <div class="aftelBalk zoomAftel"><div></div></div>   <!-- v64.4: de zoombalk slaapt na 4 s -->
                         </div>
 
@@ -1387,7 +1387,7 @@
                             <span style="font-size: 1.1em; min-width: 35px; text-align: center; color: #000; text-shadow: 0 0 2px rgba(255,255,255,0.9); font-weight: bold; display: flex; align-items: center; justify-content: center; cursor: pointer;" id="zoomLevelFollower" onclick="zoomBarTik()" title="Tik: CREW wisselen">17</span>
                             <button style="padding: 8px; font-size: 1.6em; min-width: 64px; width: 64px; height: 64px; border-radius: 6px; background: transparent; color: #000; text-shadow: 0 0 2px rgba(255,255,255,0.9); border: 3px solid #000; box-shadow: 0 0 0 2px rgba(255,255,255,0.4); cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center;" onclick="zoomIn()">+</button>
                             <!-- v63.69: CREW groen = Auto zoom (vervangt − getal +; zelfde breedte: 64+8+35+8+64 = 179 px) -->
-                            <button class="autoZoomBtn" onclick="zoomBarTik()" title="Auto zoom — tik: CREW uit" style="display: none; width: 179px; height: 64px; padding: 0 8px; border-radius: 6px; background: rgba(76,175,80,0.45); color: #000; border: 3px solid #000; box-shadow: 0 0 0 2px rgba(255,255,255,0.4); cursor: pointer; font-weight: bold; font-size: 1.2em; white-space: nowrap; align-items: center; justify-content: center;">Auto zoom</button>
+                            <button class="autoZoomBtn" onclick="zoomBarTik()" title="Auto zoom — tik: CREW wisselen" style="display: none; width: 179px; height: 64px; padding: 0 8px; border-radius: 6px; background: rgba(76,175,80,0.45); color: #000; border: 3px solid #000; box-shadow: 0 0 0 2px rgba(255,255,255,0.4); cursor: pointer; font-weight: bold; font-size: 1.2em; white-space: nowrap; align-items: center; justify-content: center;">Auto zoom</button>
                             <div class="aftelBalk zoomAftel"><div></div></div>   <!-- v64.4: de zoombalk slaapt na 4 s -->
                         </div>
 
@@ -1526,15 +1526,15 @@
             <p>De app draait om één <strong>Master</strong> en zijn <strong>Volgers</strong>:</p>
             <ul style="margin: 10px 0; padding-left: 20px;">
                 <li>De <strong>Master</strong> zet de route uit, rijdt voorop en deelt een 4-cijferige code. Hij ziet al zijn volgers als vliegtuigje op de kaart, elk met een eigen <strong>tag</strong> (naam), en linksboven wie er verbonden is.</li>
-                <li>Bij elke start opent de kaart <strong>uitgezoomd op Europa</strong> en maakt hij één vloeiende <strong>landingsvlucht</strong> naar <strong>jouw eigen locatie</strong> (als meekijker naar de Master; is je GPS er na een paar seconden nog niet, dan eerst naar de Master); daarna is de kaart van jou — elke rit begint met <strong>noorden boven, Center uit en CREW uit</strong> (behalve als volger: dan zoomt de kaart na de landing vloeiend uit en zie je eerst <strong>4 seconden iedereen in beeld</strong> — jij, de Master en de andere volgers, ook als ze 300 km verderop zitten, elke pijl net binnen beeld (±¼ cm van de rand; staand onder de statusbalk met klok en batterij), noord boven; bovenin loopt het balkje leeg — en daarna zoomt hij vloeiend terug naar jou en zet de app CREW op blauw: de kaart beweegt met je mee, op jou. Raak je de kaart in die 4 seconden aan, dan is hij van jou en gaat hij 4 seconden na je laatste beweging naar blauw); meedraaien en meebewegen gaan aan zodra je een route rijdt (groene play, of als volger de route van de Master) of met CREW op blauw of groen — zie <em>Meedraaien en meebewegen</em>.</li>
-                <li>De <strong>Volgers</strong> typen de code in en volgen de Master: ze zien zijn positie en zijn <strong>werkelijke spoor</strong> (de rode lijn) — exact welke weg hij rijdt, inclusief afwijkingen. Met de <strong>CREW</strong>-knop kunnen volgers ook elkaar zien (met hun lijnen).</li>
+                <li>Bij elke start opent de kaart <strong>uitgezoomd op Europa</strong> en maakt hij één vloeiende <strong>landingsvlucht</strong> naar <strong>jouw eigen locatie</strong> (als meekijker naar de Master; is je GPS er na een paar seconden nog niet, dan eerst naar de Master); daarna is de kaart van jou — elke rit begint met <strong>noorden boven, Center uit en CREW uit</strong>, en na de landing zet de app <strong>CREW op blauw</strong>: je ziet de groep en de kaart draait en beweegt met je mee, op jou (als Master meteen — staat Plan open, dan zodra je Plan sluit; als volger zoomt de kaart eerst vloeiend uit en zie je <strong>4 seconden iedereen in beeld</strong> — jij, de Master en de andere volgers, ook als ze 300 km verderop zitten, elke pijl net binnen beeld (±¼ cm van de rand; staand onder de statusbalk met klok en batterij), noord boven; bovenin loopt het balkje leeg — en daarna zoomt hij vloeiend terug naar jou. Raak je de kaart in die 4 seconden aan, dan is hij van jou en gaat hij 4 seconden na je laatste beweging naar blauw; de meekijker blijft VRIJ) — zie <em>Meedraaien en meebewegen</em>.</li>
+                <li>De <strong>Volgers</strong> typen de code in en volgen de Master: ze zien zijn positie en zijn <strong>werkelijke spoor</strong> (de rode lijn) — exact welke weg hij rijdt, inclusief afwijkingen. Via <strong>CREW</strong> (na de landing vanzelf aan) zien volgers ook elkaar, met hun lijnen.</li>
             </ul>
             <p style="background:#e3e7f5; padding:10px 14px; border-radius:8px;">Hieronder eerst het deel <strong>voor de Master</strong>, dan <strong>voor de Volger</strong>, en daarna <strong>Algemeen</strong> (geldt voor allebei). De Route Planner staat onderaan.</p>
             <h3 style="color: #00BCD4; margin-top: 25px;">Vrienden-modus (zonder master)</h3>
             <p>Geen route nodig, gewoon elkaar zien? Dat kan ook zónder master:</p>
             <ul style="margin: 10px 0; padding-left: 20px;">
                 <li>Spreek samen een 4-cijferige code af en typ 'm allemaal in het <strong>"Enter code"</strong>-veld.</li>
-                <li>Na de landing (op je eigen positie) staat <strong>CREW</strong> vanzelf op blauw — je ziet elkaar op de kaart, elk met eigen kleur, tag en lijn. CREW is een rij-stand: blauw (volgers zichtbaar) en groen (volgers-zoom) zetten het kompas automatisch mee aan en de kaart beweegt met je mee; CREW weer uit (kaal) zet het kompas ook weer uit — behalve als je route (play) het al aan had gezet.</li>
+                <li>Na de landing (op je eigen positie) staat <strong>CREW</strong> vanzelf op blauw — je ziet elkaar op de kaart, elk met eigen kleur, tag en lijn. CREW is een rij-stand: blauw (volgers zichtbaar) en groen (volgers-zoom) zetten het kompas automatisch mee aan en de kaart beweegt met je mee. Tikken wisselt tussen blauw en groen; uit gaat hij niet meer, zo zie je elkaar altijd.</li>
                 <li>Ready to go! In de auto, op de fiets, samen in de stad of verspreid over een festival.</li>
             </ul>
             <p>Wil je wél een route? Laat dan één iemand als <strong>master</strong> starten en deel zíjn code — de rest volgt.</p>
@@ -1563,13 +1563,12 @@
             </ul>
 
             <h3 style="color: #00BCD4; margin-top: 25px;">CREW-knop (jij centraal)</h3>
-            <p style="margin:4px 0 12px;">In het knoppen-menu — of tik op het getal in de zoombalk bovenaan (zie <em>Zoom</em>). Handig voor een kleine groep die dicht bij elkaar rijdt — jij blijft in het midden en je volgers dwarrelen om je heen. Tik om te wisselen:</p>
+            <p style="margin:4px 0 12px;">In het knoppen-menu — of tik op het getal in de zoombalk bovenaan (zie <em>Zoom</em>). Handig voor een kleine groep die dicht bij elkaar rijdt — jij blijft in het midden en je volgers dwarrelen om je heen. Na de landing staat hij vanzelf op blauw. Tik om te wisselen:</p>
             <ul style="margin: 10px 0; padding-left: 20px;">
-                <li><strong>1× (blauw)</strong> — jij blijft centraal, je volgers staan los om je heen. Je bepaalt de zoom zelf.</li>
-                <li><strong>2× (groen)</strong> — jij blijft centraal én de kaart zoomt automatisch zo dat álle volgers in beeld blijven, met een nette marge langs de rand.</li>
-                <li><strong>3× </strong> — uit; dan zie je alleen jezelf (de volgers verdwijnen van je kaart).</li>
+                <li><strong>Blauw</strong> — jij blijft centraal, je volgers staan los om je heen. Je bepaalt de zoom zelf.</li>
+                <li><strong>Groen</strong> — jij blijft centraal én de kaart zoomt automatisch zo dat álle volgers in beeld blijven, met een nette marge langs de rand. Nog een tik = weer blauw.</li>
             </ul>
-            <p style="font-size:0.85em; color:#555;">Zolang CREW aan staat, beweegt de kaart met je mee en is CREW de baas over de kaart — behalve tijdens Plan en de 4 seconden nadat je de kaart zelf schuift of knijpt: dan staat hij stil. Zet 'm uit voor de gewone weergave.</p>
+            <p style="font-size:0.85em; color:#555;">CREW gaat niet meer uit: je ziet je volgers altijd, de kaart beweegt met je mee en CREW is de baas over de kaart — behalve tijdens Plan en de 4 seconden nadat je de kaart zelf schuift of knijpt: dan staat hij stil.</p>
             <p style="background:#e3e7f5; padding:10px 14px; border-radius:8px;">Wil je een route maken of bewerken? Druk op <strong>Plan</strong> (linksboven), of tik in het rijscherm gewoon op de kaart. Daarmee open je de Route Planner — zie helemaal onderaan deze handleiding.</p>
 
             <!-- ═══════════ VOOR DE VOLGER ═══════════ -->
@@ -1601,17 +1600,16 @@
             <h3 style="color: #00BCD4; margin-top: 25px;">CREW-knop (iedereen zien)</h3>
             <p style="margin:4px 0 12px;">In het knoppen-menu — of tik op het getal in de zoombalk bovenaan (zie <em>Zoom</em>). Hiermee zie je óók de andere volgers (niet alleen de Master), elk met hun gereden lijn. Na de landing staat hij vanzelf op blauw. Tik om te wisselen:</p>
             <ul style="margin: 10px 0; padding-left: 20px;">
-                <li><strong>1× (blauw)</strong> — alle andere volgers verschijnen op de kaart, met hun lijnen. Je bepaalt de zoom zelf.</li>
-                <li><strong>2× (groen)</strong> — jij blijft centraal én de kaart zoomt automatisch zo dat iedereen in beeld blijft, met een nette marge langs de rand.</li>
-                <li><strong>3× </strong> — uit; de andere volgers en hun lijnen verdwijnen weer.</li>
+                <li><strong>Blauw</strong> — alle andere volgers staan op de kaart, met hun lijnen. Je bepaalt de zoom zelf.</li>
+                <li><strong>Groen</strong> — jij blijft centraal én de kaart zoomt automatisch zo dat iedereen in beeld blijft, met een nette marge langs de rand. Nog een tik = weer blauw.</li>
             </ul>
-            <p style="font-size:0.85em; color:#555;">Zo houd je zicht op de hele groep. Zet 'm uit voor een rustige kaart met alleen de Master.</p>
+            <p style="font-size:0.85em; color:#555;">Uit gaat hij niet meer: zo houd je altijd zicht op de hele groep. (Als meekijker wel: zie hieronder.)</p>
 
             <h3 style="color: #00BCD4; margin-top: 25px;">Spectator (meekijken vanaf huis)</h3>
             <p>Kijk je mee zonder mee te rijden (thuis, langs de route)? Vink dan op het startscherm <strong>Spectator</strong> aan vóórdat je de code intikt. Je deelt dan <strong>geen GPS</strong> — geen vliegtuigje op andermans kaart, dus je verstoort nooit iemands (crew-)zoom — en je eigen kaart start netjes op de master in plaats van extreem uit te zoomen naar jouw woonkamer. Als spectator zie je <strong>alle rijders</strong> op je kaart.</p>
             <ul style="margin: 10px 0; padding-left: 20px;">
                 <li><strong>Volg-knop</strong> (rond, links op het scherm): toont wie je volgt — <strong>M</strong> = master, anders de tag van een volger, <strong>VRIJ</strong> = niemand. Tik = je kaart volgt het <strong>volgende vliegtuigje</strong> (Master → volgers → VRIJ → Master …), met je eigen zoom, en draait mee met díe rijder. Zo kijk je van dichtbij met één rijder mee, zoals hij rijdt. Bij VRIJ (zo start je ook) staat noord boven, beweegt je kaart niet mee en kijk je zelf rond.</li>
-                <li><strong>CREW 2×</strong> werkt ook: dan past de kaart op de hele gróep (niet op jouw bank).</li>
+                <li><strong>CREW 2×</strong> werkt ook: dan past de kaart op de hele gróep (niet op jouw bank). Bij jou gaat CREW met een derde tik ook weer uit; dan bepaalt je volg-knop het weer.</li>
                 <li>Meepraten via <strong>mic of T</strong> kan gewoon — je tag staat bij je bericht, en je blijft als meekijker zichtbaar in de <strong>taglijst</strong> linksboven (alleen niet op de kaart).</li>
                 <li>Wisselen? <strong>STOP</strong> en join opnieuw, met of zonder vinkje.</li>
             </ul>
@@ -1627,12 +1625,10 @@
                 <strong>Meedraaien en meebewegen (kompas en Center)</strong>
                 <p style="margin:4px 0 0;">Hier zijn geen knoppen meer voor. Zodra je gaat rijden draait de kaart mee met je rijrichting (je vliegtuig wijst omhoog) en beweegt hij met je mee:</p>
                 <ul style="margin: 6px 0; padding-left: 20px;">
-                    <li><strong>Master:</strong> de groene <strong>play</strong> zet het aan.</li>
-                    <li><strong>Volger:</strong> gaat vanzelf aan na de landing (CREW staat dan op blauw). Rijdt de master een route, dan blijft het aan, ook als je CREW uitzet.</li>
-                    <li><strong>Zonder route:</strong> zet <strong>CREW</strong> aan (blauw of groen); CREW weer uit = noord boven en een vrije kaart.</li>
+                    <li><strong>Master en volger:</strong> gaat vanzelf aan na de landing (CREW staat dan op blauw) en blijft aan, met of zonder route — CREW gaat niet meer uit. De groene <strong>play</strong> zet het ook aan.</li>
                     <li><strong>Meekijker:</strong> je volgknop — volg je iemand, dan draait de kaart met díe rijder mee; VRIJ = noord boven en vrij.</li>
                 </ul>
-                <p style="margin:4px 0 0;">Schuif of knijp je de kaart terwijl hij meebeweegt, dan draait hij even naar noord boven en staat hij stil; <strong>4 seconden</strong> na je laatste beweging draait hij terug en beweegt hij weer met je mee, op je eigen zoom (of Auto zoom). Bovenin, op de plek van de zoombalk, loopt in die 4 seconden een balkje leeg; raak je de kaart aan, dan is hij weer vol. Gewoon tikken telt niet. Tijdens Plan staat de kaart stil en noord boven; sluit je Plan, dan gaat het verder zoals het stond. Elke rit begint noord boven en vrij; als volger zie je na de landing eerst 4 seconden iedereen in beeld (met dit balkje) en gaat CREW daarna op blauw.</p>
+                <p style="margin:4px 0 0;">Schuif of knijp je de kaart terwijl hij meebeweegt, dan draait hij even naar noord boven en staat hij stil; <strong>4 seconden</strong> na je laatste beweging draait hij terug en beweegt hij weer met je mee, op je eigen zoom (of Auto zoom). Bovenin, op de plek van de zoombalk, loopt in die 4 seconden een balkje leeg; raak je de kaart aan, dan is hij weer vol. Gewoon tikken telt niet. Tijdens Plan staat de kaart stil en noord boven; sluit je Plan, dan gaat het verder zoals het stond. Elke rit begint noord boven en vrij; na de landing gaat CREW op blauw (als volger zie je eerst 4 seconden iedereen in beeld, met dit balkje).</p>
                 <p style="margin:4px 0 0;"><strong>Richting:</strong> rijd je (vanaf ongeveer 5 km/u), dan volgen je pijl en de kaart de rijrichting van de GPS; sta je stil, dan het kompas van je telefoon (waar je hem op richt). Anderen zien dezelfde richting van jou.</p>
             </div>
 
@@ -1650,9 +1646,9 @@
                     <span style="font-weight:bold; font-size:1.3em;">15</span>
                     <div style="width:64px; height:64px; border-radius:6px; background:rgba(33,150,243,0.45); border:3px solid #000; display:flex; align-items:center; justify-content:center; font-size:2em; font-weight:bold; color:#000;">+</div>
                 </div>
-                <p style="margin:0 0 8px;"><strong>1×</strong>: − en + krijgen een blauwe achtergrond en CREW in het menu wordt blauw: je ziet de rest van de groep.</p>
+                <p style="margin:0 0 8px;"><strong>Blauw</strong> (zo staat hij na de landing): − en + hebben een blauwe achtergrond en CREW in het menu is blauw: je ziet de rest van de groep.</p>
                 <div style="width:179px; height:64px; border-radius:6px; background:rgba(76,175,80,0.45); border:3px solid #000; display:flex; align-items:center; justify-content:center; font-size:1.2em; font-weight:bold; color:#000; margin-bottom:4px;">Auto zoom</div>
-                <p style="margin:0;"><strong>2×</strong>: i.p.v. − getal + staat er <strong>Auto zoom</strong> (groen) en CREW wordt groen: de kaart zoomt zelf, vloeiend (zoals knijpen), zo dat iedereen in beeld blijft — elke pijl net binnen beeld (±¼ cm van de rand van je scherm; staand onder de statusbalk met klok en batterij), ook als de kaart meedraait. Uitzoomen begint meteen; weer inzoomen pas als het 3 seconden ruimer kan — zo gaat hij niet heen en weer. <strong>Tik op Auto zoom</strong> = CREW uit, − getal + komen terug.</p>
+                <p style="margin:0;"><strong>Groen</strong> (tik op het getal): i.p.v. − getal + staat er <strong>Auto zoom</strong> (groen) en CREW wordt groen: de kaart zoomt zelf, vloeiend (zoals knijpen), zo dat iedereen in beeld blijft — elke pijl net binnen beeld (±¼ cm van de rand van je scherm; staand onder de statusbalk met klok en batterij), ook als de kaart meedraait. Uitzoomen begint meteen; weer inzoomen pas als het 3 seconden ruimer kan — zo gaat hij niet heen en weer. <strong>Tik op Auto zoom</strong> = terug naar blauw, − getal + komen terug. Uit gaat CREW niet meer (alleen bij de meekijker).</p>
                 <p style="margin:8px 0 0;"><strong>Na 4 seconden uit beeld</strong> (alle standen: − getal +, blauw en Auto zoom): onder de balk loopt een balkje leeg, daarna zijn de knoppen onzichtbaar en zie je op die plek alleen nog een heel licht vlak — zo houd je meer kaart over. <strong>Tik op het vlak</strong> = de knoppen komen terug (die tik doet verder niets); dan werken ze weer en beginnen de 4 seconden opnieuw.</p>
 
                 <div style="display:flex; gap:8px; align-items:center; margin:16px 0 6px;">
@@ -1794,7 +1790,7 @@
 
             <h3 style="color: #00BCD4; margin-top: 25px;">Een route maken</h3>
             <ul style="margin: 10px 0; padding-left: 20px;">
-                <li><strong>Zoeken:</strong> typ een adres of plaats en tik op een resultaat. De kaart springt erheen, prikt er een speld op en het menu <strong>Punt toevoegen als</strong> komt op: kies Start, Tussen (slim), Achteraan, Finish of Vermijden. Tijdens het typen zoekt hij met Photon (namen, straten, cafés). Druk op <strong>Zoek</strong> (↵ op het toetsenbord), op het vergrootglas of op de regel "🔍 Ook adressen en plaatsen zoeken" om ook Nominatim te vragen: dan staat het centrum van een plaats (het plaatsbordje) bovenaan en vind je adressen die Photon mist. Nominatim staat zoeken-tijdens-typen niet toe — zo blijft het veilig (geen blokkade).</li>
+                <li><strong>Zoeken:</strong> typ een adres of plaats en tik op een resultaat. De kaart springt erheen, prikt er een speld op en het menu <strong>Punt toevoegen als</strong> komt op: kies Start, Tussen (slim), Achteraan, Finish of Vermijden. Tijdens het typen zoekt hij met Photon (namen, straten, cafés). Druk op <strong>Zoek</strong> (↵ op het toetsenbord), op het vergrootglas of op de regel "🔍 Ook adressen en plaatsen zoeken" om ook Nominatim te vragen: dan staat het centrum van een plaats (het plaatsbordje) bovenaan en vind je adressen die Photon mist. Nominatim staat zoeken-tijdens-typen niet toe — zo blijft het veilig (geen blokkade). Vindt Photon tijdens het typen niets, dan staat er alleen die regel; "Niets gevonden" zie je pas als ook het echte zoeken niets vond.</li>
                 <li><strong>Laatst gezocht:</strong> tik in het lege zoekveld en je ziet je laatste 15 gekozen adressen, nieuwste bovenaan. Tik er een aan en de speld en het menu komen meteen — zonder opnieuw te zoeken, dus ook zonder bereik. Begin je te typen, dan zoekt hij gewoon. Tik naast de lijst om hem te sluiten; <strong>Wis lijst</strong> (twee tikken: Zeker?) maakt hem leeg.</li>
                 <li><strong>📍-knop:</strong> springt naar je eigen locatie en opent hetzelfde menu (meestal kies je dan Start).</li>
                 <li><strong>Op de kaart tikken:</strong> opent een menu — kies Start, Tussen (slim ingevoegd), Achteraan, Finish of Vermijden. Kies je niets, dan gaat het na 4 tellen vanzelf dicht (het balkje onder de kop loopt af; aanraken = weer vol, typen in het km-veld houdt het open). Na zoeken of 📍 blijft het staan tot je kiest.</li>
@@ -1850,7 +1846,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v64.4 © Umop3p1sdn
+                HO-ME v64.5 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1869,15 +1865,15 @@
             <p>The app revolves around one <strong>Master</strong> and their <strong>Followers</strong>:</p>
             <ul style="margin: 10px 0; padding-left: 20px;">
                 <li>The <strong>Master</strong> sets out the route, rides up front and shares a 4-digit code. They see all followers as a small plane on the map, each with its own <strong>tag</strong> (name), and who's connected in the top left.</li>
-                <li>At every start the map opens <strong>zoomed out on Europe</strong> and makes one smooth <strong>landing flight</strong> to <strong>your own location</strong> (as a spectator to the Master; if your GPS isn't there after a few seconds, to the Master first); after that the map is yours — every ride starts with <strong>north up, Center off and CREW off</strong> (except as a follower: then after the landing the map smoothly zooms out and you first see <strong>everyone in view for 4 seconds</strong> — you, the Master and the other followers, even 300 km away, every arrow just inside the screen (±¼ cm from the edge; upright below the status bar with clock and battery), north up; the little bar at the top runs empty — and then it smoothly zooms back to you and the app sets CREW to blue: the map moves along with you, on you. Touch the map during those 4 seconds and it is yours; it goes to blue 4 seconds after your last movement); turning and moving along switch on as soon as you ride a route (green play, or as a follower the Master's route) or with CREW on blue or green — see <em>Turning and moving along</em>.</li>
-                <li>The <strong>Followers</strong> type in the code and follow the Master: they see the Master's position and <strong>actual track</strong> (the red line) — exactly which road is ridden, including detours. With the <strong>CREW</strong> button followers can also see each other (with their lines).</li>
+                <li>At every start the map opens <strong>zoomed out on Europe</strong> and makes one smooth <strong>landing flight</strong> to <strong>your own location</strong> (as a spectator to the Master; if your GPS isn't there after a few seconds, to the Master first); after that the map is yours — every ride starts with <strong>north up, Center off and CREW off</strong>, and after the landing the app sets <strong>CREW to blue</strong>: you see the group and the map turns and moves along with you, on you (as the Master right away — if Plan is open, as soon as you close Plan; as a follower the map first smoothly zooms out and you see <strong>everyone in view for 4 seconds</strong> — you, the Master and the other followers, even 300 km away, every arrow just inside the screen (±¼ cm from the edge; upright below the status bar with clock and battery), north up; the little bar at the top runs empty — and then it smoothly zooms back to you. Touch the map during those 4 seconds and it is yours; it goes to blue 4 seconds after your last movement; the spectator stays free) — see <em>Turning and moving along</em>.</li>
+                <li>The <strong>Followers</strong> type in the code and follow the Master: they see the Master's position and <strong>actual track</strong> (the red line) — exactly which road is ridden, including detours. Through <strong>CREW</strong> (on by itself after the landing) followers also see each other, with their lines.</li>
             </ul>
             <p style="background:#e3e7f5; padding:10px 14px; border-radius:8px;">Below: first the part <strong>for the Master</strong>, then <strong>for the Follower</strong>, then <strong>General</strong> (applies to both). The Route Planner is at the bottom.</p>
             <h3 style="color: #00BCD4; margin-top: 25px;">Friends mode (no master)</h3>
             <p>No route needed, just seeing each other? That works without a master too:</p>
             <ul style="margin: 10px 0; padding-left: 20px;">
                 <li>Agree on a 4-digit code together and all type it in the <strong>"Enter code"</strong> field.</li>
-                <li>After the landing (on your own position) <strong>CREW</strong> is on blue by itself — you see each other on the map, each with their own colour, tag and line. CREW is a riding mode: blue (followers visible) and green (followers zoom) automatically switch the compass on too and the map moves along with you; CREW off (plain) switches the compass back off — unless your route (play) had already switched it on.</li>
+                <li>After the landing (on your own position) <strong>CREW</strong> is on blue by itself — you see each other on the map, each with their own colour, tag and line. CREW is a riding mode: blue (followers visible) and green (followers zoom) automatically switch the compass on too and the map moves along with you. Tapping switches between blue and green; it no longer goes off, so you always see each other.</li>
                 <li>Ready to go! In the car, on the bike, together in town or spread out across a festival.</li>
             </ul>
             <p>Do you want a route after all? Then have one person start as <strong>master</strong> and share their code — the rest follow.</p>
@@ -1906,13 +1902,12 @@
             </ul>
 
             <h3 style="color: #00BCD4; margin-top: 25px;">CREW button (you in the centre)</h3>
-            <p style="margin:4px 0 12px;">In the button menu — or tap the number in the zoom bar at the top (see <em>Zoom</em>). Handy for a small group riding close together — you stay in the middle and your followers move around you. Tap to cycle:</p>
+            <p style="margin:4px 0 12px;">In the button menu — or tap the number in the zoom bar at the top (see <em>Zoom</em>). Handy for a small group riding close together — you stay in the middle and your followers move around you. After the landing it is on blue by itself. Tap to switch:</p>
             <ul style="margin: 10px 0; padding-left: 20px;">
-                <li><strong>1× (blue)</strong> — you stay in the centre, your followers appear around you. You control the zoom yourself.</li>
-                <li><strong>2× (green)</strong> — you stay in the centre and the map zooms automatically so that <em>all</em> followers stay in view, with a neat margin along the edge.</li>
-                <li><strong>3× </strong> — off; then you only see yourself (the followers disappear from your map).</li>
+                <li><strong>Blue</strong> — you stay in the centre, your followers appear around you. You control the zoom yourself.</li>
+                <li><strong>Green</strong> — you stay in the centre and the map zooms automatically so that <em>all</em> followers stay in view, with a neat margin along the edge. Tap again = blue again.</li>
             </ul>
-            <p style="font-size:0.85em; color:#555;">As long as CREW is on, the map moves along with you and CREW is in charge of the map — except while Plan is open and for 4 seconds after you drag or pinch the map yourself: then it stays still. Turn it off for the normal view.</p>
+            <p style="font-size:0.85em; color:#555;">CREW no longer goes off: you always see your followers, the map moves along with you and CREW is in charge of the map — except while Plan is open and for 4 seconds after you drag or pinch the map yourself: then it stays still.</p>
             <p style="background:#e3e7f5; padding:10px 14px; border-radius:8px;">Want to make or edit a route? Tap <strong>Plan</strong> (top left), or simply tap the map in the riding screen. This opens the Route Planner — see the very bottom of this manual.</p>
 
             <!-- ═══════════ FOR THE FOLLOWER ═══════════ -->
@@ -1942,19 +1937,18 @@
             </div>
 
             <h3 style="color: #00BCD4; margin-top: 25px;">CREW button (seeing everyone)</h3>
-            <p style="margin:4px 0 12px;">In the button menu — or tap the number in the zoom bar at the top (see <em>Zoom</em>). With this you also see the other followers (not just the Master), each with their ridden line. After the landing it is on blue by itself. Tap to cycle:</p>
+            <p style="margin:4px 0 12px;">In the button menu — or tap the number in the zoom bar at the top (see <em>Zoom</em>). With this you also see the other followers (not just the Master), each with their ridden line. After the landing it is on blue by itself. Tap to switch:</p>
             <ul style="margin: 10px 0; padding-left: 20px;">
-                <li><strong>1× (blue)</strong> — all other followers appear on the map, with their lines. You control the zoom yourself.</li>
-                <li><strong>2× (green)</strong> — you stay in the centre and the map zooms automatically so that everyone stays in view, with a neat margin along the edge.</li>
-                <li><strong>3× </strong> — off; the other followers and their lines disappear again.</li>
+                <li><strong>Blue</strong> — all other followers are on the map, with their lines. You control the zoom yourself.</li>
+                <li><strong>Green</strong> — you stay in the centre and the map zooms automatically so that everyone stays in view, with a neat margin along the edge. Tap again = blue again.</li>
             </ul>
-            <p style="font-size:0.85em; color:#555;">This way you keep an eye on the whole group. Turn it off for a calm map with just the Master.</p>
+            <p style="font-size:0.85em; color:#555;">It no longer goes off: this way you always keep an eye on the whole group. (As a spectator it does: see below.)</p>
 
             <h3 style="color: #00BCD4; margin-top: 25px;">Spectator (watching from home)</h3>
             <p>Watching without riding along (at home, along the route)? Then tick <strong>Spectator</strong> on the start screen before typing the code. You share <strong>no GPS</strong> — no plane on anyone's map, so you can never disturb anyone's (crew) zoom — and your own map starts neatly on the master instead of zooming out to your living room. As a spectator you see <strong>all riders</strong> on your map.</p>
             <ul style="margin: 10px 0; padding-left: 20px;">
                 <li><strong>Follow button</strong> (round, left on the screen): shows who you're following — <strong>M</strong> = master, otherwise a follower's tag, <strong>VRIJ</strong> (free) = nobody. Tap = your map follows the <strong>next plane</strong> (Master → followers → VRIJ → Master …), with your own zoom, and turns with that rider. Ride along up close with one rider, the way he rides. On VRIJ (that's also how you start) north is up, your map doesn't move along and you look around yourself.</li>
-                <li><strong>CREW 2×</strong> works too: the map then fits the whole group (not your couch).</li>
+                <li><strong>CREW 2×</strong> works too: the map then fits the whole group (not your couch). For you a third tap switches CREW off again; then your follow button decides again.</li>
                 <li>Joining the chat via <strong>mic or T</strong> works as normal — your tag shows with your message, and as a watcher you stay visible in the <strong>tag list</strong> top left (just not on the map).</li>
                 <li>Switching? <strong>STOP</strong> and join again, with or without the tick.</li>
             </ul>
@@ -1970,12 +1964,10 @@
                 <strong>Turning and moving along (compass and Center)</strong>
                 <p style="margin:4px 0 0;">There are no buttons for this any more. As soon as you start riding, the map turns with your riding direction (your plane points up) and moves along with you:</p>
                 <ul style="margin: 6px 0; padding-left: 20px;">
-                    <li><strong>Master:</strong> the green <strong>play</strong> switches it on.</li>
-                    <li><strong>Follower:</strong> switches on by itself after the landing (CREW is then on blue). If the master rides a route, it stays on, even when you switch CREW off.</li>
-                    <li><strong>Without a route:</strong> switch <strong>CREW</strong> on (blue or green); CREW off again = north up and a free map.</li>
+                    <li><strong>Master and follower:</strong> switches on by itself after the landing (CREW is then on blue) and stays on, with or without a route — CREW no longer goes off. The green <strong>play</strong> switches it on too.</li>
                     <li><strong>Spectator:</strong> your follow button — follow someone and the map turns with that rider; VRIJ (free) = north up and free.</li>
                 </ul>
-                <p style="margin:4px 0 0;">Drag or pinch the map while it moves along and it briefly turns north-up and stands still; <strong>4 seconds</strong> after your last movement it turns back and moves along with you again, at your own zoom (or Auto zoom). At the top, where the zoom bar sits, a small bar runs empty during those 4 seconds; touch the map and it's full again. A plain tap doesn't count. While Plan is open the map stands still, north up; close Plan and it carries on as it was. Every ride starts north up and free; as a follower you first see everyone in view for 4 seconds after the landing (with this bar), then CREW goes to blue.</p>
+                <p style="margin:4px 0 0;">Drag or pinch the map while it moves along and it briefly turns north-up and stands still; <strong>4 seconds</strong> after your last movement it turns back and moves along with you again, at your own zoom (or Auto zoom). At the top, where the zoom bar sits, a small bar runs empty during those 4 seconds; touch the map and it's full again. A plain tap doesn't count. While Plan is open the map stands still, north up; close Plan and it carries on as it was. Every ride starts north up and free; after the landing CREW goes to blue (as a follower you first see everyone in view for 4 seconds, with this bar).</p>
                 <p style="margin:4px 0 0;"><strong>Direction:</strong> when you're riding (from about 5 km/h), your arrow and the map follow the GPS direction of travel; standing still, they follow your phone's compass (where you point it). Others see the same direction for you.</p>
             </div>
 
@@ -1993,9 +1985,9 @@
                     <span style="font-weight:bold; font-size:1.3em;">15</span>
                     <div style="width:64px; height:64px; border-radius:6px; background:rgba(33,150,243,0.45); border:3px solid #000; display:flex; align-items:center; justify-content:center; font-size:2em; font-weight:bold; color:#000;">+</div>
                 </div>
-                <p style="margin:0 0 8px;"><strong>1×</strong>: − and + get a blue background and CREW in the menu turns blue: you see the rest of the group.</p>
+                <p style="margin:0 0 8px;"><strong>Blue</strong> (as it is after the landing): − and + have a blue background and CREW in the menu is blue: you see the rest of the group.</p>
                 <div style="width:179px; height:64px; border-radius:6px; background:rgba(76,175,80,0.45); border:3px solid #000; display:flex; align-items:center; justify-content:center; font-size:1.2em; font-weight:bold; color:#000; margin-bottom:4px;">Auto zoom</div>
-                <p style="margin:0;"><strong>2×</strong>: instead of − number + it says <strong>Auto zoom</strong> (green) and CREW turns green: the map zooms by itself, smoothly (like pinching), so everyone stays in view — every arrow just inside the screen (±¼ cm from the edge of your screen; upright below the status bar with clock and battery), also when the map turns along. Zooming out starts at once; zooming back in only once there has been room for 3 seconds — so it doesn't go back and forth. <strong>Tap Auto zoom</strong> = CREW off, − number + come back.</p>
+                <p style="margin:0;"><strong>Green</strong> (tap the number): instead of − number + it says <strong>Auto zoom</strong> (green) and CREW turns green: the map zooms by itself, smoothly (like pinching), so everyone stays in view — every arrow just inside the screen (±¼ cm from the edge of your screen; upright below the status bar with clock and battery), also when the map turns along. Zooming out starts at once; zooming back in only once there has been room for 3 seconds — so it doesn't go back and forth. <strong>Tap Auto zoom</strong> = back to blue, − number + come back. CREW no longer goes off (only for the spectator).</p>
                 <p style="margin:8px 0 0;"><strong>Out of sight after 4 seconds</strong> (every state: − number +, blue and Auto zoom): a small bar runs down below the zoom bar, then the buttons fade out and only a very faint area stays in that spot — so you keep more map. <strong>Tap the area</strong> = the buttons come back (that tap does nothing else); then they work again and the 4 seconds start over.</p>
 
                 <div style="display:flex; gap:8px; align-items:center; margin:16px 0 6px;">
@@ -2137,7 +2129,7 @@
 
             <h3 style="color: #00BCD4; margin-top: 25px;">Making a route</h3>
             <ul style="margin: 10px 0; padding-left: 20px;">
-                <li><strong>Search:</strong> type an address or place and tap a result. The map jumps there, drops a pin and the <strong>Punt toevoegen als</strong> menu (add point as) pops up: choose Start, Tussen (via, smart), Achteraan (at the end), Finish or Vermijden (avoid). While you type it searches with Photon (names, streets, cafés). Press <strong>Search</strong> (↵ on the keyboard), the magnifier or the line "🔍 Ook adressen en plaatsen zoeken" to also ask Nominatim: then the centre of a place (the town sign) is at the top and you find addresses Photon misses. Nominatim does not allow search-as-you-type — this keeps it safe (no block).</li>
+                <li><strong>Search:</strong> type an address or place and tap a result. The map jumps there, drops a pin and the <strong>Punt toevoegen als</strong> menu (add point as) pops up: choose Start, Tussen (via, smart), Achteraan (at the end), Finish or Vermijden (avoid). While you type it searches with Photon (names, streets, cafés). Press <strong>Search</strong> (↵ on the keyboard), the magnifier or the line "🔍 Ook adressen en plaatsen zoeken" to also ask Nominatim: then the centre of a place (the town sign) is at the top and you find addresses Photon misses. Nominatim does not allow search-as-you-type — this keeps it safe (no block). If Photon finds nothing while you type, only that line shows; "Niets gevonden" (nothing found) only appears when the real search found nothing too.</li>
                 <li><strong>Laatst gezocht</strong> (recent searches): tap the empty search field and you see your last 15 chosen addresses, newest at the top. Tap one and the pin and the menu appear right away — without searching again, so also without signal. Start typing and it simply searches. Tap beside the list to close it; <strong>Wis lijst</strong> (clear list, two taps: Zeker?) empties it.</li>
                 <li><strong>📍 button:</strong> jumps to your own location and opens the same menu (usually you pick Start).</li>
                 <li><strong>Tapping the map:</strong> opens a menu — choose Start, Via (smartly inserted), At the end, Finish or Avoid. Choose nothing and it closes by itself after 4 seconds (the bar under the title runs down; touching it fills it again, typing in the km field keeps it open). After a search or 📍 it stays until you choose.</li>
@@ -2193,7 +2185,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v64.4 © Umop3p1sdn
+                HO-ME v64.5 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -3247,8 +3239,12 @@ assign initialcost =
 
             // als Photon niks gaf maar we wél een plaats-centrum hebben → toon dat
             if (placeHit) { showResults([placeHit], q); return; }
-            // tijdens het typen: Nominatim niet vanzelf — de regel "Ook adressen en plaatsen zoeken" doet het als jij wilt
-            if (!metNominatim) { showNoResults(q, true); return; }
+            // tijdens het typen: Nominatim niet vanzelf — de regel "Ook adressen en plaatsen zoeken" doet het als jij wilt.
+            // v64.5 (melding Sjoerd: "als ik iets typ staat er 'niets gevonden voor xxx', alsof hij niets kan vinden — je moet
+            // zelf nog bevestigen met het vergrootglas, maar die tekst maakt het verwarrend"): tijdens het typen is er nog niet
+            // écht gezocht, dus géén "Niets gevonden" (en nog geen Google Maps-hulp) — alleen de regel om het echt te zoeken.
+            // "Niets gevonden" komt pas als ook het echte zoeken (↵ / vergrootglas / die regel) niets vond.
+            if (!metNominatim) { showZoekRij(q); return; }
 
             // 2) NOMINATIM als vangnet (sterk in adressen/plaatsnamen).
             try {
@@ -3298,6 +3294,11 @@ assign initialcost =
             d.textContent = '🔍 Ook adressen en plaatsen zoeken (Zoek ↵)';
             d.onclick = () => zoekNu(q);
             return d;
+        }
+        function showZoekRij(q) {      // v64.5: tijdens het typen niets gevonden → alleen de regel om echt te zoeken
+            resultsEl.innerHTML = '';
+            resultsEl.appendChild(zoekMeerRij(q));
+            resultsEl.style.display = 'block';
         }
         function showNoResults(q, meer) {
             const gmUrl = 'https://www.google.com/maps/search/' + encodeURIComponent(q);
@@ -6650,7 +6651,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "64.4";
+        const APP_VERSION = "64.5";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
@@ -11081,7 +11082,6 @@ assign initialcost =
                 }
                 if (!devTimer) devTimer = setInterval(devTick, 1000);
                 showInfo('Test-modus AAN — tik op de kaart om een volger te plaatsen');
-                devStartCrew(true);   // v64.3: CREW blauw, anders zie je je test-volgers niet
             } else {
                 if (devTimer) { clearInterval(devTimer); devTimer = null; }
                 devAwaitDest = null;
@@ -11092,14 +11092,14 @@ assign initialcost =
             }
         }
 
-        // v64.3 (wens Sjoerd: "bij develop aan, graag crew standaard op blauw — dan kun je hem zelf altijd nog op groen zetten;
-        // anders zie je jouw volger niet"): volgers (ook test-volgers) zijn op de master alleen te zien met CREW aan of Toon niet
-        // op IK (applyFollowerVisibility). Develop aanzetten tijdens de rit: meteen blauw. Rit starten met Develop aan: de master
-        // start kaal (v59.5), maar ná de landingsvlucht één keer blauw (zoals de volger, startCrewKlaar). Staat CREW al aan
-        // (blauw of groen), dan blijft hij zo; Develop uit laat CREW staan.
-        function devStartCrew(nu) {
-            if (!devMode || currentMode !== 'master' || !landingDone || landingInProgress) return;   // eerst de landing
-            if (!nu && startCrewKlaar) return;                                                      // per rit één keer
+        // v64.5 (keuze Sjoerd: "altijd blauw of groen — dan zie je ze altijd; scheelt een knop-keuze, ook voor de test-volger"):
+        // ook de MASTER staat na de landingsvlucht op CREW blauw, net als de volger (v63.76) — één keer per rit (startCrewKlaar).
+        // Vervangt de Develop-regel van v64.3 (CREW blauw bij Develop aan): je volgers en test-volgers zie je nu altijd.
+        // Wacht tot Plan dicht is (Plan houdt de kaart stil; CREW zou het kompas aanzetten) en er geen vinger op de kaart ligt
+        // (anders draait de kaart onder je vinger weg).
+        function crewNaLanding() {
+            if (currentMode !== 'master' || startCrewKlaar || !landingDone || landingInProgress) return;   // eerst de landing
+            if (planDwang || plannerIsOpen() || handPauze || handGebaar) return;                          // Plan / vinger: straks
             startCrewKlaar = true;
             if (crewMode === 0 && typeof toggleCrew === 'function') toggleCrew();
         }
@@ -11400,7 +11400,7 @@ assign initialcost =
                 });
                 return;
             }
-            if (currentMode === 'master') devStartCrew(false);   // v64.3: rit gestart met Develop aan → na de landing CREW blauw
+            if (currentMode === 'master') crewNaLanding();   // v64.5: na de landing CREW blauw (master, zoals de volger)
             const followers = await fetchFollowers(code);
             // v63.75 (GEMETEN bij de link-test): ging CREW uit terwijl dit ophalen nog liep, dan tekende deze
             // late ronde de andere volgers opnieuw — en omdat de 500 ms-lus al gestopt was, bleven ze staan.
@@ -11530,7 +11530,12 @@ assign initialcost =
         let everyoneMode = 0;
         function toggleSeeEveryone() {
             if (typeof handPauzeKlaar === 'function') handPauzeKlaar();   // v63.70: CREW kiezen = handpauze voorbij (eerst terug, dan klopt de bewapening)
-            everyoneMode = (everyoneMode + 1) % 3;
+            const prevMode = everyoneMode;
+            // v64.5 (keuze Sjoerd: "altijd blauw of groen"): de rijdende volger wisselt blauw ↔ groen, nooit meer uit (kaal alleen
+            // tot de landing). De MEEKIJKER houdt uit/blauw/groen: bij hem is CREW "de kaart volgt de groep" en uit = VRIJ
+            // rondkijken — hij ziet iedereen toch al altijd.
+            if (spectatorMode) everyoneMode = (everyoneMode + 1) % 3;
+            else everyoneMode = (everyoneMode === 1) ? 2 : 1;
             showEveryone = (everyoneMode > 0);
             const btn = document.getElementById('seeEveryoneBtn');
             if (btn) {
@@ -11543,7 +11548,7 @@ assign initialcost =
             // Noord en Center mee aan; kaal zet weer uit wat deze knop zelf aanzette. Zelfde
             // bewapen-vlaggen als de master-kant — één rol per toestel per rit, dus veilig te
             // delen, en de start-reset ontwapent ze al als no-op.
-            if (everyoneMode === 1) {           // 0 → 1: bewapenen
+            if (prevMode === 0 && everyoneMode === 1) {   // 0 → 1: bewapenen (v64.5: groen → blauw bewapent niet opnieuw)
                 crewArmedCenter = false;
                 if (!mapRotationEnabled) {
                     crewArmedRot = true;
@@ -11588,16 +11593,18 @@ assign initialcost =
         }
 
         // ── CREW (master): jij centraal, volgers eromheen. Dominant over de IK/VOLGERS/BEIDE toggle. ──
-        // 0=uit, 1=jij centraal (volgers los eromheen), 2=jij centraal + auto-zoom op de crew.
+        // 0=kaal (v64.5: alleen nog tot de landing), 1=jij centraal (volgers los eromheen), 2=jij centraal + auto-zoom op de crew.
         let crewMode = 0;   // v57.8: rit-gebonden — bewust NIET in de config (keuze Sjoerd)
         // v59.8: onthoudt wat CREW zelf aanzette, zodat CREW-uit alleen dát weer uitzet
         // (stond Draai of Center al aan door jouw eigen druk, dan blijft die van jou).
         let crewArmedRot = false;
         let crewArmedCenter = false;
-        function toggleCrew() {
+        function toggleCrew(naar) {
             if (typeof handPauzeKlaar === 'function') handPauzeKlaar();   // v63.70: CREW kiezen = handpauze voorbij (eerst terug, dan klopt de bewapening)
             const prevMode = crewMode;
-            crewMode = (crewMode + 1) % 3;
+            // v64.5 (keuze Sjoerd: "altijd blauw of groen, dus je ziet ze altijd"): kaal (de start) → blauw, daarna blauw ↔ groen;
+            // nooit meer uit. Alleen de start-reset (startMaster/startFollowing) zet hem met toggleCrew(0) terug op kaal.
+            crewMode = (naar === 0) ? 0 : (crewMode === 1 ? 2 : 1);
             const btn = document.getElementById('crewBtn');
             if (btn) {
                 if (crewMode === 0) { btn.style.background = 'transparent'; btn.style.color = '#000'; btn.style.borderColor = '#000'; }
@@ -13568,7 +13575,7 @@ assign initialcost =
                         // v63.75/76/77 (keuze Sjoerd: "ja, crew blauw" + "ook met code handmatig — altijd ready to move!" +
                         // "alleen volgers, daar ook crew blauw"): elke volger ziet meteen de hele groep en de kaart beweegt
                         // mee: CREW blauw, één keer per rit, ná de landingsvlucht (die mag niets onderbreken) — ook zonder
-                        // master (dan landt hij op je eigen positie). Meekijker: gewoon VRIJ. Master: kale start.
+                        // master (dan landt hij op je eigen positie). Meekijker: gewoon VRIJ. Master: sinds v64.5 ook (crewNaLanding).
                         if (!startCrewKlaar && !spectatorMode && landingDone && !landingInProgress) {
                             startCrewKlaar = true;
                             if (everyoneMode === 0 && typeof toggleSeeEveryone === 'function') {
@@ -14120,10 +14127,9 @@ assign initialcost =
             [document.getElementById('followBtnMaster'), document.getElementById('followBtnFollower')].forEach(b => {
                 if (b) b.style.background = '#555';
             });
-            let _crewGuard = 0;
-            while (crewMode !== 0 && typeof toggleCrew === 'function' && _crewGuard++ < 3) toggleCrew();
+            if (crewMode !== 0 && typeof toggleCrew === 'function') toggleCrew(0);   // v64.5: de knop wisselt alleen nog blauw ↔ groen
             landingDone = false; landingInProgress = false;   // v58.5: landingsvlucht PER RIT, niet per app-lading
-            startCrewKlaar = false;                            // v64.3: met Develop aan na de landing CREW blauw (devStartCrew), per rit
+            startCrewKlaar = false;                            // v64.5: na de landing CREW blauw (crewNaLanding), per rit
 
             document.getElementById('modeSelect').classList.add('hidden');
             if (typeof stopHomeUpdateChecks === 'function') stopHomeUpdateChecks();
@@ -14228,8 +14234,7 @@ assign initialcost =
             [document.getElementById('followBtnMaster'), document.getElementById('followBtnFollower')].forEach(b => {
                 if (b) b.style.background = '#555';
             });
-            let _crewGuard = 0;
-            while (crewMode !== 0 && typeof toggleCrew === 'function' && _crewGuard++ < 3) toggleCrew();
+            if (crewMode !== 0 && typeof toggleCrew === 'function') toggleCrew(0);   // v64.5: de knop wisselt alleen nog blauw ↔ groen
             landingDone = false; landingInProgress = false;   // v58.5: landingsvlucht PER RIT, niet per app-lading
             startCrewKlaar = false;                            // v63.76: CREW blauw na de landing, ook per rit
             volgStartTijd = Date.now(); volgGpsFout = false;   // v63.80: landing op je eigen locatie (8 s-vangnet)
