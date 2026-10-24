@@ -101,8 +101,12 @@
            niets); wakker doen de knoppen hun werk en begint de 4 s opnieuw. Het balkje hangt net onder de zoombalk. */
         #zoomBarMaster, #zoomBarFollower { transition: background-color 0.4s ease, box-shadow 0.4s ease; }
         #zoomBarMaster > *, #zoomBarFollower > * { transition: opacity 0.4s ease; }
+        /* v64.7 (melding Sjoerd: "op de normale kaart zie je de omlijning niet goed als het zoomvlak verdwijnt — graag de
+           rand iets meer wit en grijs, zodat hij op lichte én donkere kaart te zien is; het vlak binnen is leeg, dat is goed"):
+           randje = binnen een witte lijn (zie je op donker), buiten een grijze (zie je op licht). GEMETEN (rand107, nagebootste
+           OSM-tegel, Standaard en Donker): contrast rand ↔ kaart licht 8 → 83, donker 43 → 128 (0–255). Het vlak blijft leeg. */
         #zoomBarMaster.zoom-slaapt, #zoomBarFollower.zoom-slaapt { background: rgba(255,255,255,0.07) !important;
-            box-shadow: 0 0 0 1px rgba(255,255,255,0.22), 0 0 10px rgba(255,255,255,0.10); }
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.7), 0 0 0 1px rgba(60,60,60,0.5), 0 0 8px rgba(255,255,255,0.12); }
         .zoom-slaapt > * { opacity: 0 !important; pointer-events: none !important; }
         .zoomAftel { position: absolute; left: 16px; right: 16px; top: calc(100% + 4px); height: 10px; display: none; pointer-events: none; }
         /* kaart: op de plek van de zoombalk (die is tijdens de handpauze weg) — zelfde breedte, langs de bovenrand */
@@ -1295,7 +1299,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v64.6 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v64.7 © Umop3p1sdn</div>
 
             </div>
 
@@ -1652,7 +1656,7 @@
                 <p style="margin:0 0 8px;"><strong>Blauw</strong> (zo staat hij na de landing): − en + hebben een blauwe achtergrond en CREW in het menu is blauw: je ziet de rest van de groep.</p>
                 <div style="width:179px; height:64px; border-radius:6px; background:rgba(76,175,80,0.45); border:3px solid #000; display:flex; align-items:center; justify-content:center; font-size:1.2em; font-weight:bold; color:#000; margin-bottom:4px;">Auto zoom</div>
                 <p style="margin:0;"><strong>Groen</strong> (tik op het getal): i.p.v. − getal + staat er <strong>Auto zoom</strong> (groen) en CREW wordt groen: de kaart zoomt zelf, vloeiend (zoals knijpen), zo dat iedereen in beeld blijft — elke pijl net binnen beeld (±¼ cm van de rand van je scherm; staand onder de statusbalk met klok en batterij), ook als de kaart meedraait. Uitzoomen begint meteen; weer inzoomen pas als het 3 seconden ruimer kan — zo gaat hij niet heen en weer. <strong>Tik op Auto zoom</strong> = terug naar blauw, − getal + komen terug. Uit gaat CREW niet meer (alleen bij de meekijker).</p>
-                <p style="margin:8px 0 0;"><strong>Na 4 seconden uit beeld</strong> (alle standen: − getal +, blauw en Auto zoom): onder de balk loopt een balkje leeg, daarna zijn de knoppen onzichtbaar en zie je op die plek alleen nog een heel licht vlak — zo houd je meer kaart over. <strong>Tik op het vlak</strong> = de knoppen komen terug (die tik doet verder niets); dan werken ze weer en beginnen de 4 seconden opnieuw.</p>
+                <p style="margin:8px 0 0;"><strong>Na 4 seconden uit beeld</strong> (alle standen: − getal +, blauw en Auto zoom): onder de balk loopt een balkje leeg, daarna zijn de knoppen onzichtbaar en zie je op die plek alleen nog een heel licht vlak met een dun wit-grijs randje (te zien op lichte én donkere kaart) — zo houd je meer kaart over. <strong>Tik op het vlak</strong> = de knoppen komen terug (die tik doet verder niets); dan werken ze weer en beginnen de 4 seconden opnieuw.</p>
 
                 <div style="display:flex; gap:8px; align-items:center; margin:16px 0 6px;">
                     <div style="width:64px; height:64px; border-radius:6px; background:transparent; border:3px solid #000; display:flex; align-items:center; justify-content:center; font-size:2em; font-weight:bold; color:#000;">−</div>
@@ -1849,7 +1853,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v64.6 © Umop3p1sdn
+                HO-ME v64.7 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1991,7 +1995,7 @@
                 <p style="margin:0 0 8px;"><strong>Blue</strong> (as it is after the landing): − and + have a blue background and CREW in the menu is blue: you see the rest of the group.</p>
                 <div style="width:179px; height:64px; border-radius:6px; background:rgba(76,175,80,0.45); border:3px solid #000; display:flex; align-items:center; justify-content:center; font-size:1.2em; font-weight:bold; color:#000; margin-bottom:4px;">Auto zoom</div>
                 <p style="margin:0;"><strong>Green</strong> (tap the number): instead of − number + it says <strong>Auto zoom</strong> (green) and CREW turns green: the map zooms by itself, smoothly (like pinching), so everyone stays in view — every arrow just inside the screen (±¼ cm from the edge of your screen; upright below the status bar with clock and battery), also when the map turns along. Zooming out starts at once; zooming back in only once there has been room for 3 seconds — so it doesn't go back and forth. <strong>Tap Auto zoom</strong> = back to blue, − number + come back. CREW no longer goes off (only for the spectator).</p>
-                <p style="margin:8px 0 0;"><strong>Out of sight after 4 seconds</strong> (every state: − number +, blue and Auto zoom): a small bar runs down below the zoom bar, then the buttons fade out and only a very faint area stays in that spot — so you keep more map. <strong>Tap the area</strong> = the buttons come back (that tap does nothing else); then they work again and the 4 seconds start over.</p>
+                <p style="margin:8px 0 0;"><strong>Out of sight after 4 seconds</strong> (every state: − number +, blue and Auto zoom): a small bar runs down below the zoom bar, then the buttons fade out and only a very faint area with a thin white-grey edge stays in that spot (visible on light and dark maps) — so you keep more map. <strong>Tap the area</strong> = the buttons come back (that tap does nothing else); then they work again and the 4 seconds start over.</p>
 
                 <div style="display:flex; gap:8px; align-items:center; margin:16px 0 6px;">
                     <div style="width:64px; height:64px; border-radius:6px; background:transparent; border:3px solid #000; display:flex; align-items:center; justify-content:center; font-size:2em; font-weight:bold; color:#000;">−</div>
@@ -2188,7 +2192,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v64.6 © Umop3p1sdn
+                HO-ME v64.7 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -6654,7 +6658,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "64.6";
+        const APP_VERSION = "64.7";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
