@@ -1187,7 +1187,10 @@
     <div id="speedometer" style="display:none; position: fixed; bottom: 0; left: 0; right: 0; z-index: 1500; background: rgba(0,0,0,0.85); color: #fff; text-align: center; font-family: sans-serif; padding: 6px 0;"><span id="speedValue" style="font-size: 3em; font-weight: bold; line-height: 1;">0</span><span style="font-size: 1em; opacity: 0.7; margin-left: 4px;">km/u</span></div>
     <!-- Rond snelheidsbord (maximumsnelheid van de huidige weg) — links naast de km-teller -->
     <div id="speedLimitSign" style="display:none; position: fixed; bottom: 305px; right: 122px; z-index: 2050; width: 80px; height: 80px; border-radius: 50%; background: #fff; border: 8px solid #D32F2F; box-sizing: border-box; align-items: center; justify-content: center; font-family: sans-serif; box-shadow: 0 2px 8px rgba(0,0,0,0.5);"><span id="speedLimitValue" style="color: #111; font-weight: bold; font-size: 2.1em; line-height: 1;">–</span></div>
-    <div id="tagList" style="display:none; position: fixed; top: 105px; left: 22px; z-index: 1400; display: none; flex-direction: column; gap: 4px; font-family: sans-serif;"></div>
+    <!-- v64.6 (melding/keuze Sjoerd): staand zakt de namenlijst mee onder de statusbalk, net als de zoombalk — anders liep hij
+         op een iPhone de zoombalk in (gemeten: "Master" 11 px, namen van 6 letters tot over de −). Liggend: de regel in de CSS (95 px).
+         Meekijker: blijft op 105 (zie startFollowing) — anders schuift de lijst al vanaf de 3e naam over zijn volgknop. -->
+    <div id="tagList" style="display:none; position: fixed; top: calc(105px + env(safe-area-inset-top, 0px)); left: 22px; z-index: 1400; display: none; flex-direction: column; gap: 4px; font-family: sans-serif;"></div>
 
     <!-- B2R: terug-naar-route knop. Verschijnt (knipperend) zodra je van de route af bent; één druk =
          zelfde als "Ja" op de reroute-vraag (route van hier terug naar je route). Stijl = de vierkante
@@ -1292,7 +1295,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v64.5 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v64.6 © Umop3p1sdn</div>
 
             </div>
 
@@ -1846,7 +1849,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v64.5 © Umop3p1sdn
+                HO-ME v64.6 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2185,7 +2188,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v64.5 © Umop3p1sdn
+                HO-ME v64.6 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -6651,7 +6654,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "64.5";
+        const APP_VERSION = "64.6";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
@@ -14192,6 +14195,9 @@ assign initialcost =
             const chk = document.getElementById('spectatorJoinChk');
             spectatorMode = !!(chk && chk.checked);
             if (!spectatorMode) spectFollowTarget = null;
+            // v64.6: de meekijker houdt de namenlijst op 105 px: zijn volgknop (links, bottom 575) staat staand op een iPhone al
+            // vanaf 221 px — met de lijst onder de statusbalk (167) lag de 3e naam erover; op 105 pas de 5e (zoals altijd).
+            if (spectatorMode) { const tl = document.getElementById('tagList'); if (tl) tl.style.top = '105px'; }
             if (typeof updateSpectFollowBtn === 'function') updateSpectFollowBtn();
             if (spectatorMode) {
                 zoomMode = 'master';
