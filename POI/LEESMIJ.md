@@ -21,7 +21,9 @@ tabblad **Service** in de app) 🅿️ parkeren, ⛺ camping/camperplaats, 🏦 
 ## Hoe ze gemaakt worden
 
 De **POI-fabriek** (`.github/workflows/poi.yml`) draait vanzelf de 3e van elke maand, of met de hand:
-tab **Actions** → **POI-fabriek** → **Run workflow** (±2,5 uur, vooral het downloaden bij Geofabrik). Hij:
+tab **Actions** → **POI-fabriek** → **Run workflow** (±2,5 uur, vooral het downloaden bij Geofabrik). v64.8: zijn de
+lijsten op de 3e nog geen 14 dagen oud (net met de hand gemaakt), dan slaat de geplande run die maand over — met de hand
+starten gaat altijd. Hij:
 
 1. haalt per land het OpenStreetMap-extract bij [Geofabrik](https://download.geofabrik.de/europe.html) — één keer per
    land per run, met MD5-controle (als Geofabrik die heeft; anders controleert osmium het bestand);

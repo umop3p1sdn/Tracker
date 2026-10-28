@@ -119,6 +119,7 @@ STRAAT_PARKEREN = {'street_side', 'lane', 'on_street', 'on_kerb', 'half_on_kerb'
 GARAGE_PARKEREN = {'multi-storey', 'underground', 'rooftop'}
 GEEN_TREIN = {'subway', 'light_rail', 'monorail', 'funicular', 'miniature', 'tram'}
 PARKEER_MIN = 50
+VERS_DAGEN = 14        # v64.8: zo jong zijn de lijsten nog "vers" - dan slaat de geplande maandrun over (zie main)
 
 
 def getal(w):
@@ -417,6 +418,19 @@ def main():
     os.makedirs(a.werk, exist_ok=True)
     if a.knip:
         return knip(a)
+    # v64.8 (Sjoerd: "Ipv 3 nov begin maar vast met de lijsten updaten. En dan daarna pas weer volgende maand dec"): de
+    # geplande maandrun slaat over als de lijsten nog geen VERS_DAGEN oud zijn (met de hand gestart: altijd). Er verandert
+    # dan niets, dus opslaan.sh slaat ook niets op.
+    if os.environ.get('GITHUB_EVENT_NAME') == 'schedule':
+        try:
+            with open(os.path.join(a.uit, 'index.json'), encoding='utf-8') as f:
+                gemaakt = json.load(f).get('gemaakt', '')
+            oud = datetime.now(timezone.utc) - datetime.strptime(gemaakt, '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=timezone.utc)
+        except (OSError, ValueError, TypeError, AttributeError):
+            oud = None
+        if oud is not None and oud.days < VERS_DAGEN:
+            log('de lijsten zijn van %s (%d dagen oud, minder dan %d) - deze maand niet opnieuw' % (gemaakt, oud.days, VERS_DAGEN))
+            return
 
     namen ={c: n for c, (_, n) in LANDEN.items()}
     landen = dict(x.split('=') for x in a.landen.split(',')) if a.landen else {c: p for c, (p, _) in LANDEN.items()}
