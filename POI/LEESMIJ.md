@@ -1,7 +1,9 @@
 # POI — plekken voor de HO-ME Live Tracker
 
 Deze map bevat de POI-bestanden van de app: ⛽ benzine, 🍽 restaurant, 🛒 supermarkt, ⚡ laden, 🍔 snack, ☕ café,
-🥐 bakker, 🛏 hotel, 🏧 pin, 🚻 wc, 📷 uitzicht/bezienswaardigheid, kroeg en foodcourt — op twee manieren:
+🥐 bakker, 🛏 hotel, 🏧 pin, 🚻 wc, 📷 uitzicht/bezienswaardigheid, kroeg en foodcourt — en sinds v64.8 (laag `d`, het
+tabblad **Service** in de app) 🅿️ parkeren, ⛺ camping/camperplaats, 🏦 bank, 🏥 ziekenhuis, 👮 politie, 💊 apotheek,
+🔧 garage (werkplaats, motorzaak/-werkplaats, banden) en 🚉 treinstation/halte — op twee manieren:
 
 - **zoeken** (v63.97): zoek je iets (bv. ⛽ Benzine), dan haalt de app alleen de vakken van 0,5° die hij nodig heeft uit
   `v/` (Lokaal: 1–4 vakken, meestal een paar honderd KB) en bewaart ze op je telefoon — zonder eerst iets te downloaden;
@@ -10,7 +12,7 @@ Deze map bevat de POI-bestanden van de app: ⛽ benzine, 🍽 restaurant, 🛒 s
 
 | Bestand | Wat |
 |---|---|
-| `index.json` | per land: bestandsnaam, naam, datum van de gegevens, grootte (download en uitgepakt), aantal plekken, de vakken; bij `vakken`: welke losse vakken er zijn (zie onder) |
+| `index.json` | de lagen (`lagen`, v64.8); per land: bestandsnaam, naam, datum van de gegevens, grootte (download en uitgepakt), aantal plekken, de vakken; bij `vakken`: welke losse vakken er zijn (zie onder) |
 | `NL.tsv.gz`, `DE.tsv.gz`, `AT.tsv.gz`, … | de plekken per land (tekst met tabs, gzip) — ±40 landen: heel Europa behalve Rusland, Wit-Rusland, Oekraïne, Moldavië, Georgië en Turkije |
 | `v/<rij>/<kolom>.tsv.gz` | dezelfde plekken per vak van 0,5° (bv. `v/104/11.tsv.gz` = Ede, `v/97/4.tsv.gz` = Parijs); per rij een map, omdat GitHub hooguit 3.000 dingen per map aanraadt |
 | `fabriek.py` | het script dat ze maakt |
@@ -23,7 +25,11 @@ tab **Actions** → **POI-fabriek** → **Run workflow** (±2,5 uur, vooral het 
 
 1. haalt per land het OpenStreetMap-extract bij [Geofabrik](https://download.geofabrik.de/europe.html) — één keer per
    land per run, met MD5-controle (als Geofabrik die heeft; anders controleert osmium het bestand);
-2. houdt met `osmium` alleen de POI-soorten over;
+2. houdt met `osmium` alleen de POI-soorten over. Laag `d` neemt daarvan alleen (zie `dienst_past` in `fabriek.py`): niets
+   privé; **parkeren** alleen openbaar (geen klanten, vergunning, bewoners …), geen vakken langs de straat, en dan een
+   parkeergarage, P+R, een naam of minstens 50 plekken (in NL staan 236.120 parkeerplekken in OSM, meest kleine privé-
+   terreinen — die blijven weg); **motorparkeren** alles wat openbaar is; **stations** alleen voor de trein (geen metro,
+   sneltram, tram, kabelspoor);
 3. zet per plek het midden (net als Overpass `out center`) en verdeelt alles over vakken van 0,5°;
 4. schrijft per land alle vakken die het land raakt — compleet, dus een grensvak met Duitsland bevat ook de Duitse
    plekken (en Monaco is een eigen land, dus het vak van Nice is compleet). Vakken met **land** van een land dat hier niet bij zit
@@ -39,7 +45,8 @@ Alleen opruimen (zonder nieuwe lijsten te maken): **Actions** → **POI-fabriek*
 **Alleen opruimen** aan.
 
 Alleen de losse vakken opnieuw maken uit de landbestanden die hier al staan (niets bij Geofabrik, ±5 minuten): vink
-**Alleen vakken** aan.
+**Alleen vakken** aan. (v64.8: dat kan ook met landbestanden van vóór laag `d` — de vakken krijgen dan alleen de lagen
+die élk land heeft, `b r x`.)
 
 Mislukt een run nadat de extracten binnen zijn, dan bewaart hij de gefilterde stukken (cache); een nieuwe run op dezelfde
 dag haalt dan niets opnieuw bij Geofabrik. De grenzen (`.poly`) haalt hij als eerste: ontbreekt er een, dan stopt hij
@@ -62,12 +69,17 @@ vermelding van de bron.
 ```
 #POI	1	NL	2026-10-18T20:21:03Z        (formaat, land, stand van de OSM-gegevens)
 #velden	amenity shop tourism name …        (namen van de kolommen na lat/lon)
+#lagen	b r x d                            (v64.8: de lagen die dit bestand compleet heeft; ontbreekt de regel: b r x)
 #vakken	101_6 101_7 …                      (alle vakken in dit bestand, ook lege)
-b	n123	52.09071	5.12140	fuel		…   (laag b/r/x, id, lat, lon, velden; gesorteerd per vak)
+b	n123	52.09071	5.12140	fuel		…   (laag b/r/x/d, id, lat, lon, velden; gesorteerd per vak)
 #einde	95123                              (aantal regels — ontbreekt deze regel, dan is het bestand niet compleet)
 ```
 
 Een los vak heeft dezelfde opbouw, met het vak waar het land stond: `#POI	1	104_11	<stand>` en `#vakken	104_11`.
-In `index.json` staat bij `vakken` de stand, en welke vakken er zijn: `vol` (met een bestand) en `leeg` (compleet, maar
+In `index.json` staat bij `lagen` welke lagen de bestanden hebben (v64.8; ontbreekt het: b r x), en bij `vakken` de stand, en welke vakken er zijn: `vol` (met een bestand) en `leeg` (compleet, maar
 zonder plekken — daar is geen bestand van). Kort geschreven per rij: `104:6..12,15` = rij 104, kolommen 6 t/m 12 en 15
 (een kolom kan negatief zijn: west van Greenwich). Vak `rij_kolom` = de zuidwesthoek op (rij × 0,5°, kolom × 0,5°).
+
+**Volgorde bij een nieuwe laag** (v64.8): een app van vóór v64.8 weigert een regel met een laag die hij niet kent. Daarom
+eerst de app bijwerken (die leest `#lagen`, slaat een onbekende laag over en haalt wat een oud bestand niet heeft live), en
+pas daarna de fabriek laten draaien.

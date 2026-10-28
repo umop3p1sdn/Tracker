@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""POI-fabriek voor HO-ME Live Tracker (v63.93; v63.96: ±40 landen, namen en vakkenlijst in index.json).
+"""POI-fabriek voor HO-ME Live Tracker (v63.93; v63.96: ±40 landen, namen en vakkenlijst in index.json; v64.8: laag d = service).
 
 Draait 1x per maand vanzelf als GitHub Action (.github/workflows/poi.yml), of met de hand (Actions -> POI-fabriek ->
 Run workflow). Wat hij doet:
@@ -18,7 +18,10 @@ Run workflow). Wat hij doet:
      die hij nodig heeft (Lokaal: 1-4 vakken, ±5-900 KB) - zonder eerst een heel land te downloaden. In index.json bij
      'vakken': welke vakken er zijn ('vol') en welke compleet maar leeg zijn ('leeg' - daar is geen bestand van).
 
-De lagen en velden moeten gelijk zijn aan die in de app (POI_VOORRAAD, POI_REST, POI_EXTRA en hun velden).
+De lagen en velden moeten gelijk zijn aan die in de app (POI_VOORRAAD, POI_REST, POI_EXTRA, POI_DIENST en hun velden).
+v64.8 (Sjoerd: "graag ook op al deze lijsten: parkeren, camping, banken/geldautomaat, ziekenhuis, politiebureau, apotheek,
+garages auto/motor, treinstation"): laag d = service. Parkeren alleen wat je onderweg zoekt (zie dienst_past). Elk bestand
+noemt zijn lagen (#lagen), index.json ook ('lagen') - een app van voor v64.8 weigert een onbekende laag, dus eerst de app.
 Gegevens: (c) OpenStreetMap-bijdragers, ODbL 1.0 - zie LEESMIJ.md.
 
 Testen zonder downloads:  python3 fabriek.py --bron MAP --landen MC=europe/monaco --buren europe/france --uit UITMAP
@@ -27,6 +30,7 @@ Alleen de losse vakken (uit de landbestanden die er al staan, geen Geofabrik):  
 """
 import argparse
 import gzip
+import re
 import hashlib
 import json
 import math
@@ -82,17 +86,76 @@ LAGEN = {
     'b': {'amenity': ['fuel', 'restaurant'], 'shop': ['supermarket']},
     'r': {'amenity': ['charging_station', 'fast_food', 'cafe', 'bakery'], 'shop': ['bakery'], 'tourism': ['hotel']},
     'x': {'amenity': ['atm', 'toilets', 'pub', 'food_court'], 'tourism': ['viewpoint', 'attraction']},
+    # v64.8 service: bank (de pinautomaat staat al in x), ziekenhuis, politie, apotheek, parkeren + motorparkeren (selectie, zie
+    # dienst_past), camping + camperplaats, garage: werkplaats auto, motorzaak/-werkplaats en banden; trein: station en halte
+    'd': {'amenity': ['bank', 'hospital', 'police', 'pharmacy', 'parking', 'motorcycle_parking'],
+          'tourism': ['camp_site', 'caravan_site'],
+          'shop': ['car_repair', 'motorcycle', 'motorcycle_repair', 'tyres'],
+          'railway': ['station', 'halt']},
 }
-LAAG_VOLGORDE = ['b', 'r', 'x']
+LAAG_VOLGORDE = ['b', 'r', 'x', 'd']
 VELDEN = ['amenity', 'shop', 'tourism', 'name', 'brand', 'opening_hours', 'cuisine',
           'charging_station:output', 'maxpower', 'socket:type2:output', 'socket:type2_combo:output',
-          'socket:ccs:output', 'socket:chademo:output', 'capacity']
+          'socket:ccs:output', 'socket:chademo:output', 'capacity',
+          'railway', 'emergency', 'fee', 'parking', 'park_ride']          # v64.8: achteraan erbij (de app leest #velden)
 # Per laag dezelfde velden als de Overpass-vraag van de app (dan gedraagt de lijst zich precies hetzelfde)
 LAAG_VELDEN = {
     'b': ['amenity', 'shop', 'name', 'brand', 'opening_hours', 'cuisine'],
-    'r': VELDEN[:],
+    'r': ['amenity', 'shop', 'tourism', 'name', 'brand', 'opening_hours', 'cuisine',     # v64.8: vast (was VELDEN[:] - dan
+          'charging_station:output', 'maxpower', 'socket:type2:output', 'socket:type2_combo:output',   # kreeg een laadpaal
+          'socket:ccs:output', 'socket:chademo:output', 'capacity'],                     # ook fee/parking mee)
     'x': ['amenity', 'tourism', 'name', 'brand', 'opening_hours', 'cuisine'],
+    'd': ['amenity', 'shop', 'tourism', 'railway', 'name', 'brand', 'opening_hours', 'capacity', 'emergency', 'fee', 'parking',
+          'park_ride'],
 }
+# v64.8: wat in laag d mag. Nooit privé. Parkeren (NL alleen al 236.120 plekken in OSM, meest kleine privé-terreinen en
+# stoepvakken - keuze Sjoerd: "nuttige selectie"): alleen openbaar (geen klanten, vergunning, bewoners …), geen vakken langs de
+# straat, en dan een parkeergarage, P+R, een naam of minstens 50 plekken. Motorparkeren: alles wat openbaar is. Station/halte:
+# alleen de trein (geen metro, sneltram, tram, kabelspoor of miniatuurbaan).
+GEEN_TOEGANG = {'private', 'no'}
+PARKEER_GEEN_TOEGANG = GEEN_TOEGANG | {'customers', 'permit', 'delivery', 'residents', 'employees', 'destination',
+                                       'agricultural', 'forestry', 'military'}
+STRAAT_PARKEREN = {'street_side', 'lane', 'on_street', 'on_kerb', 'half_on_kerb', 'shoulder'}
+GARAGE_PARKEREN = {'multi-storey', 'underground', 'rooftop'}
+GEEN_TREIN = {'subway', 'light_rail', 'monorail', 'funicular', 'miniature', 'tram'}
+PARKEER_MIN = 50
+
+
+def getal(w):
+    """'120' / 'ca. 120' / '120;30' -> 120, anders None."""
+    m = re.search(r'\d+', str(w or ''))
+    return int(m.group()) if m else None
+
+
+def parkeren_past(pr):
+    if pr.get('access') in PARKEER_GEEN_TOEGANG or pr.get('parking') in STRAAT_PARKEREN:
+        return False
+    return bool(pr.get('name') or pr.get('parking') in GARAGE_PARKEREN or pr.get('park_ride') not in (None, '', 'no')
+                or (getal(pr.get('capacity')) or 0) >= PARKEER_MIN)
+
+
+def trein(pr):
+    if pr.get('station') in GEEN_TREIN:
+        return False
+    if pr.get('train') == 'yes':
+        return True
+    return not any(pr.get(k) == 'yes' for k in ('subway', 'light_rail', 'tram', 'monorail'))
+
+
+def dienst_past(pr):
+    """Laag d: mag deze plek erin? (een plek met meer soorten: als er een past)"""
+    if pr.get('access') in GEEN_TOEGANG:
+        return False
+    a = pr.get('amenity')
+    return (a in ('bank', 'hospital', 'police', 'pharmacy')
+            or (a == 'parking' and parkeren_past(pr))
+            or (a == 'motorcycle_parking' and pr.get('access') not in PARKEER_GEEN_TOEGANG)
+            or pr.get('tourism') in ('camp_site', 'caravan_site')
+            or pr.get('shop') in ('car_repair', 'motorcycle', 'motorcycle_repair', 'tyres')
+            or (pr.get('railway') in ('station', 'halt') and trein(pr)))
+
+
+LAAG_PAST = {'d': dienst_past}
 VAK = 0.5
 FORMAAT = 1
 VAKMAP = 'v'                                   # v63.97: POI/v/<i>/<j>.tsv.gz - elk vak los
@@ -193,7 +256,7 @@ def schoon(w):
     return str(w).replace('\t', ' ').replace('\r', ' ').replace('\n', ' ').strip()
 
 
-def schrijf_tsv(doel, naam, datum, vs, rijen):
+def schrijf_tsv(doel, naam, datum, vs, rijen, lagen=None):
     """Eén POI-bestand (een land, of v63.97 één los vak): kop, velden, vakken, per vak de regels (rijen[vak] is al
     gesorteerd), slotregel. gzip zonder tijd en naam: dezelfde inhoud = precies dezelfde bytes. -> (regels, bytes uitgepakt)"""
     n = tekst = 0
@@ -206,6 +269,7 @@ def schrijf_tsv(doel, naam, datum, vs, rijen):
                 gz.write(b)
             w('#POI\t%d\t%s\t%s' % (FORMAAT, naam, datum))
             w('#velden\t' + ' '.join(VELDEN))
+            w('#lagen\t' + ' '.join(lagen or LAAG_VOLGORDE))   # v64.8: welke lagen dit bestand compleet heeft (zonder: b r x)
             w('#vakken\t' + ' '.join('%d_%d' % v for v in vs))
             for v in vs:
                 for _, _, regel in rijen.get(v, []):
@@ -235,12 +299,13 @@ def reeks(vakken):
     return ' '.join(delen)
 
 
-def schrijf_vakken(uit, werk, alle, rijen, datum):
+def schrijf_vakken(uit, werk, alle, rijen, datum, lagen=None):
     """v63.97 (Sjoerd: "Veel mensen downloaden niet de pre info, maar zoeken gewoon dmv POI, en dan bv benzine"): elk vak dat
     in een land-bestand staat ook los, met alle lagen: POI/v/<i>/<j>.tsv.gz. De app haalt bij het zoeken alleen de vakken die
     hij nodig heeft. Een leeg vak (zee, of niets van deze soorten) krijgt geen bestand - dat staat in index.json bij 'leeg'.
     Eerst in de werkmap, dan in één keer op de plek (vakken die nu leeg zijn of weg zijn gaan zo ook weg).
     -> het stuk 'vakken' voor index.json"""
+    lagen = lagen or LAAG_VOLGORDE
     nieuw = os.path.join(werk, VAKMAP + '-nieuw')
     shutil.rmtree(nieuw, ignore_errors=True)
     os.makedirs(nieuw)
@@ -252,7 +317,7 @@ def schrijf_vakken(uit, werk, alle, rijen, datum):
         # per rij een map (v/97/4.tsv.gz): GitHub raadt hooguit 3.000 dingen per map aan - het zijn er ±3.300
         os.makedirs(os.path.join(nieuw, str(v[0])), exist_ok=True)
         pad = os.path.join(nieuw, str(v[0]), '%d.tsv.gz' % v[1])
-        n, _ = schrijf_tsv(pad, '%d_%d' % v, datum, [v], rijen)
+        n, _ = schrijf_tsv(pad, '%d_%d' % v, datum, [v], rijen, lagen)
         vol.append(v)
         grootte += os.path.getsize(pad)
         regels += n
@@ -260,8 +325,8 @@ def schrijf_vakken(uit, werk, alle, rijen, datum):
     shutil.rmtree(doel, ignore_errors=True)
     shutil.move(nieuw, doel)
     log('losse vakken:', len(vol), 'bestanden,', len(leeg), 'leeg,', regels, 'regels,', grootte, 'bytes')
-    return {'map': VAKMAP + '/', 'datum': datum, 'bestanden': len(vol), 'bytes': grootte, 'rijen': regels,
-            'vol': reeks(vol), 'leeg': reeks(leeg)}
+    return {'map': VAKMAP + '/', 'datum': datum, 'lagen': lagen, 'bestanden': len(vol), 'bytes': grootte, 'rijen': regels,
+            'vol': reeks(vol), 'leeg': reeks(leeg)}   # v64.8: 'lagen' - de app haalt service pas van je site als die erin staat
 
 
 def schrijf_index(uit, index):
@@ -273,12 +338,16 @@ def schrijf_index(uit, index):
 def knip(a):
     """--knip (v63.97): de losse vakken maken uit de land-bestanden die er al staan - zonder Geofabrik (de eerste keer, of als
     alleen de vakken anders moeten). Een grensvak staat in twee land-bestanden met precies dezelfde regels (zelfde run): het
-    eerste land telt. index.json houdt zijn landen; alleen 'vakken' is nieuw."""
+    eerste land telt. index.json houdt zijn landen; alleen 'vakken' is nieuw.
+    v64.8: land-bestanden van voor laag d (zonder '#lagen', minder velden) mogen ook - de vakken krijgen dan alleen de lagen
+    die elk land compleet heeft (b r x); anders denkt de app dat je site de service-laag al heeft en zegt hij "niets"."""
     with open(os.path.join(a.uit, 'index.json'), encoding='utf-8') as f:
         index = json.load(f)
     rijen, alle, datums = {}, set(), []
+    lagen = list(LAAG_VOLGORDE)
     for code, info in index['landen'].items():
         eigen, n, einde = set(), 0, None
+        land_lagen = ['b', 'r', 'x']               # een bestand zonder '#lagen' (van voor v64.8)
         with gzip.open(os.path.join(a.uit, info['bestand']), 'rt', encoding='utf-8', newline='\n') as f:
             for regel in f:
                 regel = regel.rstrip('\n')
@@ -288,8 +357,10 @@ def knip(a):
                         sys.exit('%s: kop klopt niet (%s)' % (code, regel))
                     if d[0] == '#POI':
                         datums.append(d[3])
-                    elif d[0] == '#velden' and d[1].split(' ') != VELDEN:
-                        sys.exit('%s: andere velden dan deze fabriek' % code)
+                    elif d[0] == '#velden' and d[1].split(' ') != VELDEN[:len(d[1].split(' '))]:
+                        sys.exit('%s: andere velden dan deze fabriek' % code)   # v64.8: minder mag (de oude, vooraan)
+                    elif d[0] == '#lagen':
+                        land_lagen = d[1].split(' ') if len(d) > 1 else []
                     elif d[0] == '#vakken':
                         vs = [tuple(int(x) for x in k.split('_')) for k in (d[1].split() if len(d) > 1 else [])]
                         eigen = {v for v in vs if v not in alle}
@@ -304,10 +375,13 @@ def knip(a):
                     rijen.setdefault(v, []).append((LAAG_VOLGORDE.index(d[0]), d[1], regel))
         if einde != n:
             sys.exit('%s: niet compleet (%d van %s regels)' % (code, n, einde))
+        lagen = [l for l in lagen if l in land_lagen]
         log(code, n, 'regels,', len(eigen), 'vakken erbij')
     for l in rijen.values():
         l.sort()
-    index['vakken'] = schrijf_vakken(a.uit, a.werk, alle, rijen, max(datums))
+    index['lagen'] = lagen                         # v64.8: wat elk land-bestand compleet heeft
+    index['vakken'] = schrijf_vakken(a.uit, a.werk, alle, rijen, max(datums), lagen)
+    log('lagen:', ' '.join(lagen))
     schrijf_index(a.uit, index)
     log('klaar')
 
@@ -431,7 +505,8 @@ def main():
                 sleutel = (pr.get('@type'), pr.get('@id'))
                 if sleutel in gezien:              # een gesloten weg kan als lijn en als vlak komen
                     continue
-                lagen = [l for l in LAAG_VOLGORDE if any(pr.get(k) in v for k, v in LAGEN[l].items())]
+                lagen = [l for l in LAAG_VOLGORDE if any(pr.get(k) in v for k, v in LAGEN[l].items())
+                         and LAAG_PAST.get(l, lambda _: True)(pr)]
                 if not lagen or not ft.get('geometry'):
                     continue
                 m = kader_midden(ft['geometry'])
@@ -467,7 +542,7 @@ def main():
         land_vakken[code] = sorted(v for v in vakken_van(vorm) if not niet_compleet(v))
     log('randvakken met land van een buurland (niet compleet, weggelaten):', sum(oordeel.values()))
 
-    index = {'formaat': FORMAAT, 'gemaakt': datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'),
+    index = {'formaat': FORMAAT, 'lagen': LAAG_VOLGORDE, 'gemaakt': datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'),
              'bron': 'OpenStreetMap via Geofabrik (download.geofabrik.de)',
              'licentie': 'ODbL 1.0 - (c) OpenStreetMap-bijdragers', 'landen': {}}
     for code in landen:
