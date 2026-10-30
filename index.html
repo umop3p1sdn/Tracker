@@ -816,7 +816,8 @@
         .pmSub { color: #aab; font-size: 0.8em; text-align: center; margin-top: -4px;
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .pmRij { display: flex; gap: 8px; }
-        /* v65.1: GPX laden — "Route laden als" (midden, met achtergrond) en "Andere Mode?" (onderin, de route blijft zichtbaar) */
+        /* v65.1: GPX laden — "Route laden als" (midden, met achtergrond) en onderin de vraag na het rekenen (de route blijft
+           zichtbaar) — v65.2: "Zonder navi laden?" */
         #gpxModePaneel { display: none; position: fixed; inset: 0; z-index: 3000; background: rgba(0,0,0,0.55);
             align-items: center; justify-content: center; padding: 12px; box-sizing: border-box; }
         #gpxModePaneel .gmBox { width: 300px; max-width: 100%; max-height: 100%; overflow-y: auto; box-sizing: border-box; background: #0a0e27;
@@ -833,10 +834,26 @@
             .gmKnop.gmBreed { grid-column: auto; }
         }
         #gpxModeVraag { display: none; position: fixed; left: 12px; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom, 0px));
-            z-index: 2900; max-width: 560px; margin: 0 auto; box-sizing: border-box; background: rgba(10,14,39,0.95);
+            z-index: 2090; max-width: 560px; margin: 0 auto; box-sizing: border-box; background: rgba(10,14,39,0.95);
             border: 2px solid #FF9800; border-radius: 12px; padding: 10px; flex-direction: column; gap: 8px; }
+        /* v65.2 GEMETEN (gpx112): op z 2900 lag de vraag óver het knoppen-menu — de MENU-tegel (y 683) was niet te raken, en
+           ook over de menu's, het POI-menu en de rij-meldingen (opnieuw berekenen e.d., 2600). Nu 2090: boven het rij-scherm
+           (snelheidsmeter 1500, afstand/tijd 1600, pijlen 2000, flitser en bord 2050), onder POI (2100), de vierkante knop
+           (2200), het knoppen-menu (2300/2400), alle menu's (2460+) en die meldingen. Sluit je een menu, dan staat hij er weer. */
         #gpxModeVraag .gmRij { display: flex; gap: 6px; }
         #gpxModeVraag .gmKnop { flex: 1; min-width: 0; min-height: 44px; font-size: 0.85em; padding: 0 2px; }
+        /* v65.2: "Zonder navi laden?" — Zonder navi (wit: de hoofdknop) en Met navi laten; daaronder "Of andere Mode:" met de
+           Modes. Liggend naast elkaar (het vak breder), zodat de route erboven in beeld past. */
+        #gpxModeVraag .gvRijen { display: flex; flex-direction: column; gap: 8px; }
+        #gpxModeVraag .gvModes { display: flex; flex-direction: column; gap: 4px; }
+        #gpxModeVraag .gvLabel { color: #aab; font-size: 0.75em; }
+        #gpxModeVraag .gvZonder { border-color: #fff; color: #0a0e27; background: #fff; }
+        @media (orientation: landscape) {
+            #gpxModeVraag { max-width: 760px; }
+            #gpxModeVraag .gvRijen { flex-direction: row; align-items: flex-end; }
+            #gpxModeVraag .gvHoofd { flex: 0 0 300px; }
+            #gpxModeVraag .gvModes { flex: 1; min-width: 0; }
+        }
         .pmKnop { flex: 1; min-width: 0; height: 48px; padding: 0 6px; border-radius: 10px; border: 2px solid;
             font-weight: bold; font-size: 1em; cursor: pointer; background: transparent; font-family: inherit; }
         .pmStart   { border-color: #9E9E9E; color: #EEE;    background: rgba(158,158,158,0.14); }
@@ -1339,7 +1356,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v65.1 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v65.2 © Umop3p1sdn</div>
 
             </div>
 
@@ -1801,9 +1818,9 @@
 
             <p style="margin:10px 0 4px;"><strong>Laden (alleen Master):</strong></p>
             <ul style="margin: 5px 0; padding-left: 20px;">
-                <li><strong>Load route</strong> — voor een nette route. De app berekent er een rijdbare route van met <strong>gesproken navigatie</strong>: vóór elke afslag verschijnt een pijl (klein/blauw als 't nog ver is, groter/oranje/rood als je nadert) en je hoort de afslag ("over 300 meter rechtsaf"). De resterende afstand + tijd tellen af. Na het kiezen van het bestand kies je <strong>hoe</strong> je hem rijdt: <strong>Road, Offroad, Bike, Race bike of Walk</strong> — de app rekent de route met die Mode (en Plan gaat mee). Eén staat al voorgekozen (✓): wat hij in de GPX herkent (bv. TET, enduro, mtb, fiets, wandel in de naam of de soort, of het tempo als de GPX tijden heeft), anders je huidige Mode. Volgt de route je GPX daarna niet goed (meer dan 8% verder dan 50 m, of veel langer), dan vraagt hij onderin <strong>Andere Mode?</strong> — tik er een en hij rekent opnieuw; <strong>Zo laten</strong> houdt hem. Een offroad-route die je mét navi laadt, houdt stem en pijlen aan. Een route die je zelf in Plan maakte en opsloeg, onthoudt zijn Mode al.</li>
+                <li><strong>Load route</strong> — voor een nette route. De app berekent er een rijdbare route van met <strong>gesproken navigatie</strong>: vóór elke afslag verschijnt een pijl (klein/blauw als 't nog ver is, groter/oranje/rood als je nadert) en je hoort de afslag ("over 300 meter rechtsaf"). De resterende afstand + tijd tellen af. Na het kiezen van het bestand kies je <strong>hoe</strong> je hem rijdt: <strong>Road, Offroad, Bike, Race bike of Walk</strong> — de app rekent de route met die Mode (en Plan gaat mee). Eén staat al voorgekozen (✓): wat hij in de GPX herkent (bv. TET, enduro, mtb, fiets, wandel in de naam of de soort, of het tempo als de GPX tijden heeft), anders je huidige Mode. Wijkt de route daarna ergens af van je track — een uitstapje, lusje of keerpunt, of meer dan 40 m ernaast — dan vraagt hij onderin <strong>Zonder navi laden?</strong>: <strong>Zonder navi</strong> laadt je track als paarse lijn (zoals Load route (no navi)), <strong>Met navi laten</strong> houdt de route, of tik een andere Mode en hij rekent opnieuw. Een offroad-route die je mét navi laadt, houdt stem en pijlen aan. Een route die je zelf in Plan maakte en opsloeg, onthoudt zijn Mode al.</li>
                 <li><strong>Load route (no navi)</strong> — laadt de GPX als een <strong>kaal spoor</strong> (paarse lijn), precies zoals 't bestand is, zónder navigatie. <strong>Ideaal voor offroad:</strong> je volgt gewoon het "touwtje" op de kaart. Ook <strong>opgeslagen sporen laad je hiermee</strong>.</li>
-                <li>Na het laden staat de route (of de lijn) <strong>4 tellen in beeld</strong> — het balkje bovenin loopt leeg; beweeg je de kaart, dan begint het opnieuw — en daarna gaat de kaart terug naar jou. Zolang "Andere Mode?" openstaat, blijft de route staan.</li>
+                <li>Na het laden staat de route (of de lijn) <strong>4 tellen in beeld</strong> — het balkje bovenin loopt leeg; beweeg je de kaart, dan begint het opnieuw — en daarna gaat de kaart terug naar jou. Zolang de vraag onderin openstaat, blijft de route staan.</li>
             </ul>
             <p style="background:#e3e7f5; padding:10px 14px; border-radius:8px;">Heeft je GPX meerdere delen (zoals een lange trail), dan kies je in een lijstje welke delen je laadt — handig om alleen het stuk van vandaag te tonen. Een <strong>zelf geladen GPX kun je niet bewerken</strong>; daarvoor maak je een route met <strong>Plan</strong>. De Volger laadt zelf niets (die volgt de Master).</p>
 
@@ -1895,7 +1912,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v65.1 © Umop3p1sdn
+                HO-ME v65.2 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2142,9 +2159,9 @@
 
             <p style="margin:10px 0 4px;"><strong>Loading (Master only):</strong></p>
             <ul style="margin: 5px 0; padding-left: 20px;">
-                <li><strong>Load route</strong> — for a proper route. The app calculates a rideable route from it with <strong>spoken navigation</strong>: before each turn an arrow appears (small/blue when it's still far, bigger/orange/red as you approach) and you hear the turn ("in 300 metres turn right"). The remaining distance + time count down. After choosing the file you choose <strong>how</strong> you ride it: <strong>Road, Offroad, Bike, Race bike or Walk</strong> — the app calculates the route with that Mode (and Plan follows). One is already preselected (✓): what it recognises in the GPX (e.g. TET, enduro, mtb, cycling, hiking in the name or type, or the pace if the GPX has times), otherwise your current Mode. If the route then doesn't follow your GPX well (more than 8% further than 50 m away, or much longer), it asks at the bottom <strong>Andere Mode?</strong> (other Mode?) — tap one and it calculates again; <strong>Zo laten</strong> keeps it. An offroad route you load with navi keeps voice and arrows on. A route you made in Plan yourself and saved already remembers its Mode.</li>
+                <li><strong>Load route</strong> — for a proper route. The app calculates a rideable route from it with <strong>spoken navigation</strong>: before each turn an arrow appears (small/blue when it's still far, bigger/orange/red as you approach) and you hear the turn ("in 300 metres turn right"). The remaining distance + time count down. After choosing the file you choose <strong>how</strong> you ride it: <strong>Road, Offroad, Bike, Race bike or Walk</strong> — the app calculates the route with that Mode (and Plan follows). One is already preselected (✓): what it recognises in the GPX (e.g. TET, enduro, mtb, cycling, hiking in the name or type, or the pace if the GPX has times), otherwise your current Mode. If the route then deviates from your track somewhere — a detour, loop or U-turn, or more than 40 m away — it asks at the bottom <strong>Zonder navi laden?</strong> (load without navi?): <strong>Zonder navi</strong> loads your track as a purple line (like Load route (no navi)), <strong>Met navi laten</strong> (keep navi) keeps the route, or tap another Mode and it calculates again. An offroad route you load with navi keeps voice and arrows on. A route you made in Plan yourself and saved already remembers its Mode.</li>
                 <li><strong>Load route (no navi)</strong> — loads the GPX as a <strong>bare track</strong> (purple line), exactly as the file is, without navigation. <strong>Ideal for offroad:</strong> you simply follow the "string" on the map. <strong>Saved tracks are also loaded with this.</strong></li>
-                <li>After loading, the route (or the line) stays <strong>in view for 4 seconds</strong> — the bar at the top runs empty; move the map and it starts again — and then the map goes back to you. As long as "Andere Mode?" is open, the route stays.</li>
+                <li>After loading, the route (or the line) stays <strong>in view for 4 seconds</strong> — the bar at the top runs empty; move the map and it starts again — and then the map goes back to you. As long as the question at the bottom is open, the route stays.</li>
             </ul>
             <p style="background:#e3e7f5; padding:10px 14px; border-radius:8px;">If your GPX has multiple parts (like a long trail), you pick from a list which parts to load — handy to show only today's section. A <strong>GPX you loaded yourself can't be edited</strong>; for that, make a route with <strong>Plan</strong>. The Follower doesn't load anything (they follow the Master).</p>
 
@@ -2236,7 +2253,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v65.1 © Umop3p1sdn
+                HO-ME v65.2 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2453,11 +2470,20 @@
             <div class="pmRij"><button class="pmKnop pmAnnuleer" onclick="gpxModeAnnuleer()">Annuleer</button></div>
         </div>
     </div>
-    <!-- v65.1: na het laden — volgt de route je GPX niet goed? Andere Mode (onderin: de route blijft in beeld). Geen timer. -->
+    <!-- v65.2: na het laden — wijkt de route af van je track? Zonder navi laden, met navi laten, of een andere Mode
+         (onderin: de route blijft in beeld). Geen timer. -->
     <div id="gpxModeVraag">
         <div id="gpxModeVraagTekst" style="color:#fff; font-size:0.88em; line-height:1.3;"></div>
-        <div id="gpxModeVraagKnoppen" class="gmRij"></div>
-        <div class="gmRij"><button class="pmKnop pmAnnuleer" onclick="gpxVraagDicht()">Zo laten</button></div>
+        <div class="gvRijen">
+            <div class="gmRij gvHoofd">
+                <button class="pmKnop gvZonder" onclick="gpxZonderNavi()">Zonder navi</button>
+                <button class="pmKnop pmAnnuleer" onclick="gpxVraagDicht()">Met navi laten</button>
+            </div>
+            <div class="gvModes">
+                <div class="gvLabel">Of andere Mode:</div>
+                <div id="gpxModeVraagKnoppen" class="gmRij"></div>
+            </div>
+        </div>
     </div>
     <!-- ════════ EINDE ROUTE PLANNER MODULE ════════ -->
 
@@ -7055,7 +7081,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "65.1";
+        const APP_VERSION = "65.2";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
@@ -10644,6 +10670,7 @@ assign initialcost =
             try { event.target.value = ''; } catch (e) {}   // v65.1: hetzelfde bestand nog eens kiezen = weer laden
             const tracks = parseGpxTracks(text);
             if (!tracks.length) { alert('Geen bruikbare tracks in de GPX.'); return; }
+            if (typeof gpxVraagDicht === 'function') gpxVraagDicht();   // v65.2: de vraag over de vorige GPX geldt niet meer
             if (tracks.length === 1) {
                 processPlainTrack(tracks[0].pts);
             } else {
@@ -10677,9 +10704,7 @@ assign initialcost =
         // Opnieuw rekenen gebeurt alleen als jij een Mode kiest — nooit vanzelf (BRouter niet dubbel belasten).
         const GPX_MODES = [['road', 'Road', '#546E7A'], ['offroad', 'Offroad', '#9C27B0'], ['bike', 'Bike', '#2196F3'],
                            ['racebike', 'Race bike', '#FF9800'], ['walk', 'Walk', '#4CAF50']];
-        const GPX_VER_M = 50;          // verder dan dit van elkaar = volgt niet
-        const GPX_VER_MAX = 0.08;      // meer dan 8% (om de 40 m, beide kanten op) verder → "Andere Mode?"
-        const GPX_LENGTE_MAX = 1.15;   // of de route is 15% langer dan je GPX (heen-en-weer-uitstapjes)
+        const GPX_VER_M = 40;          // v65.2: verder dan dit van elkaar = een plek waar de route afwijkt (keuze Sjoerd: ±40 m)
         let gpxNaviStem = false;       // stille Mode (offroad) maar met navi geladen: stem en pijlen aan — tot een Plan-route GO krijgt
         let gpxBezig = false;          // opnieuw aan het rekenen na "Andere Mode?": de route blijft in beeld
         let gpxKeuzeRaw = null;        // de punten die op de Mode-keuze wachten
@@ -10772,22 +10797,113 @@ assign initialcost =
                 gpxNaviStem = true;
             }
         }
-        // Volgt de route je GPX? Om de 40 m, beide kanten op (je GPX naast de route, en de route naast je GPX — zo zie je ook
-        // de heen-en-weer-uitstapjes als BRouter een stuk van je GPX met deze Mode niet mag). → { ver: deel verder dan 50 m,
-        // lengte: route / GPX }
-        function gpxVolgt(raw, route) {
-            const naarLL = pts => pts.map(p => [p[1], p[0]]);
-            const mRoute = poiLijnMaat(naarLL(route), GPX_VER_M), mGpx = poiLijnMaat(naarLL(thinByDistance(raw, 10)), GPX_VER_M);
-            const ver = (s, m) => s.length ? s.filter(p => !m.maat(p[0], p[1])).length / s.length : 0;
-            const a = ver(thinByDistance(raw, 40), mRoute), b = ver(thinByDistance(route, 40), mGpx);
-            return { ver: Math.max(a, b), lengte: routeKm(route) / Math.max(0.001, routeKm(raw)) };
+        // v65.2 (Sjoerd: "Ik had een track geladen met navi — dat geeft veel foute sporen; hij zou geladen moeten worden zonder
+        // navi, zodat hij geen vaste hoeken of markeringen hoeft te plaatsen. Sommige tracks doet hij wel goed" + "'met navi' of
+        // 'zonder navi' als de route daardoor vertekend wordt"; gekozen: "Zonder navi, eerst vragen"): tel de PLEKKEN waar de
+        // route afwijkt van je track — één fout uitstapje telt al (het percentage van v65.1 — meer dan 8% verder dan 50 m —
+        // liet losse uitstapjes door). Om de 10 m gemeten, beide kanten op: (a) de route ligt meer dan 40 m naast je track
+        // (uitstapje, lus, ander pad), (b) je track ligt meer dan 40 m naast de route (afgesneden, een pad dat BRouter niet
+        // neemt), (c) de route keert om (heen en weer) waar je track dat niet doet. Plekken binnen 200 m van elkaar = één plek.
+        // Telt niet: een losse GPS-sprong in een opgenomen track, een kort stukje aan het begin/eind (een oprit naast de weg)
+        // en een keerpunt in de eerste/laatste 100 m (BRouter legt start en finish op de dichtstbijzijnde weg).
+        // → { n, maxM (verste afstand in m; Infinity = meer dan 1 km), keer (plekken die alleen heen-en-weer zijn) }
+        function gpxLangs(pts, stap) {   // om de `stap` m een punt langs de lijn (ook midden op lange rechte stukken)
+            const uit = [];
+            if (!pts || !pts.length) return uit;
+            uit.push(pts[0]);
+            let s = 0, volgende = stap;
+            for (let i = 1; i < pts.length; i++) {
+                const a = pts[i - 1], b = pts[i], d = distMeters(a, b);
+                while (d > 0 && volgende <= s + d) {
+                    const f = (volgende - s) / d;
+                    uit.push([a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f]);
+                    volgende += stap;
+                }
+                s += d;
+            }
+            const z = pts[pts.length - 1];
+            if (distMeters(uit[uit.length - 1], z) > stap / 2) uit.push(z);
+            return uit;
         }
-        // "Andere Mode?" — onderin, zodat je de route ziet. De andere 4 Modes en "Zo laten". Geen timer.
-        function gpxVraagOpen(fit) {
+        function gpxZonderSprongen(pts) {
+            // alleen bij een opgenomen track (punten gemiddeld < 25 m uit elkaar): één punt ver naast zijn buren = GPS-sprong.
+            // Een geplande track kan een zijpad hebben met maar één punt op het eind — dat is geen sprong.
+            if (pts.length < 3 || routeKm(pts) * 1000 / (pts.length - 1) >= 25) return pts;
+            const uit = [pts[0]];
+            for (let i = 1; i < pts.length - 1; i++) {
+                const a = uit[uit.length - 1], p = pts[i], b = pts[i + 1];
+                const ap = distMeters(a, p), pb = distMeters(p, b);
+                if (ap > 30 && pb > 30 && distMeters(a, b) < 0.5 * Math.min(ap, pb)) continue;
+                uit.push(p);
+            }
+            uit.push(pts[pts.length - 1]);
+            return uit;
+        }
+        // keerpunten in een lijn die om de 5 m bemonsterd is: k stappen terug en k stappen verder liggen (bijna) op dezelfde plek
+        function gpxKeren(s, k, max) {
+            const tips = [];
+            for (let i = k; i < s.length - k; i++) {
+                if (distMeters(s[i - k], s[i + k]) >= max || distMeters(s[i], s[i - k]) <= 0.6 * k * 5) continue;
+                const t = tips[tips.length - 1];
+                if (t && i - t.j <= k) t.j = i; else tips.push({ i, j: i });
+            }
+            return tips.map(t => { const m = Math.round((t.i + t.j) / 2); return { p: s[m], i: m }; });
+        }
+        function gpxPlekken(raw, route) {
+            const D = GPX_VER_M, ll = pts => pts.map(p => [p[1], p[0]]);
+            const track = gpxZonderSprongen(raw);
+            const lijnT = ll(thinByDistance(track, 10)), lijnR = ll(route);
+            const opT = poiLijnMaat(lijnT, D), opR = poiLijnMaat(lijnR, D);
+            let verT = null, verR = null;   // pas als er iets naast ligt: hoe ver (tot 1 km)?
+            const plekken = [];             // { m, keer, vak: [minLat, minLng, maxLat, maxLng] }
+            const naast = (s, op, ver, minN) => {
+                let st = -1, max = 0, vak = null;
+                const sluit = eind => {
+                    const n = eind - st, rand = st === 0 || eind === s.length;
+                    if (n >= minN && !(rand && n * 10 < 200)) plekken.push({ m: max, keer: false, vak });
+                    st = -1; max = 0; vak = null;
+                };
+                for (let i = 0; i < s.length; i++) {
+                    const [la, ln] = s[i];
+                    if (op.maat(la, ln)) { if (st >= 0) sluit(i); continue; }
+                    const r = ver().maat(la, ln), d = r ? r.d : Infinity;
+                    if (st < 0) { st = i; vak = [la, ln, la, ln]; }
+                    else vak = [Math.min(vak[0], la), Math.min(vak[1], ln), Math.max(vak[2], la), Math.max(vak[3], ln)];
+                    if (d > max) max = d;
+                }
+                if (st >= 0) sluit(s.length);
+            };
+            naast(gpxLangs(route, 10), opT, () => verT || (verT = poiLijnMaat(lijnT, 1000)), 2);   // (a) de route naast je track
+            naast(gpxLangs(track, 10), opR, () => verR || (verR = poiLijnMaat(lijnR, 1000)), 3);   // (b) je track naast de route
+            const rs = gpxLangs(route, 5), trackKeer = gpxKeren(gpxLangs(track, 5), 4, 12);
+            gpxKeren(rs, 2, 6).forEach(t => {                                                       // (c) heen en weer
+                if (t.i * 5 < 100 || (rs.length - 1 - t.i) * 5 < 100) return;
+                if (trackKeer.some(q => distMeters(q.p, t.p) < 40)) return;   // je track keert daar zelf ook om
+                plekken.push({ m: 0, keer: true, vak: [t.p[0], t.p[1], t.p[0], t.p[1]] });
+            });
+            // plekken binnen 200 m van elkaar = één plek (gemeten tussen de hele stukken: een afgesneden lus geeft de route
+            // naast je track én je track naast de route — dat is één plek)
+            const gat = (a, b) => Math.hypot(Math.max(0, a[0] - b[2], b[0] - a[2]) * 111195,
+                Math.max(0, a[1] - b[3], b[1] - a[3]) * 111195 * Math.cos((a[0] + a[2]) / 2 * Math.PI / 180));
+            const ouder = plekken.map((_, i) => i), wortel = i => ouder[i] === i ? i : (ouder[i] = wortel(ouder[i]));
+            for (let i = 0; i < plekken.length; i++) for (let j = i + 1; j < plekken.length; j++)
+                if (gat(plekken[i].vak, plekken[j].vak) < 200) ouder[wortel(i)] = wortel(j);
+            const groep = new Map();
+            plekken.forEach((pl, i) => { const w = wortel(i), g = groep.get(w); if (g) g.push(pl); else groep.set(w, [pl]); });
+            let maxM = 0, keer = 0;
+            groep.forEach(g => { if (g.every(x => x.keer)) keer++; g.forEach(x => { if (!x.keer && x.m > maxM) maxM = x.m; }); });
+            return { n: groep.size, maxM, keer };
+        }
+        // "Zonder navi laden?" — onderin, zodat je de route ziet: Zonder navi, Met navi laten, of een andere Mode. Geen timer.
+        function gpxVraagOpen(plek) {
             const naam = (GPX_MODES.find(x => x[0] === planMode) || [0, planMode])[1];
-            const pct = Math.max(1, Math.round(fit.ver * 100)), langer = Math.round((fit.lengte - 1) * 100);
-            document.getElementById('gpxModeVraagTekst').innerHTML = 'De route (' + poiEsc(naam) + ') volgt je GPX niet goed: ' + pct
-                + '% ligt verder dan ' + GPX_VER_M + ' m' + (langer >= 10 ? ' en hij is ' + langer + '% langer' : '') + '. <b>Andere Mode?</b>';
+            const r = plek.maxM < 100 ? Math.round(plek.maxM / 5) * 5 : Math.round(plek.maxM / 10) * 10;
+            const delen = [];
+            if (plek.maxM >= GPX_VER_M) delen.push(isFinite(plek.maxM) ? 'tot ' + r + ' m ernaast' : 'ergens meer dan 1 km ernaast');
+            if (plek.keer) delen.push(plek.keer + '× heen en weer');
+            document.getElementById('gpxModeVraagTekst').innerHTML = 'De route (' + poiEsc(naam) + ') wijkt op ' + plek.n
+                + (plek.n === 1 ? ' plek' : ' plekken') + ' af van je track' + (delen.length ? ' (' + delen.join(', ') + ')' : '')
+                + '. <b>Zonder navi laden?</b>';
             const k = document.getElementById('gpxModeVraagKnoppen');
             k.innerHTML = '';
             GPX_MODES.forEach(([m, label, kleur]) => {
@@ -10804,6 +10920,28 @@ assign initialcost =
         }
         function gpxVraagDicht() { const v = document.getElementById('gpxModeVraag'); if (v) v.style.display = 'none'; }
         function gpxVraagIsOpen() { const v = document.getElementById('gpxModeVraag'); return !!v && v.style.display === 'flex'; }
+        // v65.2: "Zonder navi" — de navi-route van deze GPX weg (lijn, GO, wat de volger kreeg; reed je hem al, dan stopt die
+        // navigatie) en je track als paarse lijn, precies zoals Load route (no navi). Offroad is dan weer stil.
+        function gpxZonderNavi() {
+            gpxVraagDicht();
+            const raw = window._gpxRaw, L_ = window._gpxLoaded;
+            if (!raw || raw.length < 2) return;
+            if (gpxPolyline) { try { mapInstance.removeLayer(gpxPolyline); } catch (e) {} gpxPolyline = null; }
+            if (L_ && activeRoute && activeRoute === L_.route) {
+                activeRoute = null; detectedTurns = [];
+                if (typeof clearTurnDots === 'function') clearTurnDots();
+                if (typeof clearEaten === 'function') clearEaten();
+                if (typeof hideNavElements === 'function') hideNavElements();
+                try { if (typeof speechSynthesis !== 'undefined') speechSynthesis.cancel(); } catch (e) {}
+            }
+            if (L_ && gpxRoute === L_.route) gpxRoute = [];
+            window._gpxLoaded = null;
+            const gb = document.getElementById('plannerGoBtn');
+            if (gb) gb.dataset.loaded = '';
+            if (typeof updateGoBtn === 'function') updateGoBtn();
+            if (gpxNaviStem && MODE_SILENT[planMode]) { gpxNaviStem = false; if (typeof rememberAndSilence === 'function') rememberAndSilence(); }
+            processPlainTrack(raw);   // paarse lijn, 4 s in beeld, delen met de volger (zonder navi-route)
+        }
         async function gpxAnders(mode) {
             gpxVraagDicht();
             const raw = window._gpxRaw;
@@ -10846,7 +10984,7 @@ assign initialcost =
         function showTrackPicker(tracks, handler) {
             const onPick = handler || processGpxRoute;
             const modal = document.createElement('div');
-            modal.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.8); display:flex; align-items:center; justify-content:center; z-index:1002;';
+            modal.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.8); display:flex; align-items:center; justify-content:center; z-index:2555;';   // v65.2: was 1002 (onder het rij-scherm), zie toggleGPXMenu
             const box = document.createElement('div');
             box.style.cssText = 'background:#0a0e27; border:2px solid #00BCD4; border-radius:12px; padding:20px; max-width:90%; max-height:80%; overflow:auto; color:#fff;';
             let rows = tracks.map((t, i) =>
@@ -10930,10 +11068,11 @@ assign initialcost =
             // 4. tonen + klaarzetten (Deel 2 koppelt GO; voor nu in de planner-route-variabelen)
             if (gpxPolyline) { try { mapInstance.removeLayer(gpxPolyline); } catch(e){} }
             gpxPolyline = L.polyline(fullRoute, { pane: 'hmNaviPane', color:'#7C4DFF', weight: trackLineWidth, opacity:0.9 }).addTo(mapInstance);
-            // v65.1: volgt de route je GPX? Zo niet: "Andere Mode?" (onderin). Dan de route in beeld (4 s, zie gpxInBeeld).
-            let fit = null;
-            try { fit = gpxVolgt(raw, fullRoute); } catch (e) { console.warn('gpxVolgt', e); }
-            if (fit && (fit.ver > GPX_VER_MAX || fit.lengte > GPX_LENGTE_MAX)) gpxVraagOpen(fit); else gpxVraagDicht();
+            // v65.2: wijkt de route ergens af van je track? Dan onderin "Zonder navi laden?" (of een andere Mode). Dan de route
+            // in beeld (4 s, zie gpxInBeeld).
+            let plek = null;
+            try { plek = gpxPlekken(raw, fullRoute); } catch (e) { console.warn('gpxPlekken', e); }
+            if (plek && plek.n > 0) gpxVraagOpen(plek); else gpxVraagDicht();
             gpxInBeeld(fullRoute);
 
             // bewaar voor Deel 2 (GO) + zet als de ACTIEVE master-route (gpxRoute), net als een
@@ -11009,8 +11148,10 @@ assign initialcost =
             modal.style.cssText = `
                 position: fixed; top: 0; left: 0; right: 0; bottom: 0;
                 background: rgba(0,0,0,0.8); display: flex; align-items: center;
-                justify-content: center; z-index: 1300; cursor: pointer;
-            `;
+                justify-content: center; z-index: 2555; cursor: pointer;
+            `;   // v65.2 (Sjoerd: "Gpx menu ligt lager dan het 'actief rijden' navigatie menu met afstand en tijd. En flits en
+                 // verkeersbord."): was 1300 — onder remPanel/trackLenBox (1600), pijlen/afstand (2000), flitser en bord (2050).
+                 // Nu de laag van Options/Config (2555), net als de andere menu's achter MENU.
             
             const content = document.createElement('div');
             content.style.cssText = `
@@ -11108,7 +11249,8 @@ assign initialcost =
             // offroad-spoor (paars) ook weg (lokaal). Het /gpx/ bericht wordt elders gewist/herschreven.
             if (offroadPolyline) { try { mapInstance.removeLayer(offroadPolyline); } catch(e){} offroadPolyline = null; }
             offroadRoute = [];
-            
+            if (typeof gpxVraagDicht === 'function') gpxVraagDicht();   // v65.2: geen vraag over een route die weg is
+
             // Close modal
             closeGPXModal();
         }
@@ -12695,6 +12837,7 @@ assign initialcost =
         // spoor + afslagen) elke halve seconde op, 108× per minuut. Nu elke 2 s alleen het tijdstempel (een paar bytes) en
         // de hele route alleen als de master iets nieuws deelde — of als vangnet eens per minuut.
         let volgGpxTs, volgGpxCheck = 0, volgGpxGehaald = 0, volgGpxFout = false;
+        let volgVangnetTs = 0;   // v65.2: het vangnet (geen lijn, geen route) haalt /gpx/ hooguit eens per minuut op
         async function volgGpxNieuw(code) {
             const nu = Date.now();
             if (volgGpxTs !== undefined && nu - volgGpxCheck < 2000) return false;
@@ -14247,6 +14390,18 @@ assign initialcost =
                                         }
                                     } else {
                                         gpxRoute = [];  // Master deleted it
+                                        // v65.2 GEVONDEN (bij "Zonder navi"): de volger hield de oude (gestippelde) lijn en reed hem door,
+                                        // met stem — ook na Delete Loaded Track van de master. Nu: lijn weg, volger-navigatie stoppen
+                                        // (zoals bij All track UIT). Het paarse spoor tekent hieronder gewoon verder.
+                                        if (gpxPolyline) { try { mapInstance.removeLayer(gpxPolyline); } catch (e) {} gpxPolyline = null; }
+                                        followerNavTurns = null;
+                                        if (followerNavActive) {
+                                            followerNavActive = false;
+                                            activeRoute = null;
+                                            detectedTurns = [];
+                                            if (typeof speechSynthesis !== 'undefined') speechSynthesis.cancel();
+                                            if (typeof hideNavElements === 'function') hideNavElements();
+                                        }
                                     }
                                 }
                                 
@@ -14270,7 +14425,14 @@ assign initialcost =
                                 if (currentMode === 'follower' && !gpxPolyline) {
                                     try {
                                         let _r = (gpxRoute && gpxRoute.length > 0) ? gpxRoute : null;
-                                        if (!_r) { const _f = await fetchGPXRoute(code); if (_f && _f.length > 0) { gpxRoute = _f; _r = _f; } }
+                                        // v65.2 GEMETEN (meet112): deelde de master alleen een paars spoor (geen navi-route), dan haalde de
+                                        // volger hier de hele /gpx/ elke halve seconde op — 3000 punten = 6 MB per minuut, per volger
+                                        // (Firebase-quotum!). Nu hooguit eens per minuut; iets nieuws van de master komt via volgGpxNieuw
+                                        // hierboven toch binnen 2 s binnen, en een mislukte ophaalbeurt probeert die de volgende ronde opnieuw.
+                                        if (!_r && Date.now() - volgVangnetTs > 60000) {
+                                            volgVangnetTs = Date.now();
+                                            const _f = await fetchGPXRoute(code); if (_f && _f.length > 0) { gpxRoute = _f; _r = _f; }
+                                        }
                                         if (_r && _r.length > 1) {
                                             gpxPolyline = L.polyline(_r, { pane: 'hmNaviPane',
                                                 color: '#00BCD4', weight: trackLineWidth, opacity: 0.85, dashArray: '2, 5'
@@ -14323,7 +14485,7 @@ assign initialcost =
 
                     // v63.88: één ronde tegelijk — GEMETEN (volger88, traag netwerk 3 s per antwoord): elke 0,5 s startte
                     // een nieuwe ronde terwijl de vorige nog liep, tot 14 Firebase-vragen tegelijk (die elk na 5 s afbreken).
-                    volgGpxTs = undefined; volgGpxCheck = 0;
+                    volgGpxTs = undefined; volgGpxCheck = 0; volgVangnetTs = 0;
                     let volgLusBezig = false;
                     const volgLus = async () => {
                         if (volgLusBezig) return;
@@ -14406,8 +14568,8 @@ assign initialcost =
             modal.style.cssText = `
                 position: fixed; top: 0; left: 0; right: 0; bottom: 0;
                 background: rgba(0,0,0,0.8); display: flex; align-items: center;
-                justify-content: center; z-index: 1002;
-            `;
+                justify-content: center; z-index: 2555;
+            `;   // v65.2: was 1002 (onder het rij-scherm: afstand/tijd, pijlen, flitser, bord) — zie toggleGPXMenu
             
             const content = document.createElement('div');
             content.style.cssText = `
