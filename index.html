@@ -816,6 +816,27 @@
         .pmSub { color: #aab; font-size: 0.8em; text-align: center; margin-top: -4px;
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .pmRij { display: flex; gap: 8px; }
+        /* v65.1: GPX laden — "Route laden als" (midden, met achtergrond) en "Andere Mode?" (onderin, de route blijft zichtbaar) */
+        #gpxModePaneel { display: none; position: fixed; inset: 0; z-index: 3000; background: rgba(0,0,0,0.55);
+            align-items: center; justify-content: center; padding: 12px; box-sizing: border-box; }
+        #gpxModePaneel .gmBox { width: 300px; max-width: 100%; max-height: 100%; overflow-y: auto; box-sizing: border-box; background: #0a0e27;
+            border: 2px solid #00BCD4; border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 8px;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.6); }
+        .gmKnoppen { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .gmKnop { min-height: 52px; border-radius: 10px; border: 3px solid transparent; color: #fff; font-weight: bold; font-size: 1.05em;
+            cursor: pointer; padding: 0 6px; }
+        .gmKnop.gmVoor { border-color: #fff; box-shadow: 0 0 0 2px #00BCD4; }
+        .gmKnop.gmBreed { grid-column: 1 / -1; }
+        @media (orientation: landscape) {
+            #gpxModePaneel .gmBox { width: 420px; }
+            .gmKnoppen { grid-template-columns: repeat(3, 1fr); }
+            .gmKnop.gmBreed { grid-column: auto; }
+        }
+        #gpxModeVraag { display: none; position: fixed; left: 12px; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+            z-index: 2900; max-width: 560px; margin: 0 auto; box-sizing: border-box; background: rgba(10,14,39,0.95);
+            border: 2px solid #FF9800; border-radius: 12px; padding: 10px; flex-direction: column; gap: 8px; }
+        #gpxModeVraag .gmRij { display: flex; gap: 6px; }
+        #gpxModeVraag .gmKnop { flex: 1; min-width: 0; min-height: 44px; font-size: 0.85em; padding: 0 2px; }
         .pmKnop { flex: 1; min-width: 0; height: 48px; padding: 0 6px; border-radius: 10px; border: 2px solid;
             font-weight: bold; font-size: 1em; cursor: pointer; background: transparent; font-family: inherit; }
         .pmStart   { border-color: #9E9E9E; color: #EEE;    background: rgba(158,158,158,0.14); }
@@ -1318,7 +1339,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v65.0 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v65.1 © Umop3p1sdn</div>
 
             </div>
 
@@ -1643,7 +1664,7 @@
             <!-- ═══════════ ALGEMEEN ═══════════ -->
             <h2 style="color: #00BCD4; margin-top: 35px; border-top: 2px solid #00BCD4; padding-top: 22px;">Algemeen (Master &amp; Volger)</h2>
             <p>Deze knoppen en functies werken hetzelfde voor allebei.</p>
-            <p style="background:#e3e7f5; padding:10px 14px; border-radius:8px;"><strong>Knoppen-menu:</strong> de instelknoppen (TAG, LIJN, CREW, COMS, KAART en FM) zitten achter <strong>één menu-knop rechts</strong> op de kaart, onder het slotje. Tik erop voor het menu met de grote knoppen; tik ernaast om te sluiten (na 4 seconden zonder aanraking sluit het vanzelf — een balkje onderin het menu loopt dan leeg; elke aanraking in het menu maakt hem weer vol). Naast dat knoppen-menu verschijnt een tweede vakje met drie knoppen. <strong>Menu</strong> opent het instellingen-menu, netjes verdeeld in <strong>GPX</strong> (routes), <strong>Options</strong> (alles wat je ziet en hoort: navigatiepijlen, stem, flitsmelding, Screen adjust) en <strong>Config</strong> (Start up config, data-gebruik, OMB, Develop mode), met de handleidingen eronder. Doe je in het Menu, GPX, Options of Config (ook Start up config en Screen adjust) 8 tellen niets, dan gaat alles vanzelf dicht en zie je weer de kaart — een balkje onder het menu loopt dan leeg; elke aanraking maakt hem weer vol, typen houdt hem open. De handleidingen hebben geen timer. <strong>Reroute</strong> (alleen de Master) maakt een helemaal nieuwe route van waar je nú bent naar je finish en start hem meteen — handig als je een andere weg nam (bv. de brug in plaats van het pontje) en de oude route aan de verkeerde kant blijft liggen. Tik twee keer: de eerste tik toont <strong>ZEKER?</strong>, de tweede rekent echt (net als STOP). Liggen er nog tussenpunten vóór je, dan vraagt hij daarna <strong>Via's verwijderen?</strong> — <strong>Ja</strong> = alle tussenpunten eruit en direct naar je finish, <strong>Nee</strong> = via de tussenpunten die nog vóór je liggen (één tik, geen tweede bevestiging). Ben je van de route af, dan staat Reroute ook bij <strong>2 Route</strong> (direct eronder). Tussenpunten die nog vóór je liggen blijven erin; punten waar je al langs kwam of die achter je liggen vallen weg. Je vermijd-gebieden (Dead end) blijven gelden en de volgers krijgen de nieuwe route vanzelf. Lukt het even niet (geen bereik), dan rijd je gewoon verder op de oude route. <strong>Next point</strong> staat niet in dat vakje maar tijdens het rijden <strong>onderin, boven de pijlen en de afstand</strong> (alleen voor de Master met een route). Hij gooit de route weg tot en met de eerstvolgende bocht vóór je — handig als je verderop weer wilt invoegen in plaats van terug te moeten; nog een druk pakt de bocht daarna. Hij schuift mee als je het pijlen-blok met Screen adjust verplaatst. <strong>Dead end</strong> gebruik je als de weg dicht of doodlopend is: hij zet een vermijd-gebied van 50 meter op de weg vóór je en berekent meteen een nieuwe route eromheen. Aan de andere kant verschijnt een <strong>derde vakje</strong> met je <strong>trackingcode</strong> groot in beeld — tik erop om hem te delen — en de <strong>STOP</strong>-knop. STOP vraagt altijd een tweede tik ter bevestiging, zodat je hem nooit per ongeluk indrukt. Code en STOP staan daarom niet meer op het rijscherm zelf. De uitleg per knop hieronder blijft gewoon gelden — je vindt ze alleen in dat menu. Dit geldt trouwens overal: <strong>elk menu of venster sluit je ook door ernaast te tikken</strong> (de rode ✕ blijft ook gewoon werken). De mic- en T-knop staan <strong>standaard uit</strong> — zet ze aan met de <strong>COMS</strong>-knop in het knoppen-menu (groen = aan). Met <strong>KAART</strong> kies je uit 6 kaartstijlen: Standaard, Satelliet, Satelliet + wegen (foto mét getekende wegen en namen — zijwegen zichtbaar), Satelliet + wegen 2 (zelfde idee, andere wegenlaag met meer detail op diep inzoomen — testversie, werkt alleen online), Hoogte (met hoogtelijnen) en Donker (nachtkaart). Bij <strong>elke dag/nacht-overgang</strong> springt de kaart vanzelf (zonsondergang → Donker, zonsopkomst → Standaard, berekend op je eigen positie) — ook als je op Satelliet rijdt. Daarna kun je altijd handmatig een andere kaart kiezen; die blijft staan tot de volgende overgang. Je instellingen (TAG, dagkaart, flitsers, lijndikte enz.) worden op je telefoon bewaard; via <strong>Menu → Config → Start up config</strong> zet je ze over naar een andere telefoon (eigen instellingen worden automatisch onthouden). Met <strong>Menu → Options → Screen adjust</strong> maak je het rijscherm passend voor jóuw toestel: kies een blok (pijlen + afstand, afstand/tijd, verkeersbord, flitser-bord — en liggend ook de GPS-snelheid), verplaats het met de vier pijlen (tikken = klein stapje, vasthouden = steeds sneller; liggend staat de bediening breed naast de blok-keuze), maak het groter of kleiner met de schuif eronder, en tik naast het paneel om op te slaan. Staand en liggend hebben elk hun <strong>eigen</strong> instellingen, per blok is er een reset-knop, en tijdens het afstellen zie je twee grote rode oefenpijlen zodat je precies weet waar je aan werkt. Let op: offline tegels vooraf laden werkt voor Standaard én Donker (zelfde kaart, ander jasje); Satelliet verbruikt flink meer data.</p>
+            <p style="background:#e3e7f5; padding:10px 14px; border-radius:8px;"><strong>Knoppen-menu:</strong> de instelknoppen (TAG, LIJN, CREW, COMS, KAART en FM) zitten achter <strong>één menu-knop rechts</strong> op de kaart, onder het slotje. Tik erop voor het menu met de grote knoppen; tik ernaast om te sluiten (na 4 seconden zonder aanraking sluit het vanzelf — een balkje onderin het menu loopt dan leeg; elke aanraking in het menu maakt hem weer vol). Naast dat knoppen-menu verschijnt een tweede vakje met drie knoppen. <strong>Menu</strong> opent het instellingen-menu, netjes verdeeld in <strong>GPX</strong> (routes), <strong>Options</strong> (alles wat je ziet en hoort: navigatiepijlen, stem, flitsmelding, Screen adjust) en <strong>Config</strong> (Start up config, data-gebruik, OMB, Develop mode), met de handleidingen eronder. Open je het knoppen-menu terwijl Plan open is, dan gaat Plan dicht (en andersom): er staat altijd maar één menu open. Doe je in het Menu, GPX, Options of Config (ook Start up config en Screen adjust) 8 tellen niets, dan gaat alles vanzelf dicht en zie je weer de kaart — een balkje onder het menu loopt dan leeg; elke aanraking maakt hem weer vol, typen houdt hem open. De handleidingen hebben geen timer. <strong>Reroute</strong> (alleen de Master) maakt een helemaal nieuwe route van waar je nú bent naar je finish en start hem meteen — handig als je een andere weg nam (bv. de brug in plaats van het pontje) en de oude route aan de verkeerde kant blijft liggen. Tik twee keer: de eerste tik toont <strong>ZEKER?</strong>, de tweede rekent echt (net als STOP). Liggen er nog tussenpunten vóór je, dan vraagt hij daarna <strong>Via's verwijderen?</strong> — <strong>Ja</strong> = alle tussenpunten eruit en direct naar je finish, <strong>Nee</strong> = via de tussenpunten die nog vóór je liggen (één tik, geen tweede bevestiging). Ben je van de route af, dan staat Reroute ook bij <strong>2 Route</strong> (direct eronder). Tussenpunten die nog vóór je liggen blijven erin; punten waar je al langs kwam of die achter je liggen vallen weg. Je vermijd-gebieden (Dead end) blijven gelden en de volgers krijgen de nieuwe route vanzelf. Lukt het even niet (geen bereik), dan rijd je gewoon verder op de oude route. <strong>Next point</strong> staat niet in dat vakje maar tijdens het rijden <strong>onderin, boven de pijlen en de afstand</strong> (alleen voor de Master met een route). Hij gooit de route weg tot en met de eerstvolgende bocht vóór je — handig als je verderop weer wilt invoegen in plaats van terug te moeten; nog een druk pakt de bocht daarna. Hij schuift mee als je het pijlen-blok met Screen adjust verplaatst. <strong>Dead end</strong> gebruik je als de weg dicht of doodlopend is: hij zet een vermijd-gebied van 50 meter op de weg vóór je en berekent meteen een nieuwe route eromheen. Aan de andere kant verschijnt een <strong>derde vakje</strong> met je <strong>trackingcode</strong> groot in beeld — tik erop om hem te delen — en de <strong>STOP</strong>-knop. STOP vraagt altijd een tweede tik ter bevestiging, zodat je hem nooit per ongeluk indrukt. Code en STOP staan daarom niet meer op het rijscherm zelf. De uitleg per knop hieronder blijft gewoon gelden — je vindt ze alleen in dat menu. Dit geldt trouwens overal: <strong>elk menu of venster sluit je ook door ernaast te tikken</strong> (de rode ✕ blijft ook gewoon werken). De mic- en T-knop staan <strong>standaard uit</strong> — zet ze aan met de <strong>COMS</strong>-knop in het knoppen-menu (groen = aan). Met <strong>KAART</strong> kies je uit 6 kaartstijlen: Standaard, Satelliet, Satelliet + wegen (foto mét getekende wegen en namen — zijwegen zichtbaar), Satelliet + wegen 2 (zelfde idee, andere wegenlaag met meer detail op diep inzoomen — testversie, werkt alleen online), Hoogte (met hoogtelijnen) en Donker (nachtkaart). Bij <strong>elke dag/nacht-overgang</strong> springt de kaart vanzelf (zonsondergang → Donker, zonsopkomst → Standaard, berekend op je eigen positie) — ook als je op Satelliet rijdt. Daarna kun je altijd handmatig een andere kaart kiezen; die blijft staan tot de volgende overgang. Je instellingen (TAG, dagkaart, flitsers, lijndikte enz.) worden op je telefoon bewaard; via <strong>Menu → Config → Start up config</strong> zet je ze over naar een andere telefoon (eigen instellingen worden automatisch onthouden). Met <strong>Menu → Options → Screen adjust</strong> maak je het rijscherm passend voor jóuw toestel: kies een blok (pijlen + afstand, afstand/tijd, verkeersbord, flitser-bord — en liggend ook de GPS-snelheid), verplaats het met de vier pijlen (tikken = klein stapje, vasthouden = steeds sneller; liggend staat de bediening breed naast de blok-keuze), maak het groter of kleiner met de schuif eronder, en tik naast het paneel om op te slaan. Staand en liggend hebben elk hun <strong>eigen</strong> instellingen, per blok is er een reset-knop, en tijdens het afstellen zie je twee grote rode oefenpijlen zodat je precies weet waar je aan werkt. Let op: offline tegels vooraf laden werkt voor Standaard én Donker (zelfde kaart, ander jasje); Satelliet verbruikt flink meer data.</p>
 
             <h3 style="color: #00BCD4; margin-top: 20px;">Knoppen op de kaart</h3>
 
@@ -1780,8 +1801,9 @@
 
             <p style="margin:10px 0 4px;"><strong>Laden (alleen Master):</strong></p>
             <ul style="margin: 5px 0; padding-left: 20px;">
-                <li><strong>Load route</strong> — voor een nette route. De app berekent er een rijdbare route van met <strong>gesproken navigatie</strong>: vóór elke afslag verschijnt een pijl (klein/blauw als 't nog ver is, groter/oranje/rood als je nadert) en je hoort de afslag ("over 300 meter rechtsaf"). De resterende afstand + tijd tellen af.</li>
+                <li><strong>Load route</strong> — voor een nette route. De app berekent er een rijdbare route van met <strong>gesproken navigatie</strong>: vóór elke afslag verschijnt een pijl (klein/blauw als 't nog ver is, groter/oranje/rood als je nadert) en je hoort de afslag ("over 300 meter rechtsaf"). De resterende afstand + tijd tellen af. Na het kiezen van het bestand kies je <strong>hoe</strong> je hem rijdt: <strong>Road, Offroad, Bike, Race bike of Walk</strong> — de app rekent de route met die Mode (en Plan gaat mee). Eén staat al voorgekozen (✓): wat hij in de GPX herkent (bv. TET, enduro, mtb, fiets, wandel in de naam of de soort, of het tempo als de GPX tijden heeft), anders je huidige Mode. Volgt de route je GPX daarna niet goed (meer dan 8% verder dan 50 m, of veel langer), dan vraagt hij onderin <strong>Andere Mode?</strong> — tik er een en hij rekent opnieuw; <strong>Zo laten</strong> houdt hem. Een offroad-route die je mét navi laadt, houdt stem en pijlen aan. Een route die je zelf in Plan maakte en opsloeg, onthoudt zijn Mode al.</li>
                 <li><strong>Load route (no navi)</strong> — laadt de GPX als een <strong>kaal spoor</strong> (paarse lijn), precies zoals 't bestand is, zónder navigatie. <strong>Ideaal voor offroad:</strong> je volgt gewoon het "touwtje" op de kaart. Ook <strong>opgeslagen sporen laad je hiermee</strong>.</li>
+                <li>Na het laden staat de route (of de lijn) <strong>4 tellen in beeld</strong> — het balkje bovenin loopt leeg; beweeg je de kaart, dan begint het opnieuw — en daarna gaat de kaart terug naar jou. Zolang "Andere Mode?" openstaat, blijft de route staan.</li>
             </ul>
             <p style="background:#e3e7f5; padding:10px 14px; border-radius:8px;">Heeft je GPX meerdere delen (zoals een lange trail), dan kies je in een lijstje welke delen je laadt — handig om alleen het stuk van vandaag te tonen. Een <strong>zelf geladen GPX kun je niet bewerken</strong>; daarvoor maak je een route met <strong>Plan</strong>. De Volger laadt zelf niets (die volgt de Master).</p>
 
@@ -1873,7 +1895,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v65.0 © Umop3p1sdn
+                HO-ME v65.1 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1983,7 +2005,7 @@
             <!-- ═══════════ GENERAL ═══════════ -->
             <h2 style="color: #00BCD4; margin-top: 35px; border-top: 2px solid #00BCD4; padding-top: 22px;">General (Master &amp; Follower)</h2>
             <p>These buttons and functions work the same for both.</p>
-            <p style="background:#e3e7f5; padding:10px 14px; border-radius:8px;"><strong>Button menu:</strong> the setting buttons (TAG, LIJN, CREW, COMS, KAART and FM) sit behind <strong>one menu button on the right</strong> of the map, below the lock. Tap it for the menu with the big buttons; tap next to it to close (after 4 seconds without a touch it closes by itself — a small bar at the bottom of the menu runs empty; every touch in the menu fills it again). Next to that button menu a second little panel appears with three buttons. <strong>Menu</strong> opens the settings menu, tidily split into <strong>GPX</strong> (routes), <strong>Options</strong> (everything you see and hear: navigation arrows, voice, speed camera warning, Screen adjust) and <strong>Config</strong> (Start up config, data usage, OMB, Develop mode), with the manuals below. Do nothing for 8 seconds in the Menu, GPX, Options or Config (also Start up config and Screen adjust) and everything closes by itself, back to the map — a small bar below the menu runs empty; every touch fills it again, typing keeps it open. The manuals have no timer. <strong>Reroute</strong> (Master only) makes a completely new route from where you are right now to your finish and starts it straight away — handy when you took another road (e.g. the bridge instead of the ferry) and the old route stays on the wrong side. Tap twice: the first tap shows <strong>ZEKER?</strong> (sure?), the second one really recalculates (just like STOP). If there are still via points ahead of you, it then asks <strong>Via's verwijderen?</strong> (remove via points?) — <strong>Ja</strong> (yes) = all via points out and straight to your finish, <strong>Nee</strong> (no) = via the points still ahead of you (one tap, no second confirmation). When you are off the route, Reroute also sits by <strong>2 Route</strong> (right below it). Via points still ahead of you are kept; points you already passed or that lie behind you are dropped. Your avoid areas (Dead end) still apply and followers get the new route automatically. If it fails for a moment (no signal), you simply keep riding the old route. <strong>Next point</strong> is not in that panel but sits <strong>at the bottom while riding, above the arrows and the distance</strong> (only for the Master with a route). It discards the route up to and including the next bend ahead of you — useful when you want to rejoin further along instead of riding back; press again for the bend after that. It moves along when you shift the arrows block with Screen adjust. Use <strong>Dead end</strong> when the road is closed or a dead end: it drops a 50 metre avoid area on the road ahead of you and immediately calculates a new route around it. On the other side a <strong>third panel</strong> appears with your <strong>tracking code</strong> shown large — tap it to share — and the <strong>STOP</strong> button. STOP always asks for a second tap to confirm, so you can never hit it by accident. That is why the code and STOP are no longer on the riding screen itself. The per-button explanations below still apply — you just find them in that menu. This applies everywhere by the way: <strong>every menu or window also closes by tapping next to it</strong> (the red ✕ keeps working too). The mic and T buttons are <strong>off by default</strong> — enable them with the <strong>COMS</strong> button in the button menu (green = on). With <strong>KAART</strong> you pick from 6 map styles: Standard, Satellite, Satellite + roads (imagery with drawn roads and names — side roads visible), Satellite + roads 2 (same idea, different road layer with more deep-zoom detail — test version, online only), Terrain (contour lines) and Dark (night map). At <strong>every day/night transition</strong> the map jumps automatically (sunset → Dark, sunrise → Standard, computed at your own position) — even when riding Satellite. After that you can always pick another map manually; it stays until the next transition. Your settings (TAG, day map, cameras, line width etc.) are stored on your phone; via <strong>Menu → Config → Start up config</strong> you can transfer them to another phone (your own settings are remembered automatically). With <strong>Menu → Options → Screen adjust</strong> you fit the riding screen to your device: pick a block (arrows + distance, distance/time, speed sign, camera sign — and in landscape also the GPS speed), move it with the four arrows (tap = small step, hold = increasingly faster; in landscape the controls sit wide next to the block chooser), resize it with the slider below, and tap beside the panel to save. Portrait and landscape each keep their <strong>own</strong> settings, every block has a reset button, and while adjusting you see two big red practice arrows so you know exactly what you are placing. Note: offline tile pre-loading works for Standard and Dark (same map, different look); Satellite uses considerably more data.</p>
+            <p style="background:#e3e7f5; padding:10px 14px; border-radius:8px;"><strong>Button menu:</strong> the setting buttons (TAG, LIJN, CREW, COMS, KAART and FM) sit behind <strong>one menu button on the right</strong> of the map, below the lock. Tap it for the menu with the big buttons; tap next to it to close (after 4 seconds without a touch it closes by itself — a small bar at the bottom of the menu runs empty; every touch in the menu fills it again). Next to that button menu a second little panel appears with three buttons. <strong>Menu</strong> opens the settings menu, tidily split into <strong>GPX</strong> (routes), <strong>Options</strong> (everything you see and hear: navigation arrows, voice, speed camera warning, Screen adjust) and <strong>Config</strong> (Start up config, data usage, OMB, Develop mode), with the manuals below. Open the button menu while Plan is open and Plan closes (and the other way round): only one menu is open at a time. Do nothing for 8 seconds in the Menu, GPX, Options or Config (also Start up config and Screen adjust) and everything closes by itself, back to the map — a small bar below the menu runs empty; every touch fills it again, typing keeps it open. The manuals have no timer. <strong>Reroute</strong> (Master only) makes a completely new route from where you are right now to your finish and starts it straight away — handy when you took another road (e.g. the bridge instead of the ferry) and the old route stays on the wrong side. Tap twice: the first tap shows <strong>ZEKER?</strong> (sure?), the second one really recalculates (just like STOP). If there are still via points ahead of you, it then asks <strong>Via's verwijderen?</strong> (remove via points?) — <strong>Ja</strong> (yes) = all via points out and straight to your finish, <strong>Nee</strong> (no) = via the points still ahead of you (one tap, no second confirmation). When you are off the route, Reroute also sits by <strong>2 Route</strong> (right below it). Via points still ahead of you are kept; points you already passed or that lie behind you are dropped. Your avoid areas (Dead end) still apply and followers get the new route automatically. If it fails for a moment (no signal), you simply keep riding the old route. <strong>Next point</strong> is not in that panel but sits <strong>at the bottom while riding, above the arrows and the distance</strong> (only for the Master with a route). It discards the route up to and including the next bend ahead of you — useful when you want to rejoin further along instead of riding back; press again for the bend after that. It moves along when you shift the arrows block with Screen adjust. Use <strong>Dead end</strong> when the road is closed or a dead end: it drops a 50 metre avoid area on the road ahead of you and immediately calculates a new route around it. On the other side a <strong>third panel</strong> appears with your <strong>tracking code</strong> shown large — tap it to share — and the <strong>STOP</strong> button. STOP always asks for a second tap to confirm, so you can never hit it by accident. That is why the code and STOP are no longer on the riding screen itself. The per-button explanations below still apply — you just find them in that menu. This applies everywhere by the way: <strong>every menu or window also closes by tapping next to it</strong> (the red ✕ keeps working too). The mic and T buttons are <strong>off by default</strong> — enable them with the <strong>COMS</strong> button in the button menu (green = on). With <strong>KAART</strong> you pick from 6 map styles: Standard, Satellite, Satellite + roads (imagery with drawn roads and names — side roads visible), Satellite + roads 2 (same idea, different road layer with more deep-zoom detail — test version, online only), Terrain (contour lines) and Dark (night map). At <strong>every day/night transition</strong> the map jumps automatically (sunset → Dark, sunrise → Standard, computed at your own position) — even when riding Satellite. After that you can always pick another map manually; it stays until the next transition. Your settings (TAG, day map, cameras, line width etc.) are stored on your phone; via <strong>Menu → Config → Start up config</strong> you can transfer them to another phone (your own settings are remembered automatically). With <strong>Menu → Options → Screen adjust</strong> you fit the riding screen to your device: pick a block (arrows + distance, distance/time, speed sign, camera sign — and in landscape also the GPS speed), move it with the four arrows (tap = small step, hold = increasingly faster; in landscape the controls sit wide next to the block chooser), resize it with the slider below, and tap beside the panel to save. Portrait and landscape each keep their <strong>own</strong> settings, every block has a reset button, and while adjusting you see two big red practice arrows so you know exactly what you are placing. Note: offline tile pre-loading works for Standard and Dark (same map, different look); Satellite uses considerably more data.</p>
 
             <h3 style="color: #00BCD4; margin-top: 20px;">Buttons on the map</h3>
 
@@ -2120,8 +2142,9 @@
 
             <p style="margin:10px 0 4px;"><strong>Loading (Master only):</strong></p>
             <ul style="margin: 5px 0; padding-left: 20px;">
-                <li><strong>Load route</strong> — for a proper route. The app calculates a rideable route from it with <strong>spoken navigation</strong>: before each turn an arrow appears (small/blue when it's still far, bigger/orange/red as you approach) and you hear the turn ("in 300 metres turn right"). The remaining distance + time count down.</li>
+                <li><strong>Load route</strong> — for a proper route. The app calculates a rideable route from it with <strong>spoken navigation</strong>: before each turn an arrow appears (small/blue when it's still far, bigger/orange/red as you approach) and you hear the turn ("in 300 metres turn right"). The remaining distance + time count down. After choosing the file you choose <strong>how</strong> you ride it: <strong>Road, Offroad, Bike, Race bike or Walk</strong> — the app calculates the route with that Mode (and Plan follows). One is already preselected (✓): what it recognises in the GPX (e.g. TET, enduro, mtb, cycling, hiking in the name or type, or the pace if the GPX has times), otherwise your current Mode. If the route then doesn't follow your GPX well (more than 8% further than 50 m away, or much longer), it asks at the bottom <strong>Andere Mode?</strong> (other Mode?) — tap one and it calculates again; <strong>Zo laten</strong> keeps it. An offroad route you load with navi keeps voice and arrows on. A route you made in Plan yourself and saved already remembers its Mode.</li>
                 <li><strong>Load route (no navi)</strong> — loads the GPX as a <strong>bare track</strong> (purple line), exactly as the file is, without navigation. <strong>Ideal for offroad:</strong> you simply follow the "string" on the map. <strong>Saved tracks are also loaded with this.</strong></li>
+                <li>After loading, the route (or the line) stays <strong>in view for 4 seconds</strong> — the bar at the top runs empty; move the map and it starts again — and then the map goes back to you. As long as "Andere Mode?" is open, the route stays.</li>
             </ul>
             <p style="background:#e3e7f5; padding:10px 14px; border-radius:8px;">If your GPX has multiple parts (like a long trail), you pick from a list which parts to load — handy to show only today's section. A <strong>GPX you loaded yourself can't be edited</strong>; for that, make a route with <strong>Plan</strong>. The Follower doesn't load anything (they follow the Master).</p>
 
@@ -2213,7 +2236,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v65.0 © Umop3p1sdn
+                HO-ME v65.1 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2420,6 +2443,22 @@
         <div id="wijzigRij" class="pmRij"><button class="pmKnop pmWijzig" onclick="puntWijzig()">Wijzigen</button></div>
         <div class="pmRij"><button class="pmKnop pmAnnuleer" onclick="puntMenuSluit()">Annuleer</button></div>
     </div>
+    <!-- v65.1: Load route (met navi) — eerst de Mode kiezen; de herkende (of je huidige) staat voorgekozen. Geen timer. -->
+    <div id="gpxModePaneel">
+        <div class="gmBox">
+            <div class="pmKop">Route laden als</div>
+            <div id="gpxModeNaam" class="pmSub"></div>
+            <div id="gpxModeKnoppen" class="gmKnoppen"></div>
+            <div id="gpxModeReden" style="color:#cfeffd; font-size:0.8em; text-align:center; line-height:1.3;"></div>
+            <div class="pmRij"><button class="pmKnop pmAnnuleer" onclick="gpxModeAnnuleer()">Annuleer</button></div>
+        </div>
+    </div>
+    <!-- v65.1: na het laden — volgt de route je GPX niet goed? Andere Mode (onderin: de route blijft in beeld). Geen timer. -->
+    <div id="gpxModeVraag">
+        <div id="gpxModeVraagTekst" style="color:#fff; font-size:0.88em; line-height:1.3;"></div>
+        <div id="gpxModeVraagKnoppen" class="gmRij"></div>
+        <div class="gmRij"><button class="pmKnop pmAnnuleer" onclick="gpxVraagDicht()">Zo laten</button></div>
+    </div>
     <!-- ════════ EINDE ROUTE PLANNER MODULE ════════ -->
 
     <script>
@@ -2435,6 +2474,8 @@
             // v63.91 (Sjoerd: "lijsten onthouden … alles weg? niet slim"): ook via de Plan-knop blijven gevonden POI's staan —
             // GEMETEN v63.90: Plan-knop = alles weg, tik in het rijscherm = alles bleef. Nu altijd blijven (poiPlek zet ze).
             planTerugTot = 0;                          // v63.81: alleen de tik uit het rijscherm telt af (die zet hem hierna)
+            // v65.1: één menu tegelijk — Plan open = het knoppen-menu (vierkante knop rechts) dicht
+            if (document.body.classList.contains('btn-menu-open') && typeof closeBtnMenu === 'function') closeBtnMenu();
             map = mapInstance;                         // koppel de planner aan de tracker-kaart
             plannerWireUp();                           // koppel zoekveld (1x, als HTML aanwezig)
             plannerSetMapClick(true);                  // tik-op-kaart → planner-tikmenu AAN
@@ -2668,6 +2709,8 @@
         }
         function plannerGo(live) {
             if (!lastRouteGeo) { if (!live) alert('Maak eerst een route.'); return; }
+            // v65.1: een met navi geladen offroad-GPX hield stem en pijlen aan; een Plan-route in een stille Mode = weer stil
+            if (!live && typeof gpxNaviStem !== 'undefined' && gpxNaviStem && MODE_SILENT[planMode]) { gpxNaviStem = false; rememberAndSilence(); }
             try {
                 const feat = lastRouteGeo.features[0];
                 const coords = feat.geometry.coordinates;           // [ [lng,lat,ele], ... ]
@@ -3258,12 +3301,16 @@ assign initialcost =
             const prof = document.getElementById('profileRow');
             if (prof) prof.style.display = (mode === 'road') ? '' : 'none';
 
-            // Geluid + pijlen: uit bij stille modi, anders herstellen naar normale stand
-            if (MODE_SILENT[mode]) {
+            // Geluid + pijlen: uit bij het ingaan van een stille Mode, terug bij het verlaten. v65.1: alleen bij die overgang —
+            // GEMETEN (stem111): Offroad nóg eens kiezen overschreef de onthouden stand met "uit" (daarna bleven stem en pijlen
+            // ook na Road uit), en Road → Bike zette een zelf uitgezette stem of pijl weer aan.
+            const wasStil = !!MODE_SILENT[prev], wordtStil = !!MODE_SILENT[mode];
+            if (wordtStil && !wasStil) {
                 if (typeof rememberAndSilence === 'function') rememberAndSilence();
-            } else {
+            } else if (!wordtStil && wasStil) {
                 if (typeof restoreAudioArrows === 'function') restoreAudioArrows();
             }
+            if (!wordtStil && typeof gpxNaviStem !== 'undefined') gpxNaviStem = false;   // v65.1: de uitzondering (offroad-GPX met navi) hoort bij Offroad
 
             clearAutoVias();   // oude auto-tussenpunten weg → opnieuw bepalen voor deze modus
             if (startPoint && destPoint) maybeRoute();   // route meteen herberekenen met nieuw profiel
@@ -7008,7 +7055,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "65.0";
+        const APP_VERSION = "65.1";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
@@ -10568,6 +10615,7 @@ assign initialcost =
             const file = event.target.files[0];
             if (!file) return;
             const text = await file.text();
+            try { event.target.value = ''; } catch (e) {}   // v65.1: hetzelfde bestand nog eens kiezen = weer laden
             // Eigen HO-ME-route met bouwpunten (<rte> + <home:kind>)? → terug in Plan mode (bewerkbaar).
             const home = parseHomeRoute(text);
             if (home && home.points.some(p => p.kind)) {   // alleen als 't echt HO-ME-bouwpunten zijn
@@ -10576,11 +10624,15 @@ assign initialcost =
             }
             const tracks = parseGpxTracks(text);
             if (!tracks.length) { alert('Geen bruikbare tracks in de GPX.'); return; }
-            // Eén deel → meteen laden. Meerdere → keuzelijst tonen.
+            // v65.1: eerst de Mode kiezen (herkend uit de GPX zelf, anders je huidige Mode) — dan pas BRouter
+            let herkend = null;
+            try { herkend = gpxHerken(text); } catch (e) {}
+            const naam = String(file.name || '').replace(/\.gpx$/i, '');
+            // Eén deel → meteen de Mode-keuze. Meerdere → eerst de keuzelijst.
             if (tracks.length === 1) {
-                processGpxRoute(tracks[0].pts);
+                gpxModeKeuze(tracks[0].pts, tracks[0].name || naam, herkend);
             } else {
-                showTrackPicker(tracks);
+                showTrackPicker(tracks, pts => gpxModeKeuze(pts, naam, herkend));
             }
         }
 
@@ -10589,6 +10641,7 @@ assign initialcost =
             const file = event.target.files[0];
             if (!file) return;
             const text = await file.text();
+            try { event.target.value = ''; } catch (e) {}   // v65.1: hetzelfde bestand nog eens kiezen = weer laden
             const tracks = parseGpxTracks(text);
             if (!tracks.length) { alert('Geen bruikbare tracks in de GPX.'); return; }
             if (tracks.length === 1) {
@@ -10605,10 +10658,7 @@ assign initialcost =
             offroadRoute = raw;
             if (offroadPolyline) { try { mapInstance.removeLayer(offroadPolyline); } catch(e){} }
             offroadPolyline = L.polyline(raw, { pane: 'hmNaviPane', color:'#9C27B0', weight: trackLineWidth, opacity:0.9 }).addTo(mapInstance);
-            try {
-                const grp = L.featureGroup(raw.map(([la,ln]) => L.circleMarker([la,ln],{radius:1})));
-                mapInstance.fitBounds(grp.getBounds(), { padding:[50,50] });
-            } catch(e){}
+            gpxInBeeld(raw);   // v65.1: de lijn in beeld, 4 s (de kaart bewegen = langer), dan terug naar jou
             // apart delen met de volger via het /gpx/ pad (offroad als extra veld). De huidige
             // navi-route (gpxRoute) sturen we mee zodat die niet verloren gaat.
             if (currentMode === 'master' && typeof sendGPXToFirebase === 'function') {
@@ -10616,6 +10666,173 @@ assign initialcost =
             }
             if (typeof showBufferToast === 'function')
                 showBufferToast(`Offroad-lijn geladen (${routeKm(raw).toFixed(1)} km) — volgen, geen navigatie`, '#9C27B0', 4000);
+        }
+
+        // ═══ v65.1 GPX LADEN MET DE JUISTE MODE (Sjoerd: "Soms laad ik een offroad route met navi, maar dan wordt het een rare
+        // route omdat hij nog niet op Mode offroad staat" + "misschien is iemand met de fiets of lopend … herkenning aan de hand
+        // van de route? En dan de Mode aanpassen, en opnieuw laden na kiezen Mode. Na kiezen bestand alle opties van Mode
+        // weergeven is ook een optie"; gekozen: na het bestand alle 5 Modes, de herkende voorgekozen, geen timer; na het laden
+        // de controle "volgt de route je GPX?" en zo niet "Andere Mode?" → opnieuw rekenen; Plan gaat mee; offroad met navi:
+        // stem en pijlen aan) ═══ Een route die je zelf in Plan maakte en opsloeg, onthoudt zijn Mode al (loadRouteIntoPlanner).
+        // Opnieuw rekenen gebeurt alleen als jij een Mode kiest — nooit vanzelf (BRouter niet dubbel belasten).
+        const GPX_MODES = [['road', 'Road', '#546E7A'], ['offroad', 'Offroad', '#9C27B0'], ['bike', 'Bike', '#2196F3'],
+                           ['racebike', 'Race bike', '#FF9800'], ['walk', 'Walk', '#4CAF50']];
+        const GPX_VER_M = 50;          // verder dan dit van elkaar = volgt niet
+        const GPX_VER_MAX = 0.08;      // meer dan 8% (om de 40 m, beide kanten op) verder → "Andere Mode?"
+        const GPX_LENGTE_MAX = 1.15;   // of de route is 15% langer dan je GPX (heen-en-weer-uitstapjes)
+        let gpxNaviStem = false;       // stille Mode (offroad) maar met navi geladen: stem en pijlen aan — tot een Plan-route GO krijgt
+        let gpxBezig = false;          // opnieuw aan het rekenen na "Andere Mode?": de route blijft in beeld
+        let gpxKeuzeRaw = null;        // de punten die op de Mode-keuze wachten
+        // Welke Mode past bij deze GPX? Uit de GPX zelf: soort, naam, omschrijving, trefwoorden en maker — en het tempo als hij
+        // tijden heeft (alleen wandelen en fietsen zijn daaraan te zien; motor = Road of Offroad, dat zegt het tempo niet).
+        // → { mode, reden } of null (niets herkend: dan je huidige Mode).
+        function gpxHerken(text) {
+            const doc = new DOMParser().parseFromString(text, 'application/xml');
+            const delen = [], g = doc.documentElement;
+            if (g && g.getAttribute) delen.push(g.getAttribute('creator') || '');
+            ['metadata > name', 'metadata > desc', 'metadata > keywords', 'trk > name', 'trk > desc', 'trk > type', 'rte > name', 'rte > desc', 'rte > type']
+                .forEach(sel => { try { doc.querySelectorAll(sel).forEach(el => delen.push(el.textContent || '')); } catch (e) {} });
+            const orig = ' ' + delen.join(' ') + ' ', tekst = orig.toLowerCase();
+            const w = s => new RegExp('(^|[^a-z0-9])(' + s + ')(?![a-z])');
+            const REGELS = [
+                ['offroad', w('off[\\s_-]?road\\w*|enduro\\w*|motocross|motorcross|cross ?motor\\w*|crosser\\w*|dirt[\\s_-]?bik\\w*|dirt|tet|trans[\\s_-]?euro[\\s_-]?trail|mtb|mountain[\\s_-]?bik\\w*|onverhard\\w*|unpaved')],
+                ['walk', w('walk\\w*|hik\\w*|wandel\\w*|wander\\w*|lopen|running|run|trail[\\s_-]?run\\w*|hardlo\\w*|nordic|randonn\\w*|trekking[\\s_-]?te[\\s_-]?voet')],
+                ['racebike', w('road[\\s_-]?bik\\w*|road[\\s_-]?cycl\\w*|racefiets\\w*|wielren\\w*|rennrad\\w*')],
+                ['bike', w('cycling|bicycl\\w*|biking|fiets\\w*|e[\\s_-]?bike\\w*|fahrrad\\w*|radtour\\w*|velo|vélo')],
+                ['road', w('motorcycl\\w*|motorbik\\w*|motorfiets\\w*|motorrad\\w*|motortocht\\w*|motorroute\\w*|motor|moto|calimoto|kurviger|myroute\\w*|rever|scenic|driving|car|auto')]
+            ];
+            for (const [mode, re] of REGELS) {
+                const m = tekst.match(re);
+                if (m) {
+                    const woord = orig.length === tekst.length ? orig.substr(m.index + m[1].length, m[2].length) : m[2];   // zoals het er staat
+                    return { mode, reden: '"' + woord.trim() + '" in de GPX' };
+                }
+            }
+            // tempo uit de tijden (opgenomen sporen): afstand-gewogen mediaan en 90%-punt van de rijdende stukjes
+            const stukken = [];
+            let vorig = null;
+            doc.querySelectorAll('trkpt').forEach(pt => {
+                const tEl = pt.querySelector('time'), lat = parseFloat(pt.getAttribute('lat')), lng = parseFloat(pt.getAttribute('lon'));
+                const t = tEl ? Date.parse(tEl.textContent) : NaN;
+                if (isNaN(t) || isNaN(lat) || isNaN(lng)) { vorig = null; return; }
+                if (vorig) {
+                    const dt = (t - vorig.t) / 1000, d = distMeters([vorig.lat, vorig.lng], [lat, lng]);
+                    if (dt >= 1 && dt <= 120 && d > 0) { const v = d / dt * 3.6; if (v >= 2 && v < 200) stukken.push([v, d]); }
+                }
+                vorig = { t, lat, lng };
+            });
+            const totaal = stukken.reduce((s, x) => s + x[1], 0);
+            if (totaal < 1000) return null;   // te weinig om iets te zeggen
+            stukken.sort((a, b) => a[0] - b[0]);
+            const punt = f => { let s = 0; for (const [v, d] of stukken) { s += d; if (s >= f * totaal) return v; } return stukken[stukken.length - 1][0]; };
+            const mediaan = punt(0.5), p90 = punt(0.9);
+            const kmu = v => Math.round(v) + ' km/u';
+            if (mediaan < 8) return { mode: 'walk', reden: 'wandeltempo (±' + kmu(mediaan) + ')' };
+            if (mediaan < 26 && p90 < 32) return { mode: 'bike', reden: 'fietstempo (±' + kmu(mediaan) + ')' };
+            return null;
+        }
+        // Het venster "Route laden als": alle 5 Modes, de herkende (of je huidige) voorgekozen. Geen timer (keuze Sjoerd).
+        function gpxModeKeuze(raw, naam, herkend) {
+            if (!raw || raw.length < 2) { alert('Geen bruikbare punten.'); return; }
+            gpxKeuzeRaw = raw;
+            const voor = herkend ? herkend.mode : planMode;
+            document.getElementById('gpxModeNaam').textContent = (naam ? naam + ' · ' : '') + routeKm(raw).toFixed(1).replace('.', ',') + ' km';
+            document.getElementById('gpxModeReden').textContent = '✓ = ' + (herkend ? 'herkend: ' + herkend.reden : 'je huidige Mode');
+            const k = document.getElementById('gpxModeKnoppen');
+            k.innerHTML = '';
+            GPX_MODES.forEach(([m, label, kleur], i) => {
+                const b = document.createElement('button');
+                b.className = 'gmKnop' + (m === voor ? ' gmVoor' : '') + (i === GPX_MODES.length - 1 ? ' gmBreed' : '');
+                b.style.background = kleur;
+                b.textContent = (m === voor ? '✓ ' : '') + label;
+                b.dataset.mode = m;
+                b.onclick = () => gpxModeGekozen(m);
+                k.appendChild(b);
+            });
+            document.getElementById('gpxModePaneel').style.display = 'flex';
+        }
+        function gpxModeAnnuleer() {
+            gpxKeuzeRaw = null;
+            const p = document.getElementById('gpxModePaneel');
+            if (p) p.style.display = 'none';
+        }
+        function gpxModeGekozen(mode) {
+            const raw = gpxKeuzeRaw;
+            gpxModeAnnuleer();
+            if (!raw) return;
+            gpxModeZet(mode);
+            processGpxRoute(raw);
+        }
+        // De Mode zetten (Plan gaat mee). Offroad zet stem en pijlen uit ("daar volg je het spoor") — maar deze route laad je
+        // MET navi: dan stem en pijlen aan (keuze Sjoerd), tot een Plan-route GO krijgt (plannerGo) of je de Mode verlaat.
+        function gpxModeZet(mode) {
+            if (mode !== planMode) setMode(mode);
+            if (MODE_SILENT[mode]) {
+                if (typeof restoreAudioArrows === 'function') restoreAudioArrows();
+                gpxNaviStem = true;
+            }
+        }
+        // Volgt de route je GPX? Om de 40 m, beide kanten op (je GPX naast de route, en de route naast je GPX — zo zie je ook
+        // de heen-en-weer-uitstapjes als BRouter een stuk van je GPX met deze Mode niet mag). → { ver: deel verder dan 50 m,
+        // lengte: route / GPX }
+        function gpxVolgt(raw, route) {
+            const naarLL = pts => pts.map(p => [p[1], p[0]]);
+            const mRoute = poiLijnMaat(naarLL(route), GPX_VER_M), mGpx = poiLijnMaat(naarLL(thinByDistance(raw, 10)), GPX_VER_M);
+            const ver = (s, m) => s.length ? s.filter(p => !m.maat(p[0], p[1])).length / s.length : 0;
+            const a = ver(thinByDistance(raw, 40), mRoute), b = ver(thinByDistance(route, 40), mGpx);
+            return { ver: Math.max(a, b), lengte: routeKm(route) / Math.max(0.001, routeKm(raw)) };
+        }
+        // "Andere Mode?" — onderin, zodat je de route ziet. De andere 4 Modes en "Zo laten". Geen timer.
+        function gpxVraagOpen(fit) {
+            const naam = (GPX_MODES.find(x => x[0] === planMode) || [0, planMode])[1];
+            const pct = Math.max(1, Math.round(fit.ver * 100)), langer = Math.round((fit.lengte - 1) * 100);
+            document.getElementById('gpxModeVraagTekst').innerHTML = 'De route (' + poiEsc(naam) + ') volgt je GPX niet goed: ' + pct
+                + '% ligt verder dan ' + GPX_VER_M + ' m' + (langer >= 10 ? ' en hij is ' + langer + '% langer' : '') + '. <b>Andere Mode?</b>';
+            const k = document.getElementById('gpxModeVraagKnoppen');
+            k.innerHTML = '';
+            GPX_MODES.forEach(([m, label, kleur]) => {
+                if (m === planMode) return;      // die heb je al
+                const b = document.createElement('button');
+                b.className = 'gmKnop';
+                b.style.background = kleur;
+                b.textContent = label === 'Race bike' ? 'Race' : label;
+                b.dataset.mode = m;
+                b.onclick = () => gpxAnders(m);
+                k.appendChild(b);
+            });
+            document.getElementById('gpxModeVraag').style.display = 'flex';
+        }
+        function gpxVraagDicht() { const v = document.getElementById('gpxModeVraag'); if (v) v.style.display = 'none'; }
+        function gpxVraagIsOpen() { const v = document.getElementById('gpxModeVraag'); return !!v && v.style.display === 'flex'; }
+        async function gpxAnders(mode) {
+            gpxVraagDicht();
+            const raw = window._gpxRaw;
+            if (!raw) return;
+            gpxModeZet(mode);
+            gpxBezig = true;
+            try { await processGpxRoute(raw); } finally { gpxBezig = false; }
+        }
+        // v65.1 (Sjoerd: "Als de GPX is geladen graag de route in beeld, en niet direct of te snel terug naar huidige locatie" +
+        // "4 sec, en zolang je met de kaart beweegt reset die timer"): de handpauze — noord boven, Center even uit, het balkje
+        // bovenin loopt 4 s leeg; de kaart bewegen = weer vol (4 s na je laatste beweging terug naar jou). Zolang "Andere Mode?"
+        // openstaat of hij opnieuw rekent, blijft de route staan. Volgt de kaart je niet (Plan open, nog geen CREW): alleen in beeld.
+        function gpxInBeeld(pts) {
+            if (!mapInstance || !pts || pts.length < 2) return;
+            try {
+                if (typeof handMagPauze === 'function' && handMagPauze()) {
+                    crewOverzicht = false; crewOverzichtWacht = 0;   // niet het groeps-overzicht
+                    if (!handPauze) handPauzeStart(); else handVerleng();
+                }
+                // het zichtbare stuk kaart (liggend steekt het kaartvlak onder het scherm uit) en "Andere Mode?" onderin
+                const c = mapInstance.getContainer().getBoundingClientRect(), v = kaartBeeld();
+                const vraag = document.getElementById('gpxModeVraag');
+                const onder = (vraag && vraag.style.display === 'flex') ? Math.max(0, vraag.getBoundingClientRect().top < v.b ? v.b - vraag.getBoundingClientRect().top : 0) : 0;
+                mapInstance.fitBounds(L.latLngBounds(pts), {
+                    paddingTopLeft: [Math.max(0, v.l - c.left) + 40, Math.max(0, v.t - c.top) + 40],
+                    paddingBottomRight: [Math.max(0, c.right - v.r) + 40, Math.max(0, c.bottom - v.b) + 40 + onder],
+                    animate: false
+                });
+            } catch (e) { console.warn('gpxInBeeld', e); }
         }
 
         // Lengte van een puntenreeks in km (voor de keuzelijst).
@@ -10659,6 +10876,7 @@ assign initialcost =
         // Verwerk een puntenreeks → uitdunnen → opknippen → BRouter → route + afslagen.
         async function processGpxRoute(raw) {
             if (raw.length < 2) { alert('Geen bruikbare punten.'); return; }
+            window._gpxRaw = raw;   // v65.1: voor "Andere Mode?" (opnieuw rekenen zonder het bestand opnieuw te kiezen)
             // 1. uitdunnen tot stuurpunten op vaste afstand
             const steer = thinByDistance(raw, GPX_STEER_M);
             // 2. opknippen in stukken (overlap 1 punt zodat ze aansluiten)
@@ -10712,8 +10930,11 @@ assign initialcost =
             // 4. tonen + klaarzetten (Deel 2 koppelt GO; voor nu in de planner-route-variabelen)
             if (gpxPolyline) { try { mapInstance.removeLayer(gpxPolyline); } catch(e){} }
             gpxPolyline = L.polyline(fullRoute, { pane: 'hmNaviPane', color:'#7C4DFF', weight: trackLineWidth, opacity:0.9 }).addTo(mapInstance);
-            const grp = L.featureGroup(fullRoute.map(([la,ln]) => L.circleMarker([la,ln],{radius:1})));
-            mapInstance.fitBounds(grp.getBounds(), { padding:[50,50] });
+            // v65.1: volgt de route je GPX? Zo niet: "Andere Mode?" (onderin). Dan de route in beeld (4 s, zie gpxInBeeld).
+            let fit = null;
+            try { fit = gpxVolgt(raw, fullRoute); } catch (e) { console.warn('gpxVolgt', e); }
+            if (fit && (fit.ver > GPX_VER_MAX || fit.lengte > GPX_LENGTE_MAX)) gpxVraagOpen(fit); else gpxVraagDicht();
+            gpxInBeeld(fullRoute);
 
             // bewaar voor Deel 2 (GO) + zet als de ACTIEVE master-route (gpxRoute), net als een
             // gecreëerde route. Master deelt 'm met de volger (Firebase) zodat die 'm ook ziet.
@@ -14636,6 +14857,9 @@ assign initialcost =
         // ── KNOPPEN-MENU (v51.5): alle kaart-instelknoppen achter één knop rechts ──
         let _btnMenuTimer = null;
         function openBtnMenu() {
+            // v65.1 (Sjoerd: "Wisselen van het Plan-menu naar het rechter vierkantje-menu: Plan blijft ook open. Graag bij
+            // wissel menu het andere menu sluiten"): het knoppen-menu open = Plan dicht (zoals het kruis: terug naar het rijscherm)
+            if (typeof plannerIsOpen === 'function' && plannerIsOpen() && typeof plannerClose === 'function') plannerClose();
             if (typeof updateComsBtns === 'function') updateComsBtns();   // v56.5: config-stand tonen
             // FM-knop in de balk van de actieve rol hangen (één DOM-knoop, verhuist mee per rol)
             const bar = document.getElementById(currentMode === 'follower' ? 'followerSideBar' : 'masterSideBar');
@@ -15218,6 +15442,8 @@ assign initialcost =
         }
         function handPauzeCheck() {
             if (handGebaar && Date.now() - handGebaar.t > 10000) handGebaar = null;   // vangnet: gemiste touchend
+            // v65.1: een geladen GPX staat in beeld — zolang "Andere Mode?" openstaat of hij opnieuw rekent, blijft hij staan
+            if (handPauze && ((typeof gpxVraagIsOpen === 'function' && gpxVraagIsOpen()) || (typeof gpxBezig !== 'undefined' && gpxBezig))) handVerleng();
             if (handPauze && !handGebaar && Date.now() >= handPauze.tot) handPauzeKlaar();
         }
         setInterval(handPauzeCheck, 250);
