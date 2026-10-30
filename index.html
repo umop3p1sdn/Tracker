@@ -642,7 +642,7 @@
            "Route Planner" en het kruis (verandert de hoogte van de regel niet). */
         #planAftel { display: none; flex: 1 1 auto; height: 10px; margin: 0 10px; }
         /* v63.82: aftelbalk van "Punt toevoegen als" (alleen na een tik op de kaart), onder de kop, in de flow */
-        #tikAftel { display: none; height: 8px; flex: 0 0 auto; }
+        #tikAftel, #puntAftel { display: none; height: 8px; flex: 0 0 auto; }   /* v65.0: ook het menu bij een punt */
         /* v63.66 (wens Sjoerd): de groene play-knop mag óók in het schone scherm (Hide) — updateGoBtn bepaalt
            of hij er staat (route klaar en nog niet gestart), placeGoBtn zet 'm op een gemeten vrije plek. */
 
@@ -771,6 +771,8 @@
         /* v64.9 (Sjoerd: "doe ook maar een timer op dit menu, zolang je niets typt" + "timer-balkje onder het menu"): 8 s, het
            balkje hangt 4 px onder het menu (zoals onder de zoombalk); de plek zet aftelTeken (het menu verhuist met Plan). */
         #poiAftel { display: none; position: fixed; height: 10px; z-index: 2100; }
+        /* v65.0: Menu, GPX, Options, Config, Start up config, Screen adjust — 8 s, balkje 4 px onder het menu (boven alles) */
+        #zijAftel { display: none; position: fixed; height: 10px; z-index: 2600; }
         #poiFocusBar .poiKnoppen { display: flex; flex-direction: column; gap: 6px; }
         #poiFocusBar.lijsten .poiKnoppen { display: none !important; }
         #poiFocusBar {
@@ -1230,6 +1232,8 @@
     <div id="b2rBtn" onclick="acceptReroute()" style="display:none; position: fixed; top: 85px; left: 50%; transform: translateX(-50%); z-index: 1250; padding: 12px 26px; border-radius: 6px; background: transparent; color: #000; text-shadow: 0 0 2px rgba(255,255,255,0.9); border: 3px solid #000; box-shadow: 0 0 0 2px rgba(255,255,255,0.4); font-weight: bold; font-size: 1.6em; font-family: sans-serif; cursor: pointer; animation: b2rBlink 1s infinite; -webkit-user-select:none; user-select:none;">2 Route</div>
     <!-- v63.71: aftelbalk van de 4 s-handpauze (alleen zichtbaar tijdens de pauze, op de plek van de zoombalk) -->
     <div id="pauzeAftel" class="aftelBalk"><div></div></div>
+    <!-- v65.0: timer-balkje van Menu / GPX / Options / Config / Start up config / Screen adjust — 4 px onder het menu (aftelTeken) -->
+    <div id="zijAftel" class="aftelBalk"><div></div></div>
     <div class="container">
         <!-- INSTALL PROMPT SCREEN -->
         <div id="installScreen" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; text-align: center;">
@@ -1314,7 +1318,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v64.9 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v65.0 © Umop3p1sdn</div>
 
             </div>
 
@@ -1639,7 +1643,7 @@
             <!-- ═══════════ ALGEMEEN ═══════════ -->
             <h2 style="color: #00BCD4; margin-top: 35px; border-top: 2px solid #00BCD4; padding-top: 22px;">Algemeen (Master &amp; Volger)</h2>
             <p>Deze knoppen en functies werken hetzelfde voor allebei.</p>
-            <p style="background:#e3e7f5; padding:10px 14px; border-radius:8px;"><strong>Knoppen-menu:</strong> de instelknoppen (TAG, LIJN, CREW, COMS, KAART en FM) zitten achter <strong>één menu-knop rechts</strong> op de kaart, onder het slotje. Tik erop voor het menu met de grote knoppen; tik ernaast om te sluiten (na 4 seconden zonder aanraking sluit het vanzelf — een balkje onderin het menu loopt dan leeg; elke aanraking in het menu maakt hem weer vol). Naast dat knoppen-menu verschijnt een tweede vakje met drie knoppen. <strong>Menu</strong> opent het instellingen-menu, netjes verdeeld in <strong>GPX</strong> (routes), <strong>Options</strong> (alles wat je ziet en hoort: navigatiepijlen, stem, flitsmelding, Screen adjust) en <strong>Config</strong> (Start up config, data-gebruik, OMB, Develop mode), met de handleidingen eronder. <strong>Reroute</strong> (alleen de Master) maakt een helemaal nieuwe route van waar je nú bent naar je finish en start hem meteen — handig als je een andere weg nam (bv. de brug in plaats van het pontje) en de oude route aan de verkeerde kant blijft liggen. Tik twee keer: de eerste tik toont <strong>ZEKER?</strong>, de tweede rekent echt (net als STOP). Liggen er nog tussenpunten vóór je, dan vraagt hij daarna <strong>Via's verwijderen?</strong> — <strong>Ja</strong> = alle tussenpunten eruit en direct naar je finish, <strong>Nee</strong> = via de tussenpunten die nog vóór je liggen (één tik, geen tweede bevestiging). Ben je van de route af, dan staat Reroute ook bij <strong>2 Route</strong> (direct eronder). Tussenpunten die nog vóór je liggen blijven erin; punten waar je al langs kwam of die achter je liggen vallen weg. Je vermijd-gebieden (Dead end) blijven gelden en de volgers krijgen de nieuwe route vanzelf. Lukt het even niet (geen bereik), dan rijd je gewoon verder op de oude route. <strong>Next point</strong> staat niet in dat vakje maar tijdens het rijden <strong>onderin, boven de pijlen en de afstand</strong> (alleen voor de Master met een route). Hij gooit de route weg tot en met de eerstvolgende bocht vóór je — handig als je verderop weer wilt invoegen in plaats van terug te moeten; nog een druk pakt de bocht daarna. Hij schuift mee als je het pijlen-blok met Screen adjust verplaatst. <strong>Dead end</strong> gebruik je als de weg dicht of doodlopend is: hij zet een vermijd-gebied van 50 meter op de weg vóór je en berekent meteen een nieuwe route eromheen. Aan de andere kant verschijnt een <strong>derde vakje</strong> met je <strong>trackingcode</strong> groot in beeld — tik erop om hem te delen — en de <strong>STOP</strong>-knop. STOP vraagt altijd een tweede tik ter bevestiging, zodat je hem nooit per ongeluk indrukt. Code en STOP staan daarom niet meer op het rijscherm zelf. De uitleg per knop hieronder blijft gewoon gelden — je vindt ze alleen in dat menu. Dit geldt trouwens overal: <strong>elk menu of venster sluit je ook door ernaast te tikken</strong> (de rode ✕ blijft ook gewoon werken). De mic- en T-knop staan <strong>standaard uit</strong> — zet ze aan met de <strong>COMS</strong>-knop in het knoppen-menu (groen = aan). Met <strong>KAART</strong> kies je uit 6 kaartstijlen: Standaard, Satelliet, Satelliet + wegen (foto mét getekende wegen en namen — zijwegen zichtbaar), Satelliet + wegen 2 (zelfde idee, andere wegenlaag met meer detail op diep inzoomen — testversie, werkt alleen online), Hoogte (met hoogtelijnen) en Donker (nachtkaart). Bij <strong>elke dag/nacht-overgang</strong> springt de kaart vanzelf (zonsondergang → Donker, zonsopkomst → Standaard, berekend op je eigen positie) — ook als je op Satelliet rijdt. Daarna kun je altijd handmatig een andere kaart kiezen; die blijft staan tot de volgende overgang. Je instellingen (TAG, dagkaart, flitsers, lijndikte enz.) worden op je telefoon bewaard; via <strong>Menu → Config → Start up config</strong> zet je ze over naar een andere telefoon (eigen instellingen worden automatisch onthouden). Met <strong>Menu → Options → Screen adjust</strong> maak je het rijscherm passend voor jóuw toestel: kies een blok (pijlen + afstand, afstand/tijd, verkeersbord, flitser-bord — en liggend ook de GPS-snelheid), verplaats het met de vier pijlen (tikken = klein stapje, vasthouden = steeds sneller; liggend staat de bediening breed naast de blok-keuze), maak het groter of kleiner met de schuif eronder, en tik naast het paneel om op te slaan. Staand en liggend hebben elk hun <strong>eigen</strong> instellingen, per blok is er een reset-knop, en tijdens het afstellen zie je twee grote rode oefenpijlen zodat je precies weet waar je aan werkt. Let op: offline tegels vooraf laden werkt voor Standaard én Donker (zelfde kaart, ander jasje); Satelliet verbruikt flink meer data.</p>
+            <p style="background:#e3e7f5; padding:10px 14px; border-radius:8px;"><strong>Knoppen-menu:</strong> de instelknoppen (TAG, LIJN, CREW, COMS, KAART en FM) zitten achter <strong>één menu-knop rechts</strong> op de kaart, onder het slotje. Tik erop voor het menu met de grote knoppen; tik ernaast om te sluiten (na 4 seconden zonder aanraking sluit het vanzelf — een balkje onderin het menu loopt dan leeg; elke aanraking in het menu maakt hem weer vol). Naast dat knoppen-menu verschijnt een tweede vakje met drie knoppen. <strong>Menu</strong> opent het instellingen-menu, netjes verdeeld in <strong>GPX</strong> (routes), <strong>Options</strong> (alles wat je ziet en hoort: navigatiepijlen, stem, flitsmelding, Screen adjust) en <strong>Config</strong> (Start up config, data-gebruik, OMB, Develop mode), met de handleidingen eronder. Doe je in het Menu, GPX, Options of Config (ook Start up config en Screen adjust) 8 tellen niets, dan gaat alles vanzelf dicht en zie je weer de kaart — een balkje onder het menu loopt dan leeg; elke aanraking maakt hem weer vol, typen houdt hem open. De handleidingen hebben geen timer. <strong>Reroute</strong> (alleen de Master) maakt een helemaal nieuwe route van waar je nú bent naar je finish en start hem meteen — handig als je een andere weg nam (bv. de brug in plaats van het pontje) en de oude route aan de verkeerde kant blijft liggen. Tik twee keer: de eerste tik toont <strong>ZEKER?</strong>, de tweede rekent echt (net als STOP). Liggen er nog tussenpunten vóór je, dan vraagt hij daarna <strong>Via's verwijderen?</strong> — <strong>Ja</strong> = alle tussenpunten eruit en direct naar je finish, <strong>Nee</strong> = via de tussenpunten die nog vóór je liggen (één tik, geen tweede bevestiging). Ben je van de route af, dan staat Reroute ook bij <strong>2 Route</strong> (direct eronder). Tussenpunten die nog vóór je liggen blijven erin; punten waar je al langs kwam of die achter je liggen vallen weg. Je vermijd-gebieden (Dead end) blijven gelden en de volgers krijgen de nieuwe route vanzelf. Lukt het even niet (geen bereik), dan rijd je gewoon verder op de oude route. <strong>Next point</strong> staat niet in dat vakje maar tijdens het rijden <strong>onderin, boven de pijlen en de afstand</strong> (alleen voor de Master met een route). Hij gooit de route weg tot en met de eerstvolgende bocht vóór je — handig als je verderop weer wilt invoegen in plaats van terug te moeten; nog een druk pakt de bocht daarna. Hij schuift mee als je het pijlen-blok met Screen adjust verplaatst. <strong>Dead end</strong> gebruik je als de weg dicht of doodlopend is: hij zet een vermijd-gebied van 50 meter op de weg vóór je en berekent meteen een nieuwe route eromheen. Aan de andere kant verschijnt een <strong>derde vakje</strong> met je <strong>trackingcode</strong> groot in beeld — tik erop om hem te delen — en de <strong>STOP</strong>-knop. STOP vraagt altijd een tweede tik ter bevestiging, zodat je hem nooit per ongeluk indrukt. Code en STOP staan daarom niet meer op het rijscherm zelf. De uitleg per knop hieronder blijft gewoon gelden — je vindt ze alleen in dat menu. Dit geldt trouwens overal: <strong>elk menu of venster sluit je ook door ernaast te tikken</strong> (de rode ✕ blijft ook gewoon werken). De mic- en T-knop staan <strong>standaard uit</strong> — zet ze aan met de <strong>COMS</strong>-knop in het knoppen-menu (groen = aan). Met <strong>KAART</strong> kies je uit 6 kaartstijlen: Standaard, Satelliet, Satelliet + wegen (foto mét getekende wegen en namen — zijwegen zichtbaar), Satelliet + wegen 2 (zelfde idee, andere wegenlaag met meer detail op diep inzoomen — testversie, werkt alleen online), Hoogte (met hoogtelijnen) en Donker (nachtkaart). Bij <strong>elke dag/nacht-overgang</strong> springt de kaart vanzelf (zonsondergang → Donker, zonsopkomst → Standaard, berekend op je eigen positie) — ook als je op Satelliet rijdt. Daarna kun je altijd handmatig een andere kaart kiezen; die blijft staan tot de volgende overgang. Je instellingen (TAG, dagkaart, flitsers, lijndikte enz.) worden op je telefoon bewaard; via <strong>Menu → Config → Start up config</strong> zet je ze over naar een andere telefoon (eigen instellingen worden automatisch onthouden). Met <strong>Menu → Options → Screen adjust</strong> maak je het rijscherm passend voor jóuw toestel: kies een blok (pijlen + afstand, afstand/tijd, verkeersbord, flitser-bord — en liggend ook de GPS-snelheid), verplaats het met de vier pijlen (tikken = klein stapje, vasthouden = steeds sneller; liggend staat de bediening breed naast de blok-keuze), maak het groter of kleiner met de schuif eronder, en tik naast het paneel om op te slaan. Staand en liggend hebben elk hun <strong>eigen</strong> instellingen, per blok is er een reset-knop, en tijdens het afstellen zie je twee grote rode oefenpijlen zodat je precies weet waar je aan werkt. Let op: offline tegels vooraf laden werkt voor Standaard én Donker (zelfde kaart, ander jasje); Satelliet verbruikt flink meer data.</p>
 
             <h3 style="color: #00BCD4; margin-top: 20px;">Knoppen op de kaart</h3>
 
@@ -1690,7 +1694,7 @@
 
             <h3 style="color: #00BCD4; margin-top: 25px;">GO-knop &amp; snelheid</h3>
             <ul style="margin: 10px 0; padding-left: 20px;">
-                <li><strong>Hide</strong> (onderaan) — verbergt alle knoppen, alleen de kaart blijft over: het <strong>rijscherm</strong>. Als Master start je hier meteen in. Tik je daar op de kaart, dan opent als Master meteen <strong>Plan</strong> (met de lijndikte, zonder Hide); het <strong>rode kruis</strong> of <strong>Play</strong> zet je weer in het rijscherm. Per ongeluk getikt? Raak je 4 tellen niets aan, dan gaat Plan vanzelf dicht (het balkje naast het kruis loopt af). Dat geldt ook als je in Plan iets dichtdoet (POI, Route, Extra, Mode, "Punt toevoegen als") en Plan weer kaal is — tot je weer iets aanraakt. Een tik die een vraag of pop-up wegtikt, opent geen Plan. Als volger komen bij een tik de knoppen terug.</li>
+                <li><strong>Hide</strong> (onderaan) — verbergt alle knoppen, alleen de kaart blijft over: het <strong>rijscherm</strong>. Als Master start je hier meteen in. Tik je daar op de kaart, dan opent als Master meteen <strong>Plan</strong> (met de lijndikte, zonder Hide); het <strong>rode kruis</strong> of <strong>Play</strong> zet je weer in het rijscherm. Per ongeluk getikt? Raak je 4 tellen niets aan, dan gaat Plan vanzelf dicht (het balkje naast het kruis loopt af). Dat geldt ook als je in Plan iets dichtdoet (POI, Route, Extra, Mode, "Punt toevoegen als") en Plan weer kaal is — tot je weer iets aanraakt. De menu's in Plan — Route, Extra, Mode, POI, "Punt toevoegen als" en het menu bij een punt — gaan na 8 tellen niets vanzelf dicht (het balkje loopt af; elke tik in het menu maakt hem weer vol, typen en een vinger op het scherm houden hem open). Van Route, Extra, Mode en POI staat er altijd maar één open. Een tik die een vraag of pop-up wegtikt, opent geen Plan. Als volger komen bij een tik de knoppen terug.</li>
                 <li><strong>Snelheid (km/u)</strong> — tijdens GO onderaan in beeld (staand scherm).</li>
                 <li><strong>Snelheidsbord</strong> — een rond bord (wit met rode rand) toont de <strong>maximumsnelheid van de weg</strong> waar je op rijdt. De app leest die uit OpenStreetMap: <strong>met een route</strong> haalt 'ie de snelheden vooraf op langs je route; <strong>zonder route</strong> leest 'ie tijdens het rijden de weg onder je (het bepaalt slim op welke weg je zit via je positie én rijrichting, zodat 'ie ook bij parallelle wegen de juiste pakt). De snelheid blijft staan zolang je op die weg rijdt, en wisselt mee bij een overgang (bv. snelweg 100 → 130) of als je afslaat. In clean screen staat het bord altijd in beeld; is de snelheid onbekend, dan toont 'ie een streepje (–). Let op: de app moet even <strong>bewegen</strong> om je rijrichting te weten. Nadert er een flitser, dan blijft het bord gewoon staan; de flitsermelding heeft een eigen plek. <strong>Let altijd op de echte borden langs de weg</strong> — het bord in de app is een hulpmiddel, geen vervanging.</li>
                 <li><strong>2 Route</strong> — rijd je met een route en raak je ervan af (stop, omweggetje), dan knippert bovenin de knop <strong>2 Route</strong>. Eén tik: de app berekent een route van waar je bent terug naar je route — de rest van je route blijft gewoon staan. Ben je weer op de route, dan verdwijnt de knop vanzelf. Rijd je een rondrit, dan voegt hij in waar je gebleven was — niet bij het eind van de rit, ook al ligt dat vlak bij huis. Direct eronder staat <strong>Reroute</strong> (zelfde uiterlijk): liever een helemaal nieuwe route naar je finish? Tik die twee keer (Zeker?). Jij bepaalt dus zelf wanneer je terug wilt. Dit geldt voor de Master; als volger rijd je achter de Master aan en krijg je deze knop niet.</li>
@@ -1869,7 +1873,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v64.9 © Umop3p1sdn
+                HO-ME v65.0 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -1979,7 +1983,7 @@
             <!-- ═══════════ GENERAL ═══════════ -->
             <h2 style="color: #00BCD4; margin-top: 35px; border-top: 2px solid #00BCD4; padding-top: 22px;">General (Master &amp; Follower)</h2>
             <p>These buttons and functions work the same for both.</p>
-            <p style="background:#e3e7f5; padding:10px 14px; border-radius:8px;"><strong>Button menu:</strong> the setting buttons (TAG, LIJN, CREW, COMS, KAART and FM) sit behind <strong>one menu button on the right</strong> of the map, below the lock. Tap it for the menu with the big buttons; tap next to it to close (after 4 seconds without a touch it closes by itself — a small bar at the bottom of the menu runs empty; every touch in the menu fills it again). Next to that button menu a second little panel appears with three buttons. <strong>Menu</strong> opens the settings menu, tidily split into <strong>GPX</strong> (routes), <strong>Options</strong> (everything you see and hear: navigation arrows, voice, speed camera warning, Screen adjust) and <strong>Config</strong> (Start up config, data usage, OMB, Develop mode), with the manuals below. <strong>Reroute</strong> (Master only) makes a completely new route from where you are right now to your finish and starts it straight away — handy when you took another road (e.g. the bridge instead of the ferry) and the old route stays on the wrong side. Tap twice: the first tap shows <strong>ZEKER?</strong> (sure?), the second one really recalculates (just like STOP). If there are still via points ahead of you, it then asks <strong>Via's verwijderen?</strong> (remove via points?) — <strong>Ja</strong> (yes) = all via points out and straight to your finish, <strong>Nee</strong> (no) = via the points still ahead of you (one tap, no second confirmation). When you are off the route, Reroute also sits by <strong>2 Route</strong> (right below it). Via points still ahead of you are kept; points you already passed or that lie behind you are dropped. Your avoid areas (Dead end) still apply and followers get the new route automatically. If it fails for a moment (no signal), you simply keep riding the old route. <strong>Next point</strong> is not in that panel but sits <strong>at the bottom while riding, above the arrows and the distance</strong> (only for the Master with a route). It discards the route up to and including the next bend ahead of you — useful when you want to rejoin further along instead of riding back; press again for the bend after that. It moves along when you shift the arrows block with Screen adjust. Use <strong>Dead end</strong> when the road is closed or a dead end: it drops a 50 metre avoid area on the road ahead of you and immediately calculates a new route around it. On the other side a <strong>third panel</strong> appears with your <strong>tracking code</strong> shown large — tap it to share — and the <strong>STOP</strong> button. STOP always asks for a second tap to confirm, so you can never hit it by accident. That is why the code and STOP are no longer on the riding screen itself. The per-button explanations below still apply — you just find them in that menu. This applies everywhere by the way: <strong>every menu or window also closes by tapping next to it</strong> (the red ✕ keeps working too). The mic and T buttons are <strong>off by default</strong> — enable them with the <strong>COMS</strong> button in the button menu (green = on). With <strong>KAART</strong> you pick from 6 map styles: Standard, Satellite, Satellite + roads (imagery with drawn roads and names — side roads visible), Satellite + roads 2 (same idea, different road layer with more deep-zoom detail — test version, online only), Terrain (contour lines) and Dark (night map). At <strong>every day/night transition</strong> the map jumps automatically (sunset → Dark, sunrise → Standard, computed at your own position) — even when riding Satellite. After that you can always pick another map manually; it stays until the next transition. Your settings (TAG, day map, cameras, line width etc.) are stored on your phone; via <strong>Menu → Config → Start up config</strong> you can transfer them to another phone (your own settings are remembered automatically). With <strong>Menu → Options → Screen adjust</strong> you fit the riding screen to your device: pick a block (arrows + distance, distance/time, speed sign, camera sign — and in landscape also the GPS speed), move it with the four arrows (tap = small step, hold = increasingly faster; in landscape the controls sit wide next to the block chooser), resize it with the slider below, and tap beside the panel to save. Portrait and landscape each keep their <strong>own</strong> settings, every block has a reset button, and while adjusting you see two big red practice arrows so you know exactly what you are placing. Note: offline tile pre-loading works for Standard and Dark (same map, different look); Satellite uses considerably more data.</p>
+            <p style="background:#e3e7f5; padding:10px 14px; border-radius:8px;"><strong>Button menu:</strong> the setting buttons (TAG, LIJN, CREW, COMS, KAART and FM) sit behind <strong>one menu button on the right</strong> of the map, below the lock. Tap it for the menu with the big buttons; tap next to it to close (after 4 seconds without a touch it closes by itself — a small bar at the bottom of the menu runs empty; every touch in the menu fills it again). Next to that button menu a second little panel appears with three buttons. <strong>Menu</strong> opens the settings menu, tidily split into <strong>GPX</strong> (routes), <strong>Options</strong> (everything you see and hear: navigation arrows, voice, speed camera warning, Screen adjust) and <strong>Config</strong> (Start up config, data usage, OMB, Develop mode), with the manuals below. Do nothing for 8 seconds in the Menu, GPX, Options or Config (also Start up config and Screen adjust) and everything closes by itself, back to the map — a small bar below the menu runs empty; every touch fills it again, typing keeps it open. The manuals have no timer. <strong>Reroute</strong> (Master only) makes a completely new route from where you are right now to your finish and starts it straight away — handy when you took another road (e.g. the bridge instead of the ferry) and the old route stays on the wrong side. Tap twice: the first tap shows <strong>ZEKER?</strong> (sure?), the second one really recalculates (just like STOP). If there are still via points ahead of you, it then asks <strong>Via's verwijderen?</strong> (remove via points?) — <strong>Ja</strong> (yes) = all via points out and straight to your finish, <strong>Nee</strong> (no) = via the points still ahead of you (one tap, no second confirmation). When you are off the route, Reroute also sits by <strong>2 Route</strong> (right below it). Via points still ahead of you are kept; points you already passed or that lie behind you are dropped. Your avoid areas (Dead end) still apply and followers get the new route automatically. If it fails for a moment (no signal), you simply keep riding the old route. <strong>Next point</strong> is not in that panel but sits <strong>at the bottom while riding, above the arrows and the distance</strong> (only for the Master with a route). It discards the route up to and including the next bend ahead of you — useful when you want to rejoin further along instead of riding back; press again for the bend after that. It moves along when you shift the arrows block with Screen adjust. Use <strong>Dead end</strong> when the road is closed or a dead end: it drops a 50 metre avoid area on the road ahead of you and immediately calculates a new route around it. On the other side a <strong>third panel</strong> appears with your <strong>tracking code</strong> shown large — tap it to share — and the <strong>STOP</strong> button. STOP always asks for a second tap to confirm, so you can never hit it by accident. That is why the code and STOP are no longer on the riding screen itself. The per-button explanations below still apply — you just find them in that menu. This applies everywhere by the way: <strong>every menu or window also closes by tapping next to it</strong> (the red ✕ keeps working too). The mic and T buttons are <strong>off by default</strong> — enable them with the <strong>COMS</strong> button in the button menu (green = on). With <strong>KAART</strong> you pick from 6 map styles: Standard, Satellite, Satellite + roads (imagery with drawn roads and names — side roads visible), Satellite + roads 2 (same idea, different road layer with more deep-zoom detail — test version, online only), Terrain (contour lines) and Dark (night map). At <strong>every day/night transition</strong> the map jumps automatically (sunset → Dark, sunrise → Standard, computed at your own position) — even when riding Satellite. After that you can always pick another map manually; it stays until the next transition. Your settings (TAG, day map, cameras, line width etc.) are stored on your phone; via <strong>Menu → Config → Start up config</strong> you can transfer them to another phone (your own settings are remembered automatically). With <strong>Menu → Options → Screen adjust</strong> you fit the riding screen to your device: pick a block (arrows + distance, distance/time, speed sign, camera sign — and in landscape also the GPS speed), move it with the four arrows (tap = small step, hold = increasingly faster; in landscape the controls sit wide next to the block chooser), resize it with the slider below, and tap beside the panel to save. Portrait and landscape each keep their <strong>own</strong> settings, every block has a reset button, and while adjusting you see two big red practice arrows so you know exactly what you are placing. Note: offline tile pre-loading works for Standard and Dark (same map, different look); Satellite uses considerably more data.</p>
 
             <h3 style="color: #00BCD4; margin-top: 20px;">Buttons on the map</h3>
 
@@ -2030,7 +2034,7 @@
 
             <h3 style="color: #00BCD4; margin-top: 25px;">GO button &amp; speed</h3>
             <ul style="margin: 10px 0; padding-left: 20px;">
-                <li><strong>Hide</strong> (at the bottom) — hides all buttons, only the map remains: the <strong>riding screen</strong>. As the Master you start right here. Tap the map there and, as the Master, <strong>Plan</strong> opens straight away (with the line width, without Hide); the <strong>red cross</strong> or <strong>Play</strong> takes you back to the riding screen. Tapped by accident? Touch nothing for 4 seconds and Plan closes by itself (the bar next to the cross runs down). The same happens when you close something in Plan (POI, Route, Extra, Mode, "Add point as") and Plan is bare again — until you touch something. A tap that dismisses a question or pop-up doesn't open Plan. As a follower, a tap brings the buttons back.</li>
+                <li><strong>Hide</strong> (at the bottom) — hides all buttons, only the map remains: the <strong>riding screen</strong>. As the Master you start right here. Tap the map there and, as the Master, <strong>Plan</strong> opens straight away (with the line width, without Hide); the <strong>red cross</strong> or <strong>Play</strong> takes you back to the riding screen. Tapped by accident? Touch nothing for 4 seconds and Plan closes by itself (the bar next to the cross runs down). The same happens when you close something in Plan (POI, Route, Extra, Mode, "Add point as") and Plan is bare again — until you touch something. The menus in Plan — Route, Extra, Mode, POI, "Add point as" and the menu of a point — close by themselves after 8 seconds of nothing (the bar runs down; every tap in the menu fills it again, typing and a finger on the screen keep it open). Of Route, Extra, Mode and POI only one is open at a time. A tap that dismisses a question or pop-up doesn't open Plan. As a follower, a tap brings the buttons back.</li>
                 <li><strong>Speed (km/h)</strong> — during GO shown at the bottom (portrait).</li>
                 <li><strong>Speed sign</strong> — a round sign (white with red edge) shows the <strong>speed limit of the road</strong> you're on. The app reads it from OpenStreetMap: <strong>with a route</strong> it fetches the limits ahead along your route; <strong>without a route</strong> it reads the road beneath you while riding (it smartly determines which road you're on using your position <em>and</em> heading, so it picks the right one even with parallel roads). The limit stays as long as you're on that road, and changes at a transition (e.g. motorway 100 → 130) or when you turn off. In clean screen the sign is always shown; if the limit is unknown it shows a dash (–). Note: the app needs a bit of <strong>movement</strong> to know your heading. When a speed camera is near, the sign simply stays; the camera warning has its own spot. <strong>Always watch the real signs along the road</strong> — the sign in the app is an aid, not a replacement.</li>
                 <li><strong>2 Route</strong> — riding with a route and you get off it (stop, small detour)? Then the <strong>2 Route</strong> button flashes at the top. One tap: the app calculates a route from where you are back to your route — the rest of your route stays as it is. Once you're back on the route, the button disappears by itself. On a round trip it rejoins where you left off — not at the end of the trip, even when that is close to home. Right below it sits <strong>Reroute</strong> (same look): rather have a completely new route to your finish? Tap that one twice (Zeker? = sure?). So you decide when you want to go back. This is for the Master; as a follower you ride behind the Master and don't get this button.</li>
@@ -2209,7 +2213,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v64.9 © Umop3p1sdn
+                HO-ME v65.0 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2382,7 +2386,7 @@
     <!-- v63.79 (wens Sjoerd): zelfde knoppen en functies, strakker — twee per rij, geen emoji, Annuleer als echte knop -->
     <div id="tapMenu" class="pmPanel" style="display:none;">
         <div class="pmKop">Punt toevoegen als</div>
-        <div id="tikAftel" class="aftelBalk"><div></div></div>   <!-- v63.82: na een kaart-tik — kies je niets, dan dicht na 4 s -->
+        <div id="tikAftel" class="aftelBalk"><div></div></div>   <!-- v63.82: kies je niets, dan dicht (v65.0: 8 s, ook na zoeken) -->
         <div id="tapMenuLabel" class="pmSub" style="display:none;"></div>
         <div class="pmRij">
             <button class="pmKnop pmStart" onclick="tapChoose('start')">Start</button>
@@ -2406,6 +2410,7 @@
          het typveld "leeg = verwijderen". -->
     <div id="puntMenu" class="pmPanel" style="display:none;">
         <div id="puntMenuKop" class="pmKop">Tussenpunt</div>
+        <div id="puntAftel" class="aftelBalk"><div></div></div>   <!-- v65.0: kies je niets, dan dicht na 8 s -->
         <div id="puntMenuSub" class="pmSub" style="display:none;"></div>
         <div id="zoneRij" class="pmRij">
             <label class="pmKm"><input id="zoneKm" type="text" inputmode="decimal"><span>km</span></label>
@@ -2471,6 +2476,43 @@
         // vraag én ging door naar de kaart; (4) Plan ruimde bij openen gevonden POI's op. Alleen de master (volger en
         // meekijker hebben geen Plan: hun tik blijft de knoppen tonen).
         const PLAN_TERUG_MS = 4000;    // vangnet 1: geopend door een tik en niets aangeraakt → terug naar het rijscherm
+        // v65.0: ligt er een vinger op het scherm (schuiven, knijpen, lang drukken), dan loopt geen enkele menu-timer af —
+        // anders kon een menu (en daarna Plan) dichtgaan terwijl je de kaart nog vasthield. Loslaten = de timer telt weer.
+        const vingersOp = new Set();
+        document.addEventListener('pointerdown', e => vingersOp.add(e.pointerId), true);
+        ['pointerup', 'pointercancel'].forEach(t => document.addEventListener(t, e => vingersOp.delete(e.pointerId), true));
+        ['touchend', 'touchcancel'].forEach(t => document.addEventListener(t, e => { if (!e.touches || !e.touches.length) vingersOp.clear(); }, { capture: true, passive: true }));
+        window.addEventListener('blur', () => vingersOp.clear());
+        // ═══ v65.0 TIMER OP ALLE PLAN-MENU'S (Sjoerd: "graag een timer op alle Plan-menu's, wel een ruime, net als in het
+        // POI-menu" + "allemaal met een timer, maar met meer tijd — je gaat iets doen of niet"; gekozen: 8 s, het balkje in de
+        // kopregel van Plan, het kale Plan blijft 4 s) ═══ Route, Extra en Mode: zolang er een open is, 8 s; elke tik in Plan
+        // = weer vol, typen (een veld in Plan heeft de focus) houdt hem vol, een vinger op het scherm ook. Afloop = het menu
+        // dicht → Plan kaal → de 4 s van Plan (zie planKaalKijk) → het rijscherm.
+        const PLAN_MENU_MS = 8000;
+        let planMenuTot = 0;
+        function planPaneelOpen() { return ['panelRoute', 'panelExtra', 'panelMode'].some(id => { const el = document.getElementById(id); return !!el && el.classList.contains('open'); }); }
+        function planMenuTypt() {
+            const a = document.activeElement, pp = document.getElementById('plannerPanel');
+            return !!(a && pp && pp.contains(a) && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName));
+        }
+        function planMenuAangeraakt(e) {
+            const pp = document.getElementById('plannerPanel');
+            if (planMenuTot && pp && e && e.target && pp.contains(e.target)) planMenuTot = Date.now() + PLAN_MENU_MS;
+        }
+        document.addEventListener('pointerdown', planMenuAangeraakt, true);
+        document.addEventListener('touchstart', planMenuAangeraakt, { capture: true, passive: true });
+        ['input', 'keydown', 'focusin', 'focusout'].forEach(t => document.addEventListener(t, e => {
+            const pp = document.getElementById('plannerPanel');
+            if (planMenuTot && pp && e.target && pp.contains(e.target)) planMenuTot = Date.now() + PLAN_MENU_MS;
+        }, true));
+        setInterval(() => {
+            if (!plannerIsOpen() || !planPaneelOpen()) { planMenuTot = 0; return; }
+            if (!planMenuTot) { planMenuTot = Date.now() + PLAN_MENU_MS; if (typeof aftelStart === 'function') aftelStart(); return; }
+            if (planMenuTypt() || vingersOp.size) { planMenuTot = Date.now() + PLAN_MENU_MS; return; }   // steeds vol: na loslaten weer 8 s
+            if (Date.now() < planMenuTot) return;
+            planMenuTot = 0;
+            closeAllPanels();                                   // alle drie dicht → Plan kaal → 4 s
+        }, 250);
         const PLAN_TIK_REM_MS = 500;   // vangnet 2: zo lang na het openen telt een tik op de kaart niet (dubbeltik/hobbel)
         let planTerugTot = 0;          // > 0: Plan ging open door een tik in het rijscherm en is nog niet aangeraakt
         let planTikTot = 0;
@@ -2490,6 +2532,12 @@
         // aan het plannen → Plan blijft open tot het kruis of Play. Behalve een tik op de KAART binnen de 0,5 s-rem: die
         // telt niet (dubbeltik/hobbel), dus dan gaat Plan na 4 s toch terug.
         setInterval(() => {
+            // v65.0: ligt er een vinger op het scherm, dan staan alle timers hier vol (na loslaten de volle tijd)
+            if (vingersOp.size) {
+                if (planTerugTot) planTerugTot = Date.now() + PLAN_TERUG_MS;
+                if (tikMenuTot) tikMenuTot = Date.now() + TIK_MENU_MS;
+                if (puntMenuTot) puntMenuTot = Date.now() + PUNT_MENU_MS;
+            }
             if (planTerugTot && Date.now() >= planTerugTot) {
                 planTerugTot = 0;
                 if (plannerIsOpen()) plannerClose();
@@ -2500,6 +2548,12 @@
                 if (!tikMenuOpen()) tikMenuTot = 0;
                 else if (tikMenuTypt()) tikMenuTot = Date.now() + TIK_MENU_MS;
                 else tapCancel();
+            }
+            // v65.0: het menu bij een punt (Delete / Wijzigen / Annuleer) — 8 s, zoals de andere Plan-menu's
+            if (puntMenuTot && Date.now() >= puntMenuTot) {
+                if (!puntMenuIsOpen()) puntMenuTot = 0;
+                else if (puntMenuTypt()) puntMenuTot = Date.now() + PUNT_MENU_MS;
+                else puntMenuSluit();
             }
         }, 250);
         function planAangeraakt(e) {
@@ -2842,7 +2896,16 @@ assign initialcost =
             if (forceOpen) { panel.classList.add('open'); open = true; }
             else { open = panel.classList.toggle('open'); }
             tab.classList.toggle('active', open);
-            if (open) closeAllPanels(panelId);   // de rest dicht
+            if (open) { closeAllPanels(panelId); poiMenuDicht(); }   // de rest dicht (v65.0: ook het POI-menu)
+        }
+        // v65.0 (Sjoerd: "elke knop in het Plan-menu wisselt met de andere, behalve Mode en dan POI — dan zijn beide menu's
+        // open; graag 1 per keuze open"): Route, Extra, Mode of POI — er staat er altijd maar één open. Een Plan-menu openen
+        // = het POI-menu dicht; gevonden plekken (icoontjes, lijst) blijven staan, zoals bij de timer van het POI-menu.
+        function poiMenuDicht() {
+            const b = document.getElementById('poiFocusBar');
+            if (!b || b.style.display === 'none') return;
+            b.style.display = 'none';
+            if (typeof poiPlek === 'function') poiPlek();
         }
         function openPoiFocus() {
             // standaard zoekgebied: route op de kaart → 'route', anders 'lokaal'
@@ -2851,8 +2914,7 @@ assign initialcost =
             if (sb) sb.textContent = 'Zoekgebied: ' + (poiScope === 'route' ? 'Route' : 'Lokaal');
             // Tabs (Route/Extra/POI/Mode) BLIJVEN zichtbaar, alleen de open panelen dichtklappen (minimized).
             // Stop-knop blijft ook staan. Zo niks verbergen → geen verdwijn-bug meer.
-            document.getElementById('panelRoute').classList.remove('open');
-            document.getElementById('panelExtra').classList.remove('open');
+            closeAllPanels();   // v65.0: Route, Extra én Mode dicht (Mode bleef open naast het POI-menu) + hun tab-knoppen
             document.getElementById('poiFocusBar').style.display = 'flex';
             document.getElementById('poiFocusBar').classList.remove('lijsten');   // v63.89: open = de zoekknoppen
             poiPlek();   // v63.82: liggend naast het plan-paneel (de Benzine-knop lag eronder)
@@ -2970,8 +3032,8 @@ assign initialcost =
         setInterval(() => {
             if (!poiMenuTelt()) { poiMenuTot = 0; return; }
             if (!poiMenuTot) { poiMenuVol(); return; }                       // (weer) open, of terug uit 📥 Lijsten
+            if (poiMenuTypt() || (typeof poiZoek !== 'undefined' && poiZoek) || vingersOp.size) { poiMenuTot = Date.now() + POI_MENU_MS; return; }   // v65.0: steeds vol
             if (Date.now() < poiMenuTot) return;
-            if (poiMenuTypt() || (typeof poiZoek !== 'undefined' && poiZoek)) { poiMenuTot = Date.now() + POI_MENU_MS; return; }
             poiMenuTot = 0;
             poiMenuWeg();                                                   // Plan blijft open
         }, 250);
@@ -3030,14 +3092,14 @@ assign initialcost =
             pendingTap = { lat: e.latlng.lat, lng: e.latlng.lng };
             tikDevRij();                                 // v64.2: met Develop aan de knop Test-volger erbij
             document.getElementById('tapMenu').style.display = 'flex';
-            tikMenuTot = Date.now() + TIK_MENU_MS;       // v63.82: kies je niets, dan gaat het menu na 4 s dicht
+            tikMenuTot = Date.now() + TIK_MENU_MS;       // v63.82: kies je niets, dan gaat het menu dicht (v65.0: na 8 s)
             if (typeof aftelStart === 'function') aftelStart();
         }
         // v63.82 (wens Sjoerd: "ook een timer op het pop-up scherm als je in Plan op de kaart tikt — Start/Finish/Tussen —
         // met een timerbalk; kies je hier niets, dan verloopt het ook"). Alleen na een tik op de KAART: na zoeken, 📍 of
         // "Laatst gezocht" koos je zelf bewust een plek, dan blijft het menu staan tot je kiest. Aanraken in het menu = weer
         // vol (zoals het knoppen-menu); in het km-veld typen houdt hem vol. Verlopen = Annuleer (punt en speld weg).
-        const TIK_MENU_MS = 4000;
+        const TIK_MENU_MS = 8000;   // v65.0: 8 s, zoals de andere Plan-menu's (was 4)
         let tikMenuTot = 0;
         function tikMenuOpen() { const m = document.getElementById('tapMenu'); return !!(m && m.style.display === 'flex'); }
         function tikMenuVol(e) {
@@ -3070,7 +3132,8 @@ assign initialcost =
         }
         function kiesPunt(lat, lng, label, gps) {
             zoekPinWeg();
-            tikMenuTot = 0;                              // v63.82: bewust gekozen plek (zoeken/📍/laatst) → geen timer
+            tikMenuTot = Date.now() + TIK_MENU_MS;       // v65.0: ook na zoeken/📍/laatst 8 s (v63.82: geen timer) — "allemaal met een timer"
+            if (typeof aftelStart === 'function') aftelStart();
             pendingTap = { lat, lng, label: label || '', gps: !!gps };
             const lab = document.getElementById('tapMenuLabel');
             if (lab && label) { lab.textContent = label; lab.style.display = 'block'; }
@@ -3166,7 +3229,7 @@ assign initialcost =
             const tab = document.getElementById('tabMode');
             const open = panel.classList.toggle('open');
             tab.classList.toggle('active', open);
-            if (open) closeAllPanels('panelMode');   // de rest dicht
+            if (open) { closeAllPanels('panelMode'); poiMenuDicht(); }   // de rest dicht (v65.0: ook het POI-menu)
         }
 
         function setMode(mode) {
@@ -3699,11 +3762,29 @@ assign initialcost =
             document.getElementById('zoneRij').style.display = doel.zone ? 'flex' : 'none';     // straal alleen bij een zone
             document.getElementById('wijzigRij').style.display = doel.zone ? 'none' : 'flex';  // wijzigen alleen bij een punt
             document.getElementById('puntMenu').style.display = 'flex';
+            puntMenuTot = Date.now() + PUNT_MENU_MS;    // v65.0: kies je niets, dan dicht na 8 s
+            if (typeof aftelStart === 'function') aftelStart();
         }
         function puntMenuSluit() {
             document.getElementById('puntMenu').style.display = 'none';
             puntMenuDoel = null;
+            puntMenuTot = 0;
         }
+        // v65.0: timer op het menu bij een punt (8 s); aanraken in het menu = weer vol, typen in het km-veld houdt hem open
+        const PUNT_MENU_MS = 8000;
+        let puntMenuTot = 0;
+        function puntMenuIsOpen() { const m = document.getElementById('puntMenu'); return !!(m && m.style.display === 'flex'); }
+        function puntMenuTypt() { const k = document.getElementById('zoneKm'); return !!(k && document.activeElement === k); }
+        function puntMenuVol(e) {
+            const m = document.getElementById('puntMenu');
+            if (puntMenuTot && m && (!e || m.contains(e.target))) puntMenuTot = Date.now() + PUNT_MENU_MS;
+        }
+        document.addEventListener('pointerdown', puntMenuVol, true);
+        document.addEventListener('touchstart', puntMenuVol, { capture: true, passive: true });
+        (function () {
+            const k = document.getElementById('zoneKm');
+            if (k) ['input', 'focus', 'keydown', 'blur'].forEach(t => k.addEventListener(t, () => puntMenuVol(null)));
+        })();
         function puntDelete() {              // Delete = meteen weg (de tik op het punt + deze tik zijn al twee stappen)
             const d = puntMenuDoel;
             puntMenuSluit();
@@ -6927,7 +7008,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "64.9";
+        const APP_VERSION = "65.0";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
@@ -14809,6 +14890,56 @@ assign initialcost =
         function closeOptionsMenu() { _hideGroup('optionsModal', true); }
         function openConfigMenu() { _showGroup('configGroupModal'); }
         function closeConfigMenu() { _hideGroup('configGroupModal', true); }
+        // ═══ v65.0 TIMER OP DE MENU'S ACHTER HET ZIJ-MENU (Sjoerd: "ook timers in het zij-menu, vierkante knop, en dan het menu
+        // dieper in dat menu; geen timer op de handleidingen; 8 sec op GPX, Options, Config"; gekozen: het zij-menu zelf blijft
+        // 4 s, afloop = alles dicht, terug naar de kaart) ═══ Menu, GPX, Options, Config en wat daarin opengaat (Start up config,
+        // Screen adjust): 8 s; elke aanraking in het menu = weer vol, typen in een tekstveld en een vinger op het scherm houden hem
+        // vol. Het balkje hangt 4 px onder het bovenste open menu (aftelTeken). De handleidingen: geen timer.
+        const ZIJ_MENU_MS = 8000;
+        let zijMenuTot = 0;
+        const zijZicht = el => !!el && el.style.display !== 'none' && !el.classList.contains('hidden') && el.getClientRects().length > 0;
+        // het bovenste open menu: [overlay, het vak waar het balkje onder hangt] — of null
+        function zijMenuOpen() {
+            const sp = document.getElementById('stackSliderPanel');
+            if (zijZicht(sp)) return [sp, sp];
+            for (const id of ['configModal', 'gpxModal', 'configGroupModal', 'optionsModal', 'appMenuModal']) {
+                const m = document.getElementById(id);
+                if (zijZicht(m)) return [m, m.firstElementChild || m];
+            }
+            return null;
+        }
+        function zijMenuBinnen(t) {
+            return !!t && ['stackSliderPanel', 'stackSliderOverlay', 'configModal', 'gpxModal', 'configGroupModal', 'optionsModal', 'appMenuModal']
+                .some(id => { const m = document.getElementById(id); return !!m && m.contains(t); });
+        }
+        function zijMenuTypt() {
+            const a = document.activeElement;
+            return !!a && zijMenuBinnen(a) && (a.tagName === 'TEXTAREA' || (a.tagName === 'INPUT' && /^(text|number|search|email|tel|url|password)$/i.test(a.type || 'text')));
+        }
+        function zijMenuAangeraakt(e) { if (zijMenuTot && e && zijMenuBinnen(e.target)) zijMenuTot = Date.now() + ZIJ_MENU_MS; }
+        document.addEventListener('pointerdown', zijMenuAangeraakt, true);
+        document.addEventListener('touchstart', zijMenuAangeraakt, { capture: true, passive: true });
+        ['input', 'keydown', 'focusin', 'focusout', 'change'].forEach(t => document.addEventListener(t, zijMenuAangeraakt, true));
+        function zijMenusDicht() {
+            ['appMenuModal', 'optionsModal', 'configGroupModal'].forEach(id => { const m = document.getElementById(id); if (m) { m.classList.add('hidden'); m.style.display = 'none'; } });
+            if (typeof closeGPXModal === 'function') closeGPXModal();
+            if (typeof closeConfigModal === 'function') closeConfigModal();
+            const sp = document.getElementById('stackSliderPanel');
+            if (zijZicht(sp) && typeof closeStackSlider === 'function') closeStackSlider();
+            if (typeof updateTalkUI === 'function') updateTalkUI();   // zoals toggleAppMenu bij sluiten
+        }
+        setInterval(() => {
+            if (!zijMenuOpen()) { zijMenuTot = 0; return; }
+            if (!zijMenuTot || zijMenuTypt() || (typeof vingersOp !== 'undefined' && vingersOp.size)) {
+                const nieuw = !zijMenuTot;
+                zijMenuTot = Date.now() + ZIJ_MENU_MS;
+                if (nieuw && typeof aftelStart === 'function') aftelStart();
+                return;
+            }
+            if (Date.now() < zijMenuTot) return;
+            zijMenuTot = 0;
+            zijMenusDicht();                                        // alles dicht → de kaart
+        }, 250);
 
         // Toon kaart-data verbruik (sessie + totaal) in het menu. Sessie = sinds app-start; totaal = bewaard.
         function updateDataUsageDisplay() {
@@ -15247,7 +15378,13 @@ assign initialcost =
             // v63.81: Plan geopend door een tik in het rijscherm — balk in de kopregel van Plan; aangeraakt = weg (Plan blijft)
             const pb = document.getElementById('planAftel');
             if (pb) {
-                if (planTerugTot && typeof plannerIsOpen === 'function' && plannerIsOpen()) {
+                const paneel = typeof planMenuTot !== 'undefined' && planMenuTot && typeof plannerIsOpen === 'function' && plannerIsOpen() && planPaneelOpen();   // v65.0
+                if (paneel) {
+                    const rest = (planMenuTypt() || vingersOp.size) ? 1 : Math.max(0, Math.min(1, (planMenuTot - Date.now()) / PLAN_MENU_MS));
+                    if (pb.style.display !== 'block') pb.style.display = 'block';
+                    pb.firstElementChild.style.transform = 'scaleX(' + rest.toFixed(3) + ')';
+                    nodig = true;
+                } else if (planTerugTot && typeof plannerIsOpen === 'function' && plannerIsOpen()) {
                     const rest = Math.max(0, Math.min(1, (planTerugTot - Date.now()) / PLAN_TERUG_MS));
                     if (pb.style.display !== 'block') pb.style.display = 'block';
                     pb.firstElementChild.style.transform = 'scaleX(' + rest.toFixed(3) + ')';
@@ -15258,18 +15395,45 @@ assign initialcost =
             const tb = document.getElementById('tikAftel');
             if (tb) {
                 if (tikMenuTot && typeof tikMenuOpen === 'function' && tikMenuOpen()) {
-                    const rest = tikMenuTypt() ? 1 : Math.max(0, Math.min(1, (tikMenuTot - Date.now()) / TIK_MENU_MS));   // typen = vol
+                    const rest = (tikMenuTypt() || vingersOp.size) ? 1 : Math.max(0, Math.min(1, (tikMenuTot - Date.now()) / TIK_MENU_MS));   // typen = vol
                     if (tb.style.display !== 'block') tb.style.display = 'block';
                     tb.firstElementChild.style.transform = 'scaleX(' + rest.toFixed(3) + ')';
                     nodig = true;
                 } else if (tb.style.display !== 'none') tb.style.display = 'none';
+            }
+            // v65.0: Menu / GPX / Options / Config / Start up config / Screen adjust — 4 px onder het bovenste open menu
+            const za = document.getElementById('zijAftel');
+            if (za) {
+                const zm = (typeof zijMenuOpen === 'function') ? zijMenuOpen() : null;
+                if (zm && zijMenuTot) {
+                    const rest = (zijMenuTypt() || vingersOp.size) ? 1 : Math.max(0, Math.min(1, (zijMenuTot - Date.now()) / ZIJ_MENU_MS));
+                    const r = zm[1].getBoundingClientRect();
+                    const t = Math.min(Math.round(r.bottom + 4), window.innerHeight - 16);   // lang menu (scrollt): onderaan het scherm
+                    const l = Math.round(r.left + 16) + 'px', w = Math.max(0, Math.round(r.width - 32)) + 'px';
+                    if (za.style.left !== l) za.style.left = l;
+                    if (za.style.top !== t + 'px') za.style.top = t + 'px';
+                    if (za.style.width !== w) za.style.width = w;
+                    if (za.style.display !== 'block') za.style.display = 'block';
+                    za.firstElementChild.style.transform = 'scaleX(' + rest.toFixed(3) + ')';
+                    nodig = true;
+                } else if (za.style.display !== 'none') za.style.display = 'none';
+            }
+            // v65.0: het menu bij een punt — balk onder de kop, 8 s
+            const ptb = document.getElementById('puntAftel');
+            if (ptb) {
+                if (typeof puntMenuTot !== 'undefined' && puntMenuTot && puntMenuIsOpen()) {
+                    const rest = (puntMenuTypt() || vingersOp.size) ? 1 : Math.max(0, Math.min(1, (puntMenuTot - Date.now()) / PUNT_MENU_MS));
+                    if (ptb.style.display !== 'block') ptb.style.display = 'block';
+                    ptb.firstElementChild.style.transform = 'scaleX(' + rest.toFixed(3) + ')';
+                    nodig = true;
+                } else if (ptb.style.display !== 'none') ptb.style.display = 'none';
             }
             // v64.9: het POI-menu — balkje 4 px onder het menu (het menu verhuist met Plan), 8 s; typen of zoeken = vol
             const pa = document.getElementById('poiAftel');
             if (pa) {
                 const pm = document.getElementById('poiFocusBar');
                 if (poiMenuTot && pm && typeof poiMenuTelt === 'function' && poiMenuTelt()) {
-                    const rest = (poiMenuTypt() || (typeof poiZoek !== 'undefined' && poiZoek)) ? 1 : Math.max(0, Math.min(1, (poiMenuTot - Date.now()) / POI_MENU_MS));
+                    const rest = (poiMenuTypt() || (typeof poiZoek !== 'undefined' && poiZoek) || vingersOp.size) ? 1 : Math.max(0, Math.min(1, (poiMenuTot - Date.now()) / POI_MENU_MS));
                     const r = pm.getBoundingClientRect();
                     const l = Math.round(r.left + 16) + 'px', t = Math.round(r.bottom + 4) + 'px', w = Math.max(0, Math.round(r.width - 32)) + 'px';
                     if (pa.style.left !== l) pa.style.left = l;
