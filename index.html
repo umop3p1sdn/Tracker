@@ -833,6 +833,10 @@
             .gmKnoppen { grid-template-columns: repeat(3, 1fr); }
             .gmKnop.gmBreed { grid-column: auto; }
         }
+        /* v65.4: onderin Annuleer (1/3) en de grote Continue ▶ (2/3, gevuld) — 56 px hoog (handschoenen) */
+        #gpxModePaneel .gmOnder .pmKnop { height: 56px; }
+        #gpxModePaneel .gmOnder .pmAnnuleer { flex: 1; }
+        #gpxModePaneel .gmVerder { flex: 2; background: #00BCD4; border-color: #00BCD4; color: #003; font-size: 1.15em; }
         #gpxModeVraag { display: none; position: fixed; left: 12px; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom, 0px));
             z-index: 2090; max-width: 560px; margin: 0 auto; box-sizing: border-box; background: rgba(10,14,39,0.95);
             border: 2px solid #FF9800; border-radius: 12px; padding: 10px; flex-direction: column; gap: 8px; }
@@ -1356,7 +1360,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v65.3 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v65.4 © Umop3p1sdn</div>
 
             </div>
 
@@ -1818,7 +1822,7 @@
 
             <p style="margin:10px 0 4px;"><strong>Laden (alleen Master):</strong></p>
             <ul style="margin: 5px 0; padding-left: 20px;">
-                <li><strong>Load route</strong> — voor een nette route. De app berekent er een rijdbare route van met <strong>gesproken navigatie</strong>: vóór elke afslag verschijnt een pijl (klein/blauw als 't nog ver is, groter/oranje/rood als je nadert) en je hoort de afslag ("over 300 meter rechtsaf"). De resterende afstand + tijd tellen af. Na het kiezen van het bestand kies je <strong>hoe</strong> je hem rijdt: <strong>Road, Offroad, Bike, Race bike of Walk</strong> — de app rekent de route met die Mode (en Plan gaat mee). Eén staat al voorgekozen (✓): wat hij in de GPX herkent (bv. TET, enduro, mtb, fiets, wandel in de naam of de soort, of het tempo als de GPX tijden heeft), anders je huidige Mode. Wijkt de route daarna ergens af van je track — een uitstapje, lusje of keerpunt, of meer dan 40 m ernaast — dan vraagt hij onderin <strong>Zonder navi laden?</strong>: <strong>Zonder navi</strong> laadt je track als paarse lijn (zoals Load route (no navi)), <strong>Met navi laten</strong> houdt de route, of tik een andere Mode en hij rekent opnieuw. Een route die je zelf in Plan maakte en opsloeg, onthoudt zijn Mode al.</li>
+                <li><strong>Load route</strong> — voor een nette route. De app berekent er een rijdbare route van met <strong>gesproken navigatie</strong>: vóór elke afslag verschijnt een pijl (klein/blauw als 't nog ver is, groter/oranje/rood als je nadert) en je hoort de afslag ("over 300 meter rechtsaf"). De resterende afstand + tijd tellen af. Na het kiezen van het bestand kies je <strong>hoe</strong> je hem rijdt: <strong>Road, Offroad, Bike, Race bike of Walk</strong> — de app rekent de route met die Mode (en Plan gaat mee). Eén staat al voorgekozen (✓): wat hij in de GPX herkent (bv. TET, enduro, mtb, fiets, wandel in de naam of de soort, of het tempo als de GPX tijden heeft), anders je huidige Mode. Tik een andere Mode om te wisselen; <strong>Continue ▶</strong> laadt. Wijkt de route daarna ergens af van je track — een uitstapje, lusje of keerpunt, of meer dan 40 m ernaast — dan vraagt hij onderin <strong>Zonder navi laden?</strong>: <strong>Zonder navi</strong> laadt je track als paarse lijn (zoals Load route (no navi)), <strong>Met navi laten</strong> houdt de route, of tik een andere Mode en hij rekent opnieuw. Een route die je zelf in Plan maakte en opsloeg, onthoudt zijn Mode al.</li>
                 <li><strong>Load route (no navi)</strong> — laadt de GPX als een <strong>kaal spoor</strong> (paarse lijn), precies zoals 't bestand is, zónder navigatie. <strong>Ideaal voor offroad:</strong> je volgt gewoon het "touwtje" op de kaart. Ook <strong>opgeslagen sporen laad je hiermee</strong>.</li>
                 <li>Na het laden staat de route (of de lijn) <strong>4 tellen in beeld</strong> — het balkje bovenin loopt leeg; beweeg je de kaart, dan begint het opnieuw — en daarna gaat de kaart terug naar jou. Zolang de vraag onderin openstaat, blijft de route staan.</li>
             </ul>
@@ -1912,7 +1916,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v65.3 © Umop3p1sdn
+                HO-ME v65.4 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2159,7 +2163,7 @@
 
             <p style="margin:10px 0 4px;"><strong>Loading (Master only):</strong></p>
             <ul style="margin: 5px 0; padding-left: 20px;">
-                <li><strong>Load route</strong> — for a proper route. The app calculates a rideable route from it with <strong>spoken navigation</strong>: before each turn an arrow appears (small/blue when it's still far, bigger/orange/red as you approach) and you hear the turn ("in 300 metres turn right"). The remaining distance + time count down. After choosing the file you choose <strong>how</strong> you ride it: <strong>Road, Offroad, Bike, Race bike or Walk</strong> — the app calculates the route with that Mode (and Plan follows). One is already preselected (✓): what it recognises in the GPX (e.g. TET, enduro, mtb, cycling, hiking in the name or type, or the pace if the GPX has times), otherwise your current Mode. If the route then deviates from your track somewhere — a detour, loop or U-turn, or more than 40 m away — it asks at the bottom <strong>Zonder navi laden?</strong> (load without navi?): <strong>Zonder navi</strong> loads your track as a purple line (like Load route (no navi)), <strong>Met navi laten</strong> (keep navi) keeps the route, or tap another Mode and it calculates again. A route you made in Plan yourself and saved already remembers its Mode.</li>
+                <li><strong>Load route</strong> — for a proper route. The app calculates a rideable route from it with <strong>spoken navigation</strong>: before each turn an arrow appears (small/blue when it's still far, bigger/orange/red as you approach) and you hear the turn ("in 300 metres turn right"). The remaining distance + time count down. After choosing the file you choose <strong>how</strong> you ride it: <strong>Road, Offroad, Bike, Race bike or Walk</strong> — the app calculates the route with that Mode (and Plan follows). One is already preselected (✓): what it recognises in the GPX (e.g. TET, enduro, mtb, cycling, hiking in the name or type, or the pace if the GPX has times), otherwise your current Mode. Tap another Mode to switch; <strong>Continue ▶</strong> loads. If the route then deviates from your track somewhere — a detour, loop or U-turn, or more than 40 m away — it asks at the bottom <strong>Zonder navi laden?</strong> (load without navi?): <strong>Zonder navi</strong> loads your track as a purple line (like Load route (no navi)), <strong>Met navi laten</strong> (keep navi) keeps the route, or tap another Mode and it calculates again. A route you made in Plan yourself and saved already remembers its Mode.</li>
                 <li><strong>Load route (no navi)</strong> — loads the GPX as a <strong>bare track</strong> (purple line), exactly as the file is, without navigation. <strong>Ideal for offroad:</strong> you simply follow the "string" on the map. <strong>Saved tracks are also loaded with this.</strong></li>
                 <li>After loading, the route (or the line) stays <strong>in view for 4 seconds</strong> — the bar at the top runs empty; move the map and it starts again — and then the map goes back to you. As long as the question at the bottom is open, the route stays.</li>
             </ul>
@@ -2253,7 +2257,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v65.3 © Umop3p1sdn
+                HO-ME v65.4 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2467,7 +2471,8 @@
             <div id="gpxModeNaam" class="pmSub"></div>
             <div id="gpxModeKnoppen" class="gmKnoppen"></div>
             <div id="gpxModeReden" style="color:#cfeffd; font-size:0.8em; text-align:center; line-height:1.3;"></div>
-            <div class="pmRij"><button class="pmKnop pmAnnuleer" onclick="gpxModeAnnuleer()">Annuleer</button></div>
+            <!-- v65.4: een Mode tikken kiest alleen; Continue ▶ laadt (Sjoerd: "gewoon een duidelijke grote knop met Continue of Next") -->
+            <div class="pmRij gmOnder"><button class="pmKnop pmAnnuleer" onclick="gpxModeAnnuleer()">Annuleer</button><button class="pmKnop gmVerder" onclick="gpxModeVerder()">Continue ▶</button></div>
         </div>
     </div>
     <!-- v65.2: na het laden — wijkt de route af van je track? Zonder navi laden, met navi laten, of een andere Mode
@@ -7074,7 +7079,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "65.3";
+        const APP_VERSION = "65.4";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
@@ -10760,25 +10765,37 @@ assign initialcost =
             return null;
         }
         // Het venster "Route laden als": alle 5 Modes, de herkende (of je huidige) voorgekozen. Geen timer (keuze Sjoerd).
+        // v65.4 (Sjoerd: "Als je de keuze krijgt bij een GPX laden om een Mode te kiezen zie je al een vinkje. Raar om het
+        // gekozen ding dan aan te klikken. Misschien is een continue-knop logischer?" → "Gewoon een duidelijke grote knop met
+        // Continue of Next"): een Mode tikken KIEST alleen (✓ en de witte rand verhuizen); Continue ▶ laadt met die Mode.
+        let gpxKeuzeMode = null;
         function gpxModeKeuze(raw, naam, herkend) {
             if (!raw || raw.length < 2) { alert('Geen bruikbare punten.'); return; }
             gpxKeuzeRaw = raw;
-            const voor = herkend ? herkend.mode : planMode;
             document.getElementById('gpxModeNaam').textContent = (naam ? naam + ' · ' : '') + routeKm(raw).toFixed(1).replace('.', ',') + ' km';
-            document.getElementById('gpxModeReden').textContent = '✓ = ' + (herkend ? 'herkend: ' + herkend.reden : 'je huidige Mode');
+            document.getElementById('gpxModeReden').textContent = herkend ? 'Herkend: ' + herkend.reden : 'Niets herkend: je huidige Mode';
             const k = document.getElementById('gpxModeKnoppen');
             k.innerHTML = '';
             GPX_MODES.forEach(([m, label, kleur], i) => {
                 const b = document.createElement('button');
-                b.className = 'gmKnop' + (m === voor ? ' gmVoor' : '') + (i === GPX_MODES.length - 1 ? ' gmBreed' : '');
+                b.className = 'gmKnop' + (i === GPX_MODES.length - 1 ? ' gmBreed' : '');
                 b.style.background = kleur;
-                b.textContent = (m === voor ? '✓ ' : '') + label;
                 b.dataset.mode = m;
-                b.onclick = () => gpxModeGekozen(m);
+                b.onclick = () => gpxModeKies(m);
                 k.appendChild(b);
             });
+            gpxModeKies(herkend ? herkend.mode : planMode);
             document.getElementById('gpxModePaneel').style.display = 'flex';
         }
+        function gpxModeKies(mode) {
+            gpxKeuzeMode = mode;
+            document.querySelectorAll('#gpxModeKnoppen .gmKnop').forEach(b => {
+                const m = b.dataset.mode, label = (GPX_MODES.find(x => x[0] === m) || [0, m])[1];
+                b.classList.toggle('gmVoor', m === mode);
+                b.textContent = (m === mode ? '✓ ' : '') + label;
+            });
+        }
+        function gpxModeVerder() { if (gpxKeuzeRaw && gpxKeuzeMode) gpxModeGekozen(gpxKeuzeMode); }
         function gpxModeAnnuleer() {
             gpxKeuzeRaw = null;
             const p = document.getElementById('gpxModePaneel');
