@@ -875,6 +875,30 @@
         .pmDelete  { border-color: #FF1744; color: #fff;    background: #FF1744; }
         .pmWijzig  { border-color: #00BCD4; color: #00BCD4; background: rgba(0,188,212,0.1); }
         .pmDev     { border-color: #FF9800; color: #FFCC80; background: rgba(255,152,0,0.14); }   /* v64.2: test-modus (Develop) */
+        /* v65.9 REC-KNOP (Track control — Sjoerd: "een Record knop, mss rond en groot; Record rood knipperend als hij opneemt"):
+           rond 86 px. Staand midden onderin: bottom 200 + home-balk, boven de afslagpijlen en het afstandslabel (bottom 113–168);
+           midden-relatief = géén rand-marge (les 2). Liggend recht onder de MENU-knop (die staat op top 208, 64 px): top 278,
+           76 px, gecentreerd onder de knop — GEMETEN (track119): onderaan verankerd lag hij op een laag liggend scherm (S22 360,
+           iPhone SE 375) over de MENU-knop; in het midden lag hij liggend over je eigen pijl of de afslagpijlen. z 2050
+           (flitser/borden): onder de vierkante knop (2200) en alle menu's. Alleen de master, alleen in het rijscherm, alleen met
+           Track control aan. */
+        #recKnop { display: none; position: fixed; z-index: 2050; left: calc(50% - 43px); bottom: calc(200px + env(safe-area-inset-bottom, 0px));
+            width: 86px; height: 86px; border-radius: 50%; box-sizing: border-box; padding: 0; margin: 0; border: 4px solid #FF1744;
+            background: rgba(10,14,39,0.85); color: #fff; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.5); cursor: pointer; touch-action: manipulation; font-family: inherit;
+            -webkit-tap-highlight-color: transparent; }
+        #recKnop .recPunt { width: 22px; height: 22px; border-radius: 50%; background: #FF1744; pointer-events: none; }
+        #recKnop .recTekst { font-weight: bold; font-size: 15px; letter-spacing: 1px; pointer-events: none; }
+        body.map-only.track-control #recKnop { display: flex; }
+        body.track-rec #recKnop { background: #FF1744; border-color: #fff; animation: recKnipper 1s ease-in-out infinite; }
+        body.track-rec #recKnop .recPunt { background: #fff; }
+        @keyframes recKnipper {
+            0%, 100% { background-color: #FF1744; box-shadow: 0 0 0 0 rgba(255,23,68,0.7), 0 4px 14px rgba(0,0,0,0.5); }
+            50% { background-color: #9b0e2a; box-shadow: 0 0 0 12px rgba(255,23,68,0), 0 4px 14px rgba(0,0,0,0.5); }
+        }
+        @media (orientation: landscape) {
+            #recKnop { left: auto; right: calc(4px + env(safe-area-inset-right, 0px)); bottom: auto; top: 278px; width: 76px; height: 76px; }
+        }
         /* v65.8 MAAT-PANEEL VERMIJDEN (Sjoerd: "zichtbaar op de kaart met een schuif, zodat je ziet wat je doet — getal met
            pijlen en schuif"; gekozen: vast onderin, liggend rechts): de km-vakjes in "Punt toevoegen als" en het pin-menu zijn
            weg. Op de laag van de Plan-menu's (2550): boven het rijscherm (≤ 2050) en de vierkante knop (2200), onder de
@@ -1049,6 +1073,8 @@
         <span id="gpsSpeedUnit" style="color: #889; font-weight: 600; margin-left: 4px;">km/u</span>
     </div>
     <!-- PRAAT-KNOP (push-to-talk): hele vlak (rand + mic) is de knop. Links; staand boven flitser, liggend boven afstand. -->
+    <!-- v65.9: REC (Track control) — rood knipperend = je spoor neemt op; één tik = aan/uit; elk nieuw begin = een los stuk -->
+    <button id="recKnop" type="button" onclick="trackRecWissel()" aria-label="REC: spoor opnemen aan of uit"><span class="recPunt"></span><span class="recTekst">REC</span></button>
     <div id="talkBtn" style="display:none; position: fixed; bottom: 395px; left: 10px; z-index: 1250; width: 78px; height: 78px; border-radius: 50%; border: 4px solid #000; background: rgba(255,255,255,0.12); box-shadow: 0 0 0 2px rgba(255,255,255,0.4); align-items:center; justify-content:center; cursor: pointer; -webkit-user-select:none; user-select:none; touch-action:none;">
         <svg width="34" height="34" viewBox="0 0 24 24" fill="#000" style="filter: drop-shadow(0 0 2px rgba(255,255,255,0.9));"><path d="M12 14a3 3 0 003-3V5a3 3 0 00-6 0v6a3 3 0 003 3zm5-3a5 5 0 01-10 0H5a7 7 0 006 6.92V21h2v-3.08A7 7 0 0019 11h-2z"/></svg>
     </div>
@@ -1382,7 +1408,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v65.8 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v65.9 © Umop3p1sdn</div>
 
             </div>
 
@@ -1541,6 +1567,7 @@
             </div>
             <div style="display: flex; flex-direction: column; gap: 12px;">
                 <button class="button-secondary" onclick="toggleAppMenu(); toggleGPXMenu();" style="width: 100%;">GPX</button>
+                <button class="button-secondary" onclick="trackControlWissel()" id="trackControlBtnMenu" style="width: 100%; display: none;">Track control: OFF</button>   <!-- v65.9: alleen de master -->
                 <button class="button-secondary" onclick="openOptionsMenu()" style="width: 100%; border-color:#00838F;">Options</button>
                 <button class="button-secondary" onclick="openConfigMenu()" style="width: 100%; border-color:#00838F;">Config</button>
                 <button class="button-secondary" onclick="toggleAppMenu(); toggleHandleiding();" style="width: 100%;">Handleiding</button>
@@ -1856,6 +1883,8 @@
                 <li><strong>Mix-kaart:</strong> je kunt een <strong>offroad spoor (no navi)</strong> laden én tegelijk met <strong>Plan</strong> een navi-route maken. Zo navigeer je mét stem naar de offroad-plek, en volg je daar het paarse spoor verder. Beide lijnen staan samen op de kaart.</li>
             </ul>
 
+            <p style="margin:14px 0 4px;"><strong>Track control (Master):</strong> wil je zelf bepalen of je een spoor achterlaat? Zet <strong>Menu → Track control</strong> op ON. In het rijscherm staat dan een grote ronde <strong>REC</strong>-knop (staand midden onderin, liggend rechts onder de menu-knop). <strong>Rood en knipperend</strong> = je spoor neemt op; <strong>donker met een rode rand</strong> = geen spoor. Eén tik wisselt; elke keer dat je weer opneemt begint een <strong>nieuw los stuk</strong> — geen lijn over het gat. Bij de start van een rit staat REC uit: jij drukt REC. Je positie blijft gewoon gedeeld; volgers zien dezelfde losse stukken. <strong>Save master spoor</strong> bewaart alle stukken in één bestand; <strong>Load route (no navi)</strong> zet ze in één keer terug, als losse paarse stukken. Track control blijft staan zoals je hem zette (ook als je de app opnieuw opent); OFF = zoals altijd: je spoor loopt de hele rit.</p>
+
             <p style="margin:14px 0 4px;"><strong>Opslaan (Save):</strong> bij opslaan vraagt de app een <strong>naam</strong> — die komt in het bestand én in de track-kiezer terug, zodat je 'm makkelijk herkent. De Master kan zijn spoor en route opslaan; de Volger kan daarnaast ook zijn <strong>eigen</strong> gereden spoor opslaan. Heeft de Master een route geladen met Load route (no navi) — de paarse lijn — dan kan de Volger die ook opslaan met <strong>Save master route (no navi)</strong>. De app toont de juiste knoppen vanzelf.</p>
 
             <p style="margin:14px 0 4px;"><strong>Wis route vs Delete:</strong></p>
@@ -1937,7 +1966,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v65.8 © Umop3p1sdn
+                HO-ME v65.9 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2196,6 +2225,8 @@
                 <li><strong>Mix map:</strong> you can load an <strong>offroad track (no navi)</strong> and at the same time make a navi route with <strong>Plan</strong>. That way you navigate with voice to the offroad spot, and follow the purple track from there. Both lines are on the map together.</li>
             </ul>
 
+            <p style="margin:14px 0 4px;"><strong>Track control (Master):</strong> want to decide yourself whether you leave a track? Set <strong>Menu → Track control</strong> to ON. The riding screen then shows a big round <strong>REC</strong> button (portrait: bottom centre; landscape: on the right below the menu button). <strong>Red and blinking</strong> = your track is recording; <strong>dark with a red ring</strong> = no track. One tap switches; every time you record again a <strong>new separate piece</strong> starts — no line across the gap. At the start of a ride REC is off: you press REC. Your position is still shared as usual; followers see the same separate pieces. <strong>Save master spoor</strong> saves all pieces in one file; <strong>Load route (no navi)</strong> puts them back in one go, as separate purple pieces. Track control stays the way you set it (also when you reopen the app); OFF = as always: your track runs for the whole ride.</p>
+
             <p style="margin:14px 0 4px;"><strong>Saving (Save):</strong> when saving, the app asks for a <strong>name</strong> — it goes in the file and shows up in the track picker, so you recognise it easily. The Master can save their track and route; the Follower can also save their <strong>own</strong> ridden track. If the Master loaded a route with Load route (no navi) — the purple line — the Follower can save that too with <strong>Save master route (no navi)</strong>. The app shows the right buttons automatically.</p>
 
             <p style="margin:14px 0 4px;"><strong>Wis route vs Delete:</strong></p>
@@ -2277,7 +2308,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v65.8 © Umop3p1sdn
+                HO-ME v65.9 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -4321,10 +4352,7 @@ assign initialcost =
             //         dat was mijn foute aanname in v63.40, waardoor de box nooit verscheen).
             const isMasterTracking = (typeof currentMode !== 'undefined') && (currentMode === 'master');
             if (heeftRoute || !isMasterTracking || track.length < 2) { box.style.display = 'none'; return; }
-            let m = 0;
-            for (let i = 1; i < track.length; i++) {
-                m += distM4(track[i-1][0], track[i-1][1], track[i][0], track[i][1]);
-            }
+            const m = spoorLengteM(track, masterBreuken);   // v65.9: losse stukken — de gaten tellen niet
             const val = document.getElementById('trackLenVal');
             if (val) {
                 val.textContent = (m < 1000)
@@ -7274,7 +7302,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "65.8";
+        const APP_VERSION = "65.9";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
@@ -7557,6 +7585,71 @@ assign initialcost =
         let followerKompasGezet = false;     // v63.72: kompas al aangezet voor deze master-route (één keer per route)
         let trackingPolyline = null;
         let masterLocations = [];
+        // ═══ v65.9 TRACK CONTROL (Sjoerd: "Stel ik wil met mijn master zelf bepalen of ik mijn track achterlaat. Nu is het
+        // permanent. Zou ik met een grote knop hem aan en uit kunnen zetten, dat hij losse stroken opneemt. En dan ook zo opslaat en
+        // dan ook zo kan laden als Track No navi" + "In menu een knop om track control aan te zetten. Als deze aan is dan krijg je in
+        // je scherm een Record knop, mss rond en groot. Record rood knipperend als hij opneemt. Simpel toch:)"; gekozen: REC uit bij
+        // de start — jij drukt REC; de menu-schakelaar onthouden; REC staand midden onderin, liggend rechts onder de MENU-knop) ═══
+        // Alleen de master. Track control uit (standaard) = zoals altijd: het spoor loopt de hele rit.
+        // Het spoor blijft één platte lijst (masterLocations — zo lezen oudere volgers het gewoon, alleen zonder gaten) met daarnaast
+        // de plekken waar een nieuw stuk begint (masterBreuken). Tekenen, delen, opslaan en laden knippen daar: geen lijn over een gat.
+        // REROUTE ("welke tussenpunten ben je al voorbij?") kijkt naar masterGereden: álles wat je reed, ook met REC uit — alleen in
+        // de app: niet op de kaart, niet gedeeld, niet opgeslagen.
+        let trackControl = false;
+        try { trackControl = localStorage.getItem('homeTrackControl') === '1'; } catch (e) {}
+        let trackRec = true;            // neemt het spoor nu op? (Track control uit = altijd)
+        let masterBreuken = [];         // indexen in masterLocations waar een nieuw stuk begint (het eerste stuk begint op 0)
+        let masterGereden = [];         // alles wat de master reed (voor REROUTE), ook met REC uit
+        let spoorNieuwStuk = false;     // het volgende opgenomen punt begint een nieuw stuk
+        let offroadBreuken = [];        // idem voor de paarse lijn: een geladen eigen spoor met gaten
+        // platte lijst + breukplekken → losse stukken (L.polyline tekent een lijst van lijsten als losse lijnen)
+        function spoorStukken(pts, breuken) {
+            if (!pts || !pts.length || !breuken || !breuken.length) return pts || [];
+            const uit = []; let van = 0;
+            breuken.concat([pts.length]).forEach(b => { if (b > van && b <= pts.length) { uit.push(pts.slice(van, b)); van = b; } });
+            return uit.length ? uit : pts;
+        }
+        function spoorLengteM(pts, breuken) {   // lengte zonder de gaten
+            const br = new Set(breuken || []);
+            let m = 0;
+            for (let i = 1; i < (pts || []).length; i++) if (!br.has(i)) m += distM4(pts[i - 1][0], pts[i - 1][1], pts[i][0], pts[i][1]);
+            return m;
+        }
+        // de rode lijn (opnieuw) tekenen — gestreept bij de master zelf, zoals altijd
+        function spoorTeken(gestreept) {
+            if (!mapInstance) return;
+            if (trackingPolyline) { try { mapInstance.removeLayer(trackingPolyline); } catch (e) {} trackingPolyline = null; }
+            if (masterLocations.length < 2) return;
+            const opt = { pane: 'hmRedPane', color: '#FF1744', weight: trackLineWidth, opacity: 0.8 };
+            if (gestreept) opt.dashArray = '5, 5';
+            trackingPolyline = L.polyline(spoorStukken(masterLocations, masterBreuken), opt).addTo(mapInstance);
+        }
+        // knop in het menu + de REC-knop in het rijscherm (body-klassen) bijwerken
+        function trackRecToon() {
+            const master = typeof currentMode !== 'undefined' && currentMode === 'master';
+            document.body.classList.toggle('track-control', master && trackControl);
+            document.body.classList.toggle('track-rec', master && trackControl && trackRec);
+            const b = document.getElementById('trackControlBtnMenu');
+            if (b) { b.style.display = master ? '' : 'none'; b.textContent = 'Track control: ' + (trackControl ? 'ON' : 'OFF'); }
+        }
+        function trackControlWissel() {         // Menu → Track control
+            if (typeof currentMode === 'undefined' || currentMode !== 'master') return;
+            trackControl = !trackControl;
+            try { localStorage.setItem('homeTrackControl', trackControl ? '1' : '0'); } catch (e) {}
+            if (trackControl) trackRec = false;                                    // keuze Sjoerd: REC uit — jij drukt REC
+            else { if (!trackRec) spoorNieuwStuk = true; trackRec = true; }        // uit = weer altijd spoor (een nieuw stuk)
+            trackRecToon();
+            if (typeof showBufferToast === 'function')
+                showBufferToast(trackControl ? 'Track control aan — druk REC om je spoor op te nemen' : 'Track control uit — je spoor loopt weer de hele rit', trackControl ? '#FF1744' : '#4CAF50', 2600);
+        }
+        function trackRecWissel() {              // de REC-knop
+            if (typeof currentMode === 'undefined' || currentMode !== 'master' || !trackControl) return;
+            trackRec = !trackRec;
+            if (trackRec) spoorNieuwStuk = true;
+            trackRecToon();
+            if (typeof showBufferToast === 'function')
+                showBufferToast(trackRec ? 'REC — je spoor neemt op' : 'REC uit — je laat geen spoor achter', trackRec ? '#FF1744' : '#546E7A', 1800);
+        }
         let followerLocations = [];
         let followerTrackingPolyline = null;
         let watchId = null;
@@ -9869,7 +9962,8 @@ assign initialcost =
                 const d = distMeters(me, R[i]);
                 if (d < nearD) { nearD = d; nearIdx = i; }
             }
-            const spoor = (typeof masterLocations !== 'undefined' && masterLocations) ? masterLocations : [];
+            const spoor = (typeof masterGereden !== 'undefined' && masterGereden.length) ? masterGereden   // v65.9: ook met REC uit
+                : ((typeof masterLocations !== 'undefined' && masterLocations) ? masterLocations : []);
             if (spoor.length < 2 || R.length < 3) return nearIdx;            // geen spoor → oud gedrag
             const cum = [0];                                                  // afstand langs de route
             for (let i = 1; i < R.length; i++) cum.push(cum[i - 1] + distMeters(R[i - 1], R[i]));
@@ -10041,7 +10135,8 @@ assign initialcost =
                 return { idx: bi, d: distMeters(p, R[bi]) };
             };
             // tussenpunten op de route plaatsen, in volgorde (elk punt ná het vorige)
-            const spoor = (typeof masterLocations !== 'undefined' && masterLocations) ? masterLocations : [];
+            const spoor = (typeof masterGereden !== 'undefined' && masterGereden.length) ? masterGereden   // v65.9: ook met REC uit
+                : ((typeof masterLocations !== 'undefined' && masterLocations) ? masterLocations : []);
             let van = 0;
             const info = viaPoints.map(v => {
                 const pv = [v.lat, v.lng];
@@ -10616,7 +10711,7 @@ assign initialcost =
         }
 
         // GPX → losse tracks (per <trkseg>, en losse <rte>). Herbruikt door route- én plain-loader.
-        function parseGpxTracks(text) {
+        function parseGpxTracks(text, opties) {   // v65.9: opties.stukkenSamen — een eigen spoor (HO-ME spoor) als één lijn met gaten
             const gpx = new DOMParser().parseFromString(text, 'application/xml');
             const tracks = [];
             const readPtsFrom = (el, sel) => {
@@ -10633,6 +10728,13 @@ assign initialcost =
                 const nm = trk.querySelector('name');
                 const trkName = nm ? nm.textContent.trim() : '';
                 const segs = trk.querySelectorAll('trkseg');
+                const soort = trk.querySelector('type');
+                if (opties && opties.stukkenSamen && segs.length > 1 && soort && /HO-ME spoor/i.test(soort.textContent)) {
+                    const pts = [], breuken = [];
+                    segs.forEach(seg => { const p = readPtsFrom(seg, 'trkpt'); if (p.length < 2) return; if (pts.length) breuken.push(pts.length); p.forEach(x => pts.push(x)); });
+                    if (pts.length >= 2) { deelNr++; tracks.push({ name: trkName || `Deel ${deelNr}`, pts, breuken }); }
+                    return;
+                }
                 segs.forEach((seg, si) => {
                     const pts = readPtsFrom(seg, 'trkpt');
                     if (pts.length < 2) return;
@@ -10684,11 +10786,11 @@ assign initialcost =
             if (!file) return;
             const text = await file.text();
             try { event.target.value = ''; } catch (e) {}   // v65.1: hetzelfde bestand nog eens kiezen = weer laden
-            const tracks = parseGpxTracks(text);
+            const tracks = parseGpxTracks(text, { stukkenSamen: true });   // v65.9: eigen spoor met stukken = in één keer
             if (!tracks.length) { alert('Geen bruikbare tracks in de GPX.'); return; }
             if (typeof gpxVraagDicht === 'function') gpxVraagDicht();   // v65.2: de vraag over de vorige GPX geldt niet meer
             if (tracks.length === 1) {
-                processPlainTrack(tracks[0].pts);
+                processPlainTrack(tracks[0].pts, tracks[0].breuken);
             } else {
                 showTrackPicker(tracks, processPlainTrack);
             }
@@ -10696,11 +10798,12 @@ assign initialcost =
 
         // Teken een kale GPX-lijn (paars) op een EIGEN laag, zonder BRouter/afslagen. Puur volgen.
         // Blijft naast een navi-route staan (mix-kaart) en wordt apart met de volger gedeeld.
-        function processPlainTrack(raw) {
+        function processPlainTrack(raw, breuken) {
             if (!raw || raw.length < 2) { alert('Geen bruikbare punten.'); return; }
             offroadRoute = raw;
+            offroadBreuken = Array.isArray(breuken) ? breuken : [];   // v65.9: losse stukken (een eigen spoor met gaten)
             if (offroadPolyline) { try { mapInstance.removeLayer(offroadPolyline); } catch(e){} }
-            offroadPolyline = L.polyline(raw, { pane: 'hmNaviPane', color:'#9C27B0', weight: trackLineWidth, opacity:0.9 }).addTo(mapInstance);
+            offroadPolyline = L.polyline(spoorStukken(raw, offroadBreuken), { pane: 'hmNaviPane', color:'#9C27B0', weight: trackLineWidth, opacity:0.9 }).addTo(mapInstance);
             gpxInBeeld(raw);   // v65.1: de lijn in beeld, 4 s (de kaart bewegen = langer), dan terug naar jou
             // apart delen met de volger via het /gpx/ pad (offroad als extra veld). De huidige
             // navi-route (gpxRoute) sturen we mee zodat die niet verloren gaat.
@@ -10708,7 +10811,9 @@ assign initialcost =
                 sendGPXToFirebase(currentCode, gpxRoute || [], detectedTurns || [], routeTotalKm || 0, routeTotalMin || 0, raw);
             }
             if (typeof showBufferToast === 'function')
-                showBufferToast(`Offroad-lijn geladen (${routeKm(raw).toFixed(1)} km) — volgen, geen navigatie`, '#9C27B0', 4000);
+                showBufferToast(offroadBreuken.length
+                    ? `Spoor geladen: ${offroadBreuken.length + 1} stukken (${(spoorLengteM(raw, offroadBreuken) / 1000).toFixed(1).replace('.', ',')} km) — volgen, geen navigatie`
+                    : `Offroad-lijn geladen (${routeKm(raw).toFixed(1)} km) — volgen, geen navigatie`, '#9C27B0', 4000);
         }
 
         // ═══ v65.1 GPX LADEN MET DE JUISTE MODE (Sjoerd: "Soms laad ik een offroad route met navi, maar dan wordt het een rare
@@ -11266,7 +11371,7 @@ assign initialcost =
             if (typeof hideNavElements === 'function') hideNavElements();
             // offroad-spoor (paars) ook weg (lokaal). Het /gpx/ bericht wordt elders gewist/herschreven.
             if (offroadPolyline) { try { mapInstance.removeLayer(offroadPolyline); } catch(e){} offroadPolyline = null; }
-            offroadRoute = [];
+            offroadRoute = []; offroadBreuken = [];
             if (typeof gpxVraagDicht === 'function') gpxVraagDicht();   // v65.2: geen vraag over een route die weg is
 
             // Close modal
@@ -11623,6 +11728,7 @@ assign initialcost =
                 // gewone route-update (GO) het offroad-veld NIET per ongeluk wist.
                 const off = (offroad && offroad.length) ? offroad : (typeof offroadRoute !== 'undefined' ? offroadRoute : []);
                 if (off && off.length) payload.offroad = off;
+                if (off && off.length && off === offroadRoute && offroadBreuken.length) payload.offroadBreuken = offroadBreuken;   // v65.9
                 // Bouwpunten meesturen (start/via/finish + nogo + profiel) zodat een VOLGER de route
                 // net als de master kan opslaan (bewerkbaar, mét finish). Alleen pure data — geen markers.
                 if (typeof startPoint !== 'undefined' && startPoint && typeof destPoint !== 'undefined' && destPoint) {
@@ -12815,7 +12921,8 @@ assign initialcost =
                         heading: heading,
                         timestamp: Date.now(),
                         masterId: deviceId,
-                        route: masterLocations
+                        route: masterLocations,
+                        routeBreuken: masterBreuken   // v65.9: waar een nieuw stuk begint (leeg = Firebase laat het weg)
                     }),
                     signal: controller.signal
                 });
@@ -12841,6 +12948,7 @@ assign initialcost =
                         lng: data.longitude,
                         heading: data.heading || 0,
                         route: data.route || [],
+                        routeBreuken: Array.isArray(data.routeBreuken) ? data.routeBreuken : [],   // v65.9
                         timestamp: data.timestamp || 0,
                         tag: data.tag || ''   // master-tag (v51.0: werd hier weggegooid — daarom zagen volgers 'm nooit)
                     };
@@ -12884,6 +12992,7 @@ assign initialcost =
                 const data = await response.json();
                 // offroad-veld (kaal spoor van de master) bewaren voor de volger-loop.
                 window._followerOffroad = (data && data.offroad && Array.isArray(data.offroad)) ? data.offroad : [];
+                window._followerOffroadBreuken = (data && Array.isArray(data.offroadBreuken)) ? data.offroadBreuken : [];   // v65.9
                 // Bouwpunten (start/via/finish + nogo + profiel) bewaren, zodat de volger de route
                 // net als de master kan opslaan (bewerkbaar, mét finish).
                 window._followerBuildPts = (data && data.buildPts) ? data.buildPts : null;
@@ -14152,19 +14261,12 @@ assign initialcost =
                             }
 
                             // createDirectionMarker(latitude, longitude, deviceHeading, false);
-                            masterLocations.push([latitude, longitude]);
-                            updateTrackLength();   // v63.40: spoorlengte bijwerken
-
-                            if (masterLocations.length > 1) {
-                                if (trackingPolyline) {
-                                    mapInstance.removeLayer(trackingPolyline);
-                                }
-                                trackingPolyline = L.polyline(masterLocations, { pane: 'hmRedPane',
-                                    color: '#FF1744',
-                                    weight: trackLineWidth,
-                                    opacity: 0.8,
-                                    dashArray: '5, 5'
-                                }).addTo(mapInstance);
+                            masterGereden.push([latitude, longitude]);   // v65.9: REROUTE weet altijd waar je reed
+                            if (trackRec) {                              // v65.9: Track control — alleen met REC in het spoor
+                                if (spoorNieuwStuk) { if (masterLocations.length) masterBreuken.push(masterLocations.length); spoorNieuwStuk = false; }
+                                masterLocations.push([latitude, longitude]);
+                                updateTrackLength();   // v63.40: spoorlengte bijwerken
+                                if (masterLocations.length > 1) spoorTeken(true);   // losse stukken: geen lijn over een gat
                             }
 
                             sendToFirebase(code, latitude, longitude, zichtRichting());   // v63.80
@@ -14334,19 +14436,11 @@ assign initialcost =
                             
                             if (location.route && location.route.length > 0) {
                                 masterLocations = location.route;
+                                masterBreuken = location.routeBreuken || [];   // v65.9: de losse stukken van de master
                             }
 
                             // Rode gereden spoor bijwerken in M SPOOR én M NAVI (bij M NAVI samen met de navi-route)
-                            if (masterLocations.length > 1 && (trackState === 'view' || trackState === 'all')) {
-                                if (trackingPolyline) {
-                                    mapInstance.removeLayer(trackingPolyline);
-                                }
-                                trackingPolyline = L.polyline(masterLocations, { pane: 'hmRedPane',
-                                    color: '#FF1744',
-                                    weight: trackLineWidth,
-                                    opacity: 0.8
-                                }).addTo(mapInstance);
-                            }
+                            if (masterLocations.length > 1 && (trackState === 'view' || trackState === 'all')) spoorTeken(false);
 
                             // v63.49 (Sjoerd: "route = route, dus M NAVI altijd van kracht"): voor de
                             // VOLGER staat de weergavestand vast op M NAVI. De knop die dit kon wisselen
@@ -14447,14 +14541,15 @@ assign initialcost =
                                 const offNow = window._followerOffroad || [];
                                 if (offNow && offNow.length > 1) {
                                     offroadRoute = offNow;
+                                    offroadBreuken = window._followerOffroadBreuken || [];   // v65.9: losse stukken
                                     if (offroadPolyline) { try { mapInstance.removeLayer(offroadPolyline); } catch(e){} }
-                                    offroadPolyline = L.polyline(offNow, { pane: 'hmNaviPane',
+                                    offroadPolyline = L.polyline(spoorStukken(offNow, offroadBreuken), { pane: 'hmNaviPane',
                                         color: '#9C27B0', weight: trackLineWidth, opacity: 0.9
                                     }).addTo(mapInstance);
                                 } else if (offroadPolyline) {
                                     // master heeft 'm verwijderd → weg bij volger
                                     try { mapInstance.removeLayer(offroadPolyline); } catch(e){}
-                                    offroadPolyline = null; offroadRoute = [];
+                                    offroadPolyline = null; offroadRoute = []; offroadBreuken = [];
                                 }
                             } else if (followerNavActive) {
                                 // All track UIT (of view/none) → volger-navigatie stoppen + opruimen
@@ -14521,19 +14616,11 @@ assign initialcost =
 
             if (trackState === 'view') {
                 // M SPOOR: alleen de rode gereden lijn van de master
-                if (masterLocations.length > 1) {
-                    trackingPolyline = L.polyline(masterLocations, { pane: 'hmRedPane',
-                        color: '#FF1744', weight: trackLineWidth, opacity: 0.8
-                    }).addTo(mapInstance);
-                }
+                if (masterLocations.length > 1) spoorTeken(false);   // v65.9: losse stukken
             } else if (trackState === 'all') {
                 // M NAVI: navi-route (blauw) + offroad (paars) + het rode gereden spoor van de master.
                 // Rood ligt in hmRedPane → ONDER de navi (v15.2): je ziet 't waar de master afwijkt.
-                if (masterLocations.length > 1) {
-                    trackingPolyline = L.polyline(masterLocations, { pane: 'hmRedPane',
-                        color: '#FF1744', weight: trackLineWidth, opacity: 0.8
-                    }).addTo(mapInstance);
-                }
+                if (masterLocations.length > 1) spoorTeken(false);   // v65.9: losse stukken
                 if (!followerLoadedGpxRoute || followerLoadedGpxRoute.length === 0) {
                     const fetchedGpxRoute = await fetchGPXRoute(currentCode);
                     gpxRoute = (fetchedGpxRoute && fetchedGpxRoute.length > 0) ? fetchedGpxRoute : [];
@@ -14549,13 +14636,14 @@ assign initialcost =
                     const off = window._followerOffroad || [];
                     if (off && off.length > 1) {
                         offroadRoute = off;
-                        offroadPolyline = L.polyline(off, { pane: 'hmNaviPane',
+                        offroadBreuken = window._followerOffroadBreuken || [];   // v65.9: losse stukken
+                        offroadPolyline = L.polyline(spoorStukken(off, offroadBreuken), { pane: 'hmNaviPane',
                             color: '#9C27B0', weight: trackLineWidth, opacity: 0.9
                         }).addTo(mapInstance);
                     }
                 } else if (offroadRoute && offroadRoute.length > 1) {
                     // master: eigen offroad-lijn opnieuw tonen
-                    offroadPolyline = L.polyline(offroadRoute, { pane: 'hmNaviPane',
+                    offroadPolyline = L.polyline(spoorStukken(offroadRoute, offroadBreuken), { pane: 'hmNaviPane',
                         color: '#9C27B0', weight: trackLineWidth, opacity: 0.9
                     }).addTo(mapInstance);
                 }
@@ -14621,22 +14709,36 @@ assign initialcost =
                 return;
             }
             const meta = askRouteName(`master-spoor-${currentCode}`);
+            saveGPXFile(spoorGpx(meta.name, masterLocations, masterBreuken, true), meta.file);   // v65.9: de losse stukken
+        }
+        // v65.9: een spoor als GPX — één <trk>, elk stuk een eigen <trkseg> (zo hoort een spoor met gaten in GPX) en
+        // <type>HO-ME spoor</type>: Load route (no navi) zet dan alle stukken in één keer terug (geen keuzelijst per stuk).
+        function spoorGpx(naam, pts, breuken, metTijd) {
+            const esc = x => String(x).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            const stukken = (breuken && breuken.length) ? spoorStukken(pts, breuken) : [pts];
+            const nu = new Date().toISOString();
             let gpx = `<?xml version="1.0" encoding="UTF-8"?>
 <gpx version="1.1" creator="LiveTracker">
   <trk>
-    <name>${meta.name}</name>
-    <trkseg>`;
-            masterLocations.forEach(([lat, lng]) => {
+    <name>${esc(naam)}</name>
+    <type>HO-ME spoor</type>`;
+            stukken.filter(st => st.length >= 2).forEach(st => {
                 gpx += `
+    <trkseg>`;
+                st.forEach(([lat, lng]) => {
+                    gpx += metTijd ? `
       <trkpt lat="${lat}" lon="${lng}">
-        <time>${new Date().toISOString()}</time>
-      </trkpt>`;
+        <time>${nu}</time>
+      </trkpt>` : `
+      <trkpt lat="${lat}" lon="${lng}"></trkpt>`;
+                });
+                gpx += `
+    </trkseg>`;
             });
             gpx += `
-    </trkseg>
   </trk>
 </gpx>`;
-            saveGPXFile(gpx, meta.file);
+            return gpx;
         }
 
         // Bouwt het <rte>-blok met de BOUWPUNTEN (start/via/finish) volgens GPX-standaard.
@@ -14723,6 +14825,8 @@ assign initialcost =
             const pts = (typeof offroadRoute !== 'undefined' && offroadRoute) ? offroadRoute : [];
             if (pts.length < 2) { showError('Geen route (no navi) van de master'); return; }
             const meta = askRouteName(`master-route-no-navi-${currentCode}`);
+            const br = (typeof offroadBreuken !== 'undefined' && offroadBreuken && offroadBreuken.length) ? offroadBreuken : [];
+            if (br.length) { saveGPXFile(spoorGpx(meta.name, pts, br, false), meta.file); return; }   // v65.9: met zijn losse stukken
             const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
             let gpx = `<?xml version="1.0" encoding="UTF-8"?>
 <gpx version="1.1" creator="HO-ME">
@@ -14853,6 +14957,9 @@ assign initialcost =
             currentMode = 'master';
             updateMyColorBadge();   // toont de TAG-knop voor de master (v50.6 gaf 'm die, maar deze aanroep ontbrak)
             masterLocations = [];
+            masterBreuken = []; masterGereden = []; spoorNieuwStuk = false;   // v65.9: Track control
+            trackRec = !trackControl;                  // keuze Sjoerd: met Track control aan staat REC uit bij de start — jij drukt REC
+            trackRecToon();
             isAutoFollowActive = false;   // Center UIT bij start → je ziet je hele route terwijl je 'm bouwt
             // knop-kleur op grijs (uit-stand)
             [document.getElementById('followBtnMaster'), document.getElementById('followBtnFollower')].forEach(b => {
@@ -14959,6 +15066,8 @@ assign initialcost =
                 }
             } catch (e) {}
             masterLocations = [];
+            masterBreuken = []; masterGereden = [];    // v65.9
+            trackRecToon();                            // v65.9: volger = geen REC
             trackVisible = false;
             zoomMode = 'self';        // start op IK (eigen positie), niet op Master
             compassMode = 'device';
@@ -15178,6 +15287,8 @@ assign initialcost =
             currentMode = null;
             currentCode = '';
             masterLocations = [];
+            masterBreuken = []; masterGereden = []; spoorNieuwStuk = false;   // v65.9
+            if (typeof trackRecToon === 'function') trackRecToon();
             followerLocations = [];
             folLineTrack = [];
             folLineSentIdx = 0;
@@ -15231,6 +15342,7 @@ assign initialcost =
                 }
                 modal.classList.remove('hidden');
                 modal.style.display = 'block';
+                if (typeof trackRecToon === 'function') trackRecToon();   // v65.9: Track control (alleen de master)
                 if (typeof updateDataUsageDisplay === 'function') updateDataUsageDisplay();   // data-verbruik bijwerken
             } else {
                 modal.classList.add('hidden');
