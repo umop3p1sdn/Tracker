@@ -642,7 +642,7 @@
            "Route Planner" en het kruis (verandert de hoogte van de regel niet). */
         #planAftel { display: none; flex: 1 1 auto; height: 10px; margin: 0 10px; }
         /* v63.82: aftelbalk van "Punt toevoegen als" (alleen na een tik op de kaart), onder de kop, in de flow */
-        #tikAftel, #puntAftel { display: none; height: 8px; flex: 0 0 auto; }   /* v65.0: ook het menu bij een punt */
+        #tikAftel, #puntAftel, #zoneMaatAftel { display: none; height: 8px; flex: 0 0 auto; }   /* v65.0: ook het menu bij een punt */
         /* v63.66 (wens Sjoerd): de groene play-knop mag óók in het schone scherm (Hide) — updateGoBtn bepaalt
            of hij er staat (route klaar en nog niet gestart), placeGoBtn zet 'm op een gemeten vrije plek. */
 
@@ -875,11 +875,30 @@
         .pmDelete  { border-color: #FF1744; color: #fff;    background: #FF1744; }
         .pmWijzig  { border-color: #00BCD4; color: #00BCD4; background: rgba(0,188,212,0.1); }
         .pmDev     { border-color: #FF9800; color: #FFCC80; background: rgba(255,152,0,0.14); }   /* v64.2: test-modus (Develop) */
-        .pmKm { display: flex; align-items: center; justify-content: center; flex: 0 0 100px; height: 48px;
-            box-sizing: border-box; border: 2px solid #FF1744; border-radius: 10px; }
-        .pmKm input { width: 48px; border: none; background: transparent; color: #fff; font-size: 1.05em;
-            font-weight: bold; text-align: right; padding: 0 4px 0 0; font-family: inherit; }
-        .pmKm span { color: #FF8A80; font-size: 0.9em; }
+        /* v65.8 MAAT-PANEEL VERMIJDEN (Sjoerd: "zichtbaar op de kaart met een schuif, zodat je ziet wat je doet — getal met
+           pijlen en schuif"; gekozen: vast onderin, liggend rechts): de km-vakjes in "Punt toevoegen als" en het pin-menu zijn
+           weg. Op de laag van de Plan-menu's (2550): boven het rijscherm (≤ 2050) en de vierkante knop (2200), onder de
+           meldingen (2600). Knoppen 54 px (handschoenen), de duim van de schuif 36 px. */
+        #zoneMaat { display: none; position: fixed; z-index: 2550; left: 12px; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+            max-width: 380px; margin: 0 auto; box-sizing: border-box; background: #0a0e27; border: 2px solid #FF1744; border-radius: 14px;
+            padding: 12px 14px; flex-direction: column; gap: 10px; box-shadow: 0 6px 24px rgba(0,0,0,0.6); touch-action: manipulation; }
+        #zoneMaat .zmKop { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+        #zoneMaat .zmTitel { color: #FF8A80; font-weight: bold; font-size: 1.05em; }
+        #zoneMaat .zmKm { color: #fff; font-weight: bold; font-size: 1.6em; white-space: nowrap; }
+        #zoneMaat .pmRij .pmKnop { height: 54px; font-size: 1.05em; padding: 0 2px; }
+        #zoneMaat .zmKlaar { flex: 2; border-color: #00BCD4; background: #00BCD4; color: #003; font-size: 1.15em; }
+        #zoneMaatSchuif { -webkit-appearance: none; appearance: none; display: block; width: 100%; height: 40px; margin: 0;
+            background: transparent; cursor: pointer; }
+        #zoneMaatSchuif::-webkit-slider-runnable-track { height: 10px; border-radius: 5px; background: rgba(255,23,68,0.45); }
+        #zoneMaatSchuif::-webkit-slider-thumb { -webkit-appearance: none; width: 36px; height: 36px; margin-top: -13px; border-radius: 50%;
+            background: #FF1744; border: 3px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.5); }
+        #zoneMaatSchuif::-moz-range-track { height: 10px; border-radius: 5px; background: rgba(255,23,68,0.45); }
+        #zoneMaatSchuif::-moz-range-thumb { width: 30px; height: 30px; border-radius: 50%; background: #FF1744; border: 3px solid #fff; }
+        @media (orientation: landscape) {
+            /* smal liggend scherm (iPhone SE 667): nooit over Plan heen (Plan = 22 + 300 px, plus de camera-zone links) */
+            #zoneMaat { left: auto; right: calc(12px + env(safe-area-inset-right, 0px)); bottom: auto; top: 50%; transform: translateY(-50%);
+                width: min(340px, calc(100vw - 350px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px))); margin: 0; max-height: calc(100vh - 16px); }
+        }
 
         /* Mode toggle: searching for start vs destination */
         #modeRow {
@@ -1363,7 +1382,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v65.7 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v65.8 © Umop3p1sdn</div>
 
             </div>
 
@@ -1901,7 +1920,7 @@
             <p>Wisselknop op <strong>Rondrit</strong>: een rondje vanaf je huidige locatie. Vul <strong>km</strong> in, kies met de <strong>richting-knop</strong> Lokaal (om je heen) of Noord / Oost / Zuid / West → <strong>Genereer rondrit</strong> (pakt zelf je GPS). Nog eens drukken = andere vorm.</p>
 
             <h3 style="color: #00BCD4; margin-top: 25px;">Vermijden</h3>
-            <p>Tik op de kaart → <strong>Vermijden</strong> en vul een straal (km) in. Er verschijnt een rode pin met cirkel: de route gaat daar <strong>altijd</strong> omheen. Blokkeert de zone de enige weg, dan komt er geen route — maak de cirkel dan <strong>kleiner</strong> of verplaats 'm. Tik op de pin: nieuwe straal invullen en <strong>Aanpassen</strong>, of <strong>Delete</strong> om de zone weg te halen.</p>
+            <p>Tik op de kaart → <strong>Vermijden</strong>. Er staat meteen een rode pin met een cirkel van <strong>0,1 km</strong>, en onderin (liggend rechts) komt het maat-paneel: <strong>−1 km, −0,1, +0,1, +1 km</strong> of de <strong>schuif</strong> (0,1 tot 10 km). De cirkel groeit en krimpt live mee en blijft helemaal in beeld. Pas bij <strong>Klaar</strong> rekent de route opnieuw — doe je 8 tellen niets, of tik je naast het paneel, dan is dat ook Klaar; <strong>Annuleer</strong> = geen zone. De route gaat daar <strong>altijd</strong> omheen. Blokkeert de zone de enige weg, dan komt er geen route — maak de cirkel dan <strong>kleiner</strong> of verplaats 'm. Tik op de pin: <strong>Aanpassen</strong> (hetzelfde paneel), of <strong>Delete</strong> om de zone weg te halen.</p>
 
             <h3 style="color: #00BCD4; margin-top: 25px;">Veerboten &amp; tolwegen</h3>
             <p>In het <strong>Mode</strong>-menu (bovenin de planner) staan twee schakelaars. <strong>Veerboten: OFF</strong> → de route mijdt veerponten (over water). <strong>Tolwegen: OFF</strong> → de route mijdt betaalde autowegen (over land). Op <strong>ON</strong> (standaard) zijn ze toegestaan. De route wordt meteen opnieuw berekend.</p>
@@ -1918,7 +1937,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v65.7 © Umop3p1sdn
+                HO-ME v65.8 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2241,7 +2260,7 @@
             <p>Toggle on <strong>Rondrit</strong> (roundtrip): a loop from your current location. Enter <strong>km</strong>, choose with the <strong>direction button</strong> Lokaal (around you) or North / East / South / West → <strong>Genereer rondrit</strong> (generate roundtrip — uses your GPS itself). Press again = different shape.</p>
 
             <h3 style="color: #00BCD4; margin-top: 25px;">Avoid</h3>
-            <p>Tap the map → <strong>Vermijden</strong> (avoid) and enter a radius (km). A red pin with circle appears: the route <strong>always</strong> goes around it. If the zone blocks the only road, no route appears — make the circle <strong>smaller</strong> or move it. Tap the pin: enter a new radius and tap <strong>Aanpassen</strong> (adjust), or <strong>Delete</strong> to remove the zone.</p>
+            <p>Tap the map → <strong>Vermijden</strong> (avoid). A red pin with a circle of <strong>0.1 km</strong> appears right away, and the size panel comes up at the bottom (on the right in landscape): <strong>−1 km, −0.1, +0.1, +1 km</strong> or the <strong>slider</strong> (0.1 to 10 km). The circle grows and shrinks live and always stays fully in view. The route is only recalculated on <strong>Klaar</strong> (done) — doing nothing for 8 seconds, or tapping next to the panel, also counts as Klaar; <strong>Annuleer</strong> (cancel) = no zone. The route <strong>always</strong> goes around it. If the zone blocks the only road, no route appears — make the circle <strong>smaller</strong> or move it. Tap the pin: <strong>Aanpassen</strong> (adjust, the same panel), or <strong>Delete</strong> to remove the zone.</p>
 
             <h3 style="color: #00BCD4; margin-top: 25px;">Ferries &amp; toll roads</h3>
             <p>The <strong>Mode</strong> menu (top of the planner) has two switches. <strong>Veerboten: OFF</strong> (ferries off) → the route avoids ferries (over water). <strong>Tolwegen: OFF</strong> (toll roads off) → the route avoids paid roads (over land). On <strong>ON</strong> (default) they're allowed. The route is recalculated right away.</p>
@@ -2258,7 +2277,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v65.7 © Umop3p1sdn
+                HO-ME v65.8 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2442,8 +2461,7 @@
             <button class="pmKnop pmVia" onclick="tapChoose('achteraan')">Achteraan</button>
         </div>
         <div class="pmRij">
-            <button class="pmKnop pmNogo" onclick="tapChoose('nogo')">Vermijden</button>
-            <label class="pmKm"><input id="nogoKm" type="text" inputmode="decimal" placeholder="2" value="2"><span>km</span></label>
+            <button class="pmKnop pmNogo" onclick="tapChoose('nogo')">Vermijden</button>   <!-- v65.8: de maat daarna, op het maat-paneel -->
         </div>
         <!-- v64.2 (wens Sjoerd: "test-volger in hetzelfde menu, zodat je geen 2 menu's krijgt — juist extra opties als je
              Develop aan zet"): alleen zichtbaar met Develop aan (tikDevRij) -->
@@ -2458,12 +2476,28 @@
         <div id="puntAftel" class="aftelBalk"><div></div></div>   <!-- v65.0: kies je niets, dan dicht na 8 s -->
         <div id="puntMenuSub" class="pmSub" style="display:none;"></div>
         <div id="zoneRij" class="pmRij">
-            <label class="pmKm"><input id="zoneKm" type="text" inputmode="decimal"><span>km</span></label>
-            <button class="pmKnop pmNogo" onclick="zoneAanpassen()">Aanpassen</button>
+            <button class="pmKnop pmNogo" onclick="zoneAanpassen()">Aanpassen</button>   <!-- v65.8: het maat-paneel -->
         </div>
         <div class="pmRij"><button class="pmKnop pmDelete" onclick="puntDelete()">Delete</button></div>
         <div id="wijzigRij" class="pmRij"><button class="pmKnop pmWijzig" onclick="puntWijzig()">Wijzigen</button></div>
         <div class="pmRij"><button class="pmKnop pmAnnuleer" onclick="puntMenuSluit()">Annuleer</button></div>
+    </div>
+    <!-- v65.8 (Sjoerd): Vermijden — eerst de plek, dan de maat. De rode cirkel begint op 0,1 km; −1 km / −0,1 / +0,1 / +1 km en
+         de schuif (0,1–10 km) laten hem live groeien en krimpen. De route rekent pas bij Klaar. Staand onderin, liggend rechts. -->
+    <div id="zoneMaat">
+        <div class="zmKop"><span class="zmTitel">Vermijden</span><span id="zoneMaatKm" class="zmKm">0,1 km</span></div>
+        <div id="zoneMaatAftel" class="aftelBalk"><div></div></div>   <!-- 8 s niets = Klaar -->
+        <div class="pmRij">
+            <button class="pmKnop pmNogo" onclick="zoneMaatStap(-1)">−1 km</button>
+            <button class="pmKnop pmNogo" onclick="zoneMaatStap(-0.1)">−0,1</button>
+            <button class="pmKnop pmNogo" onclick="zoneMaatStap(0.1)">+0,1</button>
+            <button class="pmKnop pmNogo" onclick="zoneMaatStap(1)">+1 km</button>
+        </div>
+        <input id="zoneMaatSchuif" type="range" min="0" max="1000" step="1" value="0" aria-label="Straal van de vermijd-zone">
+        <div class="pmRij">
+            <button class="pmKnop pmAnnuleer" onclick="zoneMaatAnnuleer()">Annuleer</button>
+            <button class="pmKnop zmKlaar" onclick="zoneMaatKlaar()">Klaar</button>
+        </div>
     </div>
     <!-- v65.1: Load route (met navi) — eerst de Mode kiezen; de herkende (of je huidige) staat voorgekozen. Geen timer. -->
     <div id="gpxModePaneel">
@@ -2523,6 +2557,7 @@
             try { planKaartTerug(); } catch (e) { console.error('planKaartTerug', e); }   // v63.69: Kompas + Center terug zoals vóór Plan (vóór het sluiten: kijkt of Plan open was)
             plannerSetMapClick(false);                 // tik-handler weer UIT (tracker-kaart vrij)
             if (typeof tapCancel === 'function') tapCancel();   // v63.81 GEMETEN: "Punt toevoegen als" bleef na het kruis open staan
+            if (typeof zoneMaat !== 'undefined' && zoneMaat) zoneMaatKlaar();   // v65.8: het maat-paneel hoort bij Plan
             document.getElementById('plannerPanel').style.display = 'none';
             // v63.91 GEMETEN: sloot je Plan met het POI-zoekmenu open, dan bleef dat menu in het rijscherm staan (over het
             // snelheidsbord en Afstand/Tijd) — tot nu toe ruimde de Plan-knop het daarna op. Het menu hoort bij Plan: dicht.
@@ -2613,23 +2648,27 @@
                 if (planTerugTot) planTerugTot = Date.now() + PLAN_TERUG_MS;
                 if (tikMenuTot) tikMenuTot = Date.now() + TIK_MENU_MS;
                 if (puntMenuTot) puntMenuTot = Date.now() + PUNT_MENU_MS;
+                if (zoneMaatTot) zoneMaatTot = Date.now() + ZONE_MAAT_MS;   // v65.8: schuiven = de vinger ligt erop
             }
+            if (zoneMaatTot && zoneSchuifVinger) zoneMaatTot = Date.now() + ZONE_MAAT_MS;   // v65.8: vinger op de schuif (zie zoneSchuifVinger)
             if (planTerugTot && Date.now() >= planTerugTot) {
                 planTerugTot = 0;
                 if (plannerIsOpen()) plannerClose();
             }
-            // v63.82: "Punt toevoegen als" na een kaart-tik — niets gekozen → dicht (zoals Annuleer). Typ je in het
-            // km-veld (focus), dan blijft hij staan.
+            // v63.82: "Punt toevoegen als" na een kaart-tik — niets gekozen → dicht (zoals Annuleer). (v65.8: geen km-veld meer)
             if (tikMenuTot && Date.now() >= tikMenuTot) {
                 if (!tikMenuOpen()) tikMenuTot = 0;
-                else if (tikMenuTypt()) tikMenuTot = Date.now() + TIK_MENU_MS;
                 else tapCancel();
             }
             // v65.0: het menu bij een punt (Delete / Wijzigen / Annuleer) — 8 s, zoals de andere Plan-menu's
             if (puntMenuTot && Date.now() >= puntMenuTot) {
                 if (!puntMenuIsOpen()) puntMenuTot = 0;
-                else if (puntMenuTypt()) puntMenuTot = Date.now() + PUNT_MENU_MS;
                 else puntMenuSluit();
+            }
+            // v65.8: het maat-paneel van Vermijden — 8 s niets = Klaar (de zone blijft zoals je hem ziet, route 1× gerekend)
+            if (zoneMaatTot && Date.now() >= zoneMaatTot) {
+                if (!zoneMaatIsOpen()) zoneMaatTot = 0;
+                else zoneMaatKlaar();
             }
         }, 250);
         function planAangeraakt(e) {
@@ -3131,7 +3170,7 @@ assign initialcost =
             const zicht = id => { const el = document.getElementById(id); return !!el && el.style.display !== 'none' && getComputedStyle(el).display !== 'none'; };
             const open = id => { const el = document.getElementById(id); return !!el && el.classList.contains('open'); };
             if (open('panelRoute') || open('panelExtra') || open('panelMode')) return 'bezig';
-            if (['poiFocusBar', 'poiFocusList', 'poiFolded', 'poiCard', 'tapMenu', 'puntMenu'].some(zicht)) return 'bezig';
+            if (['poiFocusBar', 'poiFocusList', 'poiFolded', 'poiCard', 'tapMenu', 'puntMenu', 'zoneMaat'].some(zicht)) return 'bezig';   // v65.8: + maat-paneel
             return 'kaal';
         }
         function planKaalKijk() {
@@ -3146,7 +3185,7 @@ assign initialcost =
         (function () {
             if (typeof MutationObserver !== 'function') return;
             const mo = new MutationObserver(() => { try { planKaalKijk(); } catch (e) {} });
-            ['plannerPanel', 'panelRoute', 'panelExtra', 'panelMode', 'poiFocusBar', 'poiFocusList', 'poiFolded', 'poiCard', 'tapMenu', 'puntMenu']
+            ['plannerPanel', 'panelRoute', 'panelExtra', 'panelMode', 'poiFocusBar', 'poiFocusList', 'poiFolded', 'poiCard', 'tapMenu', 'puntMenu', 'zoneMaat']
                 .forEach(id => { const el = document.getElementById(id); if (el) mo.observe(el, { attributes: true, attributeFilter: ['style', 'class'] }); });
         })();
         function closePoiFocus() {
@@ -3185,11 +3224,6 @@ assign initialcost =
         }
         document.addEventListener('pointerdown', tikMenuVol, true);
         document.addEventListener('touchstart', tikMenuVol, { capture: true, passive: true });
-        (function () {
-            const km = document.getElementById('nogoKm');
-            if (km) ['input', 'focus', 'keydown', 'blur'].forEach(t => km.addEventListener(t, () => tikMenuVol(null)));   // veld verlaten = nog 4 s
-        })();
-        function tikMenuTypt() { const km = document.getElementById('nogoKm'); return !!(km && document.activeElement === km); }
         function tikDevRij(mag) {   // v64.2: de rij Test-volger in "Punt toevoegen als" — alleen met Develop aan (master)
             const r = document.getElementById('tikDevRij');
             if (r) r.style.display = (mag !== false && typeof devMode !== 'undefined' && devMode && currentMode === 'master') ? 'flex' : 'none';
@@ -3262,9 +3296,10 @@ assign initialcost =
             else if (kind === 'dest') setDest(lat, lng, label);
             else if (kind === 'via') addVia(lat, lng, label, true);       // slim
             else if (kind === 'achteraan') addVia(lat, lng, label, false); // achteraan
-            else if (kind === 'nogo') {
-                const km = parseFloat(String(document.getElementById('nogoKm').value).replace(',', '.')) || 2;   // v63.79: 1,5 = 1.5
-                addNogo(lat, lng, km);
+            else if (kind === 'nogo') {                  // v65.8: eerst de plek (0,1 km), dan de maat — rekenen pas bij Klaar
+                pendingTap = null;                       // (was: addNogo + maybeRoute hier = twee vragen aan BRouter)
+                zoneMaatOpen(nogoMaak(lat, lng, ZONE_START_KM), true);
+                return;
             }
             pendingTap = null;
             maybeRoute();
@@ -3849,17 +3884,12 @@ assign initialcost =
         const PUNT_MENU_MS = 8000;
         let puntMenuTot = 0;
         function puntMenuIsOpen() { const m = document.getElementById('puntMenu'); return !!(m && m.style.display === 'flex'); }
-        function puntMenuTypt() { const k = document.getElementById('zoneKm'); return !!(k && document.activeElement === k); }
         function puntMenuVol(e) {
             const m = document.getElementById('puntMenu');
             if (puntMenuTot && m && (!e || m.contains(e.target))) puntMenuTot = Date.now() + PUNT_MENU_MS;
         }
         document.addEventListener('pointerdown', puntMenuVol, true);
         document.addEventListener('touchstart', puntMenuVol, { capture: true, passive: true });
-        (function () {
-            const k = document.getElementById('zoneKm');
-            if (k) ['input', 'focus', 'keydown', 'blur'].forEach(t => k.addEventListener(t, () => puntMenuVol(null)));
-        })();
         function puntDelete() {              // Delete = meteen weg (de tik op het punt + deze tik zijn al twee stappen)
             const d = puntMenuDoel;
             puntMenuSluit();
@@ -3888,15 +3918,10 @@ assign initialcost =
             tikDevRij(false);                    // v64.2: een bestaand punt wijzigen = een nieuwe rol, geen test-volger
             document.getElementById('tapMenu').style.display = 'flex';
         }
-        function zoneAanpassen() {
+        function zoneAanpassen() {           // v65.8: het maat-paneel (zoals bij een nieuwe zone), vanaf de huidige maat
             const d = puntMenuDoel;
-            if (!d || !d.zone) { puntMenuSluit(); return; }
-            const km = parseFloat(String(document.getElementById('zoneKm').value).replace(',', '.'));
-            if (!km || km <= 0) { puntMenuSluit(); return; }   // leeg/0 = niets veranderen (weg = de Delete-knop)
             puntMenuSluit();
-            d.zone.radius = km * 1000;
-            d.zone.circle.setRadius(d.zone.radius);
-            maybeRoute();
+            if (d && d.zone && d.zone.circle) zoneMaatOpen(d.zone, false);
         }
         document.addEventListener('click', (e) => {    // ernaast tikken = sluiten (capture: vóór de knoppen)
             const p = document.getElementById('puntMenu');
@@ -3918,7 +3943,13 @@ assign initialcost =
         }
 
         // Vermijd-zone: rode pin + zichtbare cirkel met radius (km). Tik om aan te passen/verwijderen.
+        // v65.8: nogoMaak zet pin + cirkel op de kaart en geeft de zone terug; pas addNogo (of Klaar op het maat-paneel)
+        // zet hem in nogoZones — alleen díe gaan mee naar BRouter.
         function addNogo(lat, lng, km, skipRecalc) {
+            nogoZones.push(nogoMaak(lat, lng, km));
+            if (!skipRecalc) maybeRoute();   // bij laden: 1× herberekenen aan 't eind, niet per zone
+        }
+        function nogoMaak(lat, lng, km) {
             const radiusM = km * 1000;
             const zone = { lat, lng, radius: radiusM };
             zone.circle = L.circle([lat, lng], {
@@ -3927,14 +3958,175 @@ assign initialcost =
             }).addTo(map);
             zone.marker = L.marker([lat, lng], { icon: nogoIcon() }).addTo(map);
             zone.marker.on('click', (e) => { if (e) L.DomEvent.stopPropagation(e); editNogo(zone); });
-            nogoZones.push(zone);
-            if (!skipRecalc) maybeRoute();   // bij laden: 1× herberekenen aan 't eind, niet per zone
+            return zone;
         }
 
-        function editNogo(zone) {   // v63.79: punt-menu i.p.v. het typveld "leeg = verwijderen"
-            document.getElementById('zoneKm').value = String(+(zone.radius / 1000).toFixed(2));
+        function editNogo(zone) {   // v63.79: punt-menu i.p.v. het typveld "leeg = verwijderen" (v65.8: Aanpassen = het maat-paneel)
             puntMenuOpen({ zone }, 'Vermijd-zone', '');
         }
+
+        // ═══ v65.8 VERMIJDEN: EERST DE PLEK, DAN DE MAAT (Sjoerd: "Die is nu standaard 2.0, graag op 0,1 … Opzet: je kiest
+        // vermijden (zonder de standaard 2.0) en dan pas het instellen van je grootte. Anders plaats je hem eerst te groot en
+        // moet je hem nog aanpassen. Zichtbaar op de kaart met een schuif, zodat je ziet wat je doet. Beide: getal met pijlen
+        // en schuif." — gekozen: paneel vast onderin (liggend rechts), de kaart schuift/zoomt mee zodat de hele cirkel in beeld
+        // blijft; hetzelfde paneel voor een bestaande zone (pin → Aanpassen); timer 8 s, verloopt = Klaar) ═══
+        // De cirkel groeit en krimpt live, maar de ROUTE REKENT PAS BIJ KLAAR — één vraag aan BRouter. Rekenen bij elke stap of
+        // schuifbeweging = tientallen vragen per seconde = ban-risico. Naast het paneel tikken = Klaar (op de kaart doet die tik
+        // verder niets); Annuleer = een nieuwe zone weg, een bestaande terug op zijn oude maat.
+        const ZONE_MIN_KM = 0.1, ZONE_MAX_KM = 10, ZONE_START_KM = 0.1;
+        const ZONE_MAAT_MS = 8000;
+        let zoneMaat = null;            // { zone, nieuw, km, oudKm } zolang het paneel open is
+        let zoneMaatTot = 0;
+        function zoneMaatIsOpen() { const el = document.getElementById('zoneMaat'); return !!(el && el.style.display === 'flex'); }
+        function zoneKmTekst(km) {      // 0,1 km · 2,5 km · 10,0 km (een oude maat buiten het raster: 1,25 km)
+            const r = Math.round(km * 10) / 10;
+            return (Math.abs(km - r) < 1e-6 ? r.toFixed(1) : km.toFixed(2)).replace('.', ',') + ' km';
+        }
+        // schuif 0–1000 ↔ 0,1–10 km, kwadratisch: de eerste ±30 % van de schuif is 0,1–1 km (daar telt elke 100 m)
+        function zoneSchuifNaarKm(v) {
+            const t = Math.max(0, Math.min(1, v / 1000));
+            return Math.round((ZONE_MIN_KM + (ZONE_MAX_KM - ZONE_MIN_KM) * t * t) * 10) / 10;
+        }
+        function zoneKmNaarSchuif(km) {
+            const t = Math.sqrt(Math.max(0, Math.min(1, (km - ZONE_MIN_KM) / (ZONE_MAX_KM - ZONE_MIN_KM))));
+            return Math.round(t * 1000);
+        }
+        function zoneMaatOpen(zone, nieuw) {
+            if (zoneMaat) zoneMaatKlaar();               // stond er al een open → die eerst vastleggen
+            if (tikMenuOpen()) tapCancel();
+            if (puntMenuIsOpen()) puntMenuSluit();
+            closeAllPanels(); poiMenuDicht();            // één Plan-menu tegelijk (v65.0) — en ruimte voor de cirkel
+            const km = zone.radius / 1000;
+            zoneMaat = { zone, nieuw: !!nieuw, km, oudKm: km, startZoom: map.getZoom() };   // startZoom: nooit verder inzoomen dan jij stond
+            document.getElementById('zoneMaat').style.display = 'flex';
+            zoneMaatToon(true);
+            zoneMaatTot = Date.now() + ZONE_MAAT_MS;
+            if (typeof aftelStart === 'function') aftelStart();
+            zoneMaatInBeeld(true, true);
+        }
+        function zoneMaatToon(schuifOok) {
+            const z = zoneMaat; if (!z) return;
+            document.getElementById('zoneMaatKm').textContent = zoneKmTekst(z.km);
+            if (schuifOok) document.getElementById('zoneMaatSchuif').value = String(zoneKmNaarSchuif(z.km));
+        }
+        function zoneMaatZet(km, vanSchuif) {
+            const z = zoneMaat; if (!z || !(km > 0)) return;
+            z.km = km;
+            z.zone.circle.setRadius(km * 1000);          // alleen de cirkel — de zone zelf (en dus de route) pas bij Klaar
+            zoneMaatToon(!vanSchuif);                    // tijdens het schuiven de duim niet verzetten
+            zoneMaatTot = Date.now() + ZONE_MAAT_MS;
+            zoneMaatInBeeld(!vanSchuif, false);
+        }
+        function zoneMaatStap(d) {                       // −1 km, −0,1, +0,1, +1 km — altijd op het raster van 0,1 km
+            const z = zoneMaat; if (!z) return;
+            let km = Math.round((z.km + d) * 10) / 10;
+            km = Math.min(ZONE_MAX_KM, Math.max(ZONE_MIN_KM, km));
+            if ((d < 0 && km > z.km) || (d > 0 && km < z.km)) km = z.km;   // een oude maat buiten 0,1–10 km: nooit de verkeerde kant op
+            if (km !== z.km) zoneMaatZet(km, false);
+        }
+        function zoneMaatDicht() {
+            document.getElementById('zoneMaat').style.display = 'none';
+            zoneMaat = null;
+            zoneMaatTot = 0;
+        }
+        function zoneMaatKlaar() {
+            const z = zoneMaat; if (!z) return;
+            zoneMaatDicht();
+            z.zone.radius = z.km * 1000;
+            z.zone.circle.setRadius(z.zone.radius);
+            if (z.nieuw) { nogoZones.push(z.zone); maybeRoute(); }          // nu pas mee naar BRouter — één keer
+            else if (Math.abs(z.km - z.oudKm) > 1e-9) maybeRoute();          // niets veranderd = niets rekenen
+        }
+        function zoneMaatAnnuleer() {
+            const z = zoneMaat; if (!z) return;
+            zoneMaatDicht();
+            if (z.nieuw) { try { map.removeLayer(z.zone.marker); map.removeLayer(z.zone.circle); } catch (e) {} }
+            else z.zone.circle.setRadius(z.zone.radius);                     // terug naar de oude maat
+        }
+        // Het vrije stuk kaart in schermpunten: het zichtbare kaartvlak (liggend loopt de kaart onder het scherm door), min het
+        // paneel (staand onderin, liggend rechts), en dan het grootste stuk naast, onder of boven Plan (het kleinste van breedte
+        // en hoogte telt — er moet een cirkel in). GEMETEN (zone118): liggend is "onder Plan" vaak ruimer dan "naast Plan", en op
+        // een iPhone SE liggend is er naast Plan niets over.
+        function zoneMaatVrij() {
+            const staand = window.innerWidth <= window.innerHeight;
+            const k = map.getContainer().getBoundingClientRect();
+            const M = { l: Math.max(0, k.left) + 8, t: Math.max(0, k.top) + 8, r: Math.min(window.innerWidth, k.right) - 8, b: Math.min(window.innerHeight, k.bottom) - 8 };
+            const zm = document.getElementById('zoneMaat');
+            if (zm && zoneMaatIsOpen()) { const q = zm.getBoundingClientRect(); if (staand) M.b = Math.min(M.b, q.top - 8); else M.r = Math.min(M.r, q.left - 8); }
+            let v = M;
+            const pp = document.getElementById('plannerPanel');
+            if (plannerIsOpen() && pp) {
+                const q = pp.getBoundingClientRect(), maat = c => Math.min(c.r - c.l, c.b - c.t);
+                v = [{ l: Math.max(M.l, q.right + 8), t: M.t, r: M.r, b: M.b },      // naast Plan
+                     { l: M.l, t: Math.max(M.t, q.bottom + 8), r: M.r, b: M.b },     // onder Plan
+                     { l: M.l, t: M.t, r: M.r, b: Math.min(M.b, q.top - 8) }]        // boven Plan
+                    .reduce((a, c) => maat(c) > maat(a) ? c : a);
+            }
+            return { l: v.l, t: v.t, r: v.r, b: v.b, k };
+        }
+        // De hele cirkel in dat vrije stuk. Past hij, dan blijft de kaart staan (je ziet hem groeien en krimpen); bij openen, of
+        // past hij niet, dan komt het midden van de zone midden in het vrije stuk. Zoomen in hele stappen, alleen als het moet:
+        // wordt de cirkel te groot (> 90 %), dan uit; wordt hij te klein om te zien (< 15 %, bv. van 10 km terug naar 2 km), dan
+        // weer in — maar nooit verder dan de zoom waarop jij begon. Gedraaide kaart? In Plan nooit (Plan zet het kompas uit).
+        function zoneMaatInBeeld(animeer, midden) {
+            const z = zoneMaat; if (!z || !map) return;
+            try {
+                const v = zoneMaatVrij(), k = v.k;
+                const w = v.r - v.l, h = v.b - v.t;
+                if (w < 40 || h < 40) return;
+                const ll = L.latLng(z.zone.lat, z.zone.lng);
+                const omtrek = 40075016.686 * Math.cos(ll.lat * Math.PI / 180);   // meter rond de aarde op deze breedte
+                const nu = map.getZoom();
+                const rPx = z.km * 1000 * Math.pow(2, nu + 8) / omtrek;
+                const c = map.latLngToContainerPoint(ll);
+                const cx = c.x + k.left, cy = c.y + k.top;
+                const D = Math.min(w, h);
+                const past = cx - rPx >= v.l && cx + rPx <= v.r && cy - rPx >= v.t && cy + rPx <= v.b;
+                const zPas = Math.floor(Math.log2(omtrek * 0.3 * D / (z.km * 1000)) - 8);   // de cirkel dan ±30–60 % van het vrije stuk
+                let zoom = nu;
+                if (2 * rPx > 0.9 * D) zoom = Math.max(map.getMinZoom() || 0, Math.min(nu, zPas));
+                else if (2 * rPx < 0.15 * D && !midden) zoom = Math.max(nu, Math.min(z.startZoom, zPas));
+                if (past && !midden && zoom === nu) return;
+                const naar = L.point((v.l + v.r) / 2 - k.left - k.width / 2, (v.t + v.b) / 2 - k.top - k.height / 2);   // van het kaartmidden naar het vrije midden
+                map.setView(map.unproject(map.project(ll, zoom).subtract(naar), zoom), zoom, { animate: !!animeer && zoom === nu });
+            } catch (e) { console.warn('zoneMaatInBeeld', e); }
+        }
+        function zoneMaatVol(e) {                        // aanraken in het paneel = weer 8 s
+            const m = document.getElementById('zoneMaat');
+            if (zoneMaatTot && m && (!e || m.contains(e.target))) zoneMaatTot = Date.now() + ZONE_MAAT_MS;
+        }
+        document.addEventListener('pointerdown', zoneMaatVol, true);
+        document.addEventListener('touchstart', zoneMaatVol, { capture: true, passive: true });
+        // GEMETEN (zone118): sleep je de schuif met een vinger, dan stuurt de browser meteen pointercancel (hij neemt het slepen
+        // over) en wist vingersOp zich — terwijl de vinger er nog op ligt. De touch-events lopen wél door tot het loslaten.
+        let zoneSchuifVinger = false;
+        (function () {
+            const sch = document.getElementById('zoneMaatSchuif');
+            if (!sch) return;
+            sch.addEventListener('touchstart', () => { zoneSchuifVinger = true; zoneMaatVol(null); }, { passive: true });
+            ['touchend', 'touchcancel'].forEach(t => sch.addEventListener(t, (e) => { if (!e.touches || !e.touches.length) zoneSchuifVinger = false; zoneMaatVol(null); }, { passive: true }));
+            sch.addEventListener('input', () => {
+                if (!zoneMaat) return;
+                const km = zoneSchuifNaarKm(+sch.value);
+                if (km !== zoneMaat.km) zoneMaatZet(km, true);
+                zoneMaatVol(null);
+            });
+            sch.addEventListener('change', () => { if (zoneMaat) { zoneMaatToon(true); zoneMaatInBeeld(true, false); } });   // losgelaten: duim op de afgeronde maat
+        })();
+        // Naast het paneel tikken = Klaar. Op de kaart doet die tik verder niets (geen "Punt toevoegen als", geen pin-menu); een
+        // knop of tab buiten het paneel doet daarna gewoon zijn werk (één tik). Schuiven of knijpen op de kaart is geen tik.
+        window.addEventListener('click', (e) => {
+            if (!zoneMaat || !zoneMaatIsOpen()) return;
+            if (document.getElementById('zoneMaat').contains(e.target)) return;
+            let opKaart = false;
+            try { opKaart = !!(map && map.getContainer().contains(e.target)); } catch (x) {}
+            if (opKaart) {
+                try { if (map.dragging && map.dragging.moved()) return; } catch (x) {}   // muis: na slepen komt er ook een click
+                e.stopPropagation();
+                e.preventDefault();
+            }
+            zoneMaatKlaar();
+        }, true);
 
         // BRouter nogos-parameter: "lng,lat,radius[,weight]" per zone, met komma's aaneen.
         // GEEN weight = HARDE no-go (BRouter rijdt er nooit doorheen). Blokkeert de zone de enige weg,
@@ -7037,6 +7229,7 @@ assign initialcost =
         }
 
         function clearAll(silent) {
+            if (typeof zoneMaat !== 'undefined' && zoneMaat) zoneMaatAnnuleer();   // v65.8: een half gezette zone niet laten slingeren
             // Alleen bevestiging vragen als er daadwerkelijk iets te wissen valt (anders stil opruimen).
             const heeftIets = startPoint || destPoint || viaPoints.length || nogoZones.length || routeLine;
             if (!silent && heeftIets && !confirm('Hele route wissen?')) return;
@@ -7081,7 +7274,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "65.7";
+        const APP_VERSION = "65.8";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
@@ -15623,7 +15816,7 @@ assign initialcost =
             const tb = document.getElementById('tikAftel');
             if (tb) {
                 if (tikMenuTot && typeof tikMenuOpen === 'function' && tikMenuOpen()) {
-                    const rest = (tikMenuTypt() || vingersOp.size) ? 1 : Math.max(0, Math.min(1, (tikMenuTot - Date.now()) / TIK_MENU_MS));   // typen = vol
+                    const rest = vingersOp.size ? 1 : Math.max(0, Math.min(1, (tikMenuTot - Date.now()) / TIK_MENU_MS));
                     if (tb.style.display !== 'block') tb.style.display = 'block';
                     tb.firstElementChild.style.transform = 'scaleX(' + rest.toFixed(3) + ')';
                     nodig = true;
@@ -15650,11 +15843,21 @@ assign initialcost =
             const ptb = document.getElementById('puntAftel');
             if (ptb) {
                 if (typeof puntMenuTot !== 'undefined' && puntMenuTot && puntMenuIsOpen()) {
-                    const rest = (puntMenuTypt() || vingersOp.size) ? 1 : Math.max(0, Math.min(1, (puntMenuTot - Date.now()) / PUNT_MENU_MS));
+                    const rest = vingersOp.size ? 1 : Math.max(0, Math.min(1, (puntMenuTot - Date.now()) / PUNT_MENU_MS));
                     if (ptb.style.display !== 'block') ptb.style.display = 'block';
                     ptb.firstElementChild.style.transform = 'scaleX(' + rest.toFixed(3) + ')';
                     nodig = true;
                 } else if (ptb.style.display !== 'none') ptb.style.display = 'none';
+            }
+            // v65.8: het maat-paneel van Vermijden — balk onder de kop, 8 s; een vinger op het scherm (schuiven) = vol
+            const zmb = document.getElementById('zoneMaatAftel');
+            if (zmb) {
+                if (typeof zoneMaatTot !== 'undefined' && zoneMaatTot && zoneMaatIsOpen()) {
+                    const rest = (vingersOp.size || zoneSchuifVinger) ? 1 : Math.max(0, Math.min(1, (zoneMaatTot - Date.now()) / ZONE_MAAT_MS));
+                    if (zmb.style.display !== 'block') zmb.style.display = 'block';
+                    zmb.firstElementChild.style.transform = 'scaleX(' + rest.toFixed(3) + ')';
+                    nodig = true;
+                } else if (zmb.style.display !== 'none') zmb.style.display = 'none';
             }
             // v64.9: het POI-menu — balkje 4 px onder het menu (het menu verhuist met Plan), 8 s; typen of zoeken = vol
             const pa = document.getElementById('poiAftel');
