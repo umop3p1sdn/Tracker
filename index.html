@@ -1412,7 +1412,7 @@
                     <span onclick="toggleHandleidingEN()" style="color: #00BCD4; font-size: 0.85em; cursor: pointer; text-decoration: underline; opacity: 0.85;" ontouchstart="">English manual</span>
                 </div>
 
-                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v66.0 © Umop3p1sdn</div>
+                <div style="margin-top: 26px; text-align: center; font-size: 0.7em; opacity: 0.4;">Users: <span id="userCount">0</span> &nbsp;·&nbsp; v66.1 © Umop3p1sdn</div>
 
             </div>
 
@@ -1597,7 +1597,6 @@
                     <span id="flitserVolVal" style="min-width:42px; text-align:center; font-weight:bold;">100%</span>
                 </div>
                 <button class="button-secondary" onclick="openStackSlider()" style="width: 100%;">Screen adjust</button>
-                <button class="button-secondary" onclick="toggleVoicePref()" id="voicePrefBtn" style="width: 100%;">Stem: NL</button>
                 <button class="button-secondary" onclick="testStem()" style="width: 100%;">Test stem</button>
 <div id="tagOpacityRow" style="display:flex; align-items:center; justify-content:space-between; gap:8px; background:#1a2148; padding:8px 12px; border-radius:8px;">
                     <span style="font-size:0.9em;">Tags zichtbaar</span>
@@ -1850,6 +1849,7 @@
                 <li>Houd je scherm OPEN — de app werkt niet op de achtergrond.</li>
                 <li>GPS werkt het best buiten / in open ruimte.</li>
                 <li>Langzaam internet? Tracking update elke 3 seconden.</li>
+                <li><strong>Stem</strong>: HO-ME spreekt alles uit met een eigen (robot)stem, als gewoon app-geluid — je muziek (DI.fm, Spotify) speelt gewoon door. De iPhone-stem gebruikt HO-ME niet meer. Staat je iPhone op <strong>stil</strong>, dan hoor je HO-ME niet (net als de piepjes). Alleen de praat-knop 🎙️ stopt je muziek: iOS gebruikt dan de microfoon, en je muziek start daarna niet vanzelf. Proberen: Menu → Options → <strong>Test stem</strong>. De stem is eSpeak NG (open source, GPL-3.0); broncode en licentie staan in de map <em>stem/</em> op de site.</li>
             </ul>
 
             <h3 style="color: #00BCD4; margin-top: 25px;">Offline Map Buffer (OMB)</h3>
@@ -1970,7 +1970,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v66.0 © Umop3p1sdn
+                HO-ME v66.1 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -2192,6 +2192,7 @@
                 <li>Keep your screen OPEN — the app doesn't work in the background.</li>
                 <li>GPS works best outside / in open space.</li>
                 <li>Slow internet? Tracking updates every 3 seconds.</li>
+                <li><strong>Voice</strong>: HO-ME speaks everything with its own (robot) voice, as normal app sound — your music (DI.fm, Spotify) keeps playing. HO-ME no longer uses the iPhone voice. If your iPhone is on <strong>silent</strong>, you won't hear HO-ME (just like the beeps). Only the talk button 🎙️ stops your music: iOS then uses the microphone, and your music doesn't restart by itself. Try it: Menu → Options → <strong>Test stem</strong>. The voice is eSpeak NG (open source, GPL-3.0); source and licence are in the <em>stem/</em> folder on the site.</li>
             </ul>
 
             <h3 style="color: #00BCD4; margin-top: 25px;">Offline Map Buffer (OMB)</h3>
@@ -2312,7 +2313,7 @@
 
 
             <p style="margin-top: 30px; text-align: center; color: #666; font-size: 0.9em;">
-                HO-ME v66.0 © Umop3p1sdn
+                HO-ME v66.1 © Umop3p1sdn
             </p>
         </div>
     </div>
@@ -7306,7 +7307,7 @@ assign initialcost =
     </script>
 
     <script>
-        const APP_VERSION = "66.0";
+        const APP_VERSION = "66.1";
 
         // ── HOME-CONFIG (v56.5): één config-object op de telefoon met zo veel mogelijk settings.
         // Wordt bij het opstarten gelezen (variabelen starten ermee) en bij elke wijziging in de
@@ -7802,31 +7803,176 @@ assign initialcost =
                     afterReady();
                 }
             } catch (e) { console.warn('audio unlock failed', e); }
-            // OOK de spraak (speechSynthesis) ontgrendelen — dat is een ANDER systeem dan de AudioContext.
-            // iOS staat speechSynthesis pas toe na een tik die één keer .speak() aanroept. Zonder dit
-            // blijft de VOLGER stil (de master primede dit al via z'n flow).
-            try {
-                if ('speechSynthesis' in window && !window._speechPrimed) {
-                    const u = new SpeechSynthesisUtterance(' ');  // (bijna) stil
-                    u.volume = 0; applyVoice(u);
-                    window.speechSynthesis.speak(u);
-                    window._speechPrimed = true;
-                }
-            } catch (e) {}
+            // OOK de stem ontgrendelen — v66.1: HO-ME's eigen stem (eigen AudioContext), niet meer de iPhone-stem.
+            stemOntgrendel();
         }
 
-        // Spraak (speechSynthesis) ontgrendelen op iOS — moet vlak na een ECHTE aanraking 1× .speak()
-        // aanroepen, anders blijft de stem stil bij berichten die via de poll binnenkomen (geen aanraking).
+        // Stem ontgrendelen in een ECHTE tik — v66.1: HO-ME's eigen stem (geen iPhone-stem meer). De naam blijft, zodat
+        // alle bestaande tik-momenten (GO, mic, Words, Let's go, …) hem gewoon blijven aanroepen.
         function primeSpeech() {
-            try {
-                if ('speechSynthesis' in window && !window._speechPrimed) {
-                    const u = new SpeechSynthesisUtterance(' ');
-                    u.volume = 0; applyVoice(u);
-                    window.speechSynthesis.speak(u);
-                    window._speechPrimed = true;
-                }
-            } catch (e) {}
+            stemOntgrendel();
         }
+
+        // ═══ v66.1 HO-ME-STEM — een eigen robotstem i.p.v. de iPhone-stem ═══
+        // Sjoerd: "Nooit meer iPhone stem, muziek mag nooit meer weg vallen." Sinds iOS 27 stopt élk woord van de iPhone-stem
+        // (speechSynthesis) je muziek, en die start niet opnieuw (WebKit bug 218815). HO-ME maakt de stem daarom zelf:
+        // eSpeak NG (open source, GPL-3.0, naar WebAssembly gecompileerd, alleen Nederlands — map stem/ naast index.html)
+        // maakt van de tekst geluid, en HO-ME speelt dat af als gewoon app-geluid (Web Audio), net als de piepjes. Dat mengt
+        // met je muziek (getest op iOS 27.2.1 met DI.fm: stemtest.html). speechSynthesis wordt nergens meer gebruikt.
+        // Eén stem-kanaal, zoals vroeger: stemZeg(tekst, { onderbreek: true }) breekt af wat er loopt (navigatie, flitser);
+        // zonder onderbreek komt hij achteraan (berichten). Afgebroken of mislukt telt als "klaar", zodat wachtrijen doorlopen.
+        // Eigen AudioContext (stem.ctx), los van audioEnabled — de oude stem hing ook niet aan de piepjes-knop.
+        // Later (stap B, keuze Sjoerd): een natuurlijke stem erbij, te downloaden.
+        const STEM_MAP = 'stem/';
+        const STEM_WPM = 160;              // eSpeak-snelheid (woorden per minuut) bij tempo 1,0
+        const STEM_RANG = { 1: 'eerste', 2: 'tweede', 3: 'derde', 4: 'vierde', 5: 'vijfde', 6: 'zesde', 7: 'zevende',
+            8: 'achtste', 9: 'negende', 10: 'tiende', 11: 'elfde', 12: 'twaalfde', 13: 'dertiende', 14: 'veertiende',
+            15: 'vijftiende', 16: 'zestiende', 17: 'zeventiende', 18: 'achttiende', 19: 'negentiende', 20: 'twintigste' };
+        const stem = { laden: null, module: null, bestanden: null, ctx: null, bron: null, huidig: null, rij: [], bezig: false, gen: 0, fout: '' };
+        // motor laden: lijm-script + wasm (één keer gecompileerd) + het Nederlandse data-pakket. De service worker bewaart
+        // de bestanden na de eerste keer (netwerk eerst, anders uit de cache) — daarna werkt de stem ook offline.
+        function stemLaden() {
+            if (stem.laden) return stem.laden;
+            const p = (async () => {
+                if (typeof window.EspeakNg !== 'function') {
+                    await new Promise((ok, fout) => {
+                        const sc = document.createElement('script');
+                        sc.src = STEM_MAP + 'espeak-ng.js';
+                        sc.onload = ok;
+                        sc.onerror = () => fout(new Error('stem/espeak-ng.js laadt niet'));
+                        document.head.appendChild(sc);
+                    });
+                }
+                const haal = (f) => fetch(STEM_MAP + f).then(r => { if (!r.ok) throw new Error(f + ' HTTP ' + r.status); return r.arrayBuffer(); });
+                const [w, d] = await Promise.all([haal('espeak-ng.wasm'), haal('nl-data.bin')]);
+                stem.module = await WebAssembly.compile(w);
+                stem.bestanden = stemPakUit(d);
+                return true;
+            })();
+            stem.laden = p;
+            p.catch(e => { stem.fout = String((e && e.message) || e); if (stem.laden === p) stem.laden = null; });   // volgende keer opnieuw
+            return p;
+        }
+        function stemPakUit(buf) {   // 'HOST' + kop-lengte + JSON-kop + de bestanden achter elkaar (stem/nl-data.bin)
+            const dv = new DataView(buf);
+            if (String.fromCharCode(dv.getUint8(0), dv.getUint8(1), dv.getUint8(2), dv.getUint8(3)) !== 'HOST') throw new Error('geen stem-pakket');
+            const kl = dv.getUint32(4, true);
+            const kop = JSON.parse(new TextDecoder().decode(new Uint8Array(buf, 8, kl)));
+            const m = {};
+            kop.bestanden.forEach(b => { m[b.p] = new Uint8Array(buf, 8 + kl + b.s, b.n); });
+            return m;
+        }
+        // in een ECHTE tik: eigen AudioContext maken/hervatten + één stil sample (iOS-ontgrendeling); motor alvast laden
+        function stemOntgrendel() {
+            try {
+                if (!stem.ctx) stem.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                if (stem.ctx.state !== 'running') { const r = stem.ctx.resume(); if (r && r.catch) r.catch(() => {}); }
+                const b = stem.ctx.createBuffer(1, 1, 22050), sb = stem.ctx.createBufferSource();
+                sb.buffer = b; sb.connect(stem.ctx.destination); sb.start(0);
+            } catch (e) {}
+            stemLaden().catch(() => {});
+        }
+        // "de 2e afslag" → "de tweede afslag" (eSpeak las "tweede e")
+        function stemTekst(t) {
+            return String(t == null ? '' : t).replace(/\b(\d{1,2})e\b/g, (m, n) => STEM_RANG[+n] || m);
+        }
+        // tekst → WAV met eSpeak NG: een verse instantie per zin (milliseconden); de tekst gaat als bestand mee (-f), zodat een
+        // bericht dat met "-" begint nooit als optie gelezen wordt
+        function stemMaak(tekst, wpm) {
+            return new Promise((ok, fout) => {
+                let M = null;
+                M = {
+                    arguments: ['-v', 'nl', '-s', String(wpm), '-b', '1', '-w', '/s.wav', '-f', '/t.txt'],
+                    stemBestanden: stem.bestanden,
+                    stemExtra: { '/t.txt': tekst },
+                    print: () => {}, printErr: () => {},
+                    instantiateWasm: (imports, ontvang) => {
+                        WebAssembly.instantiate(stem.module, imports).then(inst => ontvang(inst, stem.module), fout);
+                        return {};
+                    },
+                    postRun: [() => { try { ok(M.FS.readFile('/s.wav')); } catch (e) { fout(e); } }],
+                    onAbort: (w) => fout(new Error('eSpeak: ' + w)),
+                };
+                try { window.EspeakNg(M); } catch (e) { fout(e); }
+            });
+        }
+        // WAV (16 bit mono) → AudioBuffer: stilte voor en achter eraf (vlot achter elkaar), piek op −1 dB
+        function stemBuffer(wav, ctx) {
+            const dv = new DataView(wav.buffer, wav.byteOffset, wav.byteLength);
+            const sr = dv.getUint32(24, true) || 22050;
+            let p = 12, start = 44, len = wav.byteLength - 44;
+            while (p + 8 <= wav.byteLength) {
+                const id = String.fromCharCode(wav[p], wav[p + 1], wav[p + 2], wav[p + 3]);
+                const n = dv.getUint32(p + 4, true);
+                if (id === 'data') { start = p + 8; len = Math.min(n, wav.byteLength - start); break; }
+                p += 8 + n + (n & 1);
+            }
+            const k = Math.max(0, Math.floor(len / 2));
+            const smp = (i) => dv.getInt16(start + i * 2, true);
+            let piek = 1, a = 0, b = k;
+            for (let i = 0; i < k; i++) { const v = Math.abs(smp(i)); if (v > piek) piek = v; }
+            while (a < k && Math.abs(smp(a)) < 180) a++;
+            while (b > a && Math.abs(smp(b - 1)) < 180) b--;
+            const marge = Math.round(sr * 0.02);
+            a = Math.max(0, a - marge); b = Math.min(k, b + marge);
+            const buf = ctx.createBuffer(1, Math.max(1, b - a), sr);
+            const ch = buf.getChannelData(0), f = 0.89 / piek;
+            for (let i = a; i < b; i++) ch[i - a] = smp(i) * f;
+            return buf;
+        }
+        // uitspreken: opties { volume 0–1, tempo (1 = 160 wpm), onderbreek, klaar }
+        function stemZeg(tekst, opties) {
+            opties = opties || {};
+            let gedaan = false;
+            const klaar = () => { if (gedaan) return; gedaan = true; try { if (opties.klaar) opties.klaar(); } catch (e) {} };
+            const t = stemTekst(tekst).trim();
+            if (opties.onderbreek) stemStop();
+            if (!t) { setTimeout(klaar, 0); return; }
+            const vol = (typeof opties.volume === 'number') ? Math.max(0, Math.min(1, opties.volume)) : 1;
+            stem.rij.push({ tekst: t, volume: vol, wpm: Math.round(STEM_WPM * (opties.tempo || 1)), klaar });
+            if (!stem.bezig) stemVolgende();
+        }
+        // alles stil: de lopende zin stopt en de wachtrij is leeg (zoals speechSynthesis.cancel(): afgebroken = klaar)
+        function stemStop() {
+            stem.gen++;
+            const weg = stem.rij.splice(0);
+            if (stem.huidig) { weg.unshift(stem.huidig); stem.huidig = null; }
+            if (stem.bron) { const b = stem.bron; stem.bron = null; try { b.onended = null; b.stop(); } catch (e) {} }
+            stem.bezig = false;
+            weg.forEach(it => it.klaar());
+        }
+        async function stemVolgende() {
+            if (stem.bezig) return;
+            const it = stem.rij.shift();
+            if (!it) return;
+            stem.bezig = true; stem.huidig = it;
+            const gen = stem.gen;
+            const einde = () => {
+                if (gen !== stem.gen || stem.huidig !== it) return;   // al afgebroken (stemStop riep klaar al aan)
+                stem.huidig = null; stem.bron = null; stem.bezig = false;
+                it.klaar();
+                stemVolgende();
+            };
+            try {
+                await stemLaden();
+                const wav = await stemMaak(it.tekst, it.wpm);
+                if (gen !== stem.gen) return;
+                if (!stem.ctx) stem.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                if (stem.ctx.state !== 'running') { try { const r = stem.ctx.resume(); if (r && r.catch) r.catch(() => {}); } catch (e) {} }
+                const buf = stemBuffer(wav, stem.ctx);
+                const g = stem.ctx.createGain(); g.gain.value = it.volume;
+                const sb = stem.ctx.createBufferSource(); sb.buffer = buf;
+                sb.connect(g); g.connect(stem.ctx.destination);
+                sb.onended = einde;
+                stem.bron = sb;
+                sb.start(stem.ctx.currentTime + 0.03);
+                setTimeout(einde, (buf.duration + 2) * 1000);   // vangnet als onended niet vuurt (bv. iOS onderbreekt de context)
+            } catch (e) {
+                stem.fout = String((e && e.message) || e);
+                einde();
+            }
+        }
+        setTimeout(() => { stemLaden().catch(() => {}); }, 2500);   // motor alvast klaarzetten (en in de cache), na het opstarten
 
         // One short beep (same tone everywhere)
         function playBeep(when = 0) {
@@ -8099,8 +8245,8 @@ assign initialcost =
             // Lopende spraak STOPPEN vóór de herkenning start: sinds v48.6 speelt je eigen bericht
             // meteen af — druk je vlot opnieuw op de mic, dan zou de herkenning bovenop de pratende
             // TTS starten en niets vangen ("geen tekst herkend"). Eerst stil, dan luisteren.
-            try { window.speechSynthesis.cancel(); } catch (e) {}
-            primeSpeech();   // iOS: spraak ontgrendelen bij deze aanraking (zodat ontvangen berichten klinken)
+            stemStop();      // v66.1: HO-ME's eigen stem stil
+            primeSpeech();   // iOS: stem ontgrendelen bij deze aanraking (zodat ontvangen berichten klinken)
             startSpeechKeepAlive();   // houd de stem warm voor binnenkomende berichten
             talkBusy = true;
             talkText = '';
@@ -8172,16 +8318,7 @@ assign initialcost =
 
         // spreekt een bericht uit + toont de lichtkrant — DIRECT, geen vertraging (iOS-venster)
         function speakMsgNow(text, from) {
-            try {
-                if ('speechSynthesis' in window) {
-                    const u = new SpeechSynthesisUtterance(text);
-                    applyVoice(u); u.rate = 1.0; u.volume = 1.0;
-                    // GEEN cancel() hier — dat zou de warm-up utterance uit stopTalk wissen en het
-                    // iOS-venster sluiten. Gewoon achter de stille warm-up aan in de wachtrij spreken.
-                    try { window.speechSynthesis.resume(); } catch (e) {}   // motor wekken (zie wachtrij)
-                    window.speechSynthesis.speak(u);
-                }
-            } catch (e) {}
+            stemZeg(text);   // v66.1: eigen stem, achteraan in de rij (geen onderbreking)
             showVoiceMarquee(text, from);
         }
 
@@ -8212,29 +8349,12 @@ assign initialcost =
             // 2) stem — meldt zich als 'ie uitgesproken is (met vangnet voor iOS)
             const finishSpeech = () => { if (!speechDone) { speechDone = true; tryNext(); } };
             try {
-                if ('speechSynthesis' in window) {
-                    const u = new SpeechSynthesisUtterance(msg.text);
-                    applyVoice(u); u.rate = 1.0; u.volume = 1.0;
-                    u.onend = finishSpeech;
-                    u.onerror = finishSpeech;
-                    u.rate = 0.85;   // iets langzamer = beter verstaanbaar (overschrijft de 1.0 hierboven)
-                    // ATTENTIE-BEEP vóór de stem (walkie-talkie-stijl): de beep loopt via Web Audio —
-                    // hetzelfde systeem als de flitser-beeps, dat bewezen buiten een tik werkt — en
-                    // activeert op dít moment de audiosessie. De TTS volgt er 0,3s achteraan, zodat
-                    // ook berichten buiten een tik (poll) klinken. Bijvangst: je mist de eerste
-                    // woorden niet, want de chirp trekt eerst je aandacht.
-                    try { if (typeof playBeep === 'function') playBeep(0); } catch (e) {}
-                    setTimeout(() => {
-                        try {
-                            // GEEN cancel() — die zou het lopende bericht wegdrukken
-                            try { window.speechSynthesis.resume(); } catch (e) {}   // motor wekken
-                            window.speechSynthesis.speak(u);
-                        } catch (e) { finishSpeech(); }
-                    }, 300);
-                    setTimeout(finishSpeech, 2800 + msg.text.length * 95);   // vangnet als onend niet vuurt (incl. 0,3s beep-pauze)
-                } else {
-                    setTimeout(finishSpeech, 1800 + msg.text.length * 95);
-                }
+                // ATTENTIE-BEEP vóór de stem (walkie-talkie-stijl), de stem 0,3 s erachteraan — je mist de eerste woorden
+                // niet, want de chirp trekt eerst je aandacht. v66.1: HO-ME's eigen stem (mengt met je muziek), iets
+                // langzamer (tempo 0,85) = beter verstaanbaar. GEEN onderbreking — die zou het lopende bericht wegdrukken.
+                try { if (typeof playBeep === 'function') playBeep(0); } catch (e) {}
+                setTimeout(() => { stemZeg(msg.text, { tempo: 0.85, klaar: finishSpeech }); }, 300);
+                setTimeout(finishSpeech, 2800 + msg.text.length * 95);   // vangnet (incl. 0,3 s beep-pauze)
             } catch (e) { finishSpeech(); }
         }
         // ── DYNAMISCHE POLL: snel tijdens gesprek (0,2s), zuinig bij stilte (2s) ──
@@ -8285,15 +8405,8 @@ assign initialcost =
             let finished = false;
             const fin = () => { if (!finished) { finished = true; done && done(); } };
             try {
-                if (!('speechSynthesis' in window)) { setTimeout(fin, 3000); return; }
-                const u = new SpeechSynthesisUtterance(text);
-                applyVoice(u); u.rate = 1.0; u.volume = 1.0;
-                u.onend = fin;
-                u.onerror = fin;
-                window.speechSynthesis.cancel();   // onderbreek vorige (cruciaal op iOS, anders speelt 't niet)
-                window.speechSynthesis.speak(u);
-                // vangnet: als onend niet vuurt, sluit af op geschatte leestijd
-                setTimeout(fin, 2000 + text.length * 90);
+                stemZeg(text, { onderbreek: true, klaar: fin });   // v66.1: eigen stem
+                setTimeout(fin, 2000 + text.length * 90);           // vangnet
             } catch (e) { setTimeout(fin, 3000); }
         }
 
@@ -8360,11 +8473,7 @@ assign initialcost =
                     const head = (m.from ? m.from + ' · ' : '') + hhmm;
                     row.innerHTML = '<div style="font-size:14px; color:#7fd8ef; margin-bottom:3px;">' + head + '</div>' +
                                     '<div style="font-size:20px; font-weight:600;">' + (m.text || '') + '</div>';
-                    row.onclick = () => { try {
-                        const u = new SpeechSynthesisUtterance(m.text);
-                        applyVoice(u); u.rate = 0.85; u.volume = 1.0;
-                        window.speechSynthesis.cancel(); window.speechSynthesis.speak(u);
-                    } catch (e) {} };
+                    row.onclick = () => { stemOntgrendel(); stemZeg(m.text, { tempo: 0.85, onderbreek: true }); };   // v66.1
                     list.appendChild(row);
                 });
             }
@@ -11072,7 +11181,7 @@ assign initialcost =
                 if (typeof clearTurnDots === 'function') clearTurnDots();
                 if (typeof clearEaten === 'function') clearEaten();
                 if (typeof hideNavElements === 'function') hideNavElements();
-                try { if (typeof speechSynthesis !== 'undefined') speechSynthesis.cancel(); } catch (e) {}
+                stemStop();   // v66.1
             }
             if (L_ && gpxRoute === L_.route) gpxRoute = [];
             window._gpxLoaded = null;
@@ -11511,7 +11620,6 @@ assign initialcost =
             if (linkJoinCode) {
                 try { if (typeof initDeviceCompass === 'function') initDeviceCompass(); } catch (e) {}
                 try {
-                    window._speechPrimed = false;
                     if (typeof unlockAudio === 'function') unlockAudio(false);
                     if (typeof primeSpeech === 'function') primeSpeech();
                 } catch (e) {}
@@ -13742,13 +13850,7 @@ assign initialcost =
             if (!text || !text.trim()) return;
             const txt = text.trim();
             if (!currentCode) {   // niet verbonden → speel dan tenminste lokaal af
-                try {
-                    if ('speechSynthesis' in window) {
-                        const u = new SpeechSynthesisUtterance(txt);
-                        applyVoice(u); u.rate = 1.0; u.volume = 1.0;
-                        window.speechSynthesis.cancel(); window.speechSynthesis.speak(u);
-                    }
-                } catch (e) {}
+                stemOntgrendel(); stemZeg(txt, { onderbreek: true });   // v66.1: eigen stem
                 return;
             }
             const ts = Date.now();
@@ -13848,53 +13950,14 @@ assign initialcost =
             event.target.value = '';   // zelfde bestand opnieuw kiesbaar
         }
 
-        // ── Stemkeuze: NL (standaard) of BE (Ellen, Vlaams — zachter/vriendelijker) ──
-        // Keuze in localStorage; geldt voor ALLE spraak (navigatie, flitsers, berichten, lichtkrant).
-        // iOS laadt de stemmenlijst soms pas later (voiceschanged) — daarom telkens opnieuw zoeken tot gevonden.
+        // ── Stemkeuze NL/BE (iPhone-stemmen, "Ellen") is weg sinds v66.1: HO-ME heeft één eigen stem (eSpeak NG, Nederlands). ──
+        // De oude keuze blijft in de config staan (stem), maar doet niets meer.
         let voicePref = localStorage.getItem('homeVoicePref') || 'NL';
-        // iOS-valkuil: stem-objecten uit getVoices() kunnen ongeldig raken na een lijst-verversing —
-        // een verouderd object toewijzen = STILLE utterance. Daarom NIET cachen maar per uitspraak
-        // vers opzoeken (getVoices() is synchroon en goedkoop), en alles in try/catch: gaat het
-        // stem-zetten mis, dan speelt de zin gewoon in de standaardstem (nl-NL) — nooit stilte.
-        function findBEVoice() {
-            try {
-                const vs = ('speechSynthesis' in window) ? window.speechSynthesis.getVoices() : [];
-                return vs.find(v => v.lang && v.lang.toLowerCase().replace('_','-').startsWith('nl-be'))
-                    || vs.find(v => v.name && /ellen/i.test(v.name)) || null;
-            } catch (e) { return null; }
-        }
-        function applyVoice(u) {
-            u.lang = 'nl-NL';                       // altijd eerst een veilige basis
-            if (voicePref !== 'BE') return;
-            try {
-                const v = findBEVoice();            // vers object, nooit een gecachte verwijzing
-                if (v) { u.voice = v; u.lang = v.lang; }
-            } catch (e) { /* terugval: nl-NL basis blijft staan */ }
-        }
-        function toggleVoicePref() {
-            voicePref = (voicePref === 'NL') ? 'BE' : 'NL';
-            localStorage.setItem('homeVoicePref', voicePref);
-            saveCfg({ stem: voicePref });   // v56.5: ook in de config
-            updateVoicePrefBtn();
-            const v = (voicePref === 'BE') ? findBEVoice() : null;
-            const msg = (voicePref === 'BE')
-                ? (v ? 'Stem: Belgisch (' + v.name + ')' : 'Stem: BE — niet gevonden, valt terug op NL')
-                : 'Stem: Nederlands';
-            if (typeof showBufferToast === 'function') showBufferToast(msg, '#00BCD4', 2000);
-            // Demo-geluidje: random bestaande app-zin in de nieuwe stem (bewuste tik, dus altijd afspelen)
-            speakVoiceDemo();
-        }
-        function updateVoicePrefBtn() {
-            const b = document.getElementById('voicePrefBtn');
-            if (b) b.textContent = 'Stem: ' + voicePref;
-        }
-        updateVoicePrefBtn();   // label direct goed zetten bij laden (keuze onthouden)
 
         // ── Stem-demo: random zin uit de BESTAANDE app-zinnen (Words-lijst + nav/flitser) ──
         let _lastDemoIdx = -1;
         function speakVoiceDemo() {
             try {
-                if (!('speechSynthesis' in window)) return;
                 const pool = WORDS_LIST.map(w => w.text).concat([
                     'Volg de route',
                     'Over 600 meter flitser',
@@ -13905,24 +13968,15 @@ assign initialcost =
                 let i;
                 do { i = Math.floor(Math.random() * pool.length); } while (i === _lastDemoIdx && pool.length > 1);
                 _lastDemoIdx = i;   // niet 2× dezelfde achter elkaar
-                const d = new SpeechSynthesisUtterance(pool[i]);
-                applyVoice(d); d.rate = 1.0; d.volume = 1.0;
-                window.speechSynthesis.cancel();
-                window.speechSynthesis.speak(d);
+                stemOntgrendel();                            // Test stem is een tik
+                stemZeg(pool[i], { onderbreek: true });      // v66.1: eigen stem
             } catch (e) { console.warn('stem-demo mislukt', e); }
         }
 
         function speak(text, vol) {
             if (!speechEnabled) return;
-            try {
-                if (!('speechSynthesis' in window)) return;
-                const u = new SpeechSynthesisUtterance(text);
-                applyVoice(u);
-                u.rate = 1.0;
-                u.volume = (typeof vol === 'number') ? vol : 1.0;
-                window.speechSynthesis.cancel();   // onderbreek vorige (anders stapelt 't)
-                window.speechSynthesis.speak(u);
-            } catch (e) { console.warn('speak failed', e); }
+            // v66.1: HO-ME's eigen stem; onderbreek de vorige (anders stapelt 't), zoals vroeger
+            stemZeg(text, { volume: (typeof vol === 'number') ? vol : 1.0, onderbreek: true });
         }
         function toggleSpeech() {
             speechEnabled = !speechEnabled;
@@ -13933,7 +13987,7 @@ assign initialcost =
             if (typeof showBufferToast === 'function') {
                 showBufferToast(speechEnabled ? 'Navigatie stem aan' : 'Navigatie stem uit', '#00BCD4', 2000);
             }
-            if (!speechEnabled && 'speechSynthesis' in window) window.speechSynthesis.cancel();
+            if (!speechEnabled) stemStop();   // v66.1
         }
 
         function toggleOMB() {
@@ -14507,7 +14561,7 @@ assign initialcost =
                                             followerNavActive = false;
                                             activeRoute = null;
                                             detectedTurns = [];
-                                            if (typeof speechSynthesis !== 'undefined') speechSynthesis.cancel();
+                                            stemStop();   // v66.1
                                             if (typeof hideNavElements === 'function') hideNavElements();
                                         }
                                     }
@@ -14569,7 +14623,7 @@ assign initialcost =
                                 followerNavActive = false;
                                 activeRoute = null;
                                 detectedTurns = [];
-                                if (typeof speechSynthesis !== 'undefined') speechSynthesis.cancel();
+                                stemStop();   // v66.1
                                 if (typeof hideNavElements === 'function') hideNavElements();
                             }
                             // v63.72 (keuze Sjoerd: kompasknop weg): de volger heeft geen Play — zodra hij de master-route
@@ -14953,18 +15007,10 @@ assign initialcost =
             // master-flow sowieso langs, dus ideaal moment. + 1 test-beep zodat je meteen hoort dat 't werkt.
             if (typeof ensureBeepAudio === 'function') ensureBeepAudio();
             if (typeof beepOnce === 'function') setTimeout(beepOnce, 120);
-            // HOORBARE stem-puls, net als de volger bij het verbinden (v49.0): deze tik is een echte
-            // interactie, dus één hoorbaar "Verbonden" activeert de iOS-spraakmotor meteen vanaf de
-            // start — niet pas bij GO ("Volg de route"). Berichten klinken dan ook vóór het rijden.
-            try {
-                if ('speechSynthesis' in window) {
-                    const u = new SpeechSynthesisUtterance('Verbonden');
-                    applyVoice(u); u.rate = 1.0; u.volume = 1.0;
-                    window.speechSynthesis.cancel();
-                    window.speechSynthesis.speak(u);
-                    window._speechPrimed = true;
-                }
-            } catch (e) {}
+            // "Verbonden" als bevestiging (v49.0). v66.1: met HO-ME's eigen stem — deze tik ontgrendelt die (eigen
+            // AudioContext). De iOS-spraakmotor (en zijn "hoorbaar wekken"-truc) is niet meer nodig.
+            stemOntgrendel();
+            stemZeg('Verbonden', { onderbreek: true });
             const code = await generateFreeCode();   // code die niet al in gebruik is
             currentCode = code;
             currentMode = 'master';
@@ -15063,21 +15109,11 @@ assign initialcost =
                 const fl = document.getElementById('zoomIconLabelFollower');
                 if (fl) fl.textContent = 'MASTER';
             }
-            // HOORBARE activatie: de master krijgt "Volg de route" bij GO — de volger had alleen
-            // stille (volume-0) primers, en die activeren de iOS-spraakmotor NIET (bewezen in de
-            // v48.x-zoektocht: alleen een hoorbare utterance in een echte tik wekt de motor).
-            // Het intikken van het 4e teken is die tik: één hoorbaar "Verbonden" — meteen ook een
-            // nette bevestiging dat je in de groep zit. Daarna klinken berichten ook buiten een tik.
-            try {
-                if (typeof unlockAudio === 'function') unlockAudio(false);
-                if ('speechSynthesis' in window) {
-                    const u = new SpeechSynthesisUtterance('Verbonden');
-                    applyVoice(u); u.rate = 1.0; u.volume = 1.0;
-                    window.speechSynthesis.cancel();
-                    window.speechSynthesis.speak(u);
-                    window._speechPrimed = true;
-                }
-            } catch (e) {}
+            // Het intikken van het 4e teken is een echte tik: geluid + HO-ME's eigen stem ontgrendelen, en "Verbonden" als
+            // nette bevestiging dat je in de groep zit (v49.0; v66.1: eigen stem i.p.v. de iPhone-stem).
+            try { if (typeof unlockAudio === 'function') unlockAudio(false); } catch (e) {}
+            stemOntgrendel();
+            stemZeg('Verbonden', { onderbreek: true });
             masterLocations = [];
             masterBreuken = []; masterGereden = [];    // v65.9
             trackRecToon();                            // v65.9: volger = geen REC
