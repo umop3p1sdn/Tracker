@@ -2,14 +2,14 @@
 # Met de hand starten: tab Actions -> Stem-fabriek -> Run workflow.
 #   - stem leeg  = proef: van elke stem dezelfde zinnen als mp3 in stem/proef/ (te beluisteren op stemkeuze.html);
 #                  de modellen zelf gaan naar de zijbranch stem-modellen (niet naar de site)
-#   - stem gevuld (bv. nl_BE-nathalie-medium) = die ene stem in stem/piper/ zetten — die downloadt HO-ME
+#   - stem gevuld (bv. NL=nl_NL-mls-medium BE=nl_BE-nathalie-medium) = die stemmen in stem/piper/ zetten — die downloadt HO-ME
 name: Stem-fabriek
 
 on:
   workflow_dispatch:
     inputs:
       stem:
-        description: 'Leeg = proef (alle stemmen beluisteren). Of de gekozen stem, bv. nl_BE-nathalie-medium'
+        description: 'Leeg = proef (alle stemmen beluisteren). Of de gekozen stemmen, bv. NL=nl_NL-mls-medium BE=nl_BE-nathalie-medium'
         type: string
         default: ''
 
@@ -54,15 +54,19 @@ jobs:
           git add -A && git commit -q -m "Piper-stemmen (nl) voor het ontwikkelen — $(date -u +%F)"
           git push -q -f "https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.git" stem-modellen
 
-      - name: Gekozen stem in stem/piper/
+      - name: Gekozen stemmen in stem/piper/
         if: ${{ inputs.stem != '' }}
-        run: python3 stem/fabriek.py kies "${{ inputs.stem }}"
+        env:
+          STEM: ${{ inputs.stem }}          # via env, niet in het script geplakt
+        run: python3 stem/fabriek.py kies $STEM
 
       - name: Opslaan (main)
+        env:
+          STEM: ${{ inputs.stem }}
         run: |
           git config user.name "stem-fabriek"; git config user.email "actions@users.noreply.github.com"
           git add stem
           if git diff --cached --quiet; then echo "niets nieuw"; exit 0; fi
-          git commit -q -m "Stem-fabriek: ${{ inputs.stem == '' && 'proef (voorbeelden)' || inputs.stem }}"
+          git commit -q -m "Stem-fabriek: ${STEM:-proef (voorbeelden)}"
           git pull -q --rebase origin main
           git push -q origin HEAD:main

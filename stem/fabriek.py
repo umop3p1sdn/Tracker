@@ -5,7 +5,7 @@
 #                      grootte, licentie uit de MODEL_CARD) + per stem de fonemen/ids van Piper zelf (om HO-ME's eigen
 #                      fonemen-stap mee te vergelijken) + de kleine .onnx.json-instellingen; de modellen zelf in
 #                      --modellen (de workflow zet die op de zijbranch stem-modellen, niet op main)
-#   kies <stem>      → alleen dat ene model (.onnx + .onnx.json) in stem/piper/ — dat downloadt HO-ME straks
+#   kies NL=<stem> BE=<stem> → alleen die modellen (.onnx + .onnx.json) + stemmen.json in stem/piper/ — die downloadt HO-ME
 import json, os, subprocess, sys, urllib.request, wave, hashlib, shutil, argparse
 
 HF = 'https://huggingface.co/rhasspy/piper-voices/resolve/main/'
@@ -106,28 +106,36 @@ def proef(uitmap, modellen):
     print('klaar:', len(lijst), 'stemmen')
 
 
-def kies(key, uitmap):
+def kies(paren, uitmap):
+    # paren: ['NL=nl_NL-…-medium', 'BE=nl_BE-nathalie-medium'] — de eerste is de standaard (keuze Sjoerd: NL, met keuze BE)
     stemmen = nl_stemmen()
-    if key not in stemmen:
-        raise SystemExit('onbekende stem: %s (er zijn: %s)' % (key, ', '.join(sorted(stemmen))))
     os.makedirs(uitmap, exist_ok=True)
-    for f in os.listdir(uitmap):                 # er staat er altijd maar één
-        if f.endswith('.onnx') or f.endswith('.onnx.json'):
+    for f in os.listdir(uitmap):                 # alleen de gekozen stemmen blijven staan
+        if f.endswith('.onnx') or f.endswith('.onnx.json') or f.startswith('MODEL_CARD-'):
             os.remove(os.path.join(uitmap, f))
-    lok, card, grootte = laad_stem(stemmen[key], uitmap)
-    with open(os.path.join(uitmap, 'MODEL_CARD-' + key + '.txt'), 'w', encoding='utf-8') as f:
-        f.write(card)
-    print('gekozen:', key, round(grootte / 1e6, 1), 'MB')
+    lijst = []
+    for paar in paren:
+        code, key = paar.split('=', 1)
+        if key not in stemmen:
+            raise SystemExit('onbekende stem: %s (er zijn: %s)' % (key, ', '.join(sorted(stemmen))))
+        lok, card, grootte = laad_stem(stemmen[key], uitmap)
+        with open(os.path.join(uitmap, 'MODEL_CARD-' + key + '.txt'), 'w', encoding='utf-8') as f:
+            f.write(card)
+        lijst.append({'code': code, 'key': key, 'model': 'piper/' + os.path.basename(lok), 'bytes': os.path.getsize(lok),
+                      'licentie': licentie(card)})
+        print('gekozen:', code, key, round(grootte / 1e6, 1), 'MB')
+    with open(os.path.join(uitmap, 'stemmen.json'), 'w', encoding='utf-8') as f:
+        json.dump({'stemmen': lijst}, f, ensure_ascii=False, indent=1)
 
 
 if __name__ == '__main__':
     a = argparse.ArgumentParser()
     a.add_argument('wat', choices=['proef', 'kies'])
-    a.add_argument('stem', nargs='?')
+    a.add_argument('stem', nargs='*')
     a.add_argument('--uit', default='stem/proef')
     a.add_argument('--modellen', default='/tmp/stem-modellen')
     x = a.parse_args()
     if x.wat == 'proef':
         proef(x.uit, x.modellen)
     else:
-        kies(x.stem, x.uit if x.uit != 'stem/proef' else 'stem/piper')
+        kies(x.stem, x.uit if x.uit != 'stem/proef' else 'stem/piper')   # bv. kies NL=nl_NL-…-medium BE=nl_BE-nathalie-medium
