@@ -1,7 +1,6 @@
 # Stem-fabriek (HO-ME v66.x): de gratis Nederlandse en Vlaamse Piper-stemmen ophalen (zie stem/fabriek.py en stem/README.md).
 # Met de hand starten: tab Actions -> Stem-fabriek -> Run workflow.
-#   - stem leeg  = proef: van elke stem dezelfde zinnen als mp3 in stem/proef/ (te beluisteren op stemkeuze.html);
-#                  de modellen zelf gaan naar de zijbranch stem-modellen (niet naar de site)
+#   - stem leeg  = proef: van elke stem dezelfde zinnen als mp3 in stem/proef/ (te beluisteren op stemkeuze.html)
 #   - stem gevuld (bv. NL=nl_NL-mls-medium BE=nl_BE-nathalie-medium) = die stemmen in stem/piper/ zetten — die downloadt HO-ME
 name: Stem-fabriek
 
@@ -44,23 +43,14 @@ jobs:
           set -o pipefail
           python3 stem/fabriek.py proef --uit stem/proef --modellen "$RUNNER_TEMP/modellen" 2>&1 | tee "$RUNNER_TEMP/fabriek.log"
 
-      - name: Modellen naar de zijbranch stem-modellen (alleen voor het ontwikkelen, niet op de site)
-        if: ${{ inputs.stem == '' }}
-        env:
-          TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          cd "$RUNNER_TEMP/modellen"
-          rm -f *.wav
-          git init -q -b stem-modellen
-          git config user.name "stem-fabriek"; git config user.email "actions@users.noreply.github.com"
-          git add -A && git commit -q -m "Piper-stemmen (nl) voor het ontwikkelen — $(date -u +%F)"
-          git push -q -f "https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.git" stem-modellen
-
       - name: Gekozen stemmen in stem/piper/
         if: ${{ inputs.stem != '' }}
         env:
           STEM: ${{ inputs.stem }}          # via env, niet in het script geplakt
         run: python3 stem/fabriek.py kies $STEM
+
+      - name: Opruimen — de tijdelijke zijbranch stem-modellen (alleen voor het ontwikkelen) weg
+        run: git push -q origin --delete stem-modellen 2>/dev/null || true
 
       - name: Opslaan (main)
         env:
