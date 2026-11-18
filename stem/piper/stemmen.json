@@ -1,0 +1,18 @@
+{
+ "stemmen": [
+  {
+   "code": "NL",
+   "key": "nl_NL-pim-medium",
+   "model": "piper/nl_NL-pim-medium.onnx",
+   "bytes": 63221984,
+   "licentie": "## Dataset · * URL: https://github.com/OHF-Voice/voice-datasets · * License:  CC0"
+  },
+  {
+   "code": "BE",
+   "key": "nl_BE-nathalie-medium",
+   "model": "piper/nl_BE-nathalie-medium.onnx",
+   "bytes": 63221984,
+   "licentie": "## Dataset · * URL: https://github.com/OHF-Voice/voice-datasets · * License: CC0"
+  }
+ ]
+}
