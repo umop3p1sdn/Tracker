@@ -1,4 +1,8 @@
 const CACHE_NAME = 'live-tracker-tiles'; // Static - no version needed
+// v66.2: HO-ME's stem (map stem/: robotstem, rekenmotor, natuurlijke stemmen ±60 MB) in een EIGEN cache, cache-first:
+// de bestanden veranderen niet (een nieuwe versie = een nieuwe naam), dus de telefoon downloadt alles maar één keer
+// (Sjoerd: "Dan maar ff eenkeer data knallen"). Niet: stem/piper/stemmen.json (welke stemmen er zijn) en stem/proef/.
+const STEM_CACHE = 'home-stem';
 const TILE_DB_NAME = 'LiveTrackerTiles';
 const TILE_STORE_NAME = 'tiles';
 
@@ -72,7 +76,7 @@ self.addEventListener('activate', (event) => {
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME) {
+          if (cacheName !== CACHE_NAME && cacheName !== STEM_CACHE) {   // v66.2: de stem-cache blijft staan
             return caches.delete(cacheName);
           }
         })
@@ -181,6 +185,20 @@ self.addEventListener('fetch', (event) => {
             });
           });
         })
+    );
+    return;
+  }
+
+  // v66.2: HO-ME's stem — cache-first in een eigen cache (zie STEM_CACHE bovenaan)
+  if (url.includes('/Tracker/stem/') && !url.includes('/stem/proef/') && !url.includes('/stem/piper/stemmen.json')) {
+    // eerst in ÁLLE caches kijken (een oudere sw.js bewaarde ze in live-tracker-tiles), anders downloaden → home-stem
+    event.respondWith(
+      caches.match(event.request).then((hit) => hit || caches.open(STEM_CACHE).then((cache) =>
+        fetch(event.request).then((response) => {
+          if (response && response.status === 200) cache.put(event.request, response.clone()).catch(() => {});
+          return response;
+        })
+      ))
     );
     return;
   }
